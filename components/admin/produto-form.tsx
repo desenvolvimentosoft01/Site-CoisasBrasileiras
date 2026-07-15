@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent } from "@/components/ui/card"
+import { ImagePlus, X } from "lucide-react"
 
 type Categoria = { id: string; nome: string }
 
@@ -33,11 +35,44 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
   const [estoque, setEstoque] = useState(String(produto?.estoque ?? 0))
   const [ativo, setAtivo] = useState(produto?.ativo ?? true)
   const [categoriaIds, setCategoriaIds] = useState<string[]>(produto?.categoriaIds ?? [])
-  const [imagensTexto, setImagensTexto] = useState(
-    produto?.imagens.map((i) => i.url).join("\n") ?? ""
+  const [imagensUrls, setImagensUrls] = useState<string[]>(
+    produto?.imagens.map((i) => i.url) ?? []
   )
+  const [enviandoImagem, setEnviandoImagem] = useState(false)
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
+  const inputArquivoRef = useRef<HTMLInputElement>(null)
+
+  async function selecionarImagens(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivos = evento.target.files
+    if (!arquivos || arquivos.length === 0) return
+
+    setErro("")
+    setEnviandoImagem(true)
+
+    for (const arquivo of Array.from(arquivos)) {
+      const formData = new FormData()
+      formData.append("arquivo", arquivo)
+
+      const resposta = await fetch("/api/admin/upload", { method: "POST", body: formData })
+
+      if (!resposta.ok) {
+        const dados = await resposta.json()
+        setErro(dados.erro || "Erro ao enviar imagem")
+        continue
+      }
+
+      const { url } = await resposta.json()
+      setImagensUrls((atual) => [...atual, url])
+    }
+
+    setEnviandoImagem(false)
+    if (inputArquivoRef.current) inputArquivoRef.current.value = ""
+  }
+
+  function removerImagem(url: string) {
+    setImagensUrls((atual) => atual.filter((u) => u !== url))
+  }
 
   useEffect(() => {
     fetch("/api/admin/categorias")
@@ -69,10 +104,7 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
       estoque: Number(estoque) || 0,
       ativo,
       categoriaIds,
-      imagensUrls: imagensTexto
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean),
+      imagensUrls,
     }
 
     const url = produto ? `/api/admin/produtos/${produto.id}` : "/api/admin/produtos"
@@ -176,12 +208,46 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Imagens (uma URL por linha)</Label>
-            <textarea
-              className="min-h-24 w-full rounded-md border border-neutral-700 bg-transparent p-3 text-sm"
-              value={imagensTexto}
-              onChange={(e) => setImagensTexto(e.target.value)}
-              placeholder="https://..."
+            <Label>Imagens</Label>
+
+            <div className="flex flex-wrap gap-3">
+              {imagensUrls.map((url) => (
+                <div
+                  key={url}
+                  className="group relative h-24 w-24 overflow-hidden rounded-md border border-neutral-700"
+                >
+                  <Image src={url} alt="" fill className="object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removerImagem(url)}
+                    className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label="Remover imagem"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => inputArquivoRef.current?.click()}
+                disabled={enviandoImagem}
+                className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-neutral-600 text-neutral-400 hover:border-emerald-500 hover:text-emerald-400"
+              >
+                <ImagePlus size={20} />
+                <span className="text-xs">{enviandoImagem ? "Enviando..." : "Adicionar"}</span>
+              </button>
+            </div>
+
+            {/* capture="environment" abre a camera direto no celular; em desktop so abre o seletor de arquivo normal */}
+            <input
+              ref={inputArquivoRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              multiple
+              className="hidden"
+              onChange={selecionarImagens}
             />
           </div>
 

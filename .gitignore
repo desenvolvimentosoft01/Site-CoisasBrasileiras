@@ -41,3 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# imagens enviadas pelo admin (armazenamento local, nao entra no git)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
