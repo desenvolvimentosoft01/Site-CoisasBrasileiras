@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -41,6 +42,9 @@ export default function EntrarPage() {
     <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
+          <div className="mx-auto mb-2">
+            <Image src="/logo.webp" alt="Coisas Brasileiras" width={56} height={56} />
+          </div>
           <CardTitle className="text-center text-xl">Coisas Brasileiras</CardTitle>
           <p className="text-center text-sm text-muted-foreground">Painel administrativo</p>
         </CardHeader>

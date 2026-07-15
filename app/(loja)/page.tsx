@@ -1,0 +1,46 @@
+import { query } from "@/lib/db"
+import { HeroCarousel } from "@/components/loja/hero-carousel"
+import { CategoriaGrid } from "@/components/loja/categoria-grid"
+import { ProdutoCard } from "@/components/loja/produto-card"
+
+export default async function HomePage() {
+  const categorias = await query(
+    "SELECT id, nome, slug FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"
+  )
+
+  const destaques = await query(`
+    SELECT
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional,
+      (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa
+    FROM TAB_PRODUTO p
+    WHERE p.ativo = true
+    ORDER BY p.criado_em DESC
+    LIMIT 8
+  `)
+
+  return (
+    <div>
+      <HeroCarousel />
+
+      <CategoriaGrid categorias={categorias} />
+
+      <section id="destaques" className="mx-auto max-w-6xl px-4 py-12 md:px-6">
+        <h2 className="font-heading mb-6 text-2xl font-semibold text-emerald-950">
+          Destaques da loja
+        </h2>
+
+        {destaques.length === 0 ? (
+          <p className="text-sm text-neutral-500">
+            Nenhum produto cadastrado ainda. Assim que o admin cadastrar produtos, eles aparecem aqui.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {destaques.map((produto) => (
+              <ProdutoCard key={produto.id} produto={produto} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
