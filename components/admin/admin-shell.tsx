@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { LayoutDashboard, Package, Tag, ShoppingCart, Menu, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { SessaoAdmin } from "@/lib/auth"
@@ -53,9 +54,12 @@ export function AdminShell({
           sidebarAberta ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="border-b border-neutral-800 px-6 py-5">
-          <div className="text-lg font-semibold">Coisas Brasileiras</div>
-          <div className="text-xs text-neutral-400">Painel Admin</div>
+        <div className="flex items-center gap-3 border-b border-neutral-800 px-6 py-5">
+          <Image src="/logo.webp" alt="Coisas Brasileiras" width={40} height={40} />
+          <div>
+            <div className="text-lg font-semibold">Coisas Brasileiras</div>
+            <div className="text-xs text-neutral-400">Painel Admin</div>
+          </div>
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
