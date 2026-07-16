@@ -65,7 +65,7 @@ export default async function ConfirmacaoPedidoPage({
         </div>
       </div>
 
-      <Button render={<Link href="/produtos" />}>Continuar comprando</Button>
+      <Button nativeButton={false} render={<Link href="/produtos" />}>Continuar comprando</Button>
     </div>
   )
 }

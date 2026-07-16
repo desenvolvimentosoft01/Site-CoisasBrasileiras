@@ -92,7 +92,12 @@ export function CarrinhoDrawer() {
                 {formatarPreco(total)}
               </span>
             </div>
-            <Button className="w-full" size="lg" render={<Link href="/checkout" onClick={fechar} />}>
+            <Button
+              className="w-full"
+              size="lg"
+              nativeButton={false}
+              render={<Link href="/checkout" onClick={fechar} />}
+            >
               Finalizar compra
             </Button>
           </div>

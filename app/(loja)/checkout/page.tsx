@@ -70,7 +70,7 @@ export default function CheckoutPage() {
         <p className="mb-6 text-neutral-500">
           Voce precisa estar logado para finalizar a compra.
         </p>
-        <Button render={<Link href="/entrar?voltar=/checkout" />}>Entrar</Button>
+        <Button nativeButton={false} render={<Link href="/entrar?voltar=/checkout" />}>Entrar</Button>
       </div>
     )
   }
@@ -81,7 +81,7 @@ export default function CheckoutPage() {
         <h1 className="font-heading mb-3 text-2xl font-semibold text-emerald-950">
           Seu carrinho esta vazio
         </h1>
-        <Button render={<Link href="/produtos" />}>Ver produtos</Button>
+        <Button nativeButton={false} render={<Link href="/produtos" />}>Ver produtos</Button>
       </div>
     )
   }
