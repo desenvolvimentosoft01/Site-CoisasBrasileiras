@@ -1,11 +1,38 @@
 import { query } from "@/lib/db"
 import { paymentMP } from "@/lib/mercadopago"
 import { NextResponse } from "next/server"
+import { createHmac, timingSafeEqual } from "crypto"
 
 const STATUS_MP_PARA_PEDIDO: Record<string, string> = {
   approved: "pago",
   rejected: "cancelado",
   cancelled: "cancelado",
+}
+
+// Valida o header x-signature que o Mercado Pago envia, provando que a
+// notificacao realmente veio do MP (nao apenas um POST forjado por terceiros).
+// O segredo vem do painel do MP > sua aplicacao > Webhooks > "Assinatura secreta".
+// Se ainda nao foi configurado (ex: em dev local), pula a validacao.
+function assinaturaValida(request: Request, dataId: string): boolean {
+  const segredo = process.env.MERCADOPAGO_WEBHOOK_SECRET
+  if (!segredo) return true
+
+  const signatureHeader = request.headers.get("x-signature")
+  const requestId = request.headers.get("x-request-id")
+  if (!signatureHeader || !requestId) return false
+
+  const partes = Object.fromEntries(
+    signatureHeader.split(",").map((parte) => parte.trim().split("=") as [string, string])
+  )
+  const { ts, v1: assinaturaRecebida } = partes
+  if (!ts || !assinaturaRecebida) return false
+
+  const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`
+  const assinaturaEsperada = createHmac("sha256", segredo).update(manifest).digest("hex")
+
+  const a = Buffer.from(assinaturaRecebida)
+  const b = Buffer.from(assinaturaEsperada)
+  return a.length === b.length && timingSafeEqual(a, b)
 }
 
 // O Mercado Pago chama esse endpoint quando o status de um pagamento muda.
@@ -18,6 +45,10 @@ export async function POST(request: Request) {
 
   if (body?.type !== "payment" || !paymentId) {
     return NextResponse.json({ recebido: true })
+  }
+
+  if (!assinaturaValida(request, String(paymentId))) {
+    return NextResponse.json({ erro: "Assinatura invalida" }, { status: 401 })
   }
 
   try {
