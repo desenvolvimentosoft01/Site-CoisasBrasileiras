@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, ShoppingCart, X } from "lucide-react"
+import { useCarrinho } from "@/lib/carrinho-store"
 
 const linksNav = [
   { href: "/produtos", label: "Todos os produtos" },
@@ -13,6 +14,14 @@ const linksNav = [
 
 export function Header() {
   const [menuAberto, setMenuAberto] = useState(false)
+  const [montado, setMontado] = useState(false)
+  const itens = useCarrinho((s) => s.itens)
+  const abrirCarrinho = useCarrinho((s) => s.abrir)
+  const totalItens = itens.reduce((soma, i) => soma + i.quantidade, 0)
+
+  // Evita mismatch de hidratacao: o total vindo do localStorage (persist do
+  // zustand) so existe no client, entao so mostramos o contador apos montar.
+  useEffect(() => setMontado(true), [])
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-white/90 backdrop-blur">
@@ -38,10 +47,16 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <button
-            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
+            className="relative rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
             aria-label="Carrinho"
+            onClick={abrirCarrinho}
           >
             <ShoppingCart size={22} />
+            {montado && totalItens > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-semibold text-white">
+                {totalItens}
+              </span>
+            )}
           </button>
           <button
             className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 md:hidden"

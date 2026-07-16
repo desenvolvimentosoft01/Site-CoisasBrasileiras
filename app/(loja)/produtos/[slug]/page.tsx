@@ -1,8 +1,8 @@
 import { query } from "@/lib/db"
 import { notFound } from "next/navigation"
-import Image from "next/image"
-import { ShoppingBag, Truck } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Truck } from "lucide-react"
+import { ProdutoGaleria } from "@/components/loja/produto-galeria"
+import { AdicionarCarrinhoButton } from "@/components/loja/adicionar-carrinho-button"
 
 function formatarPreco(valor: string) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -22,18 +22,12 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
     [produto.id]
   )
 
+  const precoFinal = produto.preco_promocional ?? produto.preco
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
       <div className="grid gap-10 md:grid-cols-2">
-        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-emerald-50">
-          {imagens.length > 0 ? (
-            <Image src={imagens[0].url} alt={produto.nome} fill className="object-cover" />
-          ) : (
-            <div className="flex h-full items-center justify-center text-emerald-300">
-              <ShoppingBag size={64} />
-            </div>
-          )}
-        </div>
+        <ProdutoGaleria imagens={imagens.map((i) => i.url)} nome={produto.nome} />
 
         <div className="space-y-6">
           <div>
@@ -68,10 +62,14 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
             Envio para todo o Brasil
           </div>
 
-          <Button size="lg" className="w-full sm:w-auto">
-            <ShoppingBag size={18} className="mr-2" />
-            Adicionar ao carrinho
-          </Button>
+          <AdicionarCarrinhoButton
+            produtoId={produto.id}
+            nome={produto.nome}
+            slug={produto.slug}
+            preco={Number(precoFinal)}
+            imagemCapa={imagens[0]?.url ?? null}
+            estoque={produto.estoque}
+          />
         </div>
       </div>
     </div>

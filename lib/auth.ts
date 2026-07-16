@@ -7,6 +7,12 @@ export type SessaoAdmin = {
   papel: string
 }
 
+export type SessaoCliente = {
+  id: string
+  nome: string
+  email: string
+}
+
 // Usa Web Crypto (SubtleCrypto) em vez do modulo `crypto` do Node porque este
 // arquivo tambem roda no middleware, que usa o Edge Runtime.
 async function assinar(payload: string): Promise<string> {
@@ -23,13 +29,13 @@ async function assinar(payload: string): Promise<string> {
 
 // Gera o valor do cookie: payload em base64 + assinatura, para evitar que o
 // cliente forje uma sessao alterando o id/papel manualmente.
-export async function criarTokenSessao(sessao: SessaoAdmin): Promise<string> {
+async function criarToken<T>(sessao: T): Promise<string> {
   const payload = Buffer.from(JSON.stringify(sessao)).toString("base64url")
   const assinatura = await assinar(payload)
   return `${payload}.${assinatura}`
 }
 
-export async function lerTokenSessao(token: string | undefined): Promise<SessaoAdmin | null> {
+async function lerToken<T>(token: string | undefined): Promise<T | null> {
   if (!token) return null
 
   const [payload, assinatura] = token.split(".")
@@ -44,3 +50,9 @@ export async function lerTokenSessao(token: string | undefined): Promise<SessaoA
     return null
   }
 }
+
+export const criarTokenSessao = (sessao: SessaoAdmin) => criarToken(sessao)
+export const lerTokenSessao = (token: string | undefined) => lerToken<SessaoAdmin>(token)
+
+export const criarTokenSessaoCliente = (sessao: SessaoCliente) => criarToken(sessao)
+export const lerTokenSessaoCliente = (token: string | undefined) => lerToken<SessaoCliente>(token)
