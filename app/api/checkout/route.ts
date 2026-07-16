@@ -1,5 +1,6 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
+import { preferenceMP } from "@/lib/mercadopago"
 import { NextResponse } from "next/server"
 
 type ItemRequisicao = { produtoId: string; quantidade: number }
@@ -45,13 +46,18 @@ export async function POST(request: Request) {
       )
 
       let total = 0
-      const itensParaInserir: { produtoId: string; quantidade: number; precoUnitario: number }[] = []
+      const itensParaInserir: {
+        produtoId: string
+        nome: string
+        quantidade: number
+        precoUnitario: number
+      }[] = []
 
       // Recalcula o preco e valida estoque a partir do banco - nunca confia
       // no preco/quantidade que vem do client.
       for (const item of itens as ItemRequisicao[]) {
         const [produto] = await q(
-          "SELECT id, preco, preco_promocional, estoque FROM TAB_PRODUTO WHERE id = $1 AND ativo = true FOR UPDATE",
+          "SELECT id, nome, preco, preco_promocional, estoque FROM TAB_PRODUTO WHERE id = $1 AND ativo = true FOR UPDATE",
           [item.produtoId]
         )
 
@@ -67,6 +73,7 @@ export async function POST(request: Request) {
 
         itensParaInserir.push({
           produtoId: produto.id,
+          nome: produto.nome,
           quantidade: item.quantidade,
           precoUnitario,
         })
@@ -91,10 +98,37 @@ export async function POST(request: Request) {
         )
       }
 
-      return pedidoCriado
+      return { ...pedidoCriado, itensParaInserir }
     })
 
-    return NextResponse.json({ pedidoId: pedido.id })
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    const ehHttps = siteUrl.startsWith("https://")
+
+    // auto_return exige back_urls publicas em https - em dev local (http) o
+    // Mercado Pago rejeita, entao so habilitamos quando o site ja estiver publicado.
+    const preferencia = await preferenceMP.create({
+      body: {
+        items: pedido.itensParaInserir.map(
+          (item: { produtoId: string; nome: string; quantidade: number; precoUnitario: number }) => ({
+            id: item.produtoId,
+            title: item.nome,
+            quantity: item.quantidade,
+            unit_price: item.precoUnitario,
+            currency_id: "BRL",
+          })
+        ),
+        external_reference: pedido.id,
+        notification_url: `${siteUrl}/api/webhooks/mercadopago`,
+        back_urls: {
+          success: `${siteUrl}/pedido/${pedido.id}`,
+          pending: `${siteUrl}/pedido/${pedido.id}`,
+          failure: `${siteUrl}/pedido/${pedido.id}`,
+        },
+        ...(ehHttps ? { auto_return: "approved" as const } : {}),
+      },
+    })
+
+    return NextResponse.json({ pedidoId: pedido.id, checkoutUrl: preferencia.init_point })
   } catch (erro) {
     return NextResponse.json(
       { erro: erro instanceof Error ? erro.message : "Erro ao processar pedido" },

@@ -56,9 +56,9 @@ export default function CheckoutPage() {
       return
     }
 
-    const { pedidoId } = await resposta.json()
+    const { checkoutUrl } = await resposta.json()
     limpar()
-    router.push(`/pedido/${pedidoId}`)
+    window.location.href = checkoutUrl
   }
 
   if (logado === false) {
@@ -139,7 +139,7 @@ export default function CheckoutPage() {
                 {enviando ? "Finalizando..." : "Confirmar pedido"}
               </Button>
               <p className="text-xs text-neutral-400">
-                Pagamento sera processado na proxima etapa (integracao com Mercado Pago em breve).
+                Voce sera redirecionado para o Mercado Pago para concluir o pagamento.
               </p>
             </form>
           </CardContent>
