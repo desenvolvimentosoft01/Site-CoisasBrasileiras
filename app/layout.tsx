@@ -14,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Coisas Brasileiras — Artesanato e produtos do Brasil",
-  description: "Produtos artesanais e itens tipicamente brasileiros, direto pra sua casa.",
+  title: "Coisas Brasileiras — Porcelanas, presentes e artigos religiosos",
+  description: "Porcelanas decorativas, presentes, artigos religiosos e perfumaria, direto pra sua casa.",
 };
 
 export default function RootLayout({

@@ -13,20 +13,20 @@ type Slide = {
 
 const slides: Slide[] = [
   {
-    titulo: "Artesanato genuinamente brasileiro",
-    subtitulo: "Peças feitas a mao por artesãos de todo o Brasil",
+    titulo: "Porcelanas e itens decorativos para sua casa",
+    subtitulo: "Bowls, aparelhos de jantar e travessas com o toque brasileiro",
     href: "/produtos",
     corDeFundo: "from-emerald-700 to-emerald-900",
   },
   {
-    titulo: "Novidades toda semana",
-    subtitulo: "Confira os lançamentos que acabaram de chegar",
+    titulo: "Imagens religiosas para sua fé",
+    subtitulo: "Nossa Senhora, Sagrada Família e Santos em porcelana",
     href: "/produtos",
     corDeFundo: "from-amber-700 to-amber-900",
   },
   {
-    titulo: "Frete para todo o Brasil",
-    subtitulo: "Leve um pedaço do Brasil pra sua casa",
+    titulo: "O presente perfeito para cada ocasião",
+    subtitulo: "Presentes e perfumaria com frete para todo o Brasil",
     href: "/produtos",
     corDeFundo: "from-emerald-800 to-teal-900",
   },
