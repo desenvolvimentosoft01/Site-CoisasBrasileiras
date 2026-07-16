@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, ShoppingCart, X } from "lucide-react"
+import { Menu, Search, ShoppingCart, X } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
 
 const linksNav = [
@@ -46,6 +46,13 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/produtos"
+            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
+            aria-label="Buscar produtos"
+          >
+            <Search size={22} />
+          </Link>
           <button
             className="relative rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
             aria-label="Carrinho"
