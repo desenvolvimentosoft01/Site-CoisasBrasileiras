@@ -18,7 +18,8 @@ export async function GET() {
 
   const produtos = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.estoque, p.ativo, p.criado_em,
+      p.id, p.nome, p.slug, p.sku, p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
+      p.ativo, p.criado_em,
       COALESCE(
         json_agg(DISTINCT c.nome) FILTER (WHERE c.id IS NOT NULL),
         '[]'
@@ -37,8 +38,21 @@ export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
-  const { nome, descricao, preco, precoPromocional, estoque, categoriaIds, imagensUrls } =
-    await request.json()
+  const {
+    nome,
+    descricao,
+    preco,
+    precoPromocional,
+    estoque,
+    estoqueMinimo,
+    sku,
+    pesoKg,
+    alturaCm,
+    larguraCm,
+    comprimentoCm,
+    categoriaIds,
+    imagensUrls,
+  } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
     return NextResponse.json({ erro: "Nome e preco sao obrigatorios" }, { status: 400 })
@@ -46,11 +60,32 @@ export async function POST(request: Request) {
 
   const slug = gerarSlug(nome)
 
+  if (sku) {
+    const existente = await query("SELECT id FROM TAB_PRODUTO WHERE sku = $1", [sku])
+    if (existente.length > 0) {
+      return NextResponse.json({ erro: "Ja existe um produto com esse SKU" }, { status: 409 })
+    }
+  }
+
   const [produto] = await query(
-    `INSERT INTO TAB_PRODUTO (nome, slug, descricao, preco, preco_promocional, estoque)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO TAB_PRODUTO
+       (nome, slug, descricao, preco, preco_promocional, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
      RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, criado_em`,
-    [nome.trim(), slug, descricao || null, preco, precoPromocional || null, estoque || 0]
+    [
+      nome.trim(),
+      slug,
+      descricao || null,
+      preco,
+      precoPromocional || null,
+      estoque || 0,
+      estoqueMinimo || 0,
+      sku || null,
+      pesoKg || null,
+      alturaCm || null,
+      larguraCm || null,
+      comprimentoCm || null,
+    ]
   )
 
   if (Array.isArray(categoriaIds) && categoriaIds.length > 0) {
