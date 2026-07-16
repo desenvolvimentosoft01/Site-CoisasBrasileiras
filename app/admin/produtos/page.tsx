@@ -105,12 +105,12 @@ export default function ProdutosPage() {
                       <td className="p-4 text-right">
                         <Button
                           variant="ghost"
-                          size="icon"
+                          size="icon-lg"
                           render={<Link href={`/admin/produtos/${produto.id}`} />}
                         >
                           <Pencil size={16} />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => excluir(produto)}>
+                        <Button variant="ghost" size="icon-lg" onClick={() => excluir(produto)}>
                           <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </td>

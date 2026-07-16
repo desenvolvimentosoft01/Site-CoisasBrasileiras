@@ -137,10 +137,10 @@ export default function CategoriasPage() {
                         </span>
                       </td>
                       <td className="p-4 text-right">
-                        <Button variant="ghost" size="icon" onClick={() => abrirEdicao(categoria)}>
+                        <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(categoria)}>
                           <Pencil size={16} />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => excluir(categoria)}>
+                        <Button variant="ghost" size="icon-lg" onClick={() => excluir(categoria)}>
                           <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </td>

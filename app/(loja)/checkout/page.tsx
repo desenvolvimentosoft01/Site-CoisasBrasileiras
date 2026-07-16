@@ -99,11 +99,21 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>CEP</Label>
-                  <Input value={cep} onChange={(e) => setCep(e.target.value)} required />
+                  <Input
+                    value={cep}
+                    onChange={(e) => setCep(e.target.value)}
+                    inputMode="numeric"
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Numero</Label>
-                  <Input value={numero} onChange={(e) => setNumero(e.target.value)} required />
+                  <Input
+                    value={numero}
+                    onChange={(e) => setNumero(e.target.value)}
+                    inputMode="numeric"
+                    required
+                  />
                 </div>
               </div>
 
