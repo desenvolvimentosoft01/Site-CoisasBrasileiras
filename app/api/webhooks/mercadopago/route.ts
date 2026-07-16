@@ -1,4 +1,4 @@
-import { query } from "@/lib/db"
+import { transacao } from "@/lib/db"
 import { paymentMP } from "@/lib/mercadopago"
 import { NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
@@ -57,10 +57,34 @@ export async function POST(request: Request) {
     const novoStatus = STATUS_MP_PARA_PEDIDO[pagamento.status ?? ""]
 
     if (pedidoId && novoStatus) {
-      await query("UPDATE TAB_PEDIDO SET status = $1, atualizado_em = NOW() WHERE id = $2", [
-        novoStatus,
-        pedidoId,
-      ])
+      await transacao(async (q) => {
+        // Trava a linha e confere o status atual antes de agir: o MP pode
+        // reenviar a mesma notificacao varias vezes, e sem essa checagem o
+        // estoque seria baixado de novo a cada reenvio.
+        const [pedidoAtual] = await q("SELECT status FROM TAB_PEDIDO WHERE id = $1 FOR UPDATE", [
+          pedidoId,
+        ])
+        if (!pedidoAtual || pedidoAtual.status === novoStatus) return
+
+        await q("UPDATE TAB_PEDIDO SET status = $1, atualizado_em = NOW() WHERE id = $2", [
+          novoStatus,
+          pedidoId,
+        ])
+
+        // So baixa estoque na primeira vez que o pedido e confirmado como pago.
+        if (novoStatus === "pago" && pedidoAtual.status !== "pago") {
+          const itens = await q(
+            "SELECT produto_id, quantidade FROM TAB_PEDIDO_ITEM WHERE pedido_id = $1",
+            [pedidoId]
+          )
+          for (const item of itens) {
+            await q("UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2", [
+              item.quantidade,
+              item.produto_id,
+            ])
+          }
+        }
+      })
     }
   } catch {
     // Se o pagamento nao for encontrado ou a API do MP falhar, apenas

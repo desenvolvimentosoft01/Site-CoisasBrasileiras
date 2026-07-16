@@ -78,10 +78,9 @@ export async function POST(request: Request) {
           precoUnitario,
         })
 
-        await q("UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2", [
-          item.quantidade,
-          produto.id,
-        ])
+        // O estoque so e baixado quando o pagamento e confirmado (webhook do
+        // Mercado Pago) - se o cliente abandonar o checkout sem pagar, o
+        // produto continua disponivel normalmente.
       }
 
       const [pedidoCriado] = await q(
