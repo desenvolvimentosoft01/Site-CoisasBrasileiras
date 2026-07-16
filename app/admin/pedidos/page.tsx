@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 
 type Pedido = {
@@ -58,17 +59,35 @@ export default function PedidosPage() {
                 </thead>
                 <tbody>
                   {pedidos.map((pedido) => (
-                    <tr key={pedido.id} className="border-b border-neutral-800 last:border-0">
-                      <td className="p-4">{pedido.cliente_nome}</td>
-                      <td className="p-4">{rotulosStatus[pedido.status] ?? pedido.status}</td>
-                      <td className="p-4">
-                        {Number(pedido.total).toLocaleString("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })}
+                    <tr
+                      key={pedido.id}
+                      className="cursor-pointer border-b border-neutral-800 last:border-0 hover:bg-neutral-900"
+                    >
+                      <td className="p-0">
+                        <Link href={`/admin/pedidos/${pedido.id}`} className="block p-4">
+                          {pedido.cliente_nome}
+                        </Link>
                       </td>
-                      <td className="p-4 text-neutral-400">
-                        {new Date(pedido.criado_em).toLocaleDateString("pt-BR")}
+                      <td className="p-0">
+                        <Link href={`/admin/pedidos/${pedido.id}`} className="block p-4">
+                          {rotulosStatus[pedido.status] ?? pedido.status}
+                        </Link>
+                      </td>
+                      <td className="p-0">
+                        <Link href={`/admin/pedidos/${pedido.id}`} className="block p-4">
+                          {Number(pedido.total).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })}
+                        </Link>
+                      </td>
+                      <td className="p-0">
+                        <Link
+                          href={`/admin/pedidos/${pedido.id}`}
+                          className="block p-4 text-neutral-400"
+                        >
+                          {new Date(pedido.criado_em).toLocaleDateString("pt-BR")}
+                        </Link>
                       </td>
                     </tr>
                   ))}

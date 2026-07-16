@@ -1,0 +1,151 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+type Pedido = {
+  id: string
+  status: string
+  total: string
+  forma_pagamento: string | null
+  nota_fiscal_url: string | null
+  criado_em: string
+  cliente_nome: string
+  cliente_email: string
+  cliente_telefone: string | null
+  cep: string
+  logradouro: string
+  numero: string
+  complemento: string | null
+  bairro: string
+  cidade: string
+  estado: string
+  itens: { quantidade: number; preco_unitario: string; produto_nome: string }[]
+}
+
+const opcoesStatus = [
+  { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento" },
+  { valor: "pago", rotulo: "Pago" },
+  { valor: "em_separacao", rotulo: "Em separacao" },
+  { valor: "enviado", rotulo: "Enviado" },
+  { valor: "entregue", rotulo: "Entregue" },
+  { valor: "cancelado", rotulo: "Cancelado" },
+]
+
+function formatarPreco(valor: string) {
+  return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+}
+
+export default function DetalhePedidoPage() {
+  const params = useParams<{ id: string }>()
+  const [pedido, setPedido] = useState<Pedido | null>(null)
+  const [salvandoStatus, setSalvandoStatus] = useState(false)
+
+  async function carregar() {
+    const resposta = await fetch(`/api/admin/pedidos/${params.id}`)
+    if (resposta.ok) setPedido(await resposta.json())
+  }
+
+  useEffect(() => {
+    carregar()
+  }, [params.id])
+
+  async function alterarStatus(novoStatus: string) {
+    if (!pedido) return
+    setSalvandoStatus(true)
+    await fetch(`/api/admin/pedidos/${pedido.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: novoStatus }),
+    })
+    setSalvandoStatus(false)
+    carregar()
+  }
+
+  if (!pedido) {
+    return <p className="text-sm text-neutral-400">Carregando...</p>
+  }
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Pedido</h1>
+        <p className="text-sm text-neutral-400">
+          Feito em {new Date(pedido.criado_em).toLocaleString("pt-BR")}
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm text-neutral-400">Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <select
+            value={pedido.status}
+            onChange={(e) => alterarStatus(e.target.value)}
+            disabled={salvandoStatus}
+            className="w-full max-w-xs rounded-md border border-neutral-700 bg-neutral-900 p-2 text-sm"
+          >
+            {opcoesStatus.map((opcao) => (
+              <option key={opcao.valor} value={opcao.valor}>
+                {opcao.rotulo}
+              </option>
+            ))}
+          </select>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-neutral-400">Cliente</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-sm">
+            <p>{pedido.cliente_nome}</p>
+            <p className="text-neutral-400">{pedido.cliente_email}</p>
+            {pedido.cliente_telefone && <p className="text-neutral-400">{pedido.cliente_telefone}</p>}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-neutral-400">Endereco de entrega</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-sm text-neutral-300">
+            <p>
+              {pedido.logradouro}, {pedido.numero}
+              {pedido.complemento ? ` - ${pedido.complemento}` : ""}
+            </p>
+            <p>{pedido.bairro}</p>
+            <p>
+              {pedido.cidade}/{pedido.estado} - {pedido.cep}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm text-neutral-400">Itens</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {pedido.itens.map((item, i) => (
+            <div key={i} className="flex justify-between text-sm">
+              <span>
+                {item.quantidade}x {item.produto_nome}
+              </span>
+              <span className="font-medium">
+                {formatarPreco(String(Number(item.preco_unitario) * item.quantidade))}
+              </span>
+            </div>
+          ))}
+          <div className="flex justify-between border-t border-neutral-800 pt-2 text-base font-semibold">
+            <span>Total</span>
+            <span>{formatarPreco(pedido.total)}</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
