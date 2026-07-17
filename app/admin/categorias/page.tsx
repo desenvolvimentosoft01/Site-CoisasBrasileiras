@@ -3,16 +3,11 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { Trash2, Pencil, Plus } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Trash2, Pencil, Plus, List } from "lucide-react"
 
 type Categoria = {
   id: string
@@ -25,7 +20,7 @@ type Categoria = {
 export default function CategoriasPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [carregando, setCarregando] = useState(true)
-  const [modalAberto, setModalAberto] = useState(false)
+  const [aba, setAba] = useState("lista")
   const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
   const [nome, setNome] = useState("")
   const [ativa, setAtiva] = useState(true)
@@ -49,7 +44,7 @@ export default function CategoriasPage() {
     setNome("")
     setAtiva(true)
     setErro("")
-    setModalAberto(true)
+    setAba("formulario")
   }
 
   function abrirEdicao(categoria: Categoria) {
@@ -57,7 +52,7 @@ export default function CategoriasPage() {
     setNome(categoria.nome)
     setAtiva(categoria.ativa)
     setErro("")
-    setModalAberto(true)
+    setAba("formulario")
   }
 
   async function salvar() {
@@ -83,7 +78,7 @@ export default function CategoriasPage() {
       return
     }
 
-    setModalAberto(false)
+    setAba("lista")
     carregar()
   }
 
@@ -95,96 +90,109 @@ export default function CategoriasPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Categorias</h1>
-        <Button onClick={abrirNova}>
-          <Plus size={16} className="mr-2" />
-          Nova categoria
-        </Button>
-      </div>
+      <h1 className="text-2xl font-semibold">Categorias</h1>
 
-      <Card>
-        <CardContent className="p-0">
-          {carregando ? (
-            <p className="p-6 text-sm text-neutral-400">Carregando...</p>
-          ) : categorias.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-400">Nenhuma categoria cadastrada ainda.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px] text-sm">
-                <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
-                    <th className="p-4 font-medium">Nome</th>
-                    <th className="p-4 font-medium">Slug</th>
-                    <th className="p-4 font-medium">Status</th>
-                    <th className="p-4 font-medium text-right">Acoes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categorias.map((categoria) => (
-                    <tr key={categoria.id} className="border-b border-neutral-800 last:border-0">
-                      <td className="p-4">{categoria.nome}</td>
-                      <td className="p-4 text-neutral-400">{categoria.slug}</td>
-                      <td className="p-4">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs ${
-                            categoria.ativa
-                              ? "bg-emerald-600/20 text-emerald-400"
-                              : "bg-neutral-700/40 text-neutral-400"
-                          }`}
-                        >
-                          {categoria.ativa ? "Ativa" : "Inativa"}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right">
-                        <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(categoria)}>
-                          <Pencil size={16} />
-                        </Button>
-                        <Button variant="ghost" size="icon-lg" onClick={() => excluir(categoria)}>
-                          <Trash2 size={16} className="text-red-500" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="lista">
+              <List size={14} className="mr-1.5" />
+              Lista
+            </TabsTrigger>
+            <TabsTrigger value="formulario">
+              <Plus size={14} className="mr-1.5" />
+              {categoriaEditando ? "Editar" : "Nova categoria"}
+            </TabsTrigger>
+          </TabsList>
+          {aba === "lista" && (
+            <Button onClick={abrirNova}>
+              <Plus size={16} className="mr-2" />
+              Nova categoria
+            </Button>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      <Dialog open={modalAberto} onOpenChange={setModalAberto}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{categoriaEditando ? "Editar categoria" : "Nova categoria"}</DialogTitle>
-          </DialogHeader>
+        <TabsContent value="lista" className="mt-4">
+          <Card>
+            <CardContent className="p-0">
+              {carregando ? (
+                <p className="p-6 text-sm text-neutral-400">Carregando...</p>
+              ) : categorias.length === 0 ? (
+                <p className="p-6 text-sm text-neutral-400">Nenhuma categoria cadastrada ainda.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[480px] text-sm">
+                    <thead>
+                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                        <th className="p-4 font-medium">Nome</th>
+                        <th className="p-4 font-medium">Slug</th>
+                        <th className="p-4 font-medium">Status</th>
+                        <th className="p-4 font-medium text-right">Acoes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categorias.map((categoria) => (
+                        <tr key={categoria.id} className="border-b border-neutral-800 last:border-0">
+                          <td className="p-4">{categoria.nome}</td>
+                          <td className="p-4 text-neutral-400">{categoria.slug}</td>
+                          <td className="p-4">
+                            <span
+                              className={`rounded-full px-2 py-1 text-xs ${
+                                categoria.ativa
+                                  ? "bg-emerald-600/20 text-emerald-400"
+                                  : "bg-neutral-700/40 text-neutral-400"
+                              }`}
+                            >
+                              {categoria.ativa ? "Ativa" : "Inativa"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(categoria)}>
+                              <Pencil size={16} />
+                            </Button>
+                            <Button variant="ghost" size="icon-lg" onClick={() => excluir(categoria)}>
+                              <Trash2 size={16} className="text-red-500" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nome</label>
-              <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
-            </div>
-
-            {categoriaEditando && (
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Ativa</label>
-                <Switch checked={ativa} onCheckedChange={setAtiva} />
+        <TabsContent value="formulario" className="mt-4">
+          <Card className="max-w-lg">
+            <CardContent className="space-y-4 pt-6">
+              <div className="space-y-2">
+                <Label>Nome</Label>
+                <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
               </div>
-            )}
 
-            {erro && <p className="text-sm text-red-500">{erro}</p>}
-          </div>
+              {categoriaEditando && (
+                <div className="flex items-center justify-between">
+                  <Label>Ativa</Label>
+                  <Switch checked={ativa} onCheckedChange={setAtiva} />
+                </div>
+              )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setModalAberto(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={salvar} disabled={salvando || !nome.trim()}>
-              {salvando ? "Salvando..." : "Salvar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {erro && <p className="text-sm text-red-500">{erro}</p>}
+
+              <div className="flex gap-3 pt-2">
+                <Button onClick={salvar} disabled={salvando || !nome.trim()}>
+                  {salvando ? "Salvando..." : "Salvar"}
+                </Button>
+                <Button variant="outline" onClick={() => setAba("lista")}>
+                  Cancelar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
