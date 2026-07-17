@@ -9,9 +9,11 @@ import { Plus, Pencil, Trash2 } from "lucide-react"
 type Produto = {
   id: string
   nome: string
+  sku: string | null
   preco: string
   preco_promocional: string | null
   estoque: number
+  estoque_minimo: number
   ativo: boolean
   categorias: string[]
 }
@@ -60,10 +62,11 @@ export default function ProdutosPage() {
             <p className="p-6 text-sm text-neutral-400">Nenhum produto cadastrado ainda.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-sm">
+              <table className="w-full min-w-[760px] text-sm">
                 <thead>
                   <tr className="border-b border-neutral-800 text-left text-neutral-400">
                     <th className="p-4 font-medium">Nome</th>
+                    <th className="p-4 font-medium">SKU</th>
                     <th className="p-4 font-medium">Categorias</th>
                     <th className="p-4 font-medium">Preco</th>
                     <th className="p-4 font-medium">Estoque</th>
@@ -75,6 +78,7 @@ export default function ProdutosPage() {
                   {produtos.map((produto) => (
                     <tr key={produto.id} className="border-b border-neutral-800 last:border-0">
                       <td className="p-4">{produto.nome}</td>
+                      <td className="p-4 text-neutral-400">{produto.sku || "-"}</td>
                       <td className="p-4 text-neutral-400">
                         {produto.categorias.length > 0 ? produto.categorias.join(", ") : "-"}
                       </td>
@@ -90,7 +94,11 @@ export default function ProdutosPage() {
                           formatarPreco(produto.preco)
                         )}
                       </td>
-                      <td className="p-4">{produto.estoque}</td>
+                      <td className="p-4">
+                        <span className={produto.estoque <= produto.estoque_minimo ? "text-amber-500" : ""}>
+                          {produto.estoque}
+                        </span>
+                      </td>
                       <td className="p-4">
                         <span
                           className={`rounded-full px-2 py-1 text-xs ${

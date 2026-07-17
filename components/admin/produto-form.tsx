@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent } from "@/components/ui/card"
 import { ImagePlus, X } from "lucide-react"
+import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 
 type Categoria = { id: string; nome: string }
 
@@ -19,7 +20,13 @@ type ProdutoExistente = {
   preco: string
   preco_promocional: string | null
   estoque: number
+  estoque_minimo: number
   ativo: boolean
+  sku: string | null
+  peso_kg: string | null
+  altura_cm: string | null
+  largura_cm: string | null
+  comprimento_cm: string | null
   categoriaIds: string[]
   imagens: { url: string }[]
 }
@@ -30,10 +37,20 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
 
   const [nome, setNome] = useState(produto?.nome ?? "")
   const [descricao, setDescricao] = useState(produto?.descricao ?? "")
-  const [preco, setPreco] = useState(produto?.preco ?? "")
-  const [precoPromocional, setPrecoPromocional] = useState(produto?.preco_promocional ?? "")
+  const [preco, setPreco] = useState(produto ? mascaraMoeda(String(Math.round(Number(produto.preco) * 100))) : "")
+  const [precoPromocional, setPrecoPromocional] = useState(
+    produto?.preco_promocional
+      ? mascaraMoeda(String(Math.round(Number(produto.preco_promocional) * 100)))
+      : ""
+  )
   const [estoque, setEstoque] = useState(String(produto?.estoque ?? 0))
+  const [estoqueMinimo, setEstoqueMinimo] = useState(String(produto?.estoque_minimo ?? 0))
   const [ativo, setAtivo] = useState(produto?.ativo ?? true)
+  const [sku, setSku] = useState(produto?.sku ?? "")
+  const [pesoKg, setPesoKg] = useState(produto?.peso_kg ?? "")
+  const [alturaCm, setAlturaCm] = useState(produto?.altura_cm ?? "")
+  const [larguraCm, setLarguraCm] = useState(produto?.largura_cm ?? "")
+  const [comprimentoCm, setComprimentoCm] = useState(produto?.comprimento_cm ?? "")
   const [categoriaIds, setCategoriaIds] = useState<string[]>(produto?.categoriaIds ?? [])
   const [imagensUrls, setImagensUrls] = useState<string[]>(
     produto?.imagens.map((i) => i.url) ?? []
@@ -99,10 +116,16 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
     const corpo = {
       nome,
       descricao: descricao || null,
-      preco: Number(preco),
-      precoPromocional: precoPromocional ? Number(precoPromocional) : null,
+      preco: valorMoedaParaNumero(preco),
+      precoPromocional: precoPromocional ? valorMoedaParaNumero(precoPromocional) : null,
       estoque: Number(estoque) || 0,
+      estoqueMinimo: Number(estoqueMinimo) || 0,
       ativo,
+      sku: sku || null,
+      pesoKg: pesoKg ? Number(pesoKg) : null,
+      alturaCm: alturaCm ? Number(alturaCm) : null,
+      larguraCm: larguraCm ? Number(larguraCm) : null,
+      comprimentoCm: comprimentoCm ? Number(comprimentoCm) : null,
       categoriaIds,
       imagensUrls,
     }
@@ -132,9 +155,19 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
     <div className="max-w-2xl space-y-6">
       <Card>
         <CardContent className="space-y-4 pt-6">
-          <div className="space-y-2">
-            <Label>Nome</Label>
-            <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Nome</Label>
+              <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>SKU / codigo interno</Label>
+              <Input
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
+                placeholder="Opcional"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -150,35 +183,87 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
             <div className="space-y-2">
               <Label>Preco (R$)</Label>
               <Input
-                type="number"
-                step="0.01"
+                inputMode="numeric"
                 value={preco}
-                onChange={(e) => setPreco(e.target.value)}
+                onChange={(e) => setPreco(mascaraMoeda(e.target.value))}
+                placeholder="0,00"
               />
             </div>
             <div className="space-y-2">
               <Label>Preco promocional (R$)</Label>
               <Input
-                type="number"
-                step="0.01"
+                inputMode="numeric"
                 value={precoPromocional}
-                onChange={(e) => setPrecoPromocional(e.target.value)}
+                onChange={(e) => setPrecoPromocional(mascaraMoeda(e.target.value))}
+                placeholder="0,00"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Estoque</Label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={estoque}
                 onChange={(e) => setEstoque(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Estoque minimo</Label>
+              <Input
+                type="number"
+                inputMode="numeric"
+                value={estoqueMinimo}
+                onChange={(e) => setEstoqueMinimo(e.target.value)}
               />
             </div>
             <div className="flex items-center justify-between pt-6">
               <Label>Ativo</Label>
               <Switch checked={ativo} onCheckedChange={setAtivo} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-neutral-400">Peso e dimensoes (para calculo de frete)</Label>
+            <div className="grid grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Peso (kg)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={pesoKg}
+                  onChange={(e) => setPesoKg(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Altura (cm)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={alturaCm}
+                  onChange={(e) => setAlturaCm(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Largura (cm)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={larguraCm}
+                  onChange={(e) => setLarguraCm(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Comprimento (cm)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={comprimentoCm}
+                  onChange={(e) => setComprimentoCm(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
