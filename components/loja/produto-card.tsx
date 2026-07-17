@@ -27,6 +27,7 @@ export function ProdutoCard({ produto }: { produto: Produto }) {
             src={produto.imagem_capa}
             alt={produto.nome}
             fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (

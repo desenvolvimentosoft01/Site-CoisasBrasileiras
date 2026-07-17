@@ -79,6 +79,7 @@ export function HeroCarousel({ banners }: { banners: BannerSlide[] }) {
                 src={slide.imagem_url}
                 alt=""
                 fill
+                sizes="100vw"
                 className="object-cover opacity-40"
                 priority
               />
