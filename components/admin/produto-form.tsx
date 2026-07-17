@@ -200,7 +200,7 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label>Estoque</Label>
               <Input
@@ -227,7 +227,7 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
 
           <div className="space-y-2">
             <Label className="text-neutral-400">Peso e dimensoes (para calculo de frete)</Label>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="space-y-2">
                 <Label className="text-xs">Peso (kg)</Label>
                 <Input
