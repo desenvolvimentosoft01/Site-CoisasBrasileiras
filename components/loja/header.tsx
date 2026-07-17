@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, Search, ShoppingCart, X } from "lucide-react"
+import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
 
 const linksNav = [
@@ -15,13 +15,17 @@ const linksNav = [
 export function Header() {
   const [menuAberto, setMenuAberto] = useState(false)
   const [montado, setMontado] = useState(false)
+  const [logado, setLogado] = useState(false)
   const itens = useCarrinho((s) => s.itens)
   const abrirCarrinho = useCarrinho((s) => s.abrir)
   const totalItens = itens.reduce((soma, i) => soma + i.quantidade, 0)
 
   // Evita mismatch de hidratacao: o total vindo do localStorage (persist do
   // zustand) so existe no client, entao so mostramos o contador apos montar.
-  useEffect(() => setMontado(true), [])
+  useEffect(() => {
+    setMontado(true)
+    fetch("/api/cliente/me").then((r) => setLogado(r.ok))
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-white/90 backdrop-blur">
@@ -52,6 +56,13 @@ export function Header() {
             aria-label="Buscar produtos"
           >
             <Search size={22} />
+          </Link>
+          <Link
+            href={logado ? "/minha-conta" : "/entrar"}
+            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
+            aria-label="Minha conta"
+          >
+            <User size={22} />
           </Link>
           <button
             className="relative rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
