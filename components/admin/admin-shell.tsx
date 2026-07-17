@@ -4,7 +4,17 @@ import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { LayoutDashboard, Package, Tag, ShoppingCart, Menu, LogOut, Settings, Image as ImageIcon } from "lucide-react"
+import {
+  LayoutDashboard,
+  Package,
+  Tag,
+  ShoppingCart,
+  Menu,
+  LogOut,
+  Settings,
+  Image as ImageIcon,
+  BarChart3,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { SessaoAdmin } from "@/lib/auth"
 
@@ -13,6 +23,7 @@ const itensMenu = [
   { href: "/admin/produtos", label: "Produtos", icone: Package },
   { href: "/admin/categorias", label: "Categorias", icone: Tag },
   { href: "/admin/pedidos", label: "Pedidos", icone: ShoppingCart },
+  { href: "/admin/relatorios", label: "Relatorios", icone: BarChart3 },
   { href: "/admin/banners", label: "Banners", icone: ImageIcon },
   { href: "/admin/configuracoes", label: "Configuracoes", icone: Settings },
 ]
