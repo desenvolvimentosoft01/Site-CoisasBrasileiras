@@ -14,6 +14,7 @@ import {
   Settings,
   Image as ImageIcon,
   BarChart3,
+  Percent,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { SessaoAdmin } from "@/lib/auth"
@@ -23,6 +24,7 @@ const itensMenu = [
   { href: "/admin/produtos", label: "Produtos", icone: Package },
   { href: "/admin/categorias", label: "Categorias", icone: Tag },
   { href: "/admin/pedidos", label: "Pedidos", icone: ShoppingCart },
+  { href: "/admin/cupons", label: "Cupons", icone: Percent },
   { href: "/admin/relatorios", label: "Relatorios", icone: BarChart3 },
   { href: "/admin/banners", label: "Banners", icone: ImageIcon },
   { href: "/admin/configuracoes", label: "Configuracoes", icone: Settings },

@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
   const cliente = sessaoOuErro
 
-  const { endereco, itens } = await request.json()
+  const { endereco, itens, cupomCodigo } = await request.json()
 
   if (!Array.isArray(itens) || itens.length === 0) {
     return NextResponse.json({ erro: "Carrinho vazio" }, { status: 400 })
@@ -87,13 +87,57 @@ export async function POST(request: Request) {
       // Frete calculado no servidor a partir das configuracoes da loja -
       // nunca confia num valor de frete vindo do client.
       const valorFrete = await calcularFrete(subtotal)
-      const total = subtotal + valorFrete
+
+      // Cupom revalidado e aplicado dentro da propria transacao, com
+      // FOR UPDATE na linha do cupom - evita que dois checkouts simultaneos
+      // estourem o uso_maximo (condicao de corrida classica).
+      let valorDesconto = 0
+      let cupomId: string | null = null
+
+      if (cupomCodigo) {
+        const [cupom] = await q(
+          "SELECT * FROM TAB_CUPOM WHERE codigo = $1 AND ativo = true FOR UPDATE",
+          [String(cupomCodigo).trim().toUpperCase()]
+        )
+
+        if (!cupom) {
+          throw new Error("Cupom nao encontrado")
+        }
+        if (cupom.validade && new Date(cupom.validade) < new Date()) {
+          throw new Error("Cupom expirado")
+        }
+        if (cupom.uso_maximo !== null && cupom.usos_atuais >= cupom.uso_maximo) {
+          throw new Error("Cupom esgotado")
+        }
+        if (subtotal < Number(cupom.valor_minimo)) {
+          throw new Error(`Cupom valido para compras a partir de R$ ${Number(cupom.valor_minimo).toFixed(2)}`)
+        }
+        if (cupom.primeira_compra_apenas) {
+          const [pedidoAnterior] = await q(
+            "SELECT id FROM TAB_PEDIDO WHERE cliente_id = $1 AND status = 'pago' LIMIT 1",
+            [cliente.id]
+          )
+          if (pedidoAnterior) {
+            throw new Error("Cupom valido apenas na primeira compra")
+          }
+        }
+
+        valorDesconto =
+          cupom.tipo === "percentual"
+            ? Math.round(((subtotal * Number(cupom.valor)) / 100) * 100) / 100
+            : Math.min(Number(cupom.valor), subtotal)
+        cupomId = cupom.id
+
+        await q("UPDATE TAB_CUPOM SET usos_atuais = usos_atuais + 1 WHERE id = $1", [cupom.id])
+      }
+
+      const total = subtotal + valorFrete - valorDesconto
 
       const [pedidoCriado] = await q(
-        `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, total, status)
-         VALUES ($1, $2, $3, $4, $5, 'aguardando_pagamento')
+        `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento')
          RETURNING id`,
-        [cliente.id, enderecoSalvo.id, subtotal, valorFrete, total]
+        [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total]
       )
 
       for (const item of itensParaInserir) {
@@ -103,7 +147,7 @@ export async function POST(request: Request) {
         )
       }
 
-      return { ...pedidoCriado, itensParaInserir, valorFrete }
+      return { ...pedidoCriado, itensParaInserir, valorFrete, valorDesconto }
     })
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
@@ -130,6 +174,19 @@ export async function POST(request: Request) {
                   title: "Frete",
                   quantity: 1,
                   unit_price: pedido.valorFrete,
+                  currency_id: "BRL" as const,
+                },
+              ]
+            : []),
+          // O Mercado Pago aceita item com preco negativo para representar
+          // desconto, desde que a soma final feche com o total do pedido.
+          ...(pedido.valorDesconto > 0
+            ? [
+                {
+                  id: "desconto",
+                  title: "Desconto (cupom)",
+                  quantity: 1,
+                  unit_price: -pedido.valorDesconto,
                   currency_id: "BRL" as const,
                 },
               ]
