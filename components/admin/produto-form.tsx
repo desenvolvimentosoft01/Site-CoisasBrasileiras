@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImagePlus, X } from "lucide-react"
 import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 
@@ -157,201 +157,224 @@ export function ProdutoForm({
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Nome</Label>
-              <Input value={nome} onChange={(e) => setNome(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>SKU / codigo interno</Label>
-              <Input
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
-                placeholder="Opcional"
-              />
-            </div>
-          </div>
+    <div className="w-full space-y-6">
+      {/* Barra de acoes fixa no topo, estilo tela de cadastro de ERP */}
+      <div className="sticky top-[57px] z-10 -mx-4 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+        <span className="text-sm font-medium text-muted-foreground">
+          {produto ? `Editando: ${produto.nome}` : "Novo produto"}
+        </span>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onCancelar}>
+            Cancelar
+          </Button>
+          <Button onClick={salvar} disabled={salvando}>
+            {salvando ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </div>
 
-          <div className="space-y-2">
-            <Label>Descricao</Label>
-            <textarea
-              className="min-h-24 w-full rounded-md border border-neutral-700 bg-transparent p-3 text-sm"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-            />
-          </div>
+      {erro && <p className="text-sm text-red-500">{erro}</p>}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Preco (R$)</Label>
-              <Input
-                inputMode="numeric"
-                value={preco}
-                onChange={(e) => setPreco(mascaraMoeda(e.target.value))}
-                placeholder="0,00"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Preco promocional (R$)</Label>
-              <Input
-                inputMode="numeric"
-                value={precoPromocional}
-                onChange={(e) => setPrecoPromocional(mascaraMoeda(e.target.value))}
-                placeholder="0,00"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label>Estoque</Label>
-              <Input
-                type="number"
-                inputMode="numeric"
-                value={estoque}
-                onChange={(e) => setEstoque(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Estoque minimo</Label>
-              <Input
-                type="number"
-                inputMode="numeric"
-                value={estoqueMinimo}
-                onChange={(e) => setEstoqueMinimo(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-between pt-6">
-              <Label>Ativo</Label>
-              <Switch checked={ativo} onCheckedChange={setAtivo} />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-neutral-400">Peso e dimensoes (para calculo de frete)</Label>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Peso (kg)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={pesoKg}
-                  onChange={(e) => setPesoKg(e.target.value)}
-                />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground">Dados do produto</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Nome</Label>
+                <Input value={nome} onChange={(e) => setNome(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Altura (cm)</Label>
+                <Label>SKU / codigo interno</Label>
                 <Input
-                  type="number"
-                  step="0.1"
-                  value={alturaCm}
-                  onChange={(e) => setAlturaCm(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Largura (cm)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={larguraCm}
-                  onChange={(e) => setLarguraCm(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Comprimento (cm)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={comprimentoCm}
-                  onChange={(e) => setComprimentoCm(e.target.value)}
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  placeholder="Opcional"
                 />
               </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label>Categorias</Label>
-            <div className="flex flex-wrap gap-2">
-              {categoriasDisponiveis.map((categoria) => (
-                <button
-                  key={categoria.id}
-                  type="button"
-                  onClick={() => alternarCategoria(categoria.id)}
-                  className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                    categoriaIds.includes(categoria.id)
-                      ? "border-emerald-500 bg-emerald-600/20 text-emerald-400"
-                      : "border-neutral-700 text-neutral-400"
-                  }`}
-                >
-                  {categoria.nome}
-                </button>
-              ))}
-              {categoriasDisponiveis.length === 0 && (
-                <p className="text-sm text-neutral-500">
-                  Nenhuma categoria cadastrada ainda.
-                </p>
-              )}
+            <div className="space-y-2">
+              <Label>Descricao</Label>
+              <textarea
+                className="min-h-24 w-full rounded-md border border-input bg-transparent p-3 text-sm"
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+              />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label>Imagens</Label>
+            <div className="grid gap-4 sm:grid-cols-4">
+              <div className="space-y-2">
+                <Label>Preco (R$)</Label>
+                <Input
+                  inputMode="numeric"
+                  value={preco}
+                  onChange={(e) => setPreco(mascaraMoeda(e.target.value))}
+                  placeholder="0,00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Preco promocional (R$)</Label>
+                <Input
+                  inputMode="numeric"
+                  value={precoPromocional}
+                  onChange={(e) => setPrecoPromocional(mascaraMoeda(e.target.value))}
+                  placeholder="0,00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Estoque</Label>
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  value={estoque}
+                  onChange={(e) => setEstoque(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Estoque minimo</Label>
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  value={estoqueMinimo}
+                  onChange={(e) => setEstoqueMinimo(e.target.value)}
+                />
+              </div>
+            </div>
 
-            <div className="flex flex-wrap gap-3">
-              {imagensUrls.map((url) => (
-                <div
-                  key={url}
-                  className="group relative h-24 w-24 overflow-hidden rounded-md border border-neutral-700"
-                >
-                  <Image src={url} alt="" fill className="object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removerImagem(url)}
-                    className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    aria-label="Remover imagem"
-                  >
-                    <X size={14} />
-                  </button>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">
+                Peso e dimensoes (para calculo de frete)
+              </Label>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Peso (kg)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={pesoKg}
+                    onChange={(e) => setPesoKg(e.target.value)}
+                  />
                 </div>
-              ))}
-
-              <button
-                type="button"
-                onClick={() => inputArquivoRef.current?.click()}
-                disabled={enviandoImagem}
-                className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-neutral-600 text-neutral-400 hover:border-emerald-500 hover:text-emerald-400"
-              >
-                <ImagePlus size={20} />
-                <span className="text-xs">{enviandoImagem ? "Enviando..." : "Adicionar"}</span>
-              </button>
+                <div className="space-y-2">
+                  <Label className="text-xs">Altura (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={alturaCm}
+                    onChange={(e) => setAlturaCm(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Largura (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={larguraCm}
+                    onChange={(e) => setLarguraCm(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Comprimento (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={comprimentoCm}
+                    onChange={(e) => setComprimentoCm(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* capture="environment" abre a camera direto no celular; em desktop so abre o seletor de arquivo normal */}
-            <input
-              ref={inputArquivoRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              multiple
-              className="hidden"
-              onChange={selecionarImagens}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label>Categorias</Label>
+              <div className="flex flex-wrap gap-2">
+                {categoriasDisponiveis.map((categoria) => (
+                  <button
+                    key={categoria.id}
+                    type="button"
+                    onClick={() => alternarCategoria(categoria.id)}
+                    className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+                      categoriaIds.includes(categoria.id)
+                        ? "border-primary bg-primary/15 text-primary"
+                        : "border-input text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    {categoria.nome}
+                  </button>
+                ))}
+                {categoriasDisponiveis.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma categoria cadastrada ainda.
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {erro && <p className="text-sm text-red-500">{erro}</p>}
-        </CardContent>
-      </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground">Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <Label>Produto ativo no site</Label>
+                <Switch checked={ativo} onCheckedChange={setAtivo} />
+              </div>
+            </CardContent>
+          </Card>
 
-      <div className="flex gap-3">
-        <Button onClick={salvar} disabled={salvando}>
-          {salvando ? "Salvando..." : "Salvar"}
-        </Button>
-        <Button variant="outline" onClick={onCancelar}>
-          Cancelar
-        </Button>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground">Imagens</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                {imagensUrls.map((url) => (
+                  <div
+                    key={url}
+                    className="group relative h-24 w-24 overflow-hidden rounded-md border border-input"
+                  >
+                    <Image src={url} alt="" fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removerImagem(url)}
+                      className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      aria-label="Remover imagem"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => inputArquivoRef.current?.click()}
+                  disabled={enviandoImagem}
+                  className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground hover:border-primary hover:text-primary"
+                >
+                  <ImagePlus size={20} />
+                  <span className="text-xs">{enviandoImagem ? "Enviando..." : "Adicionar"}</span>
+                </button>
+              </div>
+
+              {/* capture="environment" abre a camera direto no celular; em desktop so abre o seletor de arquivo normal */}
+              <input
+                ref={inputArquivoRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                multiple
+                className="hidden"
+                onChange={selecionarImagens}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

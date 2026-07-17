@@ -97,11 +97,11 @@ export default function CategoriasPage() {
           <TabsList>
             <TabsTrigger value="lista">
               <List size={14} className="mr-1.5" />
-              Lista
+              Grade
             </TabsTrigger>
             <TabsTrigger value="formulario">
               <Plus size={14} className="mr-1.5" />
-              {categoriaEditando ? "Editar" : "Nova categoria"}
+              Cadastro
             </TabsTrigger>
           </TabsList>
           {aba === "lista" && (
@@ -164,9 +164,23 @@ export default function CategoriasPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="formulario" className="mt-4">
-          <Card className="max-w-lg">
-            <CardContent className="space-y-4 pt-6">
+        <TabsContent value="formulario" className="mt-4 space-y-4">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              {categoriaEditando ? `Editando: ${categoriaEditando.nome}` : "Nova categoria"}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setAba("lista")}>
+                Cancelar
+              </Button>
+              <Button onClick={salvar} disabled={salvando || !nome.trim()}>
+                {salvando ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </div>
+
+          <Card>
+            <CardContent className="max-w-lg space-y-4 pt-6">
               <div className="space-y-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
@@ -180,15 +194,6 @@ export default function CategoriasPage() {
               )}
 
               {erro && <p className="text-sm text-red-500">{erro}</p>}
-
-              <div className="flex gap-3 pt-2">
-                <Button onClick={salvar} disabled={salvando || !nome.trim()}>
-                  {salvando ? "Salvando..." : "Salvar"}
-                </Button>
-                <Button variant="outline" onClick={() => setAba("lista")}>
-                  Cancelar
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

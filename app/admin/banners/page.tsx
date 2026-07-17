@@ -151,11 +151,11 @@ export default function BannersPage() {
           <TabsList>
             <TabsTrigger value="lista">
               <List size={14} className="mr-1.5" />
-              Lista
+              Grade
             </TabsTrigger>
             <TabsTrigger value="formulario">
               <Plus size={14} className="mr-1.5" />
-              {editando ? "Editar" : "Novo banner"}
+              Cadastro
             </TabsTrigger>
           </TabsList>
           {aba === "lista" && (
@@ -212,7 +212,21 @@ export default function BannersPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="formulario" className="mt-4">
+        <TabsContent value="formulario" className="mt-4 space-y-4">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              {editando ? `Editando: ${editando.titulo}` : "Novo banner"}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setAba("lista")}>
+                Cancelar
+              </Button>
+              <Button onClick={salvar} disabled={salvando || !titulo.trim()}>
+                {salvando ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </div>
+
           <Card className="max-w-lg">
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
@@ -294,15 +308,6 @@ export default function BannersPage() {
               </div>
 
               {erro && <p className="text-sm text-red-500">{erro}</p>}
-
-              <div className="flex gap-3 pt-2">
-                <Button onClick={salvar} disabled={salvando || !titulo.trim()}>
-                  {salvando ? "Salvando..." : "Salvar"}
-                </Button>
-                <Button variant="outline" onClick={() => setAba("lista")}>
-                  Cancelar
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

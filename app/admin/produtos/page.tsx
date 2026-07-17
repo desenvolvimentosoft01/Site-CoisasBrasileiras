@@ -99,11 +99,11 @@ export default function ProdutosPage() {
           <TabsList>
             <TabsTrigger value="lista">
               <List size={14} className="mr-1.5" />
-              Lista
+              Grade
             </TabsTrigger>
             <TabsTrigger value="formulario">
               <Plus size={14} className="mr-1.5" />
-              {editando ? "Editar" : "Novo produto"}
+              Cadastro
             </TabsTrigger>
           </TabsList>
           {aba === "lista" && (
