@@ -10,15 +10,19 @@ export type ItemCarrinho = {
   quantidade: number
 }
 
+export type CupomAplicado = { codigo: string; desconto: number }
+
 type CarrinhoState = {
   itens: ItemCarrinho[]
   aberto: boolean
+  cupom: CupomAplicado | null
   adicionar: (item: Omit<ItemCarrinho, "quantidade">, quantidade?: number) => void
   remover: (produtoId: string) => void
   alterarQuantidade: (produtoId: string, quantidade: number) => void
   limpar: () => void
   abrir: () => void
   fechar: () => void
+  setCupom: (cupom: CupomAplicado | null) => void
 }
 
 export const useCarrinho = create<CarrinhoState>()(
@@ -26,6 +30,7 @@ export const useCarrinho = create<CarrinhoState>()(
     (set) => ({
       itens: [],
       aberto: false,
+      cupom: null,
 
       adicionar: (item, quantidade = 1) =>
         set((state) => {
@@ -59,9 +64,10 @@ export const useCarrinho = create<CarrinhoState>()(
                 ),
         })),
 
-      limpar: () => set({ itens: [] }),
+      limpar: () => set({ itens: [], cupom: null }),
       abrir: () => set({ aberto: true }),
       fechar: () => set({ aberto: false }),
+      setCupom: (cupom) => set({ cupom }),
     }),
     { name: "coisas-brasileiras-carrinho" }
   )

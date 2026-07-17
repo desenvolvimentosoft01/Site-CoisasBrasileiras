@@ -24,7 +24,6 @@ export function Header({
   const [montado, setMontado] = useState(false)
   const [logado, setLogado] = useState(false)
   const itens = useCarrinho((s) => s.itens)
-  const abrirCarrinho = useCarrinho((s) => s.abrir)
   const totalItens = itens.reduce((soma, i) => soma + i.quantidade, 0)
 
   // Evita mismatch de hidratacao: o total vindo do localStorage (persist do
@@ -71,10 +70,10 @@ export function Header({
           >
             <User size={22} />
           </Link>
-          <button
+          <Link
+            href="/carrinho"
             className="relative rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
             aria-label="Carrinho"
-            onClick={abrirCarrinho}
           >
             <ShoppingCart size={22} />
             {montado && totalItens > 0 && (
@@ -82,7 +81,7 @@ export function Header({
                 {totalItens}
               </span>
             )}
-          </button>
+          </Link>
           <button
             className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 md:hidden"
             onClick={() => setMenuAberto((v) => !v)}

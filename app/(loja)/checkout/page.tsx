@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCarrinho, totalCarrinho } from "@/lib/carrinho-store"
 import { mascaraCEP } from "@/lib/mascaras"
-import { Loader2, Tag, X } from "lucide-react"
+import { AplicarCupom } from "@/components/loja/aplicar-cupom"
+import { Loader2 } from "lucide-react"
 
 function formatarPreco(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -17,7 +18,7 @@ function formatarPreco(valor: number) {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { itens, limpar } = useCarrinho()
+  const { itens, limpar, cupom } = useCarrinho()
   const [logado, setLogado] = useState<boolean | null>(null)
 
   const [cep, setCep] = useState("")
@@ -32,10 +33,6 @@ export default function CheckoutPage() {
   const [enviando, setEnviando] = useState(false)
   const [valorFrete, setValorFrete] = useState(0)
   const [freteGratisAcimaDe, setFreteGratisAcimaDe] = useState(0)
-  const [codigoCupom, setCodigoCupom] = useState("")
-  const [cupomAplicado, setCupomAplicado] = useState<{ codigo: string; desconto: number } | null>(null)
-  const [validandoCupom, setValidandoCupom] = useState(false)
-  const [erroCupom, setErroCupom] = useState("")
 
   useEffect(() => {
     fetch("/api/cliente/me").then((r) => setLogado(r.ok))
@@ -77,37 +74,8 @@ export default function CheckoutPage() {
     }
   }
 
-  const desconto = cupomAplicado?.desconto ?? 0
+  const desconto = cupom?.desconto ?? 0
   const total = subtotal + valorFrete - desconto
-
-  async function aplicarCupom() {
-    if (!codigoCupom.trim()) return
-    setErroCupom("")
-    setValidandoCupom(true)
-
-    const resposta = await fetch("/api/cupom/validar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigo: codigoCupom, subtotal }),
-    })
-
-    setValidandoCupom(false)
-
-    if (!resposta.ok) {
-      const dados = await resposta.json()
-      setErroCupom(dados.erro || "Cupom invalido")
-      return
-    }
-
-    const { desconto } = await resposta.json()
-    setCupomAplicado({ codigo: codigoCupom.trim().toUpperCase(), desconto })
-  }
-
-  function removerCupom() {
-    setCupomAplicado(null)
-    setCodigoCupom("")
-    setErroCupom("")
-  }
 
   async function finalizarPedido(evento: React.FormEvent) {
     evento.preventDefault()
@@ -120,7 +88,7 @@ export default function CheckoutPage() {
       body: JSON.stringify({
         endereco: { cep, logradouro, numero, complemento, bairro, cidade, estado },
         itens: itens.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
-        cupomCodigo: cupomAplicado?.codigo,
+        cupomCodigo: cupom?.codigo,
       }),
     })
 
@@ -265,49 +233,16 @@ export default function CheckoutPage() {
                   Frete gratis em compras acima de {formatarPreco(freteGratisAcimaDe)}
                 </p>
               )}
-              {cupomAplicado && (
-                <div className="flex justify-between text-sm text-emerald-600">
-                  <span>Desconto ({cupomAplicado.codigo})</span>
-                  <span>-{formatarPreco(cupomAplicado.desconto)}</span>
+              {cupom && (
+                <div className="flex justify-between text-sm text-primary">
+                  <span>Desconto ({cupom.codigo})</span>
+                  <span>-{formatarPreco(cupom.desconto)}</span>
                 </div>
               )}
             </div>
 
             <div className="border-t border-black/5 pt-3">
-              {cupomAplicado ? (
-                <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm">
-                  <span className="flex items-center gap-2 text-emerald-700">
-                    <Tag size={14} />
-                    {cupomAplicado.codigo}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={removerCupom}
-                    className="text-neutral-400 hover:text-red-500"
-                    aria-label="Remover cupom"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Input
-                    value={codigoCupom}
-                    onChange={(e) => setCodigoCupom(e.target.value.toUpperCase())}
-                    placeholder="Cupom de desconto"
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={aplicarCupom}
-                    disabled={validandoCupom || !codigoCupom.trim()}
-                  >
-                    {validandoCupom ? "..." : "Aplicar"}
-                  </Button>
-                </div>
-              )}
-              {erroCupom && <p className="mt-1 text-xs text-red-500">{erroCupom}</p>}
+              <AplicarCupom subtotal={subtotal} />
             </div>
 
             <div className="flex justify-between border-t border-black/5 pt-3 text-base font-semibold">

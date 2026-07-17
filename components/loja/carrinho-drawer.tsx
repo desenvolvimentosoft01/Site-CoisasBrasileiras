@@ -98,9 +98,9 @@ export function CarrinhoDrawer() {
                 className="w-full"
                 size="lg"
                 nativeButton={false}
-                render={<Link href="/checkout" onClick={fechar} />}
+                render={<Link href="/carrinho" onClick={fechar} />}
               >
-                Finalizar compra
+                Ver carrinho
               </Button>
             </div>
           </div>
