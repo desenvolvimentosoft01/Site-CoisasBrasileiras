@@ -129,7 +129,19 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const { id } = await params
 
-  await query("DELETE FROM TAB_PRODUTO WHERE id = $1", [id])
+  try {
+    await query("DELETE FROM TAB_PRODUTO WHERE id = $1", [id])
+  } catch (erro) {
+    // 23503 = violacao de chave estrangeira (produto ja tem pedidos vinculados) -
+    // nao deixa vazar o erro bruto do banco pro client.
+    if (erro instanceof Error && "code" in erro && erro.code === "23503") {
+      return NextResponse.json(
+        { erro: "Este produto ja tem pedidos vinculados e nao pode ser excluido. Desative-o em vez disso." },
+        { status: 409 }
+      )
+    }
+    throw erro
+  }
 
   return NextResponse.json({ sucesso: true })
 }

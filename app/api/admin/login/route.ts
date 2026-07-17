@@ -1,5 +1,6 @@
 import { query } from "@/lib/db"
 import { criarTokenSessao } from "@/lib/auth"
+import { limiteExcedido, limparTentativas } from "@/lib/rate-limit"
 import bcrypt from "bcryptjs"
 import { NextResponse } from "next/server"
 
@@ -8,6 +9,14 @@ export async function POST(request: Request) {
 
   if (!email || !senha) {
     return NextResponse.json({ erro: "Informe email e senha" }, { status: 400 })
+  }
+
+  const chaveLimite = `admin:${email}`
+  if (limiteExcedido(chaveLimite)) {
+    return NextResponse.json(
+      { erro: "Muitas tentativas. Aguarde alguns minutos e tente novamente." },
+      { status: 429 }
+    )
   }
 
   const usuarios = await query(
@@ -25,6 +34,8 @@ export async function POST(request: Request) {
   if (!senhaCorreta) {
     return NextResponse.json({ erro: "Email ou senha invalidos" }, { status: 401 })
   }
+
+  limparTentativas(chaveLimite)
 
   const token = await criarTokenSessao({
     id: usuario.id,
