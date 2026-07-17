@@ -1,0 +1,305 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Trash2, Pencil, Plus, ImagePlus } from "lucide-react"
+
+type Banner = {
+  id: string
+  titulo: string
+  subtitulo: string | null
+  link: string | null
+  imagem_url: string | null
+  cor_fundo: string
+  ordem: number
+  ativo: boolean
+}
+
+const CORES = [
+  { valor: "from-emerald-700 to-emerald-900", rotulo: "Verde" },
+  { valor: "from-amber-700 to-amber-900", rotulo: "Ambar" },
+  { valor: "from-emerald-800 to-teal-900", rotulo: "Verde-azulado" },
+  { valor: "from-rose-700 to-rose-900", rotulo: "Rosa" },
+  { valor: "from-neutral-700 to-neutral-900", rotulo: "Cinza" },
+]
+
+export default function BannersPage() {
+  const [banners, setBanners] = useState<Banner[]>([])
+  const [carregando, setCarregando] = useState(true)
+  const [modalAberto, setModalAberto] = useState(false)
+  const [editando, setEditando] = useState<Banner | null>(null)
+
+  const [titulo, setTitulo] = useState("")
+  const [subtitulo, setSubtitulo] = useState("")
+  const [link, setLink] = useState("")
+  const [imagemUrl, setImagemUrl] = useState("")
+  const [corFundo, setCorFundo] = useState(CORES[0].valor)
+  const [ordem, setOrdem] = useState("0")
+  const [ativo, setAtivo] = useState(true)
+  const [enviandoImagem, setEnviandoImagem] = useState(false)
+  const [erro, setErro] = useState("")
+  const [salvando, setSalvando] = useState(false)
+  const inputArquivoRef = useRef<HTMLInputElement>(null)
+
+  async function carregar() {
+    setCarregando(true)
+    const resposta = await fetch("/api/admin/banners")
+    setBanners(await resposta.json())
+    setCarregando(false)
+  }
+
+  useEffect(() => {
+    carregar()
+  }, [])
+
+  function abrirNovo() {
+    setEditando(null)
+    setTitulo("")
+    setSubtitulo("")
+    setLink("")
+    setImagemUrl("")
+    setCorFundo(CORES[0].valor)
+    setOrdem(String(banners.length))
+    setAtivo(true)
+    setErro("")
+    setModalAberto(true)
+  }
+
+  function abrirEdicao(banner: Banner) {
+    setEditando(banner)
+    setTitulo(banner.titulo)
+    setSubtitulo(banner.subtitulo ?? "")
+    setLink(banner.link ?? "")
+    setImagemUrl(banner.imagem_url ?? "")
+    setCorFundo(banner.cor_fundo)
+    setOrdem(String(banner.ordem))
+    setAtivo(banner.ativo)
+    setErro("")
+    setModalAberto(true)
+  }
+
+  async function selecionarImagem(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    if (!arquivo) return
+
+    setEnviandoImagem(true)
+    const formData = new FormData()
+    formData.append("arquivo", arquivo)
+
+    const resposta = await fetch("/api/admin/upload", { method: "POST", body: formData })
+    if (resposta.ok) {
+      const { url } = await resposta.json()
+      setImagemUrl(url)
+    }
+    setEnviandoImagem(false)
+    if (inputArquivoRef.current) inputArquivoRef.current.value = ""
+  }
+
+  async function salvar() {
+    setErro("")
+    setSalvando(true)
+
+    const corpo = {
+      titulo,
+      subtitulo: subtitulo || null,
+      link: link || null,
+      imagemUrl: imagemUrl || null,
+      corFundo,
+      ordem: Number(ordem) || 0,
+      ativo,
+    }
+
+    const url = editando ? `/api/admin/banners/${editando.id}` : "/api/admin/banners"
+    const method = editando ? "PUT" : "POST"
+
+    const resposta = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
+    })
+
+    setSalvando(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErro(dados.erro || "Erro ao salvar")
+      return
+    }
+
+    setModalAberto(false)
+    carregar()
+  }
+
+  async function excluir(banner: Banner) {
+    if (!confirm(`Excluir o banner "${banner.titulo}"?`)) return
+    await fetch(`/api/admin/banners/${banner.id}`, { method: "DELETE" })
+    carregar()
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Banners</h1>
+        <Button onClick={abrirNovo}>
+          <Plus size={16} className="mr-2" />
+          Novo banner
+        </Button>
+      </div>
+
+      {carregando ? (
+        <p className="text-sm text-neutral-400">Carregando...</p>
+      ) : banners.length === 0 ? (
+        <p className="text-sm text-neutral-400">
+          Nenhum banner cadastrado - a home esta usando os slides padrao.
+        </p>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {banners.map((banner) => (
+            <Card key={banner.id}>
+              <CardContent className="space-y-3 pt-6">
+                <div
+                  className={`relative flex h-28 items-center justify-center rounded-md bg-gradient-to-br px-4 text-center text-sm font-medium text-white ${banner.cor_fundo}`}
+                >
+                  {banner.imagem_url && (
+                    <Image src={banner.imagem_url} alt="" fill className="rounded-md object-cover opacity-40" />
+                  )}
+                  <span className="relative">{banner.titulo}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs ${
+                      banner.ativo
+                        ? "bg-emerald-600/20 text-emerald-400"
+                        : "bg-neutral-700/40 text-neutral-400"
+                    }`}
+                  >
+                    {banner.ativo ? "Ativo" : "Inativo"}
+                  </span>
+                  <div>
+                    <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(banner)}>
+                      <Pencil size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon-lg" onClick={() => excluir(banner)}>
+                      <Trash2 size={16} className="text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <Dialog open={modalAberto} onOpenChange={setModalAberto}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editando ? "Editar banner" : "Novo banner"}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Titulo</Label>
+              <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} autoFocus />
+            </div>
+            <div className="space-y-2">
+              <Label>Subtitulo</Label>
+              <Input value={subtitulo} onChange={(e) => setSubtitulo(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Link (opcional)</Label>
+              <Input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="/produtos?categoria=religiosos"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Cor de fundo</Label>
+              <div className="flex flex-wrap gap-2">
+                {CORES.map((cor) => (
+                  <button
+                    key={cor.valor}
+                    type="button"
+                    onClick={() => setCorFundo(cor.valor)}
+                    className={`h-8 w-8 rounded-full bg-gradient-to-br ${cor.valor} ${
+                      corFundo === cor.valor ? "ring-2 ring-emerald-400 ring-offset-2 ring-offset-neutral-900" : ""
+                    }`}
+                    aria-label={cor.rotulo}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Imagem de fundo (opcional)</Label>
+              {imagemUrl ? (
+                <div className="relative h-24 w-full overflow-hidden rounded-md">
+                  <Image src={imagemUrl} alt="" fill className="object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImagemUrl("")}
+                    className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => inputArquivoRef.current?.click()}
+                  disabled={enviandoImagem}
+                  className="flex h-24 w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-neutral-600 text-neutral-400 hover:border-emerald-500 hover:text-emerald-400"
+                >
+                  <ImagePlus size={20} />
+                  <span className="text-xs">{enviandoImagem ? "Enviando..." : "Adicionar imagem"}</span>
+                </button>
+              )}
+              <input
+                ref={inputArquivoRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={selecionarImagem}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Ordem</Label>
+                <Input type="number" value={ordem} onChange={(e) => setOrdem(e.target.value)} />
+              </div>
+              <div className="flex items-center justify-between pt-6">
+                <Label>Ativo</Label>
+                <Switch checked={ativo} onCheckedChange={setAtivo} />
+              </div>
+            </div>
+
+            {erro && <p className="text-sm text-red-500">{erro}</p>}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setModalAberto(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={salvar} disabled={salvando || !titulo.trim()}>
+              {salvando ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

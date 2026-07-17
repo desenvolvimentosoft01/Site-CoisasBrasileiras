@@ -4,6 +4,10 @@ import { CategoriaGrid } from "@/components/loja/categoria-grid"
 import { ProdutoCard } from "@/components/loja/produto-card"
 
 export default async function HomePage() {
+  const banners = await query(
+    "SELECT id, titulo, subtitulo, link, imagem_url, cor_fundo FROM TAB_BANNER WHERE ativo = true ORDER BY ordem"
+  )
+
   const categorias = await query(
     "SELECT id, nome, slug FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"
   )
@@ -20,7 +24,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <HeroCarousel />
+      <HeroCarousel banners={banners} />
 
       <CategoriaGrid categorias={categorias} />
 
