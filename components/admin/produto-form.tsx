@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,8 +30,15 @@ type ProdutoExistente = {
   imagens: { url: string }[]
 }
 
-export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
-  const router = useRouter()
+export function ProdutoForm({
+  produto,
+  onSalvo,
+  onCancelar,
+}: {
+  produto?: ProdutoExistente
+  onSalvo: () => void
+  onCancelar: () => void
+}) {
   const [categoriasDisponiveis, setCategoriasDisponiveis] = useState<Categoria[]>([])
 
   const [nome, setNome] = useState(produto?.nome ?? "")
@@ -147,8 +153,7 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
       return
     }
 
-    router.push("/admin/produtos")
-    router.refresh()
+    onSalvo()
   }
 
   return (
@@ -344,7 +349,7 @@ export function ProdutoForm({ produto }: { produto?: ProdutoExistente }) {
         <Button onClick={salvar} disabled={salvando}>
           {salvando ? "Salvando..." : "Salvar"}
         </Button>
-        <Button variant="outline" onClick={() => router.push("/admin/produtos")}>
+        <Button variant="outline" onClick={onCancelar}>
           Cancelar
         </Button>
       </div>
