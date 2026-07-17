@@ -46,12 +46,12 @@ export function ProdutoCard({ produto }: { produto: Produto }) {
               <span className="text-sm text-neutral-400 line-through">
                 {formatarPreco(produto.preco)}
               </span>
-              <span className="font-semibold text-emerald-700">
+              <span className="font-semibold text-primary">
                 {formatarPreco(produto.preco_promocional)}
               </span>
             </div>
           ) : (
-            <span className="font-semibold text-emerald-700">
+            <span className="font-semibold text-primary">
               {formatarPreco(produto.preco)}
             </span>
           )}

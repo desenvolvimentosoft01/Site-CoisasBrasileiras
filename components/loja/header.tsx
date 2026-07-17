@@ -12,7 +12,7 @@ const linksNav = [
   { href: "/#destaques", label: "Destaques" },
 ]
 
-export function Header() {
+export function Header({ nomeLoja = "Coisas Brasileiras" }: { nomeLoja?: string }) {
   const [menuAberto, setMenuAberto] = useState(false)
   const [montado, setMontado] = useState(false)
   const [logado, setLogado] = useState(false)
@@ -31,9 +31,9 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-black/5 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.webp" alt="Coisas Brasileiras" width={44} height={44} priority />
-          <span className="font-heading text-lg font-semibold text-emerald-900">
-            Coisas Brasileiras
+          <Image src="/logo.webp" alt={nomeLoja} width={44} height={44} priority />
+          <span className="font-heading text-lg font-semibold text-primary">
+            {nomeLoja}
           </span>
         </Link>
 
@@ -42,7 +42,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-neutral-700 transition-colors hover:text-emerald-700"
+              className="text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
             >
               {link.label}
             </Link>
@@ -52,26 +52,26 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Link
             href="/produtos"
-            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
+            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
             aria-label="Buscar produtos"
           >
             <Search size={22} />
           </Link>
           <Link
             href={logado ? "/minha-conta" : "/entrar"}
-            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
+            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
             aria-label="Minha conta"
           >
             <User size={22} />
           </Link>
           <button
-            className="relative rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700"
+            className="relative rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
             aria-label="Carrinho"
             onClick={abrirCarrinho}
           >
             <ShoppingCart size={22} />
             {montado && totalItens > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-semibold text-white">
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-white">
                 {totalItens}
               </span>
             )}

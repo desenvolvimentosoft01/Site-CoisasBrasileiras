@@ -28,7 +28,7 @@ export function ProdutoGaleria({ imagens, nome }: { imagens: string[]; nome: str
               key={url}
               onClick={() => setIndice(i)}
               className={`relative h-16 w-16 overflow-hidden rounded-md border-2 transition-colors ${
-                i === indice ? "border-emerald-600" : "border-transparent"
+                i === indice ? "border-primary" : "border-transparent"
               }`}
             >
               <Image src={url} alt="" fill className="object-cover" />

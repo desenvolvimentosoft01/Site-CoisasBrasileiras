@@ -18,7 +18,7 @@ export function CategoriaGrid({ categorias }: { categorias: Categoria[] }) {
             href={`/produtos?categoria=${categoria.slug}`}
             className="group flex flex-col items-center gap-3 rounded-xl border border-black/5 bg-emerald-50/60 p-6 text-center transition-colors hover:bg-emerald-100"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-700 text-white transition-transform group-hover:scale-105">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white transition-transform group-hover:scale-105">
               <Leaf size={22} />
             </div>
             <span className="text-sm font-medium text-emerald-900">{categoria.nome}</span>

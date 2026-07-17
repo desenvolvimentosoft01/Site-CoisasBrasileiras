@@ -4,19 +4,27 @@ import { Truck, CreditCard, MessageCircle, AtSign, Mail } from "lucide-react"
 import { getConfiguracoes } from "@/lib/configuracoes"
 
 export async function Footer() {
-  const config = await getConfiguracoes(["whatsapp", "instagram", "email_contato"])
+  const config = await getConfiguracoes([
+    "whatsapp",
+    "instagram",
+    "email_contato",
+    "nome_loja",
+    "texto_rodape",
+  ])
   const whatsappDigitos = config.whatsapp?.replace(/\D/g, "")
+  const nomeLoja = config.nome_loja || "Coisas Brasileiras"
 
   return (
     <footer className="mt-16 border-t border-black/5 bg-emerald-950 text-emerald-50">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3 md:px-6">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Image src="/logo.webp" alt="Coisas Brasileiras" width={36} height={36} />
-            <span className="font-heading text-lg font-semibold">Coisas Brasileiras</span>
+            <Image src="/logo.webp" alt={nomeLoja} width={36} height={36} />
+            <span className="font-heading text-lg font-semibold">{nomeLoja}</span>
           </div>
           <p className="text-sm text-emerald-200">
-            Porcelanas decorativas, presentes, artigos religiosos e perfumaria, direto pra sua casa.
+            {config.texto_rodape ||
+              "Porcelanas decorativas, presentes, artigos religiosos e perfumaria, direto pra sua casa."}
           </p>
         </div>
 
@@ -61,7 +69,7 @@ export async function Footer() {
         </div>
 
         <div className="text-sm text-emerald-300">
-          <p>&copy; {new Date().getFullYear()} Coisas Brasileiras. Todos os direitos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} {nomeLoja}. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
