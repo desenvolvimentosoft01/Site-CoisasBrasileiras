@@ -1,7 +1,7 @@
 import { query } from "@/lib/db"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { CheckCircle2 } from "lucide-react"
+import { CheckCircle2, Truck, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 function formatarPreco(valor: string) {
@@ -17,6 +17,10 @@ const rotulosStatus: Record<string, string> = {
   cancelado: "Cancelado",
 }
 
+// Etapas do rastreio visual - "aguardando_pagamento" e "cancelado" nao entram
+// na linha do tempo normal (o pedido so aparece aqui depois de confirmado).
+const etapasRastreio = ["pago", "em_separacao", "enviado", "entregue"]
+
 export default async function ConfirmacaoPedidoPage({
   params,
 }: {
@@ -25,10 +29,12 @@ export default async function ConfirmacaoPedidoPage({
   const { id } = await params
 
   const [pedido] = await query(
-    "SELECT id, status, total, criado_em FROM TAB_PEDIDO WHERE id = $1",
+    "SELECT id, status, total, criado_em, codigo_rastreio, transportadora FROM TAB_PEDIDO WHERE id = $1",
     [id]
   )
   if (!pedido) notFound()
+
+  const etapaAtual = etapasRastreio.indexOf(pedido.status)
 
   const itens = await query(
     `SELECT pi.quantidade, pi.preco_unitario, p.nome
@@ -47,6 +53,49 @@ export default async function ConfirmacaoPedidoPage({
       <p className="mb-8 text-neutral-500">
         Status: {rotulosStatus[pedido.status] ?? pedido.status}
       </p>
+
+      {etapaAtual >= 0 && (
+        <div className="mb-8">
+          <div className="flex items-center">
+            {etapasRastreio.map((etapa, i) => (
+              <div key={etapa} className="flex flex-1 items-center last:flex-none">
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                    i <= etapaAtual
+                      ? "bg-emerald-600 text-white"
+                      : "bg-neutral-200 text-neutral-400"
+                  }`}
+                >
+                  {i <= etapaAtual ? <Check size={14} /> : i + 1}
+                </div>
+                {i < etapasRastreio.length - 1 && (
+                  <div
+                    className={`h-0.5 flex-1 ${i < etapaAtual ? "bg-emerald-600" : "bg-neutral-200"}`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
+            <span>Pago</span>
+            <span>Separacao</span>
+            <span>Enviado</span>
+            <span>Entregue</span>
+          </div>
+        </div>
+      )}
+
+      {pedido.codigo_rastreio && (
+        <div className="mb-8 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left">
+          <Truck size={22} className="shrink-0 text-emerald-700" />
+          <div className="text-sm">
+            <div className="font-medium text-emerald-900">
+              {pedido.transportadora || "Rastreio"}: {pedido.codigo_rastreio}
+            </div>
+            <div className="text-emerald-700">Use o codigo acima no site da transportadora</div>
+          </div>
+        </div>
+      )}
 
       <div className="mb-8 space-y-2 rounded-xl border border-black/5 p-5 text-left">
         {itens.map((item, i) => (

@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Truck } from "lucide-react"
 
 type Pedido = {
   id: string
@@ -10,6 +14,8 @@ type Pedido = {
   total: string
   forma_pagamento: string | null
   nota_fiscal_url: string | null
+  codigo_rastreio: string | null
+  transportadora: string | null
   criado_em: string
   cliente_nome: string
   cliente_email: string
@@ -41,10 +47,19 @@ export default function DetalhePedidoPage() {
   const params = useParams<{ id: string }>()
   const [pedido, setPedido] = useState<Pedido | null>(null)
   const [salvandoStatus, setSalvandoStatus] = useState(false)
+  const [codigoRastreio, setCodigoRastreio] = useState("")
+  const [transportadora, setTransportadora] = useState("")
+  const [salvandoRastreio, setSalvandoRastreio] = useState(false)
+  const [rastreioSalvo, setRastreioSalvo] = useState(false)
 
   async function carregar() {
     const resposta = await fetch(`/api/admin/pedidos/${params.id}`)
-    if (resposta.ok) setPedido(await resposta.json())
+    if (resposta.ok) {
+      const dados: Pedido = await resposta.json()
+      setPedido(dados)
+      setCodigoRastreio(dados.codigo_rastreio ?? "")
+      setTransportadora(dados.transportadora ?? "")
+    }
   }
 
   useEffect(() => {
@@ -60,6 +75,20 @@ export default function DetalhePedidoPage() {
       body: JSON.stringify({ status: novoStatus }),
     })
     setSalvandoStatus(false)
+    carregar()
+  }
+
+  async function salvarRastreio() {
+    if (!pedido) return
+    setSalvandoRastreio(true)
+    await fetch(`/api/admin/pedidos/${pedido.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigoRastreio, transportadora }),
+    })
+    setSalvandoRastreio(false)
+    setRastreioSalvo(true)
+    setTimeout(() => setRastreioSalvo(false), 2000)
     carregar()
   }
 
@@ -93,6 +122,41 @@ export default function DetalhePedidoPage() {
               </option>
             ))}
           </select>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm text-neutral-400">
+            <Truck size={16} />
+            Rastreio
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Transportadora</Label>
+              <Input
+                value={transportadora}
+                onChange={(e) => setTransportadora(e.target.value)}
+                placeholder="Ex: Correios, Jadlog..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Codigo de rastreio</Label>
+              <Input
+                value={codigoRastreio}
+                onChange={(e) => setCodigoRastreio(e.target.value)}
+                placeholder="Ex: BR123456789BR"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button size="sm" onClick={salvarRastreio} disabled={salvandoRastreio}>
+              {salvandoRastreio ? "Salvando..." : "Salvar rastreio"}
+            </Button>
+            {rastreioSalvo && <span className="text-sm text-emerald-500">Salvo!</span>}
+          </div>
         </CardContent>
       </Card>
 

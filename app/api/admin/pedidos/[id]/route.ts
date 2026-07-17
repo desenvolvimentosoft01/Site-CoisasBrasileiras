@@ -21,6 +21,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     `
     SELECT
       p.id, p.status, p.total, p.forma_pagamento, p.nota_fiscal_url, p.criado_em,
+      p.codigo_rastreio, p.transportadora,
       c.nome AS cliente_nome, c.email AS cliente_email, c.telefone AS cliente_telefone,
       e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
     FROM TAB_PEDIDO p
@@ -51,15 +52,41 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const { id } = await params
-  const { status } = await request.json()
+  const { status, codigoRastreio, transportadora } = await request.json()
 
-  if (!STATUS_VALIDOS.includes(status)) {
+  if (status !== undefined && !STATUS_VALIDOS.includes(status)) {
     return NextResponse.json({ erro: "Status invalido" }, { status: 400 })
   }
 
+  // Monta o SET dinamicamente para permitir atualizar so o status, so o
+  // rastreio, ou os dois juntos, sem precisar de duas rotas separadas.
+  const campos: string[] = []
+  const valores: unknown[] = []
+
+  if (status !== undefined) {
+    valores.push(status)
+    campos.push(`status = $${valores.length}`)
+  }
+  if (codigoRastreio !== undefined) {
+    valores.push(codigoRastreio || null)
+    campos.push(`codigo_rastreio = $${valores.length}`)
+  }
+  if (transportadora !== undefined) {
+    valores.push(transportadora || null)
+    campos.push(`transportadora = $${valores.length}`)
+  }
+
+  if (campos.length === 0) {
+    return NextResponse.json({ erro: "Nenhum campo para atualizar" }, { status: 400 })
+  }
+
+  valores.push(id)
+
   const [pedido] = await query(
-    "UPDATE TAB_PEDIDO SET status = $1, atualizado_em = NOW() WHERE id = $2 RETURNING id, status",
-    [status, id]
+    `UPDATE TAB_PEDIDO SET ${campos.join(", ")}, atualizado_em = NOW()
+     WHERE id = $${valores.length}
+     RETURNING id, status, codigo_rastreio, transportadora`,
+    valores
   )
 
   if (!pedido) {
