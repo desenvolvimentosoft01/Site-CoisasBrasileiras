@@ -1,10 +1,16 @@
 import { Header } from "@/components/loja/header"
 import { Footer } from "@/components/loja/footer"
 import { CarrinhoDrawer } from "@/components/loja/carrinho-drawer"
+import { WhatsappFlutuante } from "@/components/loja/whatsapp-flutuante"
 import { getConfiguracoes } from "@/lib/configuracoes"
 
 export default async function LojaLayout({ children }: { children: React.ReactNode }) {
-  const config = await getConfiguracoes(["banner_texto_topo", "cor_primaria", "nome_loja"])
+  const config = await getConfiguracoes([
+    "banner_texto_topo",
+    "cor_primaria",
+    "nome_loja",
+    "whatsapp",
+  ])
 
   return (
     // Sobrescreve a cor primaria do tema (usada em botoes, links, badges) com
@@ -23,6 +29,7 @@ export default async function LojaLayout({ children }: { children: React.ReactNo
       <main className="flex-1">{children}</main>
       <Footer />
       <CarrinhoDrawer />
+      <WhatsappFlutuante whatsapp={config.whatsapp || null} />
     </div>
   )
 }

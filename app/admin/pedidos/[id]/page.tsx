@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Truck } from "lucide-react"
+import { Truck, MessageCircle } from "lucide-react"
 
 type Pedido = {
   id: string
@@ -41,6 +41,21 @@ const opcoesStatus = [
 
 function formatarPreco(valor: string) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+}
+
+const rotulosStatus: Record<string, string> = Object.fromEntries(
+  opcoesStatus.map((o) => [o.valor, o.rotulo])
+)
+
+function montarMensagemWhatsapp(pedido: Pedido): string {
+  const numeroPedido = pedido.id.slice(0, 8).toUpperCase()
+  let mensagem = `Ola ${pedido.cliente_nome}! Seu pedido #${numeroPedido} na Coisas Brasileiras esta com status: ${rotulosStatus[pedido.status] ?? pedido.status}.`
+
+  if (pedido.codigo_rastreio) {
+    mensagem += ` Codigo de rastreio: ${pedido.codigo_rastreio}${pedido.transportadora ? ` (${pedido.transportadora})` : ""}.`
+  }
+
+  return mensagem
 }
 
 export default function DetalhePedidoPage() {
@@ -165,10 +180,29 @@ export default function DetalhePedidoPage() {
           <CardHeader>
             <CardTitle className="text-sm text-neutral-400">Cliente</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1 text-sm">
-            <p>{pedido.cliente_nome}</p>
-            <p className="text-neutral-400">{pedido.cliente_email}</p>
-            {pedido.cliente_telefone && <p className="text-neutral-400">{pedido.cliente_telefone}</p>}
+          <CardContent className="space-y-3 text-sm">
+            <div className="space-y-1">
+              <p>{pedido.cliente_nome}</p>
+              <p className="text-neutral-400">{pedido.cliente_email}</p>
+              {pedido.cliente_telefone && <p className="text-neutral-400">{pedido.cliente_telefone}</p>}
+            </div>
+            {pedido.cliente_telefone && (
+              <Button
+                size="sm"
+                variant="outline"
+                nativeButton={false}
+                render={
+                  <a
+                    href={`https://wa.me/55${pedido.cliente_telefone.replace(/\D/g, "")}?text=${encodeURIComponent(montarMensagemWhatsapp(pedido))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
+              >
+                <MessageCircle size={14} className="mr-2 text-[#25D366]" />
+                Enviar status por WhatsApp
+              </Button>
+            )}
           </CardContent>
         </Card>
 
