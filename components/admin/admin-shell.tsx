@@ -17,6 +17,7 @@ import {
   Percent,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { TabBarAdmin } from "@/components/admin/tab-bar"
 import type { SessaoAdmin } from "@/lib/auth"
 
 const itensMenu = [
@@ -141,7 +142,9 @@ export function AdminShell({
           </Button>
         </header>
 
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <TabBarAdmin itensMenu={itensMenu} />
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
   )
