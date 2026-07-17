@@ -1,7 +1,10 @@
-import { transacao } from "@/lib/db"
+import { transacao, query } from "@/lib/db"
 import { paymentMP } from "@/lib/mercadopago"
+import { enviarEmail, templatePedidoPago, templateNovoPedidoAdmin } from "@/lib/email"
 import { NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
+
+const EMAIL_ADMIN = process.env.EMAIL_NOTIFICACOES_ADMIN || "email-removido@exemplo.com"
 
 const STATUS_MP_PARA_PEDIDO: Record<string, string> = {
   approved: "pago",
@@ -57,22 +60,24 @@ export async function POST(request: Request) {
     const novoStatus = STATUS_MP_PARA_PEDIDO[pagamento.status ?? ""]
 
     if (pedidoId && novoStatus) {
-      await transacao(async (q) => {
+      const transicionouParaPago = await transacao(async (q) => {
         // Trava a linha e confere o status atual antes de agir: o MP pode
         // reenviar a mesma notificacao varias vezes, e sem essa checagem o
         // estoque seria baixado de novo a cada reenvio.
         const [pedidoAtual] = await q("SELECT status FROM TAB_PEDIDO WHERE id = $1 FOR UPDATE", [
           pedidoId,
         ])
-        if (!pedidoAtual || pedidoAtual.status === novoStatus) return
+        if (!pedidoAtual || pedidoAtual.status === novoStatus) return false
 
         await q("UPDATE TAB_PEDIDO SET status = $1, atualizado_em = NOW() WHERE id = $2", [
           novoStatus,
           pedidoId,
         ])
 
+        const viroPago = novoStatus === "pago" && pedidoAtual.status !== "pago"
+
         // So baixa estoque na primeira vez que o pedido e confirmado como pago.
-        if (novoStatus === "pago" && pedidoAtual.status !== "pago") {
+        if (viroPago) {
           const itens = await q(
             "SELECT produto_id, quantidade FROM TAB_PEDIDO_ITEM WHERE pedido_id = $1",
             [pedidoId]
@@ -84,7 +89,52 @@ export async function POST(request: Request) {
             ])
           }
         }
+
+        return viroPago
       })
+
+      if (transicionouParaPago) {
+        const [pedido] = await query(
+          `SELECT p.total, c.nome AS cliente_nome, c.email AS cliente_email
+           FROM TAB_PEDIDO p JOIN TAB_CLIENTE c ON c.id = p.cliente_id
+           WHERE p.id = $1`,
+          [pedidoId]
+        )
+        const itens = await query(
+          `SELECT pi.quantidade, pi.preco_unitario, pr.nome
+           FROM TAB_PEDIDO_ITEM pi JOIN TAB_PRODUTO pr ON pr.id = pi.produto_id
+           WHERE pi.pedido_id = $1`,
+          [pedidoId]
+        )
+        const itensEmail = itens.map((i) => ({
+          nome: i.nome,
+          quantidade: i.quantidade,
+          precoUnitario: Number(i.preco_unitario),
+        }))
+
+        enviarEmail({
+          to: pedido.cliente_email,
+          subject: "Pagamento confirmado - Coisas Brasileiras",
+          html: templatePedidoPago({
+            nomeCliente: pedido.cliente_nome,
+            pedidoId,
+            itens: itensEmail,
+            total: Number(pedido.total),
+          }),
+        })
+
+        enviarEmail({
+          to: EMAIL_ADMIN,
+          subject: `Novo pedido pago - ${pedido.cliente_nome}`,
+          html: templateNovoPedidoAdmin({
+            nomeCliente: pedido.cliente_nome,
+            emailCliente: pedido.cliente_email,
+            pedidoId,
+            itens: itensEmail,
+            total: Number(pedido.total),
+          }),
+        })
+      }
     }
   } catch {
     // Se o pagamento nao for encontrado ou a API do MP falhar, apenas

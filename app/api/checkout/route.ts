@@ -2,6 +2,7 @@ import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
 import { preferenceMP } from "@/lib/mercadopago"
 import { calcularFrete } from "@/lib/configuracoes"
+import { enviarEmail, templatePedidoCriado } from "@/lib/email"
 import { NextResponse } from "next/server"
 
 type ItemRequisicao = { produtoId: string; quantidade: number }
@@ -147,7 +148,7 @@ export async function POST(request: Request) {
         )
       }
 
-      return { ...pedidoCriado, itensParaInserir, valorFrete, valorDesconto }
+      return { ...pedidoCriado, itensParaInserir, subtotal, valorFrete, valorDesconto }
     })
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
@@ -201,6 +202,19 @@ export async function POST(request: Request) {
         },
         ...(ehHttps ? { auto_return: "approved" as const } : {}),
       },
+    })
+
+    // Nao usa await de proposito - o email nao deve atrasar a resposta do
+    // checkout, e uma falha de envio ja e tratada (logada) dentro de enviarEmail.
+    enviarEmail({
+      to: cliente.email,
+      subject: "Recebemos seu pedido - Coisas Brasileiras",
+      html: templatePedidoCriado({
+        nomeCliente: cliente.nome,
+        pedidoId: pedido.id,
+        itens: pedido.itensParaInserir,
+        total: pedido.subtotal + pedido.valorFrete - pedido.valorDesconto,
+      }),
     })
 
     return NextResponse.json({ pedidoId: pedido.id, checkoutUrl: preferencia.init_point })
