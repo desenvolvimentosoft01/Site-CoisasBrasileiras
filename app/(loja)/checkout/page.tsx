@@ -30,10 +30,23 @@ export default function CheckoutPage() {
   const [buscandoCep, setBuscandoCep] = useState(false)
   const [erro, setErro] = useState("")
   const [enviando, setEnviando] = useState(false)
+  const [valorFrete, setValorFrete] = useState(0)
+  const [freteGratisAcimaDe, setFreteGratisAcimaDe] = useState(0)
 
   useEffect(() => {
     fetch("/api/cliente/me").then((r) => setLogado(r.ok))
   }, [])
+
+  const subtotal = totalCarrinho(itens)
+
+  useEffect(() => {
+    fetch(`/api/frete?subtotal=${subtotal}`)
+      .then((r) => r.json())
+      .then((dados) => {
+        setValorFrete(dados.valorFrete)
+        setFreteGratisAcimaDe(dados.freteGratisAcimaDe)
+      })
+  }, [subtotal])
 
   async function handleCepChange(valor: string) {
     const formatado = mascaraCEP(valor)
@@ -60,7 +73,7 @@ export default function CheckoutPage() {
     }
   }
 
-  const total = totalCarrinho(itens)
+  const total = subtotal + valorFrete
 
   async function finalizarPedido(evento: React.FormEvent) {
     evento.preventDefault()
@@ -203,6 +216,21 @@ export default function CheckoutPage() {
                 <span className="font-medium">{formatarPreco(item.preco * item.quantidade)}</span>
               </div>
             ))}
+            <div className="space-y-1 border-t border-black/5 pt-3">
+              <div className="flex justify-between text-sm text-neutral-600">
+                <span>Subtotal</span>
+                <span>{formatarPreco(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-neutral-600">
+                <span>Frete</span>
+                <span>{valorFrete === 0 ? "Gratis" : formatarPreco(valorFrete)}</span>
+              </div>
+              {freteGratisAcimaDe > 0 && valorFrete > 0 && (
+                <p className="text-xs text-emerald-600">
+                  Frete gratis em compras acima de {formatarPreco(freteGratisAcimaDe)}
+                </p>
+              )}
+            </div>
             <div className="flex justify-between border-t border-black/5 pt-3 text-base font-semibold">
               <span>Total</span>
               <span className="text-emerald-700">{formatarPreco(total)}</span>
