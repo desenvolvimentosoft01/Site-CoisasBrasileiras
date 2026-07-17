@@ -3,13 +3,12 @@ import { Footer } from "@/components/loja/footer"
 import { CarrinhoDrawer } from "@/components/loja/carrinho-drawer"
 import { WhatsappFlutuante } from "@/components/loja/whatsapp-flutuante"
 import { getConfiguracoes } from "@/lib/configuracoes"
+import { query } from "@/lib/db"
 
 export default async function LojaLayout({ children }: { children: React.ReactNode }) {
-  const config = await getConfiguracoes([
-    "banner_texto_topo",
-    "cor_primaria",
-    "nome_loja",
-    "whatsapp",
+  const [config, categorias] = await Promise.all([
+    getConfiguracoes(["banner_texto_topo", "cor_primaria", "nome_loja", "whatsapp"]),
+    query("SELECT id, nome, slug FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"),
   ])
 
   return (
@@ -25,7 +24,7 @@ export default async function LojaLayout({ children }: { children: React.ReactNo
           {config.banner_texto_topo}
         </div>
       )}
-      <Header nomeLoja={config.nome_loja || undefined} />
+      <Header nomeLoja={config.nome_loja || undefined} categorias={categorias} />
       <main className="flex-1">{children}</main>
       <Footer />
       <CarrinhoDrawer />

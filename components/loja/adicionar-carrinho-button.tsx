@@ -44,25 +44,25 @@ export function AdicionarCarrinhoButton({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2 rounded-lg border border-neutral-300 px-2 py-1">
+      <div className="flex items-center rounded-full border border-neutral-200 bg-white shadow-sm">
         <button
           onClick={() => setQuantidade((q) => Math.max(1, q - 1))}
-          className="p-1 text-neutral-600"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-primary"
           aria-label="Diminuir quantidade"
         >
           <Minus size={16} />
         </button>
-        <span className="w-6 text-center text-sm">{quantidade}</span>
+        <span className="w-8 text-center text-sm font-medium">{quantidade}</span>
         <button
           onClick={() => setQuantidade((q) => Math.min(estoque, q + 1))}
-          className="p-1 text-neutral-600"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-primary"
           aria-label="Aumentar quantidade"
         >
           <Plus size={16} />
         </button>
       </div>
 
-      <Button size="lg" onClick={handleAdicionar} className="flex-1 sm:flex-none">
+      <Button size="lg" onClick={handleAdicionar} className="flex-1 shadow-sm sm:flex-none">
         {adicionado ? (
           <>
             <Check size={18} className="mr-2" />

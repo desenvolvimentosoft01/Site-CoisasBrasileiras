@@ -6,13 +6,20 @@ import Image from "next/image"
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
 
-const linksNav = [
-  { href: "/produtos", label: "Todos os produtos" },
-  { href: "/#categorias", label: "Categorias" },
-  { href: "/#destaques", label: "Destaques" },
-]
+type Categoria = { id: string; nome: string; slug: string }
 
-export function Header({ nomeLoja = "Coisas Brasileiras" }: { nomeLoja?: string }) {
+export function Header({
+  nomeLoja = "Coisas Brasileiras",
+  categorias = [],
+}: {
+  nomeLoja?: string
+  categorias?: Categoria[]
+}) {
+  const linksNav = [
+    { href: "/produtos", label: "Todos os produtos" },
+    ...categorias.map((c) => ({ href: `/produtos?categoria=${c.slug}`, label: c.nome })),
+    { href: "/#destaques", label: "Destaques" },
+  ]
   const [menuAberto, setMenuAberto] = useState(false)
   const [montado, setMontado] = useState(false)
   const [logado, setLogado] = useState(false)

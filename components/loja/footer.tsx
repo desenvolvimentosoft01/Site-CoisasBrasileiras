@@ -72,6 +72,12 @@ export async function Footer() {
           <p>&copy; {new Date().getFullYear()} {nomeLoja}. Todos os direitos reservados.</p>
         </div>
       </div>
+
+      <div className="border-t border-white/10 px-4 py-3 text-center md:px-6">
+        <Link href="/admin/entrar" className="text-xs text-emerald-400/70 hover:text-emerald-300">
+          Área administrativa
+        </Link>
+      </div>
     </footer>
   )
 }
