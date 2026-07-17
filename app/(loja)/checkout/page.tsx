@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCarrinho, totalCarrinho } from "@/lib/carrinho-store"
+import { mascaraCEP } from "@/lib/mascaras"
+import { Loader2 } from "lucide-react"
 
 function formatarPreco(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -25,12 +27,38 @@ export default function CheckoutPage() {
   const [bairro, setBairro] = useState("")
   const [cidade, setCidade] = useState("")
   const [estado, setEstado] = useState("")
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const [erro, setErro] = useState("")
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
     fetch("/api/cliente/me").then((r) => setLogado(r.ok))
   }, [])
+
+  async function handleCepChange(valor: string) {
+    const formatado = mascaraCEP(valor)
+    setCep(formatado)
+
+    const digitos = formatado.replace(/\D/g, "")
+    if (digitos.length !== 8) return
+
+    setBuscandoCep(true)
+    try {
+      const resposta = await fetch(`https://brasilapi.com.br/api/cep/v1/${digitos}`)
+      if (resposta.ok) {
+        const dados = await resposta.json()
+        setLogradouro(dados.street || "")
+        setBairro(dados.neighborhood || "")
+        setCidade(dados.city || "")
+        setEstado(dados.state || "")
+      }
+    } catch {
+      // Se a busca falhar, o usuario preenche o endereco manualmente -
+      // nao bloqueia o checkout por causa disso.
+    } finally {
+      setBuscandoCep(false)
+    }
+  }
 
   const total = totalCarrinho(itens)
 
@@ -99,12 +127,21 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>CEP</Label>
-                  <Input
-                    value={cep}
-                    onChange={(e) => setCep(e.target.value)}
-                    inputMode="numeric"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      value={cep}
+                      onChange={(e) => handleCepChange(e.target.value)}
+                      inputMode="numeric"
+                      maxLength={9}
+                      required
+                    />
+                    {buscandoCep && (
+                      <Loader2
+                        size={16}
+                        className="absolute top-1/2 right-3 -translate-y-1/2 animate-spin text-neutral-400"
+                      />
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Numero</Label>
