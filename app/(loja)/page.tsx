@@ -22,11 +22,39 @@ export default async function HomePage() {
     LIMIT 8
   `)
 
+  // Mais vendidos: soma a quantidade vendida em pedidos ja pagos, por produto.
+  const maisVendidos = await query(`
+    SELECT
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional,
+      (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa,
+      SUM(pi.quantidade) AS total_vendido
+    FROM TAB_PEDIDO_ITEM pi
+    JOIN TAB_PEDIDO ped ON ped.id = pi.pedido_id
+    JOIN TAB_PRODUTO p ON p.id = pi.produto_id
+    WHERE ped.status = 'pago' AND p.ativo = true
+    GROUP BY p.id
+    ORDER BY total_vendido DESC
+    LIMIT 8
+  `)
+
   return (
     <div>
       <HeroCarousel banners={banners} />
 
       <CategoriaGrid categorias={categorias} />
+
+      {maisVendidos.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-12 md:px-6">
+          <h2 className="font-heading mb-6 text-2xl font-semibold text-emerald-950">
+            Mais vendidos
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {maisVendidos.map((produto) => (
+              <ProdutoCard key={produto.id} produto={produto} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section id="destaques" className="mx-auto max-w-6xl px-4 py-12 md:px-6">
         <h2 className="font-heading mb-6 text-2xl font-semibold text-emerald-950">
