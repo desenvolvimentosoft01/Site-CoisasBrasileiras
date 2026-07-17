@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { mascaraTelefone } from "@/lib/mascaras"
 
 export default function CadastroPage() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function CadastroPage() {
     const resposta = await fetch("/api/cliente/cadastro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, email, telefone, senha }),
+      body: JSON.stringify({ nome, email, telefone: telefone.replace(/\D/g, ""), senha }),
     })
 
     setCarregando(false)
@@ -61,7 +62,12 @@ export default function CadastroPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="telefone">Telefone</Label>
-              <Input id="telefone" type="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+              <Input
+                id="telefone"
+                inputMode="tel"
+                value={telefone}
+                onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="senha">Senha</Label>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
+import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone } from "@/lib/mascaras"
 
 export default function ConfiguracoesPage() {
   const [carregando, setCarregando] = useState(true)
@@ -23,7 +23,7 @@ export default function ConfiguracoesPage() {
     fetch("/api/admin/configuracoes")
       .then((r) => r.json())
       .then((dados) => {
-        setWhatsapp(dados.whatsapp || "")
+        setWhatsapp(dados.whatsapp ? mascaraTelefone(dados.whatsapp) : "")
         setInstagram(dados.instagram || "")
         setEmailContato(dados.email_contato || "")
         setFreteValorBase(dados.frete_valor_base ? mascaraMoeda(String(Math.round(Number(dados.frete_valor_base) * 100))) : "")
@@ -42,7 +42,7 @@ export default function ConfiguracoesPage() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        whatsapp,
+        whatsapp: whatsapp.replace(/\D/g, ""),
         instagram,
         email_contato: emailContato,
         frete_valor_base: String(valorMoedaParaNumero(freteValorBase)),
@@ -74,7 +74,8 @@ export default function ConfiguracoesPage() {
               <Label>WhatsApp</Label>
               <Input
                 value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
+                onChange={(e) => setWhatsapp(mascaraTelefone(e.target.value))}
+                inputMode="tel"
                 placeholder="(00) 00000-0000"
               />
             </div>
