@@ -136,3 +136,42 @@ export function templateNovoPedidoAdmin(params: {
     <p style="margin:20px 0 0;font-size:12px;color:#999;">Pedido #${params.pedidoId}</p>
   `)
 }
+
+const ROTULOS_STATUS: Record<string, string> = {
+  aguardando_pagamento: "Aguardando pagamento",
+  pago: "Pagamento confirmado",
+  em_separacao: "Em separação",
+  enviado: "Enviado",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+}
+
+// Notifica o cliente sempre que o admin muda o status do pedido manualmente
+// (em_separacao, enviado, entregue, cancelado) - o "pago" tem template
+// proprio (templatePedidoPago), disparado pelo webhook do Mercado Pago.
+export function templateStatusAtualizado(params: {
+  nomeCliente: string
+  pedidoId: string
+  status: string
+  codigoRastreio: string | null
+  transportadora: string | null
+}): string {
+  const rotulo = ROTULOS_STATUS[params.status] ?? params.status
+  const numeroPedido = params.pedidoId.slice(0, 8).toUpperCase()
+
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Atualizacao do seu pedido</h1>
+    <p style="margin:0 0 8px;font-size:14px;color:#555;">
+      Ola ${escapeHtml(params.nomeCliente)}, o pedido #${numeroPedido} agora esta:
+    </p>
+    <p style="margin:0 0 20px;font-size:18px;font-weight:700;color:#065f46;">${escapeHtml(rotulo)}</p>
+    ${
+      params.codigoRastreio
+        ? `<p style="margin:0;font-size:14px;color:#555;">
+            Codigo de rastreio: <strong>${escapeHtml(params.codigoRastreio)}</strong>
+            ${params.transportadora ? ` (${escapeHtml(params.transportadora)})` : ""}
+          </p>`
+        : ""
+    }
+  `)
+}

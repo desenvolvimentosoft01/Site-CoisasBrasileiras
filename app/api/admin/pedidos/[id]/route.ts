@@ -1,5 +1,6 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { enviarEmail, templateStatusAtualizado } from "@/lib/email"
 import { NextResponse } from "next/server"
 
 const STATUS_VALIDOS = [
@@ -91,6 +92,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   if (!pedido) {
     return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
+  }
+
+  // Notifica o cliente por email sempre que o status muda manualmente pelo
+  // admin - "pago" ja tem seu proprio email disparado pelo webhook do MP.
+  if (status !== undefined && status !== "pago") {
+    const [cliente] = await query(
+      `SELECT c.nome, c.email FROM TAB_PEDIDO p JOIN TAB_CLIENTE c ON c.id = p.cliente_id WHERE p.id = $1`,
+      [id]
+    )
+    if (cliente) {
+      enviarEmail({
+        to: cliente.email,
+        subject: "Atualizacao do seu pedido - Coisas Brasileiras",
+        html: templateStatusAtualizado({
+          nomeCliente: cliente.nome,
+          pedidoId: pedido.id,
+          status: pedido.status,
+          codigoRastreio: pedido.codigo_rastreio,
+          transportadora: pedido.transportadora,
+        }),
+      })
+    }
   }
 
   return NextResponse.json(pedido)
