@@ -1,0 +1,55 @@
+# Backup do banco via GitHub Actions.
+#
+# IMPORTANTE - LER ANTES DE ATIVAR:
+# Este workflow so funciona se o banco estiver acessivel pela internet (ex:
+# Postgres gerenciado na nuvem - Neon, Supabase, etc). No plano de hospedagem
+# atual (Hostinger VPS com Postgres LOCAL no proprio servidor), o GitHub
+# Actions roda na nuvem da Microsoft e NAO consegue alcancar o banco da VPS -
+# nesse caso o backup certo e o script local scripts/backup-local.sh, rodado
+# via cron dentro da propria VPS.
+#
+# Deixado propositalmente DESLIGADO (sem gatilho agendado). Para ativar quando
+# o projeto virar um cliente com banco na nuvem:
+#   1. Descomente o bloco "schedule" abaixo.
+#   2. Cadastre o secret DATABASE_URL_BACKUP em Settings > Secrets and variables
+#      > Actions do repositorio (a string de conexao do banco na nuvem).
+# Enquanto isso, so roda se disparado manualmente na aba Actions (workflow_dispatch).
+
+name: Backup do banco
+
+on:
+  # schedule:
+  #   - cron: '0 6 * * *'   # todo dia as 03:00 (horario de Brasilia = 06:00 UTC)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gera o dump do banco
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_BACKUP }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Secret DATABASE_URL_BACKUP nao configurado - nada a fazer." >&2
+            exit 1
+          fi
+          DATA=$(date +%Y-%m-%d_%H-%M)
+          docker run --rm -e PGDUMP_URL="$DATABASE_URL" -v "$PWD":/backup postgres:17 \
+            bash -c 'pg_dump "$PGDUMP_URL" --format=custom --no-owner --no-privileges --file=/backup/backup.dump'
+          mv backup.dump "backup_${DATA}.dump"
+          echo "ARQUIVO=backup_${DATA}.dump" >> "$GITHUB_ENV"
+          echo "DATA=${DATA}" >> "$GITHUB_ENV"
+
+      - name: Publica o backup como GitHub Release (sobrescrevendo o anterior)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: backup-latest
+          name: Backup mais recente (${{ env.DATA }})
+          body: Backup automatico do banco de dados. Gerado em ${{ env.DATA }}.
+          files: ${{ env.ARQUIVO }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

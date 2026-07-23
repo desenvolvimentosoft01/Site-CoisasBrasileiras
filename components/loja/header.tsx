@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
+import { LayoutDashboard, Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
 
 type Categoria = { id: string; nome: string; slug: string }
@@ -57,6 +57,14 @@ export function Header({
 
         <div className="flex items-center gap-2">
           <Link
+            href="/admin/entrar"
+            className="hidden rounded-full p-2 text-neutral-400 hover:bg-emerald-50 hover:text-primary md:block"
+            aria-label="Área administrativa"
+            title="Área administrativa"
+          >
+            <LayoutDashboard size={20} />
+          </Link>
+          <Link
             href="/produtos"
             className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
             aria-label="Buscar produtos"
@@ -104,6 +112,13 @@ export function Header({
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/admin/entrar"
+            onClick={() => setMenuAberto(false)}
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-400 hover:bg-emerald-50"
+          >
+            Área administrativa
+          </Link>
         </nav>
       )}
     </header>

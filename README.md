@@ -6,10 +6,14 @@ E-commerce de porcelanas decorativas, presentes, artigos religiosos e perfumaria
 
 - **Next.js 16** (App Router) + React 19 + TypeScript
 - **Tailwind CSS 4** + shadcn/ui (`@base-ui/react`)
-- **PostgreSQL** local, acessado com SQL puro via `pg` (sem ORM) — ver `lib/db.ts`
-- **Mercado Pago** (Checkout Pro) para pagamento
+- **PostgreSQL**, acessado com SQL puro via `pg` (sem ORM) — ver `lib/db.ts`
+- **Mercado Pago** (Checkout Pro) e **PagBank** (checkout hospedado) para pagamento
+- **Bling** para emissão manual de NF-e a partir do pedido (`lib/bling.ts`)
 - **Nodemailer** (Gmail) para notificações por e-mail
 - **BrasilAPI** para autopreenchimento de endereço por CEP
+- **Cloudinary** (opcional) para upload de imagem — se não configurado, cai pro
+  disco local (`public/uploads/`), o que é suficiente em VPS com disco
+  persistente (ver seção Deploy)
 
 ## Rodando localmente
 
@@ -83,4 +87,18 @@ migrations/       scripts SQL numerados, aplicados manualmente
 
 ## Deploy
 
-O upload de imagens de produto (`app/api/admin/upload`) hoje salva em disco local (`public/uploads/`), o que **não funciona em produção na Vercel** (ambiente serverless, sem disco persistente). Antes do deploy final, é necessário migrar esse armazenamento para um serviço externo (Cloudinary, S3, etc.).
+Plano de hospedagem: **VPS na Hostinger**, com PostgreSQL rodando no mesmo
+servidor (self-hosted) e o Next.js como processo contínuo (`npm run build` +
+`npm run start`), não serverless.
+
+Isso significa que o disco é persistente de verdade — o upload de imagem de
+produto em `public/uploads/` (comportamento padrão, sem configuração extra)
+funciona sem custo adicional. O Cloudinary (`lib/cloudinary.ts`) existe só
+como opção **desligada por padrão** — só ativa se algum dia quiser CDN/
+otimização automática de imagem; não é necessário nesse plano de hospedagem.
+
+Se um dia o site for pra um ambiente serverless (Vercel, por exemplo), aí sim
+o Cloudinary passa a ser obrigatório (defina `CLOUDINARY_CLOUD_NAME`,
+`CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) e o banco precisa ser um
+Postgres gerenciado na nuvem (Neon, Supabase etc.), já que a VPS não seria
+mais o servidor.

@@ -224,6 +224,62 @@ e `lib/auth-servidor.ts`).
 - Código novo comentado em português, sem nunca expor segredo/senha em
   comentário ou log.
 
+### Fase 10 — Redesign do admin no estilo InMenteGestao [concluída]
+- `components/admin/admin-shell.tsx` reescrito: sidebar cinza-escuro (`bg-slate-900`,
+  largura 56) com grupos colapsáveis, acento âmbar (`amber-500`) no item ativo,
+  topo com breadcrumb, barra de abas MDI (`bg-slate-800`) — mesma cara do
+  InMenteGestao. **Tema sempre claro fixo** (decisão igual à deles: não seguir o
+  tema escuro do Windows do operador).
+- Corrigido o bug de layout que bagunçava a tela ao rolar: o shell agora é
+  `h-screen overflow-hidden` com o `<main>` em `min-h-0 overflow-y-auto` — só o
+  conteúdo rola, a sidebar fica fixa (antes era `min-h-screen`, que deixava a
+  página inteira crescer e a sidebar "acabar" no meio da rolagem).
+- Botão "Área administrativa" movido do rodapé para o topo do site (ícone no
+  header, em `components/loja/header.tsx`; removido de `components/loja/footer.tsx`).
+- Performance: todas as telas do admin que antes eram client-only com
+  "Carregando..." (Produtos, Categorias, Cupons, Banners, Clientes, Usuários,
+  Auditoria, Financeiro/Contas, Frete-faixas, Venda Balcão, Pedidos, Relatórios,
+  Configurações) foram convertidas para **Server Component** que busca os dados
+  no servidor e passa prontos para um componente `*-conteudo.tsx` de
+  interatividade. Fim do flash de "Carregando..." a cada navegação.
+
+## Backup do banco de dados
+
+Dois mecanismos, **ambos prontos e desligados** — só ativar quando o projeto
+virar um cliente em produção. Qual usar depende de onde o banco fica:
+
+- **Banco LOCAL na VPS (cenário atual planejado — Hostinger):** usar
+  `scripts/backup-local.sh`. Roda dentro da própria VPS via `cron` (o GitHub
+  Actions, que roda na nuvem, não alcança um Postgres local). **Para ativar:**
+  na VPS, `chmod +x scripts/backup-local.sh`, depois `crontab -e` e adicionar a
+  linha comentada no topo do script (backup diário às 03:00). Mantém os últimos
+  14 backups automaticamente.
+- **Banco na NUVEM (só se um dia migrar pra Neon/Supabase):** usar
+  `.github/workflows/backup-db.yml`. **Para ativar:** descomentar as **linhas
+  25-26** do arquivo (o bloco `schedule:` / `- cron: '0 6 * * *'`) e cadastrar o
+  secret `DATABASE_URL_BACKUP` no GitHub. Enquanto desligado, ainda dá pra rodar
+  manualmente pela aba Actions (botão "Run workflow").
+
+## Hospedagem (Hostinger) — o que já sabemos e o que falta
+
+Verificado nos cabeçalhos HTTP de `https://inmentegestao.com.br` (site do
+InMenteGestao já hospedado pelo cliente): `platform: hostinger`, `panel: hpanel`,
+`X-Powered-By: Next.js`, `x-nextjs-cache: HIT`, `x-nextjs-prerender: 1`.
+**Conclusão: a Hostinger do cliente roda Next.js de verdade** (SSR + cache),
+então site + admin do Coisas Brasileiras funcionarão nessa hospedagem.
+
+**Ponto em aberto (decidido resolver na hora do deploy):** o InMenteGestao usa
+banco na **nuvem** (Supabase), não Postgres local. Ou seja, está confirmado que
+a Hostinger roda o app, mas **não** está confirmado que ela roda um Postgres
+local no mesmo plano. Duas saídas quando for publicar:
+- **Recomendado:** usar Postgres gerenciado na nuvem (Neon/Supabase) — mesma
+  arquitetura que o InMenteGestao já usa, funciona garantido com a Hostinger, e
+  o backup via `.github/workflows/backup-db.yml` passa a valer. Só trocar a
+  `DATABASE_URL` pra apontar pro banco na nuvem e rodar as migrations lá.
+- **Alternativa:** Postgres local, só se o plano Hostinger permitir instalar/
+  rodar Postgres e der acesso a `cron` (aí o backup certo é
+  `scripts/backup-local.sh`). Precisa confirmar no painel antes.
+
 ## Fora de escopo (confirmado com o cliente)
 - Orçamentos.
 - iFood / outros marketplaces.

@@ -37,7 +37,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   }
 
   return (
-    <div className="flex items-center gap-1 overflow-x-auto border-b border-border bg-sidebar px-2 pt-2">
+    <div className="flex shrink-0 items-end gap-0 overflow-x-auto border-b border-slate-700 bg-slate-800 px-2 pt-1">
       {abas.map((aba) => {
         const ativa = pathname.startsWith(aba.path)
         const Icone = iconeDaAba(aba.path)
@@ -50,24 +50,25 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
             tabIndex={0}
             onClick={() => router.push(aba.path)}
             onKeyDown={(e) => e.key === "Enter" && router.push(aba.path)}
-            className={`group relative flex shrink-0 cursor-pointer items-center gap-2 rounded-t-md border-x border-t px-3 py-2 text-sm transition-colors ${
+            className={`group flex shrink-0 cursor-pointer select-none items-center gap-1.5 rounded-t-md border-x border-t px-3 py-1.5 text-[12px] font-medium transition-all ${
               ativa
-                ? "border-border bg-background text-foreground"
-                : "border-transparent bg-transparent text-muted-foreground hover:bg-accent/50"
+                ? "-mb-px border-slate-300 bg-slate-100 text-slate-800"
+                : "border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white"
             }`}
           >
-            {ativa && (
-              <span className="absolute inset-x-0 -top-[1px] h-0.5 rounded-full bg-primary" />
-            )}
-            {Icone && <Icone size={14} />}
-            {aba.titulo}
+            {Icone && <Icone size={13} />}
+            <span className="whitespace-nowrap">{aba.titulo}</span>
             {fechavel && (
               <button
                 onClick={(e) => handleFechar(e, aba.path)}
-                className="rounded-full p-0.5 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors ${
+                  ativa
+                    ? "text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                    : "text-slate-500 opacity-0 hover:bg-slate-500 hover:text-white group-hover:opacity-100"
+                }`}
                 aria-label={`Fechar aba ${aba.titulo}`}
               >
-                <X size={12} />
+                <X size={10} strokeWidth={2.5} />
               </button>
             )}
           </div>
