@@ -45,8 +45,15 @@ function formatarPreco(valor: string) {
 export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produto[] }) {
   const [produtos, setProdutos] = useState<Produto[]>(produtosIniciais)
   const [aba, setAba] = useState("lista")
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativos" | "inativos">("ativos")
   const [editando, setEditando] = useState<ProdutoDetalhado | undefined>(undefined)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
+
+  const produtosFiltrados = produtos.filter((p) => {
+    if (filtroStatus === "ativos") return p.ativo
+    if (filtroStatus === "inativos") return !p.ativo
+    return true
+  })
 
   async function recarregar() {
     const resposta = await fetch("/api/admin/produtos")
@@ -114,11 +121,21 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
           )}
         </div>
 
-        <TabsContent value="lista" className="mt-4">
+        <TabsContent value="lista" className="mt-4 space-y-4">
+          <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
+            <TabsList>
+              <TabsTrigger value="ativos">Ativos</TabsTrigger>
+              <TabsTrigger value="inativos">Inativos</TabsTrigger>
+              <TabsTrigger value="todos">Todos</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <Card>
             <CardContent className="p-0">
-              {produtos.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">Nenhum produto cadastrado ainda.</p>
+              {produtosFiltrados.length === 0 ? (
+                <p className="p-6 text-sm text-neutral-400">
+                  {produtos.length === 0 ? "Nenhum produto cadastrado ainda." : "Nenhum produto encontrado."}
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[760px] text-sm">
@@ -134,7 +151,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                       </tr>
                     </thead>
                     <tbody>
-                      {produtos.map((produto) => (
+                      {produtosFiltrados.map((produto) => (
                         <tr key={produto.id} className="border-b border-neutral-800 last:border-0">
                           <td className="p-4">{produto.nome}</td>
                           <td className="p-4 text-neutral-400">{produto.sku || "-"}</td>

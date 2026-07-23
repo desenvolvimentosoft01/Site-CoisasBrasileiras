@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronRight,
   Home,
+  FileText,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
@@ -40,6 +41,7 @@ const menu: ItemMenu[] = [
   { tipo: "link", href: "/admin/dashboard", label: "Dashboard", icone: LayoutDashboard },
   { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcao", icone: Store },
   { tipo: "link", href: "/admin/pedidos", label: "Pedidos", icone: ShoppingCart },
+  { tipo: "link", href: "/admin/orcamentos", label: "Orcamentos", icone: FileText },
   { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: Users },
   {
     tipo: "grupo",
@@ -48,6 +50,7 @@ const menu: ItemMenu[] = [
     filhos: [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
+      { href: "/admin/estoque", label: "Estoque" },
     ],
   },
   {

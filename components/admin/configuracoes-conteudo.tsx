@@ -210,6 +210,25 @@ function ConfiguracoesFormulario({
                 </Button>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardContent className="flex items-center justify-between pt-6">
+                <div>
+                  <p className="text-sm font-medium">Tipos de entrega (venda balcao)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Retirada na loja, motoboy etc - escolhido ao finalizar uma venda balcao.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  nativeButton={false}
+                  render={<Link href="/admin/configuracoes/tipos-entrega" />}
+                >
+                  Gerenciar tipos
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="aparencia" className="mt-4">

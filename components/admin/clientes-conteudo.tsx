@@ -5,23 +5,29 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { Pencil } from "lucide-react"
+import { Pencil, Plus } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Cliente = {
   id: string
   nome: string
-  email: string
+  email: string | null
   telefone: string | null
   cpf_cnpj: string | null
   criado_em: string
+  veio_do_site: boolean
 }
 
 export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Cliente[] }) {
   const [clientes, setClientes] = useState<Cliente[]>(clientesIniciais)
   const [busca, setBusca] = useState("")
+  // clienteEditando === null e modalAberto === false: modal fechado.
+  // clienteEditando === null e modalAberto === true: cadastrando um novo.
+  // clienteEditando preenchido: editando o cliente existente.
+  const [modalAberto, setModalAberto] = useState(false)
   const [clienteEditando, setClienteEditando] = useState<Cliente | null>(null)
   const [nome, setNome] = useState("")
+  const [email, setEmail] = useState("")
   const [telefone, setTelefone] = useState("")
   const [cpfCnpj, setCpfCnpj] = useState("")
   const [erro, setErro] = useState("")
@@ -32,23 +38,47 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     setClientes(await resposta.json())
   }
 
+  function abrirNovo() {
+    setClienteEditando(null)
+    setNome("")
+    setEmail("")
+    setTelefone("")
+    setCpfCnpj("")
+    setErro("")
+    setModalAberto(true)
+  }
+
   function abrirEdicao(cliente: Cliente) {
     setClienteEditando(cliente)
     setNome(cliente.nome)
+    setEmail(cliente.email || "")
     setTelefone(cliente.telefone || "")
     setCpfCnpj(cliente.cpf_cnpj || "")
     setErro("")
+    setModalAberto(true)
+  }
+
+  function fechar() {
+    setModalAberto(false)
+    setClienteEditando(null)
   }
 
   async function salvar() {
-    if (!clienteEditando) return
     setErro("")
     setSalvando(true)
 
-    const resposta = await fetch(`/api/admin/clientes/${clienteEditando.id}`, {
-      method: "PUT",
+    // Editar so mexe em dados cadastrais (nao mexe no e-mail/senha de login do
+    // cliente do site); criar aceita e-mail opcional pra contato de balcao.
+    const url = clienteEditando ? `/api/admin/clientes/${clienteEditando.id}` : "/api/admin/clientes"
+    const method = clienteEditando ? "PUT" : "POST"
+    const corpo = clienteEditando
+      ? { nome, telefone, cpf_cnpj: cpfCnpj }
+      : { nome, email, telefone, cpf_cnpj: cpfCnpj }
+
+    const resposta = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, telefone, cpf_cnpj: cpfCnpj }),
+      body: JSON.stringify(corpo),
     })
 
     setSalvando(false)
@@ -59,30 +89,39 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
       return
     }
 
+    const salvo = await resposta.json()
     registrarAuditoria({
       tela: "Clientes",
-      acao: "edicao",
+      acao: clienteEditando ? "edicao" : "cadastro",
       tabela: "TAB_CLIENTE",
-      registroId: clienteEditando.id,
-      antes: {
-        nome: clienteEditando.nome,
-        telefone: clienteEditando.telefone,
-        cpf_cnpj: clienteEditando.cpf_cnpj,
-      },
+      registroId: clienteEditando?.id ?? salvo.id,
+      antes: clienteEditando
+        ? {
+            nome: clienteEditando.nome,
+            telefone: clienteEditando.telefone,
+            cpf_cnpj: clienteEditando.cpf_cnpj,
+          }
+        : null,
       depois: { nome, telefone, cpf_cnpj: cpfCnpj },
     })
 
-    setClienteEditando(null)
+    fechar()
     recarregar()
   }
 
   const clientesFiltrados = clientes.filter((c) =>
-    `${c.nome} ${c.email} ${c.telefone || ""}`.toLowerCase().includes(busca.toLowerCase())
+    `${c.nome} ${c.email || ""} ${c.telefone || ""}`.toLowerCase().includes(busca.toLowerCase())
   )
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Clientes</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Clientes</h1>
+        <Button onClick={abrirNovo}>
+          <Plus size={16} className="mr-2" />
+          Novo cliente
+        </Button>
+      </div>
 
       <Input
         placeholder="Buscar por nome, email ou telefone..."
@@ -97,10 +136,11 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
             <p className="p-6 text-sm text-neutral-400">Nenhum cliente encontrado.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-sm">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead>
                   <tr className="border-b border-neutral-800 text-left text-neutral-400">
                     <th className="p-4 font-medium">Nome</th>
+                    <th className="p-4 font-medium">Origem</th>
                     <th className="p-4 font-medium">Email</th>
                     <th className="p-4 font-medium">Telefone</th>
                     <th className="p-4 font-medium">CPF/CNPJ</th>
@@ -111,7 +151,18 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                   {clientesFiltrados.map((cliente) => (
                     <tr key={cliente.id} className="border-b border-neutral-800 last:border-0">
                       <td className="p-4">{cliente.nome}</td>
-                      <td className="p-4 text-neutral-400">{cliente.email}</td>
+                      <td className="p-4">
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs ${
+                            cliente.veio_do_site
+                              ? "bg-emerald-600/20 text-emerald-400"
+                              : "bg-amber-600/20 text-amber-400"
+                          }`}
+                        >
+                          {cliente.veio_do_site ? "Site" : "Balcao"}
+                        </span>
+                      </td>
+                      <td className="p-4 text-neutral-400">{cliente.email || "-"}</td>
                       <td className="p-4 text-neutral-400">{cliente.telefone || "-"}</td>
                       <td className="p-4 text-neutral-400">{cliente.cpf_cnpj || "-"}</td>
                       <td className="p-4 text-right">
@@ -128,16 +179,29 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
         </CardContent>
       </Card>
 
-      {clienteEditando && (
+      {modalAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <Card className="w-full max-w-md">
             <CardContent className="space-y-4 pt-6">
-              <h2 className="text-lg font-semibold">Editando: {clienteEditando.nome}</h2>
+              <h2 className="text-lg font-semibold">
+                {clienteEditando ? `Editando: ${clienteEditando.nome}` : "Novo cliente"}
+              </h2>
 
               <div className="space-y-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
               </div>
+              {!clienteEditando && (
+                <div className="space-y-2">
+                  <Label>E-mail (opcional)</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="So se o cliente for usar o site"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>Telefone</Label>
                 <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
@@ -150,7 +214,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
               {erro && <p className="text-sm text-red-500">{erro}</p>}
 
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setClienteEditando(null)}>
+                <Button variant="outline" onClick={fechar}>
                   Cancelar
                 </Button>
                 <Button onClick={salvar} disabled={salvando || !nome.trim()}>

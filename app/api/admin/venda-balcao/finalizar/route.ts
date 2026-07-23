@@ -22,12 +22,14 @@ export async function POST(request: Request) {
     clienteId,
     clienteNomeAvulso,
     clienteTelefoneAvulso,
+    tipoEntregaId,
   }: {
     itens: ItemVenda[]
     formaPagamento: string
     clienteId?: string | null
     clienteNomeAvulso?: string | null
     clienteTelefoneAvulso?: string | null
+    tipoEntregaId?: string | null
   } = await request.json()
 
   if (!Array.isArray(itens) || itens.length === 0) {
@@ -57,10 +59,17 @@ export async function POST(request: Request) {
 
       const [pedidoCriado] = await executar(
         `INSERT INTO TAB_PEDIDO
-           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso)
-         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5)
+           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, tipo_entrega_id)
+         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6)
          RETURNING id, total, criado_em`,
-        [clienteId || null, total, formaPagamento, clienteNomeAvulso || null, clienteTelefoneAvulso || null]
+        [
+          clienteId || null,
+          total,
+          formaPagamento,
+          clienteNomeAvulso || null,
+          clienteTelefoneAvulso || null,
+          tipoEntregaId || null,
+        ]
       )
 
       for (const item of itens) {

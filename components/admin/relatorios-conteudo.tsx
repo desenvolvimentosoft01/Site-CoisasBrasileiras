@@ -1,7 +1,12 @@
 "use client"
 
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { formatarMoeda } from "@/lib/mascaras"
+import { AlertTriangle } from "lucide-react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -17,6 +22,13 @@ export type Relatorio = {
   produtosMaisVendidos: { nome: string; quantidade: string; faturamento: string }[]
   resumo: { total_pedidos: string; faturamento_total: string; ticket_medio: string }
   vendasPorOrigem: { origem: "site" | "balcao"; total_pedidos: string; faturamento: string }[]
+  resumoEstoque: {
+    total_produtos: string
+    unidades_em_estoque: string
+    valor_em_estoque: string
+    produtos_em_baixa: string
+  }
+  produtosEmBaixa: { id: string; nome: string; sku: string | null; estoque: number; estoque_minimo: number }[]
 }
 
 function formatarDia(dia: string) {
@@ -24,7 +36,15 @@ function formatarDia(dia: string) {
   return `${diaNum}/${mes}`
 }
 
-export function RelatoriosConteudo({ dados }: { dados: Relatorio }) {
+export function RelatoriosConteudo({
+  dados,
+  inicioPeriodo,
+  fimPeriodo,
+}: {
+  dados: Relatorio
+  inicioPeriodo: string
+  fimPeriodo: string
+}) {
   const grafico = dados.vendasPorDia.map((v) => ({
     dia: formatarDia(v.dia),
     total: Number(v.total),
@@ -32,7 +52,25 @@ export function RelatoriosConteudo({ dados }: { dados: Relatorio }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Relatorios de vendas</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Relatorios</h1>
+
+        {/* Form GET simples - recarrega a pagina com o periodo escolhido,
+            sem precisar de estado client pra isso. */}
+        <form action="/admin/relatorios" method="get" className="flex items-end gap-2">
+          <div className="space-y-1">
+            <Label className="text-xs">De</Label>
+            <Input type="date" name="inicio" defaultValue={inicioPeriodo} className="w-40" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Ate</Label>
+            <Input type="date" name="fim" defaultValue={fimPeriodo} className="w-40" />
+          </div>
+          <Button type="submit" variant="outline">
+            Filtrar
+          </Button>
+        </form>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
@@ -43,7 +81,7 @@ export function RelatoriosConteudo({ dados }: { dados: Relatorio }) {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Faturamento total</CardTitle>
+            <CardTitle className="text-sm text-neutral-400">Faturamento no periodo</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">
             {formatarMoeda(dados.resumo.faturamento_total)}
@@ -61,7 +99,7 @@ export function RelatoriosConteudo({ dados }: { dados: Relatorio }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Vendas nos ultimos 30 dias</CardTitle>
+          <CardTitle className="text-sm text-neutral-400">Vendas no periodo</CardTitle>
         </CardHeader>
         <CardContent>
           {grafico.length === 0 ? (
@@ -91,7 +129,7 @@ export function RelatoriosConteudo({ dados }: { dados: Relatorio }) {
         </CardHeader>
         <CardContent className="p-0">
           {dados.vendasPorOrigem.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-500">Nenhuma venda ainda.</p>
+            <p className="p-6 text-sm text-neutral-500">Nenhuma venda no periodo.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[420px] text-sm">
@@ -119,11 +157,11 @@ export function RelatoriosConteudo({ dados }: { dados: Relatorio }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Produtos mais vendidos</CardTitle>
+          <CardTitle className="text-sm text-neutral-400">Produtos mais vendidos no periodo</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {dados.produtosMaisVendidos.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-500">Nenhuma venda ainda.</p>
+            <p className="p-6 text-sm text-neutral-500">Nenhuma venda no periodo.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] text-sm">
@@ -140,6 +178,85 @@ export function RelatoriosConteudo({ dados }: { dados: Relatorio }) {
                       <td className="p-4">{produto.nome}</td>
                       <td className="p-4">{produto.quantidade}</td>
                       <td className="p-4">{formatarMoeda(produto.faturamento)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Estoque (posicao atual)</h2>
+        <div className="grid gap-4 sm:grid-cols-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-neutral-400">Produtos ativos</CardTitle>
+            </CardHeader>
+            <CardContent className="text-3xl font-semibold">
+              {dados.resumoEstoque.total_produtos}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-neutral-400">Unidades em estoque</CardTitle>
+            </CardHeader>
+            <CardContent className="text-3xl font-semibold">
+              {dados.resumoEstoque.unidades_em_estoque}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-neutral-400">Valor em estoque</CardTitle>
+            </CardHeader>
+            <CardContent className="text-3xl font-semibold">
+              {formatarMoeda(dados.resumoEstoque.valor_em_estoque)}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-1.5 text-sm text-neutral-400">
+                <AlertTriangle size={14} className="text-amber-500" />
+                Em baixa
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-3xl font-semibold text-amber-500">
+              {dados.resumoEstoque.produtos_em_baixa}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm text-neutral-400">Produtos com estoque baixo</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {dados.produtosEmBaixa.length === 0 ? (
+            <p className="p-6 text-sm text-neutral-500">Nenhum produto em baixa.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px] text-sm">
+                <thead>
+                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                    <th className="p-4 font-medium">Produto</th>
+                    <th className="p-4 font-medium">SKU</th>
+                    <th className="p-4 font-medium">Minimo</th>
+                    <th className="p-4 font-medium">Estoque</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dados.produtosEmBaixa.map((produto) => (
+                    <tr key={produto.id} className="border-b border-neutral-800 last:border-0">
+                      <td className="p-4">
+                        <Link href="/admin/estoque" className="hover:underline">
+                          {produto.nome}
+                        </Link>
+                      </td>
+                      <td className="p-4 text-neutral-400">{produto.sku || "-"}</td>
+                      <td className="p-4 text-neutral-400">{produto.estoque_minimo}</td>
+                      <td className="p-4 font-medium text-amber-500">{produto.estoque}</td>
                     </tr>
                   ))}
                 </tbody>

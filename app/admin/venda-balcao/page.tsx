@@ -2,7 +2,7 @@ import { query } from "@/lib/db"
 import { VendaBalcaoConteudo } from "@/components/admin/venda-balcao-conteudo"
 
 export default async function VendaBalcaoPage() {
-  const [produtos, clientes] = await Promise.all([
+  const [produtos, clientes, tiposEntrega, vendas] = await Promise.all([
     query(`
       SELECT
         p.id, p.nome, p.preco, p.preco_promocional, p.estoque,
@@ -19,7 +19,26 @@ export default async function VendaBalcaoPage() {
       ORDER BY p.nome
     `),
     query("SELECT id, nome, email, telefone FROM TAB_CLIENTE ORDER BY nome"),
+    query("SELECT id, nome FROM TAB_TIPO_ENTREGA WHERE ativo = true ORDER BY nome"),
+    // Grade de vendas (igual ao InMenteGestao): mostra pedidos do site E do
+    // balcao juntos, com a origem marcada, pra quem esta no balcao ver tudo
+    // que esta vendendo sem trocar de tela.
+    query(`
+      SELECT p.id, p.origem, p.status, p.total, p.forma_pagamento, p.criado_em,
+        COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome
+      FROM TAB_PEDIDO p
+      LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
+      ORDER BY p.criado_em DESC
+      LIMIT 100
+    `),
   ])
 
-  return <VendaBalcaoConteudo produtosIniciais={produtos} clientesIniciais={clientes} />
+  return (
+    <VendaBalcaoConteudo
+      produtosIniciais={produtos}
+      clientesIniciais={clientes}
+      tiposEntregaIniciais={tiposEntrega}
+      vendasIniciais={vendas}
+    />
+  )
 }

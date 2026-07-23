@@ -1,11 +1,13 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -20,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Minus, Trash2, ShoppingCart, Search, User, X } from "lucide-react"
+import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 
 export type Produto = {
@@ -40,6 +42,21 @@ export type Cliente = {
   telefone: string | null
 }
 
+export type TipoEntrega = {
+  id: string
+  nome: string
+}
+
+export type Venda = {
+  id: string
+  origem: "site" | "balcao"
+  status: string
+  total: string
+  forma_pagamento: string | null
+  criado_em: string
+  cliente_nome: string
+}
+
 type ItemCarrinho = {
   produtoId: string
   nome: string
@@ -55,6 +72,15 @@ const FORMAS_PAGAMENTO = [
   { valor: "cartao_debito", rotulo: "Cartao de debito" },
 ]
 
+const ROTULOS_STATUS: Record<string, string> = {
+  aguardando_pagamento: "Aguardando pagamento",
+  pago: "Pago",
+  em_separacao: "Em separacao",
+  enviado: "Enviado",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+}
+
 function precoEfetivo(produto: Produto) {
   return Number(produto.preco_promocional || produto.preco)
 }
@@ -62,23 +88,33 @@ function precoEfetivo(produto: Produto) {
 export function VendaBalcaoConteudo({
   produtosIniciais,
   clientesIniciais,
+  tiposEntregaIniciais,
+  vendasIniciais,
 }: {
   produtosIniciais: Produto[]
   clientesIniciais: Cliente[]
+  tiposEntregaIniciais: TipoEntrega[]
+  vendasIniciais: Venda[]
 }) {
+  const [aba, setAba] = useState("produtos")
   const [produtos, setProdutos] = useState<Produto[]>(produtosIniciais)
   const [busca, setBusca] = useState("")
   const [categoriaAtiva, setCategoriaAtiva] = useState("todas")
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([])
 
   const clientes = clientesIniciais
+  const tiposEntrega = tiposEntregaIniciais
   const [buscaCliente, setBuscaCliente] = useState("")
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [clienteNomeAvulso, setClienteNomeAvulso] = useState("")
   const [clienteTelefoneAvulso, setClienteTelefoneAvulso] = useState("")
 
+  const [vendas, setVendas] = useState<Venda[]>(vendasIniciais)
+  const [filtroOrigem, setFiltroOrigem] = useState<"todas" | "site" | "balcao">("todas")
+
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false)
   const [formaPagamento, setFormaPagamento] = useState("dinheiro")
+  const [tipoEntregaId, setTipoEntregaId] = useState<string>("nenhum")
   const [finalizando, setFinalizando] = useState(false)
   const [erro, setErro] = useState("")
   const [sucesso, setSucesso] = useState("")
@@ -100,6 +136,8 @@ export function VendaBalcaoConteudo({
         `${c.nome} ${c.email} ${c.telefone || ""}`.toLowerCase().includes(buscaCliente.toLowerCase())
       )
     : []
+
+  const vendasFiltradas = vendas.filter((v) => filtroOrigem === "todas" || v.origem === filtroOrigem)
 
   function adicionarAoCarrinho(produto: Produto) {
     setCarrinho((atual) => {
@@ -166,6 +204,7 @@ export function VendaBalcaoConteudo({
         clienteId: clienteSelecionado?.id || null,
         clienteNomeAvulso: clienteSelecionado ? null : clienteNomeAvulso || null,
         clienteTelefoneAvulso: clienteSelecionado ? null : clienteTelefoneAvulso || null,
+        tipoEntregaId: tipoEntregaId === "nenhum" ? null : tipoEntregaId,
       }),
     })
 
@@ -183,198 +222,281 @@ export function VendaBalcaoConteudo({
     setClienteNomeAvulso("")
     setClienteTelefoneAvulso("")
     setFormaPagamento("dinheiro")
+    setTipoEntregaId("nenhum")
     setModalPagamentoAberto(false)
-    // Recarrega produtos para refletir o estoque baixado.
+    // Recarrega produtos (estoque baixado) e a grade de vendas (nova venda).
     fetch("/api/admin/venda-balcao/produtos")
       .then((r) => r.json())
       .then(setProdutos)
+    fetch("/api/admin/venda-balcao/vendas")
+      .then((r) => r.json())
+      .then(setVendas)
     setTimeout(() => setSucesso(""), 4000)
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <div className="space-y-4">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Venda Balcao</h1>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative max-w-xs flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <Input
-              placeholder="Buscar produto..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          {categorias.map((categoria) => (
-            <button
-              key={categoria}
-              onClick={() => setCategoriaAtiva(categoria)}
-              className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
-                categoriaAtiva === categoria
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-input text-muted-foreground hover:border-primary/50"
-              }`}
-            >
-              {categoria}
-            </button>
-          ))}
-        </div>
-
-        {produtosFiltrados.length === 0 ? (
-          <p className="text-sm text-neutral-400">Nenhum produto encontrado.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-            {produtosFiltrados.map((produto) => (
-              <button
-                key={produto.id}
-                onClick={() => adicionarAoCarrinho(produto)}
-                disabled={produto.estoque < 1}
-                className="text-left disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Card className="h-full transition-colors hover:border-primary/50">
-                  <CardContent className="space-y-2 p-3">
-                    <div className="flex h-20 items-center justify-center rounded-md bg-neutral-900 text-xs text-neutral-500">
-                      {produto.imagem_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={produto.imagem_url}
-                          alt=""
-                          className="h-full w-full rounded-md object-cover"
-                        />
-                      ) : (
-                        "Sem imagem"
-                      )}
-                    </div>
-                    <p className="line-clamp-2 text-sm font-medium">{produto.nome}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-primary">
-                        {formatarMoeda(String(precoEfetivo(produto)))}
-                      </span>
-                      <span className="text-xs text-neutral-500">Est: {produto.estoque}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </button>
-            ))}
-          </div>
-        )}
+        <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
+          <TabsList>
+            <TabsTrigger value="produtos">
+              <Package size={14} className="mr-1.5" />
+              Produtos
+            </TabsTrigger>
+            <TabsTrigger value="vendas">
+              <List size={14} className="mr-1.5" />
+              Vendas
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      <Card className="h-fit lg:sticky lg:top-20">
-        <CardContent className="space-y-4 pt-6">
-          <div className="flex items-center gap-2">
-            <ShoppingCart size={18} />
-            <h2 className="font-semibold">Carrinho</h2>
-          </div>
+      {aba === "vendas" ? (
+        <div className="space-y-4">
+          <Tabs value={filtroOrigem} onValueChange={(v) => setFiltroOrigem(v as typeof filtroOrigem)}>
+            <TabsList>
+              <TabsTrigger value="todas">Todas</TabsTrigger>
+              <TabsTrigger value="site">Site</TabsTrigger>
+              <TabsTrigger value="balcao">Balcao</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-          {sucesso && (
-            <p className="rounded-md bg-emerald-600/20 p-2 text-sm text-emerald-400">{sucesso}</p>
-          )}
-
-          {carrinho.length === 0 ? (
-            <p className="text-sm text-neutral-400">Nenhum item adicionado ainda.</p>
-          ) : (
-            <div className="space-y-2">
-              {carrinho.map((item) => (
-                <div key={item.produtoId} className="flex items-center justify-between gap-2 text-sm">
-                  <div className="flex-1">
-                    <p className="line-clamp-1">{item.nome}</p>
-                    <p className="text-xs text-neutral-500">{formatarMoeda(String(item.preco))}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => alterarQuantidade(item.produtoId, -1)}
-                    >
-                      <Minus size={12} />
-                    </Button>
-                    <span className="w-5 text-center">{item.quantidade}</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => alterarQuantidade(item.produtoId, 1)}
-                      disabled={item.quantidade >= item.estoqueDisponivel}
-                    >
-                      <Plus size={12} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => removerItem(item.produtoId)}
-                    >
-                      <Trash2 size={14} className="text-red-500" />
-                    </Button>
-                  </div>
+          <Card>
+            <CardContent className="p-0">
+              {vendasFiltradas.length === 0 ? (
+                <p className="p-6 text-sm text-neutral-400">Nenhuma venda encontrada.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[640px] text-sm">
+                    <thead>
+                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                        <th className="p-4 font-medium">Cliente</th>
+                        <th className="p-4 font-medium">Origem</th>
+                        <th className="p-4 font-medium">Status</th>
+                        <th className="p-4 font-medium">Total</th>
+                        <th className="p-4 font-medium">Data</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendasFiltradas.map((venda) => (
+                        <tr key={venda.id} className="border-b border-neutral-800 last:border-0">
+                          <td className="p-4">
+                            <Link href={`/admin/pedidos/${venda.id}`} className="hover:underline">
+                              {venda.cliente_nome}
+                            </Link>
+                          </td>
+                          <td className="p-4">
+                            <span
+                              className={`rounded-full px-2 py-1 text-xs ${
+                                venda.origem === "balcao"
+                                  ? "bg-amber-600/20 text-amber-400"
+                                  : "bg-blue-600/20 text-blue-400"
+                              }`}
+                            >
+                              {venda.origem === "balcao" ? "Balcao" : "Site"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-neutral-400">
+                            {ROTULOS_STATUS[venda.status] ?? venda.status}
+                          </td>
+                          <td className="p-4">{formatarMoeda(venda.total)}</td>
+                          <td className="p-4 text-neutral-400">
+                            {new Date(venda.criado_em).toLocaleString("pt-BR")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative max-w-xs flex-1">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <Input
+                  placeholder="Buscar produto..."
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              {categorias.map((categoria) => (
+                <button
+                  key={categoria}
+                  onClick={() => setCategoriaAtiva(categoria)}
+                  className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
+                    categoriaAtiva === categoria
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-input text-muted-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {categoria}
+                </button>
               ))}
             </div>
-          )}
 
-          <div className="space-y-2 border-t border-border pt-3">
-            <Label className="flex items-center gap-1 text-xs">
-              <User size={12} /> Cliente (opcional)
-            </Label>
-            {clienteSelecionado ? (
-              <div className="flex items-center justify-between rounded-md border border-input px-3 py-2 text-sm">
-                <span>{clienteSelecionado.nome}</span>
-                <button onClick={() => setClienteSelecionado(null)}>
-                  <X size={14} className="text-neutral-400" />
-                </button>
-              </div>
+            {produtosFiltrados.length === 0 ? (
+              <p className="text-sm text-neutral-400">Nenhum produto encontrado.</p>
             ) : (
-              <div className="space-y-2">
-                <Input
-                  placeholder="Buscar cliente cadastrado..."
-                  value={buscaCliente}
-                  onChange={(e) => setBuscaCliente(e.target.value)}
-                />
-                {clientesFiltrados.length > 0 && (
-                  <div className="max-h-32 overflow-y-auto rounded-md border border-input">
-                    {clientesFiltrados.slice(0, 6).map((cliente) => (
-                      <button
-                        key={cliente.id}
-                        onClick={() => selecionarCliente(cliente)}
-                        className="block w-full px-3 py-2 text-left text-sm hover:bg-accent"
-                      >
-                        {cliente.nome} <span className="text-xs text-neutral-500">{cliente.email}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <p className="text-xs text-neutral-500">Ou cadastro rapido, sem conta no site:</p>
-                <Input
-                  placeholder="Nome"
-                  value={clienteNomeAvulso}
-                  onChange={(e) => setClienteNomeAvulso(e.target.value)}
-                />
-                <Input
-                  placeholder="Telefone"
-                  value={clienteTelefoneAvulso}
-                  onChange={(e) => setClienteTelefoneAvulso(e.target.value)}
-                />
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                {produtosFiltrados.map((produto) => (
+                  <button
+                    key={produto.id}
+                    onClick={() => adicionarAoCarrinho(produto)}
+                    disabled={produto.estoque < 1}
+                    className="text-left disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Card className="h-full transition-colors hover:border-primary/50">
+                      <CardContent className="space-y-2 p-3">
+                        <div className="flex h-20 items-center justify-center rounded-md bg-neutral-900 text-xs text-neutral-500">
+                          {produto.imagem_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={produto.imagem_url}
+                              alt=""
+                              className="h-full w-full rounded-md object-cover"
+                            />
+                          ) : (
+                            "Sem imagem"
+                          )}
+                        </div>
+                        <p className="line-clamp-2 text-sm font-medium">{produto.nome}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-primary">
+                            {formatarMoeda(String(precoEfetivo(produto)))}
+                          </span>
+                          <span className="text-xs text-neutral-500">Est: {produto.estoque}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between border-t border-border pt-3 text-lg font-semibold">
-            <span>Total</span>
-            <span>{formatarMoeda(String(total))}</span>
-          </div>
+          <Card className="h-fit lg:sticky lg:top-20">
+            <CardContent className="space-y-4 pt-6">
+              <div className="flex items-center gap-2">
+                <ShoppingCart size={18} />
+                <h2 className="font-semibold">Carrinho</h2>
+              </div>
 
-          <Button
-            className="w-full"
-            disabled={carrinho.length === 0}
-            onClick={() => setModalPagamentoAberto(true)}
-          >
-            Ir para pagamento
-          </Button>
-        </CardContent>
-      </Card>
+              {sucesso && (
+                <p className="rounded-md bg-emerald-600/20 p-2 text-sm text-emerald-400">{sucesso}</p>
+              )}
+
+              {carrinho.length === 0 ? (
+                <p className="text-sm text-neutral-400">Nenhum item adicionado ainda.</p>
+              ) : (
+                <div className="space-y-2">
+                  {carrinho.map((item) => (
+                    <div key={item.produtoId} className="flex items-center justify-between gap-2 text-sm">
+                      <div className="flex-1">
+                        <p className="line-clamp-1">{item.nome}</p>
+                        <p className="text-xs text-neutral-500">{formatarMoeda(String(item.preco))}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => alterarQuantidade(item.produtoId, -1)}
+                        >
+                          <Minus size={12} />
+                        </Button>
+                        <span className="w-5 text-center">{item.quantidade}</span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => alterarQuantidade(item.produtoId, 1)}
+                          disabled={item.quantidade >= item.estoqueDisponivel}
+                        >
+                          <Plus size={12} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => removerItem(item.produtoId)}
+                        >
+                          <Trash2 size={14} className="text-red-500" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-2 border-t border-border pt-3">
+                <Label className="flex items-center gap-1 text-xs">
+                  <User size={12} /> Cliente (opcional)
+                </Label>
+                {clienteSelecionado ? (
+                  <div className="flex items-center justify-between rounded-md border border-input px-3 py-2 text-sm">
+                    <span>{clienteSelecionado.nome}</span>
+                    <button onClick={() => setClienteSelecionado(null)}>
+                      <X size={14} className="text-neutral-400" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Buscar cliente cadastrado..."
+                      value={buscaCliente}
+                      onChange={(e) => setBuscaCliente(e.target.value)}
+                    />
+                    {clientesFiltrados.length > 0 && (
+                      <div className="max-h-32 overflow-y-auto rounded-md border border-input">
+                        {clientesFiltrados.slice(0, 6).map((cliente) => (
+                          <button
+                            key={cliente.id}
+                            onClick={() => selecionarCliente(cliente)}
+                            className="block w-full px-3 py-2 text-left text-sm hover:bg-accent"
+                          >
+                            {cliente.nome} <span className="text-xs text-neutral-500">{cliente.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-xs text-neutral-500">Ou cadastro rapido, sem conta no site:</p>
+                    <Input
+                      placeholder="Nome"
+                      value={clienteNomeAvulso}
+                      onChange={(e) => setClienteNomeAvulso(e.target.value)}
+                    />
+                    <Input
+                      placeholder="Telefone"
+                      value={clienteTelefoneAvulso}
+                      onChange={(e) => setClienteTelefoneAvulso(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between border-t border-border pt-3 text-lg font-semibold">
+                <span>Total</span>
+                <span>{formatarMoeda(String(total))}</span>
+              </div>
+
+              <Button
+                className="w-full"
+                disabled={carrinho.length === 0}
+                onClick={() => setModalPagamentoAberto(true)}
+              >
+                Ir para pagamento
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Dialog open={modalPagamentoAberto} onOpenChange={setModalPagamentoAberto}>
         <DialogContent>
@@ -403,6 +525,25 @@ export function VendaBalcaoConteudo({
                 </SelectContent>
               </Select>
             </div>
+
+            {tiposEntrega.length > 0 && (
+              <div className="space-y-2">
+                <Label>Tipo de entrega (opcional)</Label>
+                <Select value={tipoEntregaId} onValueChange={(v) => setTipoEntregaId(v || "nenhum")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nenhum">Sem entrega (venda direta no balcao)</SelectItem>
+                    {tiposEntrega.map((tipo) => (
+                      <SelectItem key={tipo.id} value={tipo.id}>
+                        {tipo.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {clienteSelecionado && (
               <Badge variant="secondary">Cliente: {clienteSelecionado.nome}</Badge>

@@ -171,8 +171,11 @@ export function ProdutoForm({
 
   return (
     <div className="w-full space-y-6">
-      {/* Barra de acoes fixa no topo, estilo tela de cadastro de ERP */}
-      <div className="sticky top-[57px] z-10 -mx-4 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+      {/* Barra de acoes no topo do formulario. Nao e sticky de proposito -
+          rola junto com o conteudo, igual as demais telas de cadastro do admin
+          (Categorias, Cupons etc). Uma barra grudada aqui cobria o rotulo do
+          primeiro campo (Nome/SKU) ao rolar. */}
+      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
         <span className="text-sm font-medium text-muted-foreground">
           {produto ? `Editando: ${produto.nome}` : "Novo produto"}
         </span>
