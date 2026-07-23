@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, List } from "lucide-react"
+import { registrarAuditoria } from "@/lib/auditoria"
 
 type Categoria = {
   id: string
@@ -78,6 +79,16 @@ export default function CategoriasPage() {
       return
     }
 
+    const salva = await resposta.json()
+    registrarAuditoria({
+      tela: "Categorias",
+      acao: categoriaEditando ? "edicao" : "cadastro",
+      tabela: "TAB_CATEGORIA",
+      registroId: salva.id,
+      antes: categoriaEditando ? { nome: categoriaEditando.nome, ativa: categoriaEditando.ativa } : null,
+      depois: { nome: salva.nome, ativa: salva.ativa },
+    })
+
     setAba("lista")
     carregar()
   }
@@ -85,6 +96,13 @@ export default function CategoriasPage() {
   async function excluir(categoria: Categoria) {
     if (!confirm(`Excluir a categoria "${categoria.nome}"?`)) return
     await fetch(`/api/admin/categorias/${categoria.id}`, { method: "DELETE" })
+    registrarAuditoria({
+      tela: "Categorias",
+      acao: "exclusao",
+      tabela: "TAB_CATEGORIA",
+      registroId: categoria.id,
+      antes: { nome: categoria.nome, ativa: categoria.ativa },
+    })
     carregar()
   }
 

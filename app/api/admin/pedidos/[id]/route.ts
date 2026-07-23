@@ -18,16 +18,21 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const { id } = await params
 
+  // LEFT JOIN porque venda balcao pode nao ter cliente com conta no site nem
+  // endereco de entrega vinculados - usa os dados avulsos digitados na venda.
   const [pedido] = await query(
     `
     SELECT
-      p.id, p.status, p.total, p.forma_pagamento, p.nota_fiscal_url, p.criado_em,
+      p.id, p.status, p.total, p.forma_pagamento, p.nota_fiscal_url, p.criado_em, p.origem,
       p.codigo_rastreio, p.transportadora,
-      c.nome AS cliente_nome, c.email AS cliente_email, c.telefone AS cliente_telefone,
+      p.bling_nota_id, p.bling_link_danfe, p.bling_link_pdf,
+      COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome,
+      c.email AS cliente_email,
+      COALESCE(c.telefone, p.cliente_telefone_avulso) AS cliente_telefone,
       e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
     FROM TAB_PEDIDO p
-    JOIN TAB_CLIENTE c ON c.id = p.cliente_id
-    JOIN TAB_ENDERECO e ON e.id = p.endereco_id
+    LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
+    LEFT JOIN TAB_ENDERECO e ON e.id = p.endereco_id
     WHERE p.id = $1
     `,
     [id]

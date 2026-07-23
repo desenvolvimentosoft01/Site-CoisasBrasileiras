@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Truck, MessageCircle } from "lucide-react"
+import { Truck, MessageCircle, FileText } from "lucide-react"
 
 type Pedido = {
   id: string
@@ -16,17 +16,21 @@ type Pedido = {
   nota_fiscal_url: string | null
   codigo_rastreio: string | null
   transportadora: string | null
+  bling_nota_id: string | null
+  bling_link_danfe: string | null
+  bling_link_pdf: string | null
+  origem: "site" | "balcao"
   criado_em: string
   cliente_nome: string
-  cliente_email: string
+  cliente_email: string | null
   cliente_telefone: string | null
-  cep: string
-  logradouro: string
-  numero: string
+  cep: string | null
+  logradouro: string | null
+  numero: string | null
   complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
+  bairro: string | null
+  cidade: string | null
+  estado: string | null
   itens: { quantidade: number; preco_unitario: string; produto_nome: string }[]
 }
 
@@ -66,6 +70,8 @@ export default function DetalhePedidoPage() {
   const [transportadora, setTransportadora] = useState("")
   const [salvandoRastreio, setSalvandoRastreio] = useState(false)
   const [rastreioSalvo, setRastreioSalvo] = useState(false)
+  const [emitindoNfe, setEmitindoNfe] = useState(false)
+  const [erroNfe, setErroNfe] = useState("")
 
   async function carregar() {
     const resposta = await fetch(`/api/admin/pedidos/${params.id}`)
@@ -107,6 +113,21 @@ export default function DetalhePedidoPage() {
     carregar()
   }
 
+  async function emitirNfe() {
+    if (!pedido) return
+    setErroNfe("")
+    setEmitindoNfe(true)
+    const resposta = await fetch(`/api/admin/pedidos/${pedido.id}/emitir-nfe`, { method: "POST" })
+    setEmitindoNfe(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErroNfe(dados.erro || "Erro ao emitir NF-e")
+      return
+    }
+    carregar()
+  }
+
   if (!pedido) {
     return <p className="text-sm text-neutral-400">Carregando...</p>
   }
@@ -114,7 +135,14 @@ export default function DetalhePedidoPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Pedido</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-semibold">
+          Pedido
+          {pedido.origem === "balcao" && (
+            <span className="rounded-full bg-amber-600/20 px-2 py-0.5 text-xs text-amber-400">
+              Venda balcao
+            </span>
+          )}
+        </h1>
         <p className="text-sm text-neutral-400">
           Feito em {new Date(pedido.criado_em).toLocaleString("pt-BR")}
         </p>
@@ -137,6 +165,51 @@ export default function DetalhePedidoPage() {
               </option>
             ))}
           </select>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm text-neutral-400">
+            <FileText size={16} />
+            Nota fiscal (Bling)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {pedido.bling_nota_id ? (
+            <div className="space-y-2 text-sm">
+              <p className="text-neutral-400">NF-e emitida (Bling #{pedido.bling_nota_id}).</p>
+              <div className="flex gap-3">
+                {pedido.bling_link_danfe && (
+                  <a
+                    href={pedido.bling_link_danfe}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Ver DANFE
+                  </a>
+                )}
+                {pedido.bling_link_pdf && (
+                  <a
+                    href={pedido.bling_link_pdf}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Ver PDF
+                  </a>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <Button size="sm" onClick={emitirNfe} disabled={emitindoNfe}>
+                {emitindoNfe ? "Emitindo..." : "Emitir NF-e"}
+              </Button>
+              {erroNfe && <p className="text-sm text-red-500">{erroNfe}</p>}
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -183,7 +256,7 @@ export default function DetalhePedidoPage() {
           <CardContent className="space-y-3 text-sm">
             <div className="space-y-1">
               <p>{pedido.cliente_nome}</p>
-              <p className="text-neutral-400">{pedido.cliente_email}</p>
+              {pedido.cliente_email && <p className="text-neutral-400">{pedido.cliente_email}</p>}
               {pedido.cliente_telefone && <p className="text-neutral-400">{pedido.cliente_telefone}</p>}
             </div>
             {pedido.cliente_telefone && (
@@ -211,14 +284,20 @@ export default function DetalhePedidoPage() {
             <CardTitle className="text-sm text-neutral-400">Endereco de entrega</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 text-sm text-neutral-300">
-            <p>
-              {pedido.logradouro}, {pedido.numero}
-              {pedido.complemento ? ` - ${pedido.complemento}` : ""}
-            </p>
-            <p>{pedido.bairro}</p>
-            <p>
-              {pedido.cidade}/{pedido.estado} - {pedido.cep}
-            </p>
+            {pedido.logradouro ? (
+              <>
+                <p>
+                  {pedido.logradouro}, {pedido.numero}
+                  {pedido.complemento ? ` - ${pedido.complemento}` : ""}
+                </p>
+                <p>{pedido.bairro}</p>
+                <p>
+                  {pedido.cidade}/{pedido.estado} - {pedido.cep}
+                </p>
+              </>
+            ) : (
+              <p className="text-neutral-500">Venda balcao - sem entrega.</p>
+            )}
           </CardContent>
         </Card>
       </div>

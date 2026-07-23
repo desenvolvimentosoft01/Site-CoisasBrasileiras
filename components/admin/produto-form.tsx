@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImagePlus, X } from "lucide-react"
 import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
+import { registrarAuditoria } from "@/lib/auditoria"
 
 type Categoria = { id: string; nome: string }
 
@@ -152,6 +153,18 @@ export function ProdutoForm({
       setErro(dados.erro || "Erro ao salvar")
       return
     }
+
+    const salvo = await resposta.json()
+    registrarAuditoria({
+      tela: "Produtos",
+      acao: produto ? "edicao" : "cadastro",
+      tabela: "TAB_PRODUTO",
+      registroId: produto?.id ?? salvo.id,
+      antes: produto
+        ? { nome: produto.nome, preco: produto.preco, estoque: produto.estoque, ativo: produto.ativo }
+        : null,
+      depois: { nome, preco: corpo.preco, estoque: corpo.estoque, ativo },
+    })
 
     onSalvo()
   }

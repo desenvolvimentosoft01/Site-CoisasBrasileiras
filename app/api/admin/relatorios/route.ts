@@ -6,7 +6,7 @@ export async function GET() {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
-  const [vendasPorDia, produtosMaisVendidos, [resumo]] = await Promise.all([
+  const [vendasPorDia, produtosMaisVendidos, [resumo], vendasPorOrigem] = await Promise.all([
     query(`
       SELECT to_char(criado_em, 'YYYY-MM-DD') AS dia, SUM(total) AS total
       FROM TAB_PEDIDO
@@ -32,7 +32,13 @@ export async function GET() {
       FROM TAB_PEDIDO
       WHERE status = 'pago'
     `),
+    query(`
+      SELECT origem, COUNT(*) AS total_pedidos, COALESCE(SUM(total), 0) AS faturamento
+      FROM TAB_PEDIDO
+      WHERE status = 'pago'
+      GROUP BY origem
+    `),
   ])
 
-  return NextResponse.json({ vendasPorDia, produtosMaisVendidos, resumo })
+  return NextResponse.json({ vendasPorDia, produtosMaisVendidos, resumo, vendasPorOrigem })
 }

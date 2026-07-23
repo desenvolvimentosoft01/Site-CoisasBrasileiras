@@ -19,6 +19,7 @@ export default async function DashboardPage() {
     [{ count: pedidosHoje }],
     [{ soma: faturamentoMes }],
     [{ count: pedidosPendentes }],
+    [{ count: vendasBalcaoHoje, soma: faturamentoBalcaoHoje }],
     produtosEstoqueBaixo,
     pedidosRecentes,
   ] = await Promise.all([
@@ -30,11 +31,16 @@ export default async function DashboardPage() {
     ),
     query("SELECT COUNT(*) FROM TAB_PEDIDO WHERE status = 'aguardando_pagamento'"),
     query(
+      `SELECT COUNT(*), COALESCE(SUM(total), 0) AS soma FROM TAB_PEDIDO
+       WHERE origem = 'balcao' AND criado_em::date = CURRENT_DATE`
+    ),
+    query(
       "SELECT id, nome, estoque, estoque_minimo FROM TAB_PRODUTO WHERE ativo = true AND estoque <= estoque_minimo ORDER BY estoque LIMIT 5"
     ),
     query(
-      `SELECT p.id, p.status, p.total, p.criado_em, c.nome AS cliente_nome
-       FROM TAB_PEDIDO p JOIN TAB_CLIENTE c ON c.id = p.cliente_id
+      `SELECT p.id, p.status, p.total, p.origem, p.criado_em,
+         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcao') AS cliente_nome
+       FROM TAB_PEDIDO p LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
        ORDER BY p.criado_em DESC LIMIT 5`
     ),
   ])
@@ -43,7 +49,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-neutral-400">Produtos ativos</CardTitle>
@@ -52,9 +58,18 @@ export default async function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Pedidos hoje</CardTitle>
+            <CardTitle className="text-sm text-neutral-400">Pedidos hoje (site)</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">{pedidosHoje}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-neutral-400">Vendas balcao hoje</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-semibold">{vendasBalcaoHoje}</div>
+            <div className="text-xs text-neutral-500">{formatarMoeda(faturamentoBalcaoHoje)}</div>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
@@ -91,6 +106,11 @@ export default async function DashboardPage() {
                     <div className="font-medium">{pedido.cliente_nome}</div>
                     <div className="text-xs text-neutral-500">
                       {rotulosStatus[pedido.status] ?? pedido.status}
+                      {pedido.origem === "balcao" && (
+                        <span className="ml-2 rounded-full bg-amber-600/20 px-1.5 py-0.5 text-amber-400">
+                          Balcao
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span className="font-medium">{formatarMoeda(pedido.total)}</span>

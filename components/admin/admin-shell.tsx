@@ -15,6 +15,11 @@ import {
   Image as ImageIcon,
   BarChart3,
   Percent,
+  Users,
+  UserCog,
+  History,
+  Store,
+  Wallet,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
@@ -22,12 +27,17 @@ import type { SessaoAdmin } from "@/lib/auth"
 
 const itensMenu = [
   { href: "/admin/dashboard", label: "Dashboard", icone: LayoutDashboard },
+  { href: "/admin/venda-balcao", label: "Venda Balcao", icone: Store },
   { href: "/admin/produtos", label: "Produtos", icone: Package },
   { href: "/admin/categorias", label: "Categorias", icone: Tag },
   { href: "/admin/pedidos", label: "Pedidos", icone: ShoppingCart },
+  { href: "/admin/clientes", label: "Clientes", icone: Users },
   { href: "/admin/cupons", label: "Cupons", icone: Percent },
+  { href: "/admin/financeiro", label: "Financeiro", icone: Wallet, somenteAdmin: true },
   { href: "/admin/relatorios", label: "Relatorios", icone: BarChart3 },
   { href: "/admin/banners", label: "Banners", icone: ImageIcon },
+  { href: "/admin/usuarios", label: "Usuarios", icone: UserCog, somenteAdmin: true },
+  { href: "/admin/auditoria", label: "Auditoria", icone: History, somenteAdmin: true },
   { href: "/admin/configuracoes", label: "Configuracoes", icone: Settings },
 ]
 
@@ -56,7 +66,8 @@ export function AdminShell({
     .join("")
     .toUpperCase()
 
-  const paginaAtual = itensMenu.find((item) => pathname.startsWith(item.href))
+  const itensMenuVisiveis = itensMenu.filter((item) => !item.somenteAdmin || sessao.papel === "admin")
+  const paginaAtual = itensMenuVisiveis.find((item) => pathname.startsWith(item.href))
 
   return (
     // Ativa o modo escuro de verdade do design system (classe "dark", nao so
@@ -89,7 +100,7 @@ export function AdminShell({
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {itensMenu.map((item) => {
+          {itensMenuVisiveis.map((item) => {
             const ativo = pathname.startsWith(item.href)
             const Icone = item.icone
             return (
@@ -142,7 +153,7 @@ export function AdminShell({
           </Button>
         </header>
 
-        <TabBarAdmin itensMenu={itensMenu} />
+        <TabBarAdmin itensMenu={itensMenuVisiveis} />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>

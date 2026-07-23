@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Plus, Pencil, Trash2, List } from "lucide-react"
 import { ProdutoForm } from "@/components/admin/produto-form"
+import { registrarAuditoria } from "@/lib/auditoria"
 
 type Produto = {
   id: string
@@ -87,6 +88,13 @@ export default function ProdutosPage() {
       alert(dados.erro || "Erro ao excluir")
       return
     }
+    registrarAuditoria({
+      tela: "Produtos",
+      acao: "exclusao",
+      tabela: "TAB_PRODUTO",
+      registroId: produto.id,
+      antes: { nome: produto.nome, preco: produto.preco, estoque: produto.estoque },
+    })
     carregar()
   }
 

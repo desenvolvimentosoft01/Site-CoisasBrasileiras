@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, List } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
+import { registrarAuditoria } from "@/lib/auditoria"
 
 type Cupom = {
   id: string
@@ -107,6 +108,16 @@ export default function CuponsPage() {
       return
     }
 
+    const salvo = await resposta.json()
+    registrarAuditoria({
+      tela: "Cupons",
+      acao: editando ? "edicao" : "cadastro",
+      tabela: "TAB_CUPOM",
+      registroId: editando?.id ?? salvo.id,
+      antes: editando ? { valor: editando.valor, ativo: editando.ativo } : null,
+      depois: { codigo, tipo, valor: corpo.valor, ativo },
+    })
+
     setAba("lista")
     carregar()
   }
@@ -114,6 +125,13 @@ export default function CuponsPage() {
   async function excluir(cupom: Cupom) {
     if (!confirm(`Excluir o cupom "${cupom.codigo}"?`)) return
     await fetch(`/api/admin/cupons/${cupom.id}`, { method: "DELETE" })
+    registrarAuditoria({
+      tela: "Cupons",
+      acao: "exclusao",
+      tabela: "TAB_CUPOM",
+      registroId: cupom.id,
+      antes: { codigo: cupom.codigo, valor: cupom.valor },
+    })
     carregar()
   }
 

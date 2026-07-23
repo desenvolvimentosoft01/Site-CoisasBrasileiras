@@ -9,6 +9,7 @@ type Pedido = {
   id: string
   status: string
   total: string
+  origem: "site" | "balcao"
   criado_em: string
   cliente_nome: string
 }
@@ -104,8 +105,13 @@ export default function PedidosPage() {
                           className="cursor-pointer border-b border-neutral-800 last:border-0 hover:bg-neutral-900"
                         >
                           <td className="p-0">
-                            <Link href={`/admin/pedidos/${pedido.id}`} className="block p-4">
+                            <Link href={`/admin/pedidos/${pedido.id}`} className="flex items-center gap-2 p-4">
                               {pedido.cliente_nome}
+                              {pedido.origem === "balcao" && (
+                                <span className="rounded-full bg-amber-600/20 px-1.5 py-0.5 text-xs text-amber-400">
+                                  Balcao
+                                </span>
+                              )}
                             </Link>
                           </td>
                           <td className="p-0">

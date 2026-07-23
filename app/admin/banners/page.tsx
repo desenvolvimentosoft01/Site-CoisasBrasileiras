@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, ImagePlus, List } from "lucide-react"
+import { registrarAuditoria } from "@/lib/auditoria"
 
 type Banner = {
   id: string
@@ -132,6 +133,16 @@ export default function BannersPage() {
       return
     }
 
+    const salvo = await resposta.json()
+    registrarAuditoria({
+      tela: "Banners",
+      acao: editando ? "edicao" : "cadastro",
+      tabela: "TAB_BANNER",
+      registroId: editando?.id ?? salvo.id,
+      antes: editando ? { titulo: editando.titulo, ativo: editando.ativo } : null,
+      depois: { titulo, ativo },
+    })
+
     setAba("lista")
     carregar()
   }
@@ -139,6 +150,13 @@ export default function BannersPage() {
   async function excluir(banner: Banner) {
     if (!confirm(`Excluir o banner "${banner.titulo}"?`)) return
     await fetch(`/api/admin/banners/${banner.id}`, { method: "DELETE" })
+    registrarAuditoria({
+      tela: "Banners",
+      acao: "exclusao",
+      tabela: "TAB_BANNER",
+      registroId: banner.id,
+      antes: { titulo: banner.titulo },
+    })
     carregar()
   }
 

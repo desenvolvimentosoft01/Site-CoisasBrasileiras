@@ -1,6 +1,7 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
 import { preferenceMP } from "@/lib/mercadopago"
+import { criarCheckoutPagBank } from "@/lib/pagbank"
 import { calcularFrete } from "@/lib/configuracoes"
 import { enviarEmail, templatePedidoCriado } from "@/lib/email"
 import { NextResponse } from "next/server"
@@ -12,7 +13,8 @@ export async function POST(request: Request) {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
   const cliente = sessaoOuErro
 
-  const { endereco, itens, cupomCodigo } = await request.json()
+  const { endereco, itens, cupomCodigo, gateway } = await request.json()
+  const gatewayEscolhido: "mercadopago" | "pagbank" = gateway === "pagbank" ? "pagbank" : "mercadopago"
 
   if (!Array.isArray(itens) || itens.length === 0) {
     return NextResponse.json({ erro: "Carrinho vazio" }, { status: 400 })
@@ -48,6 +50,7 @@ export async function POST(request: Request) {
       )
 
       let subtotal = 0
+      let pesoKg = 0
       const itensParaInserir: {
         produtoId: string
         nome: string
@@ -59,7 +62,7 @@ export async function POST(request: Request) {
       // no preco/quantidade que vem do client.
       for (const item of itens as ItemRequisicao[]) {
         const [produto] = await q(
-          "SELECT id, nome, preco, preco_promocional, estoque FROM TAB_PRODUTO WHERE id = $1 AND ativo = true FOR UPDATE",
+          "SELECT id, nome, preco, preco_promocional, estoque, peso_kg FROM TAB_PRODUTO WHERE id = $1 AND ativo = true FOR UPDATE",
           [item.produtoId]
         )
 
@@ -72,6 +75,7 @@ export async function POST(request: Request) {
 
         const precoUnitario = Number(produto.preco_promocional ?? produto.preco)
         subtotal += precoUnitario * item.quantidade
+        pesoKg += Number(produto.peso_kg || 0) * item.quantidade
 
         itensParaInserir.push({
           produtoId: produto.id,
@@ -85,9 +89,9 @@ export async function POST(request: Request) {
         // produto continua disponivel normalmente.
       }
 
-      // Frete calculado no servidor a partir das configuracoes da loja -
-      // nunca confia num valor de frete vindo do client.
-      const valorFrete = await calcularFrete(subtotal)
+      // Frete calculado no servidor a partir do peso real dos itens e do
+      // estado de entrega - nunca confia num valor de frete vindo do client.
+      const { valor: valorFrete } = await calcularFrete({ subtotal, pesoKg, estado: endereco.estado })
 
       // Cupom revalidado e aplicado dentro da propria transacao, com
       // FOR UPDATE na linha do cupom - evita que dois checkouts simultaneos
@@ -135,10 +139,10 @@ export async function POST(request: Request) {
       const total = subtotal + valorFrete - valorDesconto
 
       const [pedidoCriado] = await q(
-        `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento')
+        `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status, gateway_pagamento)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento', $8)
          RETURNING id`,
-        [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total]
+        [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total, gatewayEscolhido]
       )
 
       for (const item of itensParaInserir) {
@@ -154,55 +158,94 @@ export async function POST(request: Request) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
     const ehHttps = siteUrl.startsWith("https://")
 
-    // auto_return exige back_urls publicas em https - em dev local (http) o
-    // Mercado Pago rejeita, entao so habilitamos quando o site ja estiver publicado.
-    const preferencia = await preferenceMP.create({
-      body: {
-        items: [
-          ...pedido.itensParaInserir.map(
-            (item: { produtoId: string; nome: string; quantidade: number; precoUnitario: number }) => ({
-              id: item.produtoId,
-              title: item.nome,
-              quantity: item.quantidade,
-              unit_price: item.precoUnitario,
-              currency_id: "BRL",
-            })
-          ),
-          ...(pedido.valorFrete > 0
-            ? [
-                {
-                  id: "frete",
-                  title: "Frete",
-                  quantity: 1,
-                  unit_price: pedido.valorFrete,
-                  currency_id: "BRL" as const,
-                },
-              ]
-            : []),
-          // O Mercado Pago aceita item com preco negativo para representar
-          // desconto, desde que a soma final feche com o total do pedido.
-          ...(pedido.valorDesconto > 0
-            ? [
-                {
-                  id: "desconto",
-                  title: "Desconto (cupom)",
-                  quantity: 1,
-                  unit_price: -pedido.valorDesconto,
-                  currency_id: "BRL" as const,
-                },
-              ]
-            : []),
-        ],
-        external_reference: pedido.id,
-        notification_url: `${siteUrl}/api/webhooks/mercadopago`,
-        back_urls: {
-          success: `${siteUrl}/pedido/${pedido.id}`,
-          pending: `${siteUrl}/pedido/${pedido.id}`,
-          failure: `${siteUrl}/pedido/${pedido.id}`,
-        },
-        ...(ehHttps ? { auto_return: "approved" as const } : {}),
-      },
-    })
+    let checkoutUrl: string | null | undefined
+
+    // A criacao do link de pagamento fica isolada num try/catch proprio: um
+    // erro aqui e sempre de infraestrutura (token nao configurado, gateway
+    // fora do ar) e nunca deve vazar detalhe interno (nome de variavel de
+    // ambiente, corpo de erro da API externa) pro cliente no checkout - so
+    // uma mensagem generica. O detalhe real vai pro log do servidor.
+    try {
+      if (gatewayEscolhido === "pagbank") {
+        // Consolida tudo (itens + frete - desconto) num unico item: a API do
+        // PagBank nao documenta suporte a item com preco negativo pra desconto
+        // como o Mercado Pago aceita, entao evitamos o risco de a soma dos itens
+        // nao bater com o total cobrado.
+        const totalPedido = pedido.subtotal + pedido.valorFrete - pedido.valorDesconto
+        const checkoutPagBank = await criarCheckoutPagBank({
+          referenceId: pedido.id,
+          itens: [
+            {
+              referenceId: pedido.id,
+              nome: `Pedido Coisas Brasileiras #${String(pedido.id).slice(0, 8).toUpperCase()}`,
+              quantidade: 1,
+              valorUnitario: totalPedido,
+            },
+          ],
+          valorFrete: 0, // ja incluso no item consolidado acima
+          returnUrl: `${siteUrl}/pedido/${pedido.id}`,
+          notificationUrl: `${siteUrl}/api/webhooks/pagbank`,
+        })
+        checkoutUrl = checkoutPagBank.redirect_url
+      } else {
+        // auto_return exige back_urls publicas em https - em dev local (http) o
+        // Mercado Pago rejeita, entao so habilitamos quando o site ja estiver publicado.
+        const preferencia = await preferenceMP.create({
+          body: {
+            items: [
+              ...pedido.itensParaInserir.map(
+                (item: { produtoId: string; nome: string; quantidade: number; precoUnitario: number }) => ({
+                  id: item.produtoId,
+                  title: item.nome,
+                  quantity: item.quantidade,
+                  unit_price: item.precoUnitario,
+                  currency_id: "BRL",
+                })
+              ),
+              ...(pedido.valorFrete > 0
+                ? [
+                    {
+                      id: "frete",
+                      title: "Frete",
+                      quantity: 1,
+                      unit_price: pedido.valorFrete,
+                      currency_id: "BRL" as const,
+                    },
+                  ]
+                : []),
+              // O Mercado Pago aceita item com preco negativo para representar
+              // desconto, desde que a soma final feche com o total do pedido.
+              ...(pedido.valorDesconto > 0
+                ? [
+                    {
+                      id: "desconto",
+                      title: "Desconto (cupom)",
+                      quantity: 1,
+                      unit_price: -pedido.valorDesconto,
+                      currency_id: "BRL" as const,
+                    },
+                  ]
+                : []),
+            ],
+            external_reference: pedido.id,
+            notification_url: `${siteUrl}/api/webhooks/mercadopago`,
+            back_urls: {
+              success: `${siteUrl}/pedido/${pedido.id}`,
+              pending: `${siteUrl}/pedido/${pedido.id}`,
+              failure: `${siteUrl}/pedido/${pedido.id}`,
+            },
+            ...(ehHttps ? { auto_return: "approved" as const } : {}),
+          },
+        })
+        checkoutUrl = preferencia.init_point
+      }
+    } catch (erroGateway) {
+      console.error("[checkout] Falha ao criar link de pagamento:", erroGateway)
+      return NextResponse.json(
+        { erro: "Nao foi possivel iniciar o pagamento agora. Tente novamente em instantes." },
+        { status: 502 }
+      )
+    }
 
     // Nao usa await de proposito - o email nao deve atrasar a resposta do
     // checkout, e uma falha de envio ja e tratada (logada) dentro de enviarEmail.
@@ -217,7 +260,7 @@ export async function POST(request: Request) {
       }),
     })
 
-    return NextResponse.json({ pedidoId: pedido.id, checkoutUrl: preferencia.init_point })
+    return NextResponse.json({ pedidoId: pedido.id, checkoutUrl })
   } catch (erro) {
     return NextResponse.json(
       { erro: erro instanceof Error ? erro.message : "Erro ao processar pedido" },

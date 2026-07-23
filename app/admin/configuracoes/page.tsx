@@ -1,18 +1,32 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone } from "@/lib/mascaras"
-import { Phone, Truck, Megaphone, Palette } from "lucide-react"
+import { Phone, Truck, Megaphone, Palette, Plug } from "lucide-react"
 
 export default function ConfiguracoesPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-neutral-400">Carregando...</p>}>
+      <ConfiguracoesConteudo />
+    </Suspense>
+  )
+}
+
+function ConfiguracoesConteudo() {
+  const searchParams = useSearchParams()
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
+  const [blingStatus, setBlingStatus] = useState<{ conectado: boolean; expiraEm: string | null } | null>(
+    null
+  )
 
   const [whatsapp, setWhatsapp] = useState("")
   const [instagram, setInstagram] = useState("")
@@ -40,6 +54,14 @@ export default function ConfiguracoesPage() {
         setCarregando(false)
       })
   }, [])
+
+  useEffect(() => {
+    fetch("/api/admin/bling/status")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setBlingStatus)
+  }, [])
+
+  const mensagemBling = searchParams.get("bling")
 
   async function salvar(evento: React.FormEvent) {
     evento.preventDefault()
@@ -94,6 +116,10 @@ export default function ConfiguracoesPage() {
               <Megaphone size={14} className="mr-1.5" />
               Anuncio
             </TabsTrigger>
+            <TabsTrigger value="integracoes">
+              <Plug size={14} className="mr-1.5" />
+              Integracoes
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="contato" className="mt-4">
@@ -131,20 +157,23 @@ export default function ConfiguracoesPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="frete" className="mt-4">
+          <TabsContent value="frete" className="mt-4 space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm text-neutral-400">Frete</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Valor base (R$)</Label>
+                  <Label>Valor base / fallback (R$)</Label>
                   <Input
                     inputMode="numeric"
                     value={freteValorBase}
                     onChange={(e) => setFreteValorBase(mascaraMoeda(e.target.value))}
                     placeholder="0,00"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Usado so quando nao ha faixa de peso/regiao cadastrada pro estado do cliente.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label>Frete gratis acima de (R$)</Label>
@@ -155,6 +184,25 @@ export default function ConfiguracoesPage() {
                     placeholder="0,00"
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="flex items-center justify-between pt-6">
+                <div>
+                  <p className="text-sm font-medium">Faixas de frete por regiao e peso</p>
+                  <p className="text-xs text-muted-foreground">
+                    E o que realmente calcula o valor mostrado no checkout do site.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  nativeButton={false}
+                  render={<Link href="/admin/configuracoes/frete-faixas" />}
+                >
+                  Gerenciar faixas
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -217,6 +265,57 @@ export default function ConfiguracoesPage() {
                   onChange={(e) => setBannerTextoTopo(e.target.value)}
                   placeholder="Ex: Ganhe 10% off na primeira compra com o cupom BEMVINDO10"
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="integracoes" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm text-neutral-400">Bling (emissao de NF-e)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  So emite nota fiscal a partir do pedido pago - nao sincroniza estoque nem
+                  financeiro com o Bling.
+                </p>
+
+                {mensagemBling === "conectado" && (
+                  <p className="text-sm text-emerald-500">Bling conectado com sucesso!</p>
+                )}
+                {mensagemBling === "erro_state" && (
+                  <p className="text-sm text-red-500">
+                    Nao foi possivel confirmar a conexao (state invalido). Tente novamente.
+                  </p>
+                )}
+                {mensagemBling === "erro_token" && (
+                  <p className="text-sm text-red-500">
+                    O Bling recusou a conexao. Confira as credenciais (BLING_CLIENT_ID/SECRET) e
+                    tente novamente.
+                  </p>
+                )}
+
+                {blingStatus === null ? (
+                  <p className="text-sm text-neutral-400">Carregando status...</p>
+                ) : blingStatus.conectado ? (
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-emerald-600/20 px-2 py-1 text-xs text-emerald-400">
+                      Conectado
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      nativeButton={false}
+                      render={<a href="/api/admin/bling/conectar" />}
+                    >
+                      Reconectar
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" nativeButton={false} render={<a href="/api/admin/bling/conectar" />}>
+                    Conectar com o Bling
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

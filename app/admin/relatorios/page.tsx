@@ -17,6 +17,7 @@ type Relatorio = {
   vendasPorDia: { dia: string; total: string }[]
   produtosMaisVendidos: { nome: string; quantidade: string; faturamento: string }[]
   resumo: { total_pedidos: string; faturamento_total: string; ticket_medio: string }
+  vendasPorOrigem: { origem: "site" | "balcao"; total_pedidos: string; faturamento: string }[]
 }
 
 function formatarDia(dia: string) {
@@ -92,6 +93,38 @@ export default function RelatoriosPage() {
                   <Line type="monotone" dataKey="total" stroke="#10b981" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm text-neutral-400">Vendas por origem</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {dados.vendasPorOrigem.length === 0 ? (
+            <p className="p-6 text-sm text-neutral-500">Nenhuma venda ainda.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[420px] text-sm">
+                <thead>
+                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                    <th className="p-4 font-medium">Origem</th>
+                    <th className="p-4 font-medium">Pedidos</th>
+                    <th className="p-4 font-medium">Faturamento</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dados.vendasPorOrigem.map((linha) => (
+                    <tr key={linha.origem} className="border-b border-neutral-800 last:border-0">
+                      <td className="p-4 capitalize">{linha.origem === "balcao" ? "Balcao" : "Site"}</td>
+                      <td className="p-4">{linha.total_pedidos}</td>
+                      <td className="p-4">{formatarMoeda(linha.faturamento)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

@@ -20,6 +20,19 @@ export async function exigirSessao(): Promise<SessaoAdmin | NextResponse> {
   return sessao
 }
 
+// Mesma ideia, mas exige papel de admin (nao operador) - usada em rotas
+// sensiveis como gestao de usuarios e financeiro.
+export async function exigirAdmin(): Promise<SessaoAdmin | NextResponse> {
+  const sessaoOuErro = await exigirSessao()
+  if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
+
+  if (sessaoOuErro.papel !== "admin") {
+    return NextResponse.json({ erro: "Acesso restrito ao administrador" }, { status: 403 })
+  }
+
+  return sessaoOuErro
+}
+
 // Mesma ideia, mas para rotas do cliente final (checkout, area do cliente).
 export async function exigirSessaoCliente(): Promise<SessaoCliente | NextResponse> {
   const cookieStore = await cookies()

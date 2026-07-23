@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const [enviando, setEnviando] = useState(false)
   const [valorFrete, setValorFrete] = useState(0)
   const [freteGratisAcimaDe, setFreteGratisAcimaDe] = useState(0)
+  const [gateway, setGateway] = useState<"mercadopago" | "pagbank">("mercadopago")
 
   useEffect(() => {
     fetch("/api/cliente/me").then((r) => setLogado(r.ok))
@@ -41,13 +42,25 @@ export default function CheckoutPage() {
   const subtotal = totalCarrinho(itens)
 
   useEffect(() => {
-    fetch(`/api/frete?subtotal=${subtotal}`)
+    if (itens.length === 0) return
+    // So calcula com o estado ja preenchido (apos a busca do CEP) - antes
+    // disso o back-end nao tem regiao pra achar a faixa de frete.
+    if (!estado) return
+
+    fetch("/api/frete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itens: itens.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
+        estado,
+      }),
+    })
       .then((r) => r.json())
       .then((dados) => {
         setValorFrete(dados.valorFrete)
         setFreteGratisAcimaDe(dados.freteGratisAcimaDe)
       })
-  }, [subtotal])
+  }, [itens, estado, subtotal])
 
   async function handleCepChange(valor: string) {
     const formatado = mascaraCEP(valor)
@@ -89,6 +102,7 @@ export default function CheckoutPage() {
         endereco: { cep, logradouro, numero, complemento, bairro, cidade, estado },
         itens: itens.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
         cupomCodigo: cupom?.codigo,
+        gateway,
       }),
     })
 
@@ -196,13 +210,42 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label>Forma de pagamento</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setGateway("mercadopago")}
+                    className={`rounded-md border px-4 py-3 text-sm font-medium transition-colors ${
+                      gateway === "mercadopago"
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-800"
+                        : "border-neutral-200 text-neutral-500 hover:border-neutral-300"
+                    }`}
+                  >
+                    Mercado Pago
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGateway("pagbank")}
+                    className={`rounded-md border px-4 py-3 text-sm font-medium transition-colors ${
+                      gateway === "pagbank"
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-800"
+                        : "border-neutral-200 text-neutral-500 hover:border-neutral-300"
+                    }`}
+                  >
+                    PagBank
+                  </button>
+                </div>
+              </div>
+
               {erro && <p className="text-sm text-red-500">{erro}</p>}
 
               <Button type="submit" size="lg" className="w-full" disabled={enviando || logado === null}>
                 {enviando ? "Finalizando..." : "Confirmar pedido"}
               </Button>
               <p className="text-xs text-neutral-400">
-                Voce sera redirecionado para o Mercado Pago para concluir o pagamento.
+                Voce sera redirecionado para o {gateway === "pagbank" ? "PagBank" : "Mercado Pago"} para
+                concluir o pagamento (Pix, cartao, boleto e debito, conforme disponibilidade).
               </p>
             </form>
           </CardContent>
