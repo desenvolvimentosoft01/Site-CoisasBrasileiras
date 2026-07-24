@@ -14,7 +14,10 @@ export async function POST(request: Request) {
   const chaveLimite = `admin:${login}`
   if (limiteExcedido(chaveLimite)) {
     return NextResponse.json(
-      { erro: "Muitas tentativas. Aguarde alguns minutos e tente novamente." },
+      {
+        erro:
+          "Muitas tentativas. Aguarde alguns minutos e tente novamente ou entre em contato com o time de desenvolvimento (desenvolvimentosoft01@gmail.com).",
+      },
       { status: 429 }
     )
   }
