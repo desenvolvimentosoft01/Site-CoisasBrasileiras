@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatarMoeda } from "@/lib/mascaras"
 import Link from "next/link"
 import { AlertTriangle, Package, ShoppingCart, Store, Wallet, Clock, type LucideIcon } from "lucide-react"
+import { LabelCanal } from "@/components/admin/label-canal"
 
 // Um "tema" de cor por indicador do dashboard, pra cada card ter identidade
 // visual propria em vez de ficar tudo branco/cinza igual.
@@ -72,7 +73,7 @@ export default async function DashboardPage() {
       "SELECT id, nome, estoque, estoque_minimo FROM TAB_PRODUTO WHERE ativo = true AND estoque <= estoque_minimo ORDER BY estoque LIMIT 5"
     ),
     query(
-      `SELECT p.id, p.status, p.total, p.origem, p.criado_em,
+      `SELECT p.id, p.status, p.total, p.origem, p.canal, p.criado_em,
          COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcao') AS cliente_nome
        FROM TAB_PEDIDO p LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
        ORDER BY p.criado_em DESC LIMIT 5`
@@ -119,13 +120,9 @@ export default async function DashboardPage() {
                 >
                   <div>
                     <div className="font-medium">{pedido.cliente_nome}</div>
-                    <div className="text-xs text-slate-400">
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
                       {rotulosStatus[pedido.status] ?? pedido.status}
-                      {pedido.origem === "balcao" && (
-                        <span className="ml-2 rounded-full bg-amber-600/20 px-1.5 py-0.5 text-amber-400">
-                          Balcao
-                        </span>
-                      )}
+                      <LabelCanal canal={pedido.canal ?? (pedido.origem === "balcao" ? "balcao" : "site")} />
                     </div>
                   </div>
                   <span className="font-medium">{formatarMoeda(pedido.total)}</span>
