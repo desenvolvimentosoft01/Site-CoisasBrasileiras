@@ -122,7 +122,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
       {Object.entries(porRegiao).map(([regiao, lista]) => (
         <Card key={regiao}>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">
+            <CardTitle className="text-sm text-slate-500">
               {ROTULOS_REGIAO[regiao as Faixa["regiao"]]}
             </CardTitle>
           </CardHeader>
@@ -130,7 +130,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Peso (kg)</th>
                     <th className="p-4 font-medium">Valor (R$)</th>
                     <th className="p-4 font-medium">Prazo (dias)</th>
@@ -139,8 +139,8 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
                 </thead>
                 <tbody>
                   {lista.map((faixa) => (
-                    <tr key={faixa.id} className="border-b border-neutral-800 last:border-0">
-                      <td className="p-4 text-neutral-400">
+                    <tr key={faixa.id} className="border-b border-slate-200 last:border-0">
+                      <td className="p-4 text-slate-500">
                         {faixa.peso_min_kg} - {faixa.peso_max_kg}
                       </td>
                       <td className="p-4">
@@ -194,7 +194,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Adicionar faixa</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Adicionar faixa</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-5">
           <div className="space-y-2">

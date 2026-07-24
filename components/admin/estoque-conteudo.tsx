@@ -84,7 +84,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative max-w-xs flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <Input
             placeholder="Buscar por nome ou SKU..."
             value={busca}
@@ -103,12 +103,12 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
       <Card>
         <CardContent className="p-0">
           {filtrados.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-400">Nenhum produto encontrado.</p>
+            <p className="p-6 text-sm text-slate-500">Nenhum produto encontrado.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Produto</th>
                     <th className="p-4 font-medium">SKU</th>
                     <th className="p-4 font-medium">Minimo</th>
@@ -122,17 +122,17 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
                     const valorEdicao = edicoes[produto.id] ?? String(produto.estoque)
                     const alterado = valorEdicao !== String(produto.estoque)
                     return (
-                      <tr key={produto.id} className="border-b border-neutral-800 last:border-0">
+                      <tr key={produto.id} className="border-b border-slate-200 last:border-0">
                         <td className="p-4">
                           {produto.nome}
                           {!produto.ativo && (
-                            <span className="ml-2 rounded-full bg-neutral-700/40 px-2 py-0.5 text-xs text-neutral-400">
+                            <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500">
                               inativo
                             </span>
                           )}
                         </td>
-                        <td className="p-4 text-neutral-400">{produto.sku || "-"}</td>
-                        <td className="p-4 text-neutral-400">{produto.estoque_minimo}</td>
+                        <td className="p-4 text-slate-500">{produto.sku || "-"}</td>
+                        <td className="p-4 text-slate-500">{produto.estoque_minimo}</td>
                         <td className="p-4">
                           <span
                             className={`inline-flex items-center gap-1.5 font-medium ${

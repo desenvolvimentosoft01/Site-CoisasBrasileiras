@@ -42,7 +42,7 @@ export default async function FinanceiroPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">A pagar (em aberto)</CardTitle>
+            <CardTitle className="text-sm text-slate-500">A pagar (em aberto)</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold text-red-400">
             {formatarMoeda(totalPagar)}
@@ -50,7 +50,7 @@ export default async function FinanceiroPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">A receber (em aberto)</CardTitle>
+            <CardTitle className="text-sm text-slate-500">A receber (em aberto)</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold text-emerald-400">
             {formatarMoeda(totalReceber)}
@@ -58,7 +58,7 @@ export default async function FinanceiroPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Faturamento do site (mes)</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Faturamento do site (mes)</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">{formatarMoeda(faturamentoMes)}</CardContent>
         </Card>
@@ -67,17 +67,17 @@ export default async function FinanceiroPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Vencendo nos proximos 7 dias</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Vencendo nos proximos 7 dias</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {contasVencendo.length === 0 ? (
-              <p className="text-sm text-neutral-500">Nenhuma conta vencendo.</p>
+              <p className="text-sm text-slate-400">Nenhuma conta vencendo.</p>
             ) : (
               contasVencendo.map((conta) => (
                 <div key={conta.id} className="flex items-center justify-between text-sm">
                   <div>
                     <div className="font-medium">{conta.descricao}</div>
-                    <div className="text-xs text-neutral-500">
+                    <div className="text-xs text-slate-400">
                       {new Date(conta.vencimento).toLocaleDateString("pt-BR")}
                     </div>
                   </div>
@@ -92,14 +92,14 @@ export default async function FinanceiroPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm text-neutral-400">
+            <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
               <AlertTriangle size={16} className="text-amber-500" />
               Atrasadas
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {contasAtrasadas.length === 0 ? (
-              <p className="text-sm text-neutral-500">Nenhuma conta atrasada.</p>
+              <p className="text-sm text-slate-400">Nenhuma conta atrasada.</p>
             ) : (
               contasAtrasadas.map((conta) => (
                 <div key={conta.id} className="flex items-center justify-between text-sm">

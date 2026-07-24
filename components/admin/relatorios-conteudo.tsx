@@ -75,13 +75,13 @@ export function RelatoriosConteudo({
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Pedidos pagos</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Pedidos pagos</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">{dados.resumo.total_pedidos}</CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Faturamento no periodo</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Faturamento no periodo</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">
             {formatarMoeda(dados.resumo.faturamento_total)}
@@ -89,7 +89,7 @@ export function RelatoriosConteudo({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Ticket medio</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Ticket medio</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">
             {formatarMoeda(dados.resumo.ticket_medio)}
@@ -99,11 +99,11 @@ export function RelatoriosConteudo({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Vendas no periodo</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Vendas no periodo</CardTitle>
         </CardHeader>
         <CardContent>
           {grafico.length === 0 ? (
-            <p className="text-sm text-neutral-500">Nenhuma venda no periodo.</p>
+            <p className="text-sm text-slate-400">Nenhuma venda no periodo.</p>
           ) : (
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -125,16 +125,16 @@ export function RelatoriosConteudo({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Vendas por origem</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Vendas por origem</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {dados.vendasPorOrigem.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-500">Nenhuma venda no periodo.</p>
+            <p className="p-6 text-sm text-slate-400">Nenhuma venda no periodo.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[420px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Origem</th>
                     <th className="p-4 font-medium">Pedidos</th>
                     <th className="p-4 font-medium">Faturamento</th>
@@ -142,7 +142,7 @@ export function RelatoriosConteudo({
                 </thead>
                 <tbody>
                   {dados.vendasPorOrigem.map((linha) => (
-                    <tr key={linha.origem} className="border-b border-neutral-800 last:border-0">
+                    <tr key={linha.origem} className="border-b border-slate-200 last:border-0">
                       <td className="p-4 capitalize">{linha.origem === "balcao" ? "Balcao" : "Site"}</td>
                       <td className="p-4">{linha.total_pedidos}</td>
                       <td className="p-4">{formatarMoeda(linha.faturamento)}</td>
@@ -157,16 +157,16 @@ export function RelatoriosConteudo({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Produtos mais vendidos no periodo</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Produtos mais vendidos no periodo</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {dados.produtosMaisVendidos.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-500">Nenhuma venda no periodo.</p>
+            <p className="p-6 text-sm text-slate-400">Nenhuma venda no periodo.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Produto</th>
                     <th className="p-4 font-medium">Quantidade</th>
                     <th className="p-4 font-medium">Faturamento</th>
@@ -174,7 +174,7 @@ export function RelatoriosConteudo({
                 </thead>
                 <tbody>
                   {dados.produtosMaisVendidos.map((produto, i) => (
-                    <tr key={i} className="border-b border-neutral-800 last:border-0">
+                    <tr key={i} className="border-b border-slate-200 last:border-0">
                       <td className="p-4">{produto.nome}</td>
                       <td className="p-4">{produto.quantidade}</td>
                       <td className="p-4">{formatarMoeda(produto.faturamento)}</td>
@@ -192,7 +192,7 @@ export function RelatoriosConteudo({
         <div className="grid gap-4 sm:grid-cols-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm text-neutral-400">Produtos ativos</CardTitle>
+              <CardTitle className="text-sm text-slate-500">Produtos ativos</CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-semibold">
               {dados.resumoEstoque.total_produtos}
@@ -200,7 +200,7 @@ export function RelatoriosConteudo({
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm text-neutral-400">Unidades em estoque</CardTitle>
+              <CardTitle className="text-sm text-slate-500">Unidades em estoque</CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-semibold">
               {dados.resumoEstoque.unidades_em_estoque}
@@ -208,7 +208,7 @@ export function RelatoriosConteudo({
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm text-neutral-400">Valor em estoque</CardTitle>
+              <CardTitle className="text-sm text-slate-500">Valor em estoque</CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-semibold">
               {formatarMoeda(dados.resumoEstoque.valor_em_estoque)}
@@ -216,7 +216,7 @@ export function RelatoriosConteudo({
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-1.5 text-sm text-neutral-400">
+              <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
                 <AlertTriangle size={14} className="text-amber-500" />
                 Em baixa
               </CardTitle>
@@ -230,16 +230,16 @@ export function RelatoriosConteudo({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Produtos com estoque baixo</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Produtos com estoque baixo</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {dados.produtosEmBaixa.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-500">Nenhum produto em baixa.</p>
+            <p className="p-6 text-sm text-slate-400">Nenhum produto em baixa.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Produto</th>
                     <th className="p-4 font-medium">SKU</th>
                     <th className="p-4 font-medium">Minimo</th>
@@ -248,14 +248,14 @@ export function RelatoriosConteudo({
                 </thead>
                 <tbody>
                   {dados.produtosEmBaixa.map((produto) => (
-                    <tr key={produto.id} className="border-b border-neutral-800 last:border-0">
+                    <tr key={produto.id} className="border-b border-slate-200 last:border-0">
                       <td className="p-4">
                         <Link href="/admin/estoque" className="hover:underline">
                           {produto.nome}
                         </Link>
                       </td>
-                      <td className="p-4 text-neutral-400">{produto.sku || "-"}</td>
-                      <td className="p-4 text-neutral-400">{produto.estoque_minimo}</td>
+                      <td className="p-4 text-slate-500">{produto.sku || "-"}</td>
+                      <td className="p-4 text-slate-500">{produto.estoque_minimo}</td>
                       <td className="p-4 font-medium text-amber-500">{produto.estoque}</td>
                     </tr>
                   ))}

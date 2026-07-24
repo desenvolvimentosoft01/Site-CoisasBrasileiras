@@ -156,12 +156,12 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
           <Card>
             <CardContent className="p-0">
               {cupons.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">Nenhum cupom cadastrado ainda.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhum cupom cadastrado ainda.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[640px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Codigo</th>
                         <th className="p-4 font-medium">Desconto</th>
                         <th className="p-4 font-medium">Usos</th>
@@ -171,7 +171,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                     </thead>
                     <tbody>
                       {cupons.map((cupom) => (
-                        <tr key={cupom.id} className="border-b border-neutral-800 last:border-0">
+                        <tr key={cupom.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4 font-mono">{cupom.codigo}</td>
                           <td className="p-4">
                             {cupom.tipo === "percentual"
@@ -183,7 +183,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                               </span>
                             )}
                           </td>
-                          <td className="p-4 text-neutral-400">
+                          <td className="p-4 text-slate-500">
                             {cupom.usos_atuais}
                             {cupom.uso_maximo ? ` / ${cupom.uso_maximo}` : ""}
                           </td>
@@ -192,7 +192,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                               className={`rounded-full px-2 py-1 text-xs ${
                                 cupom.ativo
                                   ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-neutral-700/40 text-neutral-400"
+                                  : "bg-slate-200 text-slate-500"
                               }`}
                             >
                               {cupom.ativo ? "Ativo" : "Inativo"}
@@ -250,7 +250,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                   <select
                     value={tipo}
                     onChange={(e) => setTipo(e.target.value as "percentual" | "fixo")}
-                    className="w-full rounded-md border border-neutral-700 bg-neutral-900 p-2 text-sm"
+                    className="w-full rounded-md border border-slate-300 bg-slate-100 p-2 text-sm"
                   >
                     <option value="percentual">Percentual (%)</option>
                     <option value="fixo">Valor fixo (R$)</option>

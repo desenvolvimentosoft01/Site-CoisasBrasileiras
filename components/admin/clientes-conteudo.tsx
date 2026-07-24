@@ -133,12 +133,12 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
       <Card>
         <CardContent className="p-0">
           {clientesFiltrados.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-400">Nenhum cliente encontrado.</p>
+            <p className="p-6 text-sm text-slate-500">Nenhum cliente encontrado.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Nome</th>
                     <th className="p-4 font-medium">Origem</th>
                     <th className="p-4 font-medium">Email</th>
@@ -149,7 +149,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                 </thead>
                 <tbody>
                   {clientesFiltrados.map((cliente) => (
-                    <tr key={cliente.id} className="border-b border-neutral-800 last:border-0">
+                    <tr key={cliente.id} className="border-b border-slate-200 last:border-0">
                       <td className="p-4">{cliente.nome}</td>
                       <td className="p-4">
                         <span
@@ -162,9 +162,9 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                           {cliente.veio_do_site ? "Site" : "Balcao"}
                         </span>
                       </td>
-                      <td className="p-4 text-neutral-400">{cliente.email || "-"}</td>
-                      <td className="p-4 text-neutral-400">{cliente.telefone || "-"}</td>
-                      <td className="p-4 text-neutral-400">{cliente.cpf_cnpj || "-"}</td>
+                      <td className="p-4 text-slate-500">{cliente.email || "-"}</td>
+                      <td className="p-4 text-slate-500">{cliente.telefone || "-"}</td>
+                      <td className="p-4 text-slate-500">{cliente.cpf_cnpj || "-"}</td>
                       <td className="p-4 text-right">
                         <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(cliente)}>
                           <Pencil size={16} />

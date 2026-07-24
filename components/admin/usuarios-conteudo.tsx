@@ -153,12 +153,12 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
           <Card>
             <CardContent className="p-0">
               {usuarios.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">Nenhum usuario cadastrado ainda.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhum usuario cadastrado ainda.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[560px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">Email</th>
                         <th className="p-4 font-medium">Papel</th>
@@ -168,16 +168,16 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                     </thead>
                     <tbody>
                       {usuarios.map((usuario) => (
-                        <tr key={usuario.id} className="border-b border-neutral-800 last:border-0">
+                        <tr key={usuario.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4">{usuario.nome}</td>
-                          <td className="p-4 text-neutral-400">{usuario.email}</td>
-                          <td className="p-4 capitalize text-neutral-400">{usuario.papel}</td>
+                          <td className="p-4 text-slate-500">{usuario.email}</td>
+                          <td className="p-4 capitalize text-slate-500">{usuario.papel}</td>
                           <td className="p-4">
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 usuario.ativo
                                   ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-neutral-700/40 text-neutral-400"
+                                  : "bg-slate-200 text-slate-500"
                               }`}
                             >
                               {usuario.ativo ? "Ativo" : "Inativo"}

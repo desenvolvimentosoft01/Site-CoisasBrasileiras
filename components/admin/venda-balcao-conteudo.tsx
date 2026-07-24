@@ -265,12 +265,12 @@ export function VendaBalcaoConteudo({
           <Card>
             <CardContent className="p-0">
               {vendasFiltradas.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">Nenhuma venda encontrada.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhuma venda encontrada.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[640px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Cliente</th>
                         <th className="p-4 font-medium">Origem</th>
                         <th className="p-4 font-medium">Status</th>
@@ -280,7 +280,7 @@ export function VendaBalcaoConteudo({
                     </thead>
                     <tbody>
                       {vendasFiltradas.map((venda) => (
-                        <tr key={venda.id} className="border-b border-neutral-800 last:border-0">
+                        <tr key={venda.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4">
                             <Link href={`/admin/pedidos/${venda.id}`} className="hover:underline">
                               {venda.cliente_nome}
@@ -297,11 +297,11 @@ export function VendaBalcaoConteudo({
                               {venda.origem === "balcao" ? "Balcao" : "Site"}
                             </span>
                           </td>
-                          <td className="p-4 text-neutral-400">
+                          <td className="p-4 text-slate-500">
                             {ROTULOS_STATUS[venda.status] ?? venda.status}
                           </td>
                           <td className="p-4">{formatarMoeda(venda.total)}</td>
-                          <td className="p-4 text-neutral-400">
+                          <td className="p-4 text-slate-500">
                             {new Date(venda.criado_em).toLocaleString("pt-BR")}
                           </td>
                         </tr>
@@ -318,7 +318,7 @@ export function VendaBalcaoConteudo({
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative max-w-xs flex-1">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <Input
                   placeholder="Buscar produto..."
                   value={busca}
@@ -342,7 +342,7 @@ export function VendaBalcaoConteudo({
             </div>
 
             {produtosFiltrados.length === 0 ? (
-              <p className="text-sm text-neutral-400">Nenhum produto encontrado.</p>
+              <p className="text-sm text-slate-500">Nenhum produto encontrado.</p>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                 {produtosFiltrados.map((produto) => (
@@ -354,7 +354,7 @@ export function VendaBalcaoConteudo({
                   >
                     <Card className="h-full transition-colors hover:border-primary/50">
                       <CardContent className="space-y-2 p-3">
-                        <div className="flex h-20 items-center justify-center rounded-md bg-neutral-900 text-xs text-neutral-500">
+                        <div className="flex h-20 items-center justify-center rounded-md bg-slate-100 text-xs text-slate-400">
                           {produto.imagem_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -371,7 +371,7 @@ export function VendaBalcaoConteudo({
                           <span className="text-sm font-semibold text-primary">
                             {formatarMoeda(String(precoEfetivo(produto)))}
                           </span>
-                          <span className="text-xs text-neutral-500">Est: {produto.estoque}</span>
+                          <span className="text-xs text-slate-400">Est: {produto.estoque}</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -393,14 +393,14 @@ export function VendaBalcaoConteudo({
               )}
 
               {carrinho.length === 0 ? (
-                <p className="text-sm text-neutral-400">Nenhum item adicionado ainda.</p>
+                <p className="text-sm text-slate-500">Nenhum item adicionado ainda.</p>
               ) : (
                 <div className="space-y-2">
                   {carrinho.map((item) => (
                     <div key={item.produtoId} className="flex items-center justify-between gap-2 text-sm">
                       <div className="flex-1">
                         <p className="line-clamp-1">{item.nome}</p>
-                        <p className="text-xs text-neutral-500">{formatarMoeda(String(item.preco))}</p>
+                        <p className="text-xs text-slate-400">{formatarMoeda(String(item.preco))}</p>
                       </div>
                       <div className="flex items-center gap-1">
                         <Button
@@ -443,7 +443,7 @@ export function VendaBalcaoConteudo({
                   <div className="flex items-center justify-between rounded-md border border-input px-3 py-2 text-sm">
                     <span>{clienteSelecionado.nome}</span>
                     <button onClick={() => setClienteSelecionado(null)}>
-                      <X size={14} className="text-neutral-400" />
+                      <X size={14} className="text-slate-500" />
                     </button>
                   </div>
                 ) : (
@@ -461,12 +461,12 @@ export function VendaBalcaoConteudo({
                             onClick={() => selecionarCliente(cliente)}
                             className="block w-full px-3 py-2 text-left text-sm hover:bg-accent"
                           >
-                            {cliente.nome} <span className="text-xs text-neutral-500">{cliente.email}</span>
+                            {cliente.nome} <span className="text-xs text-slate-400">{cliente.email}</span>
                           </button>
                         ))}
                       </div>
                     )}
-                    <p className="text-xs text-neutral-500">Ou cadastro rapido, sem conta no site:</p>
+                    <p className="text-xs text-slate-400">Ou cadastro rapido, sem conta no site:</p>
                     <Input
                       placeholder="Nome"
                       value={clienteNomeAvulso}

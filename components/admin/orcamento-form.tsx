@@ -195,7 +195,7 @@ export function OrcamentoForm({
                   <select
                     value={item.produtoId || ""}
                     onChange={(e) => e.target.value && selecionarProdutoNoItem(indice, e.target.value)}
-                    className="mb-1 w-full rounded-md border border-neutral-700 bg-neutral-900 p-2 text-sm"
+                    className="mb-1 w-full rounded-md border border-slate-300 bg-slate-100 p-2 text-sm"
                   >
                     <option value="">Item avulso (servico, sem produto)</option>
                     {produtosDisponiveis.map((p) => (
@@ -280,7 +280,7 @@ export function OrcamentoForm({
                       setClienteTelefone("")
                     }}
                   >
-                    <X size={14} className="text-neutral-400" />
+                    <X size={14} className="text-slate-500" />
                   </button>
                 </div>
               ) : (
@@ -306,7 +306,7 @@ export function OrcamentoForm({
                       ))}
                     </div>
                   )}
-                  <p className="text-xs text-neutral-500">Ou preencha direto, sem cadastro:</p>
+                  <p className="text-xs text-slate-400">Ou preencha direto, sem cadastro:</p>
                   <Input
                     placeholder="Nome do cliente"
                     value={clienteNome}
@@ -328,7 +328,7 @@ export function OrcamentoForm({
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-neutral-400">Subtotal</span>
+                <span className="text-slate-500">Subtotal</span>
                 <span>{formatarMoeda(String(subtotal))}</span>
               </div>
               <div className="space-y-2">

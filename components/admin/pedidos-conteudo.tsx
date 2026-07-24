@@ -57,7 +57,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
               <TabsTrigger key={item.valor} value={item.valor} className="flex-none px-3">
                 {item.rotulo}
                 {quantidade > 0 && (
-                  <span className="ml-1.5 rounded-full bg-neutral-700 px-1.5 text-xs text-neutral-300">
+                  <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 text-xs text-slate-400">
                     {quantidade}
                   </span>
                 )}
@@ -70,7 +70,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
           <Card>
             <CardContent className="p-0">
               {pedidosFiltrados.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">
+                <p className="p-6 text-sm text-slate-500">
                   {pedidos.length === 0
                     ? "Nenhum pedido ainda. Essa tela vai preencher quando o checkout do site estiver pronto."
                     : "Nenhum pedido com esse status."}
@@ -79,7 +79,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[520px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Cliente</th>
                         <th className="p-4 font-medium">Status</th>
                         <th className="p-4 font-medium">Total</th>
@@ -90,7 +90,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                       {pedidosFiltrados.map((pedido) => (
                         <tr
                           key={pedido.id}
-                          className="cursor-pointer border-b border-neutral-800 last:border-0 hover:bg-neutral-900"
+                          className="cursor-pointer border-b border-slate-200 last:border-0 hover:bg-slate-100"
                         >
                           <td className="p-0">
                             <Link href={`/admin/pedidos/${pedido.id}`} className="flex items-center gap-2 p-4">
@@ -118,7 +118,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                           <td className="p-0">
                             <Link
                               href={`/admin/pedidos/${pedido.id}`}
-                              className="block p-4 text-neutral-400"
+                              className="block p-4 text-slate-500"
                             >
                               {new Date(pedido.criado_em).toLocaleDateString("pt-BR")}
                             </Link>

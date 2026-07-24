@@ -129,7 +129,7 @@ export default function DetalhePedidoPage() {
   }
 
   if (!pedido) {
-    return <p className="text-sm text-neutral-400">Carregando...</p>
+    return <p className="text-sm text-slate-500">Carregando...</p>
   }
 
   return (
@@ -143,21 +143,21 @@ export default function DetalhePedidoPage() {
             </span>
           )}
         </h1>
-        <p className="text-sm text-neutral-400">
+        <p className="text-sm text-slate-500">
           Feito em {new Date(pedido.criado_em).toLocaleString("pt-BR")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Status</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Status</CardTitle>
         </CardHeader>
         <CardContent>
           <select
             value={pedido.status}
             onChange={(e) => alterarStatus(e.target.value)}
             disabled={salvandoStatus}
-            className="w-full max-w-xs rounded-md border border-neutral-700 bg-neutral-900 p-2 text-sm"
+            className="w-full max-w-xs rounded-md border border-slate-300 bg-slate-100 p-2 text-sm"
           >
             {opcoesStatus.map((opcao) => (
               <option key={opcao.valor} value={opcao.valor}>
@@ -170,7 +170,7 @@ export default function DetalhePedidoPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm text-neutral-400">
+          <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
             <FileText size={16} />
             Nota fiscal (Bling)
           </CardTitle>
@@ -178,7 +178,7 @@ export default function DetalhePedidoPage() {
         <CardContent className="space-y-3">
           {pedido.bling_nota_id ? (
             <div className="space-y-2 text-sm">
-              <p className="text-neutral-400">NF-e emitida (Bling #{pedido.bling_nota_id}).</p>
+              <p className="text-slate-500">NF-e emitida (Bling #{pedido.bling_nota_id}).</p>
               <div className="flex gap-3">
                 {pedido.bling_link_danfe && (
                   <a
@@ -215,7 +215,7 @@ export default function DetalhePedidoPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm text-neutral-400">
+          <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
             <Truck size={16} />
             Rastreio
           </CardTitle>
@@ -251,13 +251,13 @@ export default function DetalhePedidoPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Cliente</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Cliente</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="space-y-1">
               <p>{pedido.cliente_nome}</p>
-              {pedido.cliente_email && <p className="text-neutral-400">{pedido.cliente_email}</p>}
-              {pedido.cliente_telefone && <p className="text-neutral-400">{pedido.cliente_telefone}</p>}
+              {pedido.cliente_email && <p className="text-slate-500">{pedido.cliente_email}</p>}
+              {pedido.cliente_telefone && <p className="text-slate-500">{pedido.cliente_telefone}</p>}
             </div>
             {pedido.cliente_telefone && (
               <Button
@@ -281,9 +281,9 @@ export default function DetalhePedidoPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Endereco de entrega</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Endereco de entrega</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1 text-sm text-neutral-300">
+          <CardContent className="space-y-1 text-sm text-slate-400">
             {pedido.logradouro ? (
               <>
                 <p>
@@ -296,7 +296,7 @@ export default function DetalhePedidoPage() {
                 </p>
               </>
             ) : (
-              <p className="text-neutral-500">Venda balcao - sem entrega.</p>
+              <p className="text-slate-400">Venda balcao - sem entrega.</p>
             )}
           </CardContent>
         </Card>
@@ -304,7 +304,7 @@ export default function DetalhePedidoPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-neutral-400">Itens</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Itens</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {pedido.itens.map((item, i) => (
@@ -317,7 +317,7 @@ export default function DetalhePedidoPage() {
               </span>
             </div>
           ))}
-          <div className="flex justify-between border-t border-neutral-800 pt-2 text-base font-semibold">
+          <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-semibold">
             <span>Total</span>
             <span>{formatarPreco(pedido.total)}</span>
           </div>

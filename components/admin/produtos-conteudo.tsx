@@ -133,14 +133,14 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
           <Card>
             <CardContent className="p-0">
               {produtosFiltrados.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">
+                <p className="p-6 text-sm text-slate-500">
                   {produtos.length === 0 ? "Nenhum produto cadastrado ainda." : "Nenhum produto encontrado."}
                 </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[760px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">SKU</th>
                         <th className="p-4 font-medium">Categorias</th>
@@ -152,16 +152,16 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                     </thead>
                     <tbody>
                       {produtosFiltrados.map((produto) => (
-                        <tr key={produto.id} className="border-b border-neutral-800 last:border-0">
+                        <tr key={produto.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4">{produto.nome}</td>
-                          <td className="p-4 text-neutral-400">{produto.sku || "-"}</td>
-                          <td className="p-4 text-neutral-400">
+                          <td className="p-4 text-slate-500">{produto.sku || "-"}</td>
+                          <td className="p-4 text-slate-500">
                             {produto.categorias.length > 0 ? produto.categorias.join(", ") : "-"}
                           </td>
                           <td className="p-4">
                             {produto.preco_promocional ? (
                               <span>
-                                <span className="text-neutral-500 line-through">
+                                <span className="text-slate-400 line-through">
                                   {formatarPreco(produto.preco)}
                                 </span>{" "}
                                 {formatarPreco(produto.preco_promocional)}
@@ -180,7 +180,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                               className={`rounded-full px-2 py-1 text-xs ${
                                 produto.ativo
                                   ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-neutral-700/40 text-neutral-400"
+                                  : "bg-slate-200 text-slate-500"
                               }`}
                             >
                               {produto.ativo ? "Ativo" : "Inativo"}
@@ -206,7 +206,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
 
         <TabsContent value="formulario" className="mt-4">
           {carregandoDetalhe ? (
-            <p className="text-sm text-neutral-400">Carregando...</p>
+            <p className="text-sm text-slate-500">Carregando...</p>
           ) : (
             <ProdutoForm
               key={editando?.id ?? "novo"}

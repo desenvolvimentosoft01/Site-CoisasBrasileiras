@@ -48,7 +48,7 @@ const CORES_STATUS: Record<Orcamento["status"], string> = {
   aberto: "bg-blue-600/20 text-blue-400",
   aprovado: "bg-emerald-600/20 text-emerald-400",
   recusado: "bg-red-600/20 text-red-400",
-  convertido: "bg-neutral-700/40 text-neutral-300",
+  convertido: "bg-slate-200 text-slate-400",
 }
 
 const FORMAS_PAGAMENTO = [
@@ -146,7 +146,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
 
   if (mostrandoFormulario) {
     return carregandoDetalhe ? (
-      <p className="text-sm text-neutral-400">Carregando...</p>
+      <p className="text-sm text-slate-500">Carregando...</p>
     ) : (
       <OrcamentoForm
         key={editando?.id ?? "novo"}
@@ -176,7 +176,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
               <TabsTrigger key={item.valor} value={item.valor} className="flex-none px-3">
                 {item.rotulo}
                 {quantidade > 0 && (
-                  <span className="ml-1.5 rounded-full bg-neutral-700 px-1.5 text-xs text-neutral-300">
+                  <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 text-xs text-slate-400">
                     {quantidade}
                   </span>
                 )}
@@ -189,12 +189,12 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
           <Card>
             <CardContent className="p-0">
               {orcamentosFiltrados.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">Nenhum orcamento encontrado.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhum orcamento encontrado.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[720px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Numero</th>
                         <th className="p-4 font-medium">Cliente</th>
                         <th className="p-4 font-medium">Status</th>
@@ -205,11 +205,11 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                     </thead>
                     <tbody>
                       {orcamentosFiltrados.map((orcamento) => (
-                        <tr key={orcamento.id} className="border-b border-neutral-800 last:border-0">
+                        <tr key={orcamento.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4 font-mono">OR.{String(orcamento.numero).padStart(4, "0")}</td>
                           <td className="p-4">
                             {orcamento.titulo && (
-                              <p className="text-xs text-neutral-500">{orcamento.titulo}</p>
+                              <p className="text-xs text-slate-400">{orcamento.titulo}</p>
                             )}
                             {orcamento.cliente_nome}
                           </td>
@@ -219,7 +219,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                             </span>
                           </td>
                           <td className="p-4">{formatarMoeda(orcamento.total)}</td>
-                          <td className="p-4 text-neutral-400">
+                          <td className="p-4 text-slate-500">
                             {new Date(orcamento.criado_em).toLocaleDateString("pt-BR")}
                           </td>
                           <td className="p-4 text-right">

@@ -129,12 +129,12 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
           <Card>
             <CardContent className="p-0">
               {categorias.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">Nenhuma categoria cadastrada ainda.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhuma categoria cadastrada ainda.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[480px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">Slug</th>
                         <th className="p-4 font-medium">Status</th>
@@ -143,15 +143,15 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                     </thead>
                     <tbody>
                       {categorias.map((categoria) => (
-                        <tr key={categoria.id} className="border-b border-neutral-800 last:border-0">
+                        <tr key={categoria.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4">{categoria.nome}</td>
-                          <td className="p-4 text-neutral-400">{categoria.slug}</td>
+                          <td className="p-4 text-slate-500">{categoria.slug}</td>
                           <td className="p-4">
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 categoria.ativa
                                   ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-neutral-700/40 text-neutral-400"
+                                  : "bg-slate-200 text-slate-500"
                               }`}
                             >
                               {categoria.ativa ? "Ativa" : "Inativa"}

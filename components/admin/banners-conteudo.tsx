@@ -179,7 +179,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
 
         <TabsContent value="lista" className="mt-4">
           {banners.length === 0 ? (
-            <p className="text-sm text-neutral-400">
+            <p className="text-sm text-slate-500">
               Nenhum banner cadastrado - a home esta usando os slides padrao.
             </p>
           ) : (
@@ -200,7 +200,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                         className={`rounded-full px-2 py-1 text-xs ${
                           banner.ativo
                             ? "bg-emerald-600/20 text-emerald-400"
-                            : "bg-neutral-700/40 text-neutral-400"
+                            : "bg-slate-200 text-slate-500"
                         }`}
                       >
                         {banner.ativo ? "Ativo" : "Inativo"}
@@ -264,7 +264,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                       type="button"
                       onClick={() => setCorFundo(cor.valor)}
                       className={`h-8 w-8 rounded-full bg-gradient-to-br ${cor.valor} ${
-                        corFundo === cor.valor ? "ring-2 ring-emerald-400 ring-offset-2 ring-offset-neutral-900" : ""
+                        corFundo === cor.valor ? "ring-2 ring-emerald-400 ring-offset-2 ring-offset-white" : ""
                       }`}
                       aria-label={cor.rotulo}
                     />
@@ -290,7 +290,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                     type="button"
                     onClick={() => inputArquivoRef.current?.click()}
                     disabled={enviandoImagem}
-                    className="flex h-24 w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-neutral-600 text-neutral-400 hover:border-emerald-500 hover:text-emerald-400"
+                    className="flex h-24 w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-slate-500 hover:border-emerald-500 hover:text-emerald-400"
                   >
                     <ImagePlus size={20} />
                     <span className="text-xs">{enviandoImagem ? "Enviando..." : "Adicionar imagem"}</span>

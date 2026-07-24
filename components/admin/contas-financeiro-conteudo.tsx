@@ -196,12 +196,12 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
           <Card>
             <CardContent className="p-0">
               {contas.length === 0 ? (
-                <p className="p-6 text-sm text-neutral-400">Nenhuma conta cadastrada ainda.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhuma conta cadastrada ainda.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[720px] text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Tipo</th>
                         <th className="p-4 font-medium">Descricao</th>
                         <th className="p-4 font-medium">Vencimento</th>
@@ -212,10 +212,10 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                     </thead>
                     <tbody>
                       {contas.map((conta) => (
-                        <tr key={conta.id} className="border-b border-neutral-800 last:border-0">
+                        <tr key={conta.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4 capitalize">{conta.tipo}</td>
                           <td className="p-4">{conta.descricao}</td>
-                          <td className="p-4 text-neutral-400">
+                          <td className="p-4 text-slate-500">
                             {new Date(conta.vencimento).toLocaleDateString("pt-BR")}
                           </td>
                           <td className={conta.tipo === "pagar" ? "p-4 text-red-400" : "p-4 text-emerald-400"}>

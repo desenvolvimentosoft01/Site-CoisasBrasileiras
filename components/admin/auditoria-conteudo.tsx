@@ -20,7 +20,7 @@ const corAcao: Record<RegistroAuditoria["acao"], string> = {
   cadastro: "bg-emerald-600/20 text-emerald-400",
   edicao: "bg-blue-600/20 text-blue-400",
   exclusao: "bg-red-600/20 text-red-400",
-  inativacao: "bg-neutral-700/40 text-neutral-400",
+  inativacao: "bg-slate-200 text-slate-500",
   ativacao: "bg-emerald-600/20 text-emerald-400",
 }
 
@@ -51,12 +51,12 @@ export function AuditoriaConteudo({ registrosIniciais }: { registrosIniciais: Re
       <Card>
         <CardContent className="p-0">
           {filtrados.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-400">Nenhum registro encontrado.</p>
+            <p className="p-6 text-sm text-slate-500">Nenhum registro encontrado.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Data</th>
                     <th className="p-4 font-medium">Usuario</th>
                     <th className="p-4 font-medium">Tela</th>
@@ -68,20 +68,20 @@ export function AuditoriaConteudo({ registrosIniciais }: { registrosIniciais: Re
                   {filtrados.map((registro) => (
                     <tr
                       key={registro.id}
-                      className="cursor-pointer border-b border-neutral-800 last:border-0 hover:bg-accent/50"
+                      className="cursor-pointer border-b border-slate-200 last:border-0 hover:bg-accent/50"
                       onClick={() => setDetalhe(registro)}
                     >
-                      <td className="p-4 whitespace-nowrap text-neutral-400">
+                      <td className="p-4 whitespace-nowrap text-slate-500">
                         {new Date(registro.criado_em).toLocaleString("pt-BR")}
                       </td>
                       <td className="p-4">{registro.usuario_nome || "-"}</td>
-                      <td className="p-4 text-neutral-400">{registro.tela}</td>
+                      <td className="p-4 text-slate-500">{registro.tela}</td>
                       <td className="p-4">
                         <span className={`rounded-full px-2 py-1 text-xs ${corAcao[registro.acao]}`}>
                           {registro.acao}
                         </span>
                       </td>
-                      <td className="p-4 text-neutral-400">{registro.tabela}</td>
+                      <td className="p-4 text-slate-500">{registro.tabela}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -108,16 +108,16 @@ export function AuditoriaConteudo({ registrosIniciais }: { registrosIniciais: Re
 
               {detalhe.dados_antes && (
                 <div>
-                  <p className="mb-1 text-xs font-medium text-neutral-400">Antes</p>
-                  <pre className="overflow-x-auto rounded-md bg-neutral-900 p-3 text-xs">
+                  <p className="mb-1 text-xs font-medium text-slate-500">Antes</p>
+                  <pre className="overflow-x-auto rounded-md bg-slate-100 p-3 text-xs">
                     {JSON.stringify(detalhe.dados_antes, null, 2)}
                   </pre>
                 </div>
               )}
               {detalhe.dados_depois && (
                 <div>
-                  <p className="mb-1 text-xs font-medium text-neutral-400">Depois</p>
-                  <pre className="overflow-x-auto rounded-md bg-neutral-900 p-3 text-xs">
+                  <p className="mb-1 text-xs font-medium text-slate-500">Depois</p>
+                  <pre className="overflow-x-auto rounded-md bg-slate-100 p-3 text-xs">
                     {JSON.stringify(detalhe.dados_depois, null, 2)}
                   </pre>
                 </div>

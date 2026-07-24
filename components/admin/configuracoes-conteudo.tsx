@@ -33,7 +33,7 @@ export function ConfiguracoesConteudo({
   blingStatus: BlingStatus
 }) {
   return (
-    <Suspense fallback={<p className="text-sm text-neutral-400">Carregando...</p>}>
+    <Suspense fallback={<p className="text-sm text-slate-500">Carregando...</p>}>
       <ConfiguracoesFormulario configuracoesIniciais={configuracoesIniciais} blingStatus={blingStatus} />
     </Suspense>
   )
@@ -130,7 +130,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="contato" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-neutral-400">Contato</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Contato</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -165,7 +165,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="frete" className="mt-4 space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-neutral-400">Frete</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Frete</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -234,7 +234,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="aparencia" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-neutral-400">Aparencia do site</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Aparencia do site</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -252,7 +252,7 @@ function ConfiguracoesFormulario({
                       type="color"
                       value={corPrimaria}
                       onChange={(e) => setCorPrimaria(e.target.value)}
-                      className="h-9 w-14 cursor-pointer rounded-md border border-neutral-700 bg-transparent"
+                      className="h-9 w-14 cursor-pointer rounded-md border border-slate-300 bg-transparent"
                     />
                     <Input
                       value={corPrimaria}
@@ -260,7 +260,7 @@ function ConfiguracoesFormulario({
                       className="w-32 font-mono"
                     />
                   </div>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-slate-400">
                     Usada nos botoes do site, links e destaques de preco. Escolha um tom escuro o
                     suficiente para o texto branco ficar legivel em cima.
                   </p>
@@ -280,7 +280,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="anuncio" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-neutral-400">Faixa de anuncio</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Faixa de anuncio</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Label>Texto no topo do site</Label>
@@ -296,7 +296,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="integracoes" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-neutral-400">Bling (emissao de NF-e)</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Bling (emissao de NF-e)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-xs text-muted-foreground">
@@ -320,7 +320,7 @@ function ConfiguracoesFormulario({
                 )}
 
                 {blingStatus === null ? (
-                  <p className="text-sm text-neutral-400">
+                  <p className="text-sm text-slate-500">
                     Apenas administradores podem conectar o Bling.
                   </p>
                 ) : blingStatus.conectado ? (

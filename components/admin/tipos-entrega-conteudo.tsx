@@ -103,12 +103,12 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
       <Card>
         <CardContent className="p-0">
           {tipos.length === 0 ? (
-            <p className="p-6 text-sm text-neutral-400">Nenhum tipo de entrega cadastrado ainda.</p>
+            <p className="p-6 text-sm text-slate-500">Nenhum tipo de entrega cadastrado ainda.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[420px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-800 text-left text-neutral-400">
+                  <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Nome</th>
                     <th className="p-4 font-medium">Status</th>
                     <th className="p-4 font-medium text-right">Acoes</th>
@@ -116,14 +116,14 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                 </thead>
                 <tbody>
                   {tipos.map((tipo) => (
-                    <tr key={tipo.id} className="border-b border-neutral-800 last:border-0">
+                    <tr key={tipo.id} className="border-b border-slate-200 last:border-0">
                       <td className="p-4">{tipo.nome}</td>
                       <td className="p-4">
                         <span
                           className={`rounded-full px-2 py-1 text-xs ${
                             tipo.ativo
                               ? "bg-emerald-600/20 text-emerald-400"
-                              : "bg-neutral-700/40 text-neutral-400"
+                              : "bg-slate-200 text-slate-500"
                           }`}
                         >
                           {tipo.ativo ? "Ativo" : "Inativo"}

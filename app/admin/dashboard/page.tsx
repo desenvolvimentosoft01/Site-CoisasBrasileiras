@@ -52,28 +52,28 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Produtos ativos</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Produtos ativos</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">{produtosAtivos}</CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Pedidos hoje (site)</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Pedidos hoje (site)</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">{pedidosHoje}</CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Vendas balcao hoje</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Vendas balcao hoje</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">{vendasBalcaoHoje}</div>
-            <div className="text-xs text-neutral-500">{formatarMoeda(faturamentoBalcaoHoje)}</div>
+            <div className="text-xs text-slate-400">{formatarMoeda(faturamentoBalcaoHoje)}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Faturamento do mes</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Faturamento do mes</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">
             {formatarMoeda(faturamentoMes)}
@@ -81,7 +81,7 @@ export default async function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Aguardando pagamento</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Aguardando pagamento</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">{pedidosPendentes}</CardContent>
         </Card>
@@ -90,21 +90,21 @@ export default async function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-neutral-400">Ultimos pedidos</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Ultimos pedidos</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {pedidosRecentes.length === 0 ? (
-              <p className="text-sm text-neutral-500">Nenhum pedido ainda.</p>
+              <p className="text-sm text-slate-400">Nenhum pedido ainda.</p>
             ) : (
               pedidosRecentes.map((pedido) => (
                 <Link
                   key={pedido.id}
                   href={`/admin/pedidos/${pedido.id}`}
-                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-neutral-900"
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-slate-100"
                 >
                   <div>
                     <div className="font-medium">{pedido.cliente_nome}</div>
-                    <div className="text-xs text-neutral-500">
+                    <div className="text-xs text-slate-400">
                       {rotulosStatus[pedido.status] ?? pedido.status}
                       {pedido.origem === "balcao" && (
                         <span className="ml-2 rounded-full bg-amber-600/20 px-1.5 py-0.5 text-amber-400">
@@ -122,20 +122,20 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm text-neutral-400">
+            <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
               <AlertTriangle size={16} className="text-amber-500" />
               Estoque baixo
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {produtosEstoqueBaixo.length === 0 ? (
-              <p className="text-sm text-neutral-500">Nenhum produto com estoque baixo.</p>
+              <p className="text-sm text-slate-400">Nenhum produto com estoque baixo.</p>
             ) : (
               produtosEstoqueBaixo.map((produto) => (
                 <Link
                   key={produto.id}
                   href={`/admin/produtos/${produto.id}`}
-                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-neutral-900"
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-slate-100"
                 >
                   <span className="font-medium">{produto.nome}</span>
                   <span className="text-amber-500">

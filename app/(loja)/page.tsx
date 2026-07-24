@@ -23,6 +23,9 @@ export default async function HomePage() {
   `)
 
   // Mais vendidos: soma a quantidade vendida em pedidos ja pagos, por produto.
+  // So conta vendas de origem 'site' - venda balcao nao entra aqui, porque
+  // essa vitrine e sobre o que realmente vende no site (a venda balcao pode
+  // ter negociacao/desconto que nao reflete a demanda real do catalogo online).
   const maisVendidos = await query(`
     SELECT
       p.id, p.nome, p.slug, p.preco, p.preco_promocional,
@@ -31,7 +34,7 @@ export default async function HomePage() {
     FROM TAB_PEDIDO_ITEM pi
     JOIN TAB_PEDIDO ped ON ped.id = pi.pedido_id
     JOIN TAB_PRODUTO p ON p.id = pi.produto_id
-    WHERE ped.status = 'pago' AND p.ativo = true
+    WHERE ped.status = 'pago' AND ped.origem = 'site' AND p.ativo = true
     GROUP BY p.id
     ORDER BY total_vendido DESC
     LIMIT 8
