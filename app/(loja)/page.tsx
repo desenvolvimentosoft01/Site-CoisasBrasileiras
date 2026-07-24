@@ -2,6 +2,7 @@ import { query } from "@/lib/db"
 import { HeroCarousel } from "@/components/loja/hero-carousel"
 import { CategoriaGrid } from "@/components/loja/categoria-grid"
 import { ProdutoCard } from "@/components/loja/produto-card"
+import { FeedbacksSecao } from "@/components/loja/feedbacks-secao"
 
 export default async function HomePage() {
   const banners = await query(
@@ -26,6 +27,10 @@ export default async function HomePage() {
   // So conta vendas de origem 'site' - venda balcao nao entra aqui, porque
   // essa vitrine e sobre o que realmente vende no site (a venda balcao pode
   // ter negociacao/desconto que nao reflete a demanda real do catalogo online).
+  const feedbacks = await query(
+    "SELECT id, nome, texto, imagem_url, nota FROM TAB_FEEDBACK WHERE ativo = true ORDER BY ordem, criado_em DESC LIMIT 6"
+  )
+
   const maisVendidos = await query(`
     SELECT
       p.id, p.nome, p.slug, p.preco, p.preco_promocional,
@@ -76,6 +81,8 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      <FeedbacksSecao feedbacks={feedbacks} />
     </div>
   )
 }

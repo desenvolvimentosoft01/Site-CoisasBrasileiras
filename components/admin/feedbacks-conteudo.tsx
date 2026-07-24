@@ -1,0 +1,324 @@
+"use client"
+
+import { useRef, useState } from "react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Card, CardContent } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Trash2, Pencil, Plus, ImagePlus, List, Star } from "lucide-react"
+import { registrarAuditoria } from "@/lib/auditoria"
+
+export type Feedback = {
+  id: string
+  nome: string
+  texto: string
+  imagem_url: string | null
+  nota: number
+  ordem: number
+  ativo: boolean
+}
+
+function SeletorNota({ valor, onChange }: { valor: number; onChange: (n: number) => void }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button key={n} type="button" onClick={() => onChange(n)} aria-label={`${n} estrelas`}>
+          <Star
+            size={22}
+            className={n <= valor ? "fill-amber-400 text-amber-400" : "text-slate-300"}
+          />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Feedback[] }) {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>(feedbacksIniciais)
+  const [aba, setAba] = useState("lista")
+  const [editando, setEditando] = useState<Feedback | null>(null)
+
+  const [nome, setNome] = useState("")
+  const [texto, setTexto] = useState("")
+  const [imagemUrl, setImagemUrl] = useState("")
+  const [nota, setNota] = useState(5)
+  const [ordem, setOrdem] = useState("0")
+  const [ativo, setAtivo] = useState(true)
+  const [enviandoImagem, setEnviandoImagem] = useState(false)
+  const [erro, setErro] = useState("")
+  const [salvando, setSalvando] = useState(false)
+  const inputArquivoRef = useRef<HTMLInputElement>(null)
+
+  async function recarregar() {
+    const resposta = await fetch("/api/admin/feedbacks")
+    setFeedbacks(await resposta.json())
+  }
+
+  function abrirNovo() {
+    setEditando(null)
+    setNome("")
+    setTexto("")
+    setImagemUrl("")
+    setNota(5)
+    setOrdem(String(feedbacks.length))
+    setAtivo(true)
+    setErro("")
+    setAba("formulario")
+  }
+
+  function abrirEdicao(feedback: Feedback) {
+    setEditando(feedback)
+    setNome(feedback.nome)
+    setTexto(feedback.texto)
+    setImagemUrl(feedback.imagem_url ?? "")
+    setNota(feedback.nota)
+    setOrdem(String(feedback.ordem))
+    setAtivo(feedback.ativo)
+    setErro("")
+    setAba("formulario")
+  }
+
+  async function selecionarImagem(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    if (!arquivo) return
+
+    setEnviandoImagem(true)
+    const formData = new FormData()
+    formData.append("arquivo", arquivo)
+    formData.append("pasta", "feedbacks")
+
+    const resposta = await fetch("/api/admin/upload", { method: "POST", body: formData })
+    if (resposta.ok) {
+      const { url } = await resposta.json()
+      setImagemUrl(url)
+    }
+    setEnviandoImagem(false)
+    if (inputArquivoRef.current) inputArquivoRef.current.value = ""
+  }
+
+  async function salvar() {
+    setErro("")
+    setSalvando(true)
+
+    const corpo = {
+      nome,
+      texto,
+      imagemUrl: imagemUrl || null,
+      nota,
+      ordem: Number(ordem) || 0,
+      ativo,
+    }
+
+    const url = editando ? `/api/admin/feedbacks/${editando.id}` : "/api/admin/feedbacks"
+    const method = editando ? "PUT" : "POST"
+
+    const resposta = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
+    })
+
+    setSalvando(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErro(dados.erro || "Erro ao salvar")
+      return
+    }
+
+    const salvo = await resposta.json()
+    registrarAuditoria({
+      tela: "Feedbacks",
+      acao: editando ? "edicao" : "cadastro",
+      tabela: "TAB_FEEDBACK",
+      registroId: editando?.id ?? salvo.id,
+      antes: editando ? { nome: editando.nome, ativo: editando.ativo } : null,
+      depois: { nome, ativo },
+    })
+
+    setAba("lista")
+    recarregar()
+  }
+
+  async function excluir(feedback: Feedback) {
+    if (!confirm(`Excluir o depoimento de "${feedback.nome}"?`)) return
+    await fetch(`/api/admin/feedbacks/${feedback.id}`, { method: "DELETE" })
+    registrarAuditoria({
+      tela: "Feedbacks",
+      acao: "exclusao",
+      tabela: "TAB_FEEDBACK",
+      registroId: feedback.id,
+      antes: { nome: feedback.nome },
+    })
+    recarregar()
+  }
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold">Feedbacks</h1>
+
+      <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="lista">
+              <List size={14} className="mr-1.5" />
+              Grade
+            </TabsTrigger>
+            <TabsTrigger value="formulario">
+              <Plus size={14} className="mr-1.5" />
+              Cadastro
+            </TabsTrigger>
+          </TabsList>
+          {aba === "lista" && (
+            <Button onClick={abrirNovo}>
+              <Plus size={16} className="mr-2" />
+              Novo feedback
+            </Button>
+          )}
+        </div>
+
+        <TabsContent value="lista" className="mt-4">
+          {feedbacks.length === 0 ? (
+            <p className="text-sm text-slate-500">Nenhum feedback cadastrado ainda.</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {feedbacks.map((feedback) => (
+                <Card key={feedback.id}>
+                  <CardContent className="space-y-3 pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-100">
+                        {feedback.imagem_url && (
+                          <Image src={feedback.imagem_url} alt="" fill className="object-cover" sizes="40px" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{feedback.nome}</p>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <Star
+                              key={n}
+                              size={12}
+                              className={n <= feedback.nota ? "fill-amber-400 text-amber-400" : "text-slate-300"}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="line-clamp-3 text-sm text-slate-500">{feedback.texto}</p>
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs ${
+                          feedback.ativo
+                            ? "bg-emerald-600/20 text-emerald-400"
+                            : "bg-slate-200 text-slate-500"
+                        }`}
+                      >
+                        {feedback.ativo ? "Ativo" : "Inativo"}
+                      </span>
+                      <div>
+                        <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(feedback)}>
+                          <Pencil size={16} />
+                        </Button>
+                        <Button variant="ghost" size="icon-lg" onClick={() => excluir(feedback)}>
+                          <Trash2 size={16} className="text-red-500" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="formulario" className="mt-4 space-y-4">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              {editando ? `Editando: ${editando.nome}` : "Novo feedback"}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setAba("lista")}>
+                Cancelar
+              </Button>
+              <Button onClick={salvar} disabled={salvando || !nome.trim() || !texto.trim()}>
+                {salvando ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </div>
+
+          <Card className="max-w-lg">
+            <CardContent className="space-y-4 pt-6">
+              <div className="space-y-2">
+                <Label>Nome do cliente</Label>
+                <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
+              </div>
+              <div className="space-y-2">
+                <Label>Depoimento</Label>
+                <textarea
+                  value={texto}
+                  onChange={(e) => setTexto(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+                  placeholder="Adorei a porcelana, chegou rapido e muito bem embalada..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Nota</Label>
+                <SeletorNota valor={nota} onChange={setNota} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Foto do cliente (opcional)</Label>
+                {imagemUrl ? (
+                  <div className="relative h-20 w-20 overflow-hidden rounded-full">
+                    <Image src={imagemUrl} alt="" fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setImagemUrl("")}
+                      className="absolute right-0 top-0 rounded-full bg-black/70 p-1 text-white"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => inputArquivoRef.current?.click()}
+                    disabled={enviandoImagem}
+                    className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-full border border-dashed border-slate-300 text-slate-500 hover:border-emerald-500 hover:text-emerald-400"
+                  >
+                    <ImagePlus size={18} />
+                    <span className="text-[10px]">{enviandoImagem ? "..." : "Adicionar"}</span>
+                  </button>
+                )}
+                <input
+                  ref={inputArquivoRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={selecionarImagem}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Ordem</Label>
+                  <Input type="number" value={ordem} onChange={(e) => setOrdem(e.target.value)} />
+                </div>
+                <div className="flex items-center justify-between pt-6">
+                  <Label>Ativo</Label>
+                  <Switch checked={ativo} onCheckedChange={setAtivo} />
+                </div>
+              </div>
+
+              {erro && <p className="text-sm text-red-500">{erro}</p>}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
