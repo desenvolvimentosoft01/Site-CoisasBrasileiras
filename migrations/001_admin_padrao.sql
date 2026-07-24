@@ -1,14 +1,15 @@
 -- ============================================================
--- USUARIO ADMIN PADRAO — COISAS BRASILEIRAS
--- Login: admin@coisasbrasileiras.com  Senha: [SENHA-REMOVIDA]
--- IMPORTANTE: trocar a senha apos o primeiro acesso
+-- USUARIO ADMIN INICIAL — COISAS BRASILEIRAS
+--
+-- Este arquivo NAO cria mais um usuario com senha fixa (versao antiga tinha
+-- uma senha padrao documentada aqui e commitada no Git - senha exposta em
+-- codigo publico/revendido e sempre um risco, entao removida).
+--
+-- Pra criar o primeiro administrador, rode (depois de configurar
+-- DATABASE_URL no .env.local):
+--
+--   node scripts/criar-admin.js "Nome do Admin" email@dominio.com
+--
+-- O script pede a senha no terminal (nao fica salva em nenhum arquivo nem
+-- historico de comando) e grava so o hash bcrypt no banco.
 -- ============================================================
-
-INSERT INTO TAB_USUARIO_ADMIN (nome, email, senha_hash, papel)
-VALUES (
-  'Administrador',
-  'admin@coisasbrasileiras.com',
-  '[HASH-REMOVIDO]',
-  'admin'
-)
-ON CONFLICT (email) DO NOTHING;

@@ -4,7 +4,9 @@ import { enviarEmail, templatePedidoPago, templateNovoPedidoAdmin } from "@/lib/
 import { NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
 
-const EMAIL_ADMIN = process.env.EMAIL_NOTIFICACOES_ADMIN || "email-removido@exemplo.com"
+// Sem e-mail pessoal fixo no codigo (projeto revendido pra outros clientes) -
+// cai pro proprio e-mail de envio configurado, que a loja ja precisa ter.
+const EMAIL_ADMIN = process.env.EMAIL_NOTIFICACOES_ADMIN || process.env.EMAIL_USER
 
 const STATUS_MP_PARA_PEDIDO: Record<string, string> = {
   approved: "pago",
@@ -123,17 +125,19 @@ export async function POST(request: Request) {
           }),
         })
 
-        enviarEmail({
-          to: EMAIL_ADMIN,
-          subject: `Novo pedido pago - ${pedido.cliente_nome}`,
-          html: templateNovoPedidoAdmin({
-            nomeCliente: pedido.cliente_nome,
-            emailCliente: pedido.cliente_email,
-            pedidoId,
-            itens: itensEmail,
-            total: Number(pedido.total),
-          }),
-        })
+        if (EMAIL_ADMIN) {
+          enviarEmail({
+            to: EMAIL_ADMIN,
+            subject: `Novo pedido pago - ${pedido.cliente_nome}`,
+            html: templateNovoPedidoAdmin({
+              nomeCliente: pedido.cliente_nome,
+              emailCliente: pedido.cliente_email,
+              pedidoId,
+              itens: itensEmail,
+              total: Number(pedido.total),
+            }),
+          })
+        }
       }
     }
   } catch {

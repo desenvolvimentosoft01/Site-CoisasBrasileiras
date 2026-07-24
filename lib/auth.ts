@@ -1,4 +1,14 @@
-const SEGREDO = process.env.AUTH_SECRET || "[SEGREDO-REMOVIDO]"
+// Sem fallback de proposito: um segredo padrao conhecido (mesmo que so pra
+// "dev") ficaria commitado no codigo publico do projeto, e qualquer deploy
+// que esquecesse de configurar AUTH_SECRET assinaria sessoes de admin com um
+// valor que qualquer um poderia forjar. Falhar alto (nao subir sem a
+// variavel) e mais seguro que falhar silencioso com um segredo previsivel.
+const SEGREDO = process.env.AUTH_SECRET
+if (!SEGREDO) {
+  throw new Error(
+    "AUTH_SECRET nao configurado - defina essa variavel de ambiente antes de rodar o site (gere um valor aleatorio, ex: openssl rand -hex 32)"
+  )
+}
 
 export type SessaoAdmin = {
   id: string

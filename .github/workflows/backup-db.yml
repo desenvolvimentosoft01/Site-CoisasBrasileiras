@@ -22,9 +22,6 @@ on:
   #   - cron: '0 6 * * *'   # todo dia as 03:00 (horario de Brasilia = 06:00 UTC)
   workflow_dispatch: {}
 
-permissions:
-  contents: write
-
 jobs:
   backup:
     runs-on: ubuntu-latest
@@ -42,14 +39,16 @@ jobs:
             bash -c 'pg_dump "$PGDUMP_URL" --format=custom --no-owner --no-privileges --file=/backup/backup.dump'
           mv backup.dump "backup_${DATA}.dump"
           echo "ARQUIVO=backup_${DATA}.dump" >> "$GITHUB_ENV"
-          echo "DATA=${DATA}" >> "$GITHUB_ENV"
 
-      - name: Publica o backup como GitHub Release (sobrescrevendo o anterior)
-        uses: softprops/action-gh-release@v2
+      # Artifact do Actions, NAO GitHub Release: o dump tem dados reais de
+      # cliente (nome, email, endereco, senha com hash) - Release e feito pra
+      # distribuicao publica de software, e mesmo num repo privado hoje, esse
+      # arquivo ficaria na aba publica de Releases se o repo for repassado/
+      # vendido pra outro time. Artifact fica restrito a quem tem acesso ao
+      # Actions do repo e expira sozinho.
+      - name: Guarda o backup como artifact privado (expira em 14 dias)
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: backup-latest
-          name: Backup mais recente (${{ env.DATA }})
-          body: Backup automatico do banco de dados. Gerado em ${{ env.DATA }}.
-          files: ${{ env.ARQUIVO }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.ARQUIVO }}
+          path: ${{ env.ARQUIVO }}
+          retention-days: 14

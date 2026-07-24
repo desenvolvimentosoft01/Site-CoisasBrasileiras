@@ -68,10 +68,17 @@ Acesse [http://localhost:3000](http://localhost:3000).
 
 ## Login do admin
 
-Painel em `/admin/entrar`. Usuário padrão (semeado pela migration `001_admin_padrao.sql`):
+Painel em `/admin/entrar`. Não existe usuário/senha padrão pré-cadastrado (de
+propósito — uma senha fixa documentada aqui ficaria exposta pra qualquer um
+com acesso ao repositório). Crie o primeiro administrador rodando:
 
-- **E-mail:** `admin@coisasbrasileiras.com`
-- **Senha:** `[SENHA-REMOVIDA]` (trocar após o primeiro acesso)
+```bash
+node scripts/criar-admin.js "Seu Nome" seu-email@dominio.com
+```
+
+O script pede a senha direto no terminal (não aparece na tela, não fica
+salva em nenhum arquivo) e grava só o hash no banco. Rode de novo a
+qualquer momento pra resetar a senha de um e-mail existente.
 
 ## Estrutura do projeto
 
