@@ -499,7 +499,7 @@ export function VendaBalcaoConteudo({
       )}
 
       <Dialog open={modalPagamentoAberto} onOpenChange={setModalPagamentoAberto}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Finalizar venda</DialogTitle>
           </DialogHeader>
