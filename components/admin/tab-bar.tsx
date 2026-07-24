@@ -73,7 +73,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   }
 
   return (
-    <div className="flex shrink-0 items-end border-b border-slate-700 bg-slate-800">
+    <div className="flex min-w-0 shrink-0 items-end border-b border-slate-700 bg-slate-800">
       <button
         onClick={() => rolar(-1)}
         disabled={!podeRolarEsquerda}
