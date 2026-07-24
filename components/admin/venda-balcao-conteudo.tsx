@@ -57,6 +57,19 @@ export type Venda = {
   cliente_nome: string
 }
 
+type PedidoDetalhe = {
+  id: string
+  status: string
+  total: string
+  forma_pagamento: string | null
+  criado_em: string
+  origem: "site" | "balcao"
+  cliente_nome: string
+  cliente_email: string | null
+  cliente_telefone: string | null
+  itens: { quantidade: number; preco_unitario: string; produto_nome: string }[]
+}
+
 type ItemCarrinho = {
   produtoId: string
   nome: string
@@ -111,6 +124,16 @@ export function VendaBalcaoConteudo({
 
   const [vendas, setVendas] = useState<Venda[]>(vendasIniciais)
   const [filtroOrigem, setFiltroOrigem] = useState<"todas" | "site" | "balcao">("todas")
+  const [vendaPreview, setVendaPreview] = useState<PedidoDetalhe | null>(null)
+  const [carregandoPreview, setCarregandoPreview] = useState<string | null>(null)
+
+  async function abrirPreview(vendaId: string) {
+    setCarregandoPreview(vendaId)
+    const resposta = await fetch(`/api/admin/pedidos/${vendaId}`)
+    setCarregandoPreview(null)
+    if (!resposta.ok) return
+    setVendaPreview(await resposta.json())
+  }
 
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false)
   const [formaPagamento, setFormaPagamento] = useState("dinheiro")
@@ -280,11 +303,15 @@ export function VendaBalcaoConteudo({
                     </thead>
                     <tbody>
                       {vendasFiltradas.map((venda) => (
-                        <tr key={venda.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={venda.id}
+                          onClick={() => abrirPreview(venda.id)}
+                          className="cursor-pointer border-b border-slate-200 last:border-0 hover:bg-accent"
+                        >
                           <td className="p-4">
-                            <Link href={`/admin/pedidos/${venda.id}`} className="hover:underline">
-                              {venda.cliente_nome}
-                            </Link>
+                            <span className="hover:underline">
+                              {carregandoPreview === venda.id ? "Carregando..." : venda.cliente_nome}
+                            </span>
                           </td>
                           <td className="p-4">
                             <span
@@ -562,6 +589,70 @@ export function VendaBalcaoConteudo({
             <Button onClick={finalizarVenda} disabled={finalizando}>
               {finalizando ? "Finalizando..." : "Confirmar venda"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!vendaPreview} onOpenChange={(aberto) => !aberto && setVendaPreview(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalhes da venda</DialogTitle>
+          </DialogHeader>
+
+          {vendaPreview && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{vendaPreview.cliente_nome}</p>
+                  {vendaPreview.cliente_telefone && (
+                    <p className="text-xs text-slate-500">{vendaPreview.cliente_telefone}</p>
+                  )}
+                </div>
+                <span
+                  className={`rounded-full px-2 py-1 text-xs ${
+                    vendaPreview.origem === "balcao"
+                      ? "bg-amber-600/20 text-amber-400"
+                      : "bg-blue-600/20 text-blue-400"
+                  }`}
+                >
+                  {vendaPreview.origem === "balcao" ? "Balcao" : "Site"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-sm text-slate-500">
+                <span>{ROTULOS_STATUS[vendaPreview.status] ?? vendaPreview.status}</span>
+                <span>{new Date(vendaPreview.criado_em).toLocaleString("pt-BR")}</span>
+              </div>
+
+              <div className="divide-y divide-slate-200 rounded-lg border border-slate-200">
+                {vendaPreview.itens.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 text-sm">
+                    <span>
+                      {item.quantidade}x {item.produto_nome}
+                    </span>
+                    <span className="font-medium">
+                      {formatarMoeda(String(Number(item.preco_unitario) * item.quantidade))}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between text-lg font-semibold">
+                <span>Total</span>
+                <span>{formatarMoeda(vendaPreview.total)}</span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVendaPreview(null)}>
+              Fechar
+            </Button>
+            {vendaPreview && (
+              <Button nativeButton={false} render={<Link href={`/admin/pedidos/${vendaPreview.id}`} />}>
+                Abrir pedido completo
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
