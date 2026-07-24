@@ -13,6 +13,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   const pathname = usePathname()
   const { abas, abrirAba, fecharAba } = useAbasAdmin()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const conteudoRef = useRef<HTMLDivElement>(null)
   const [podeRolarEsquerda, setPodeRolarEsquerda] = useState(false)
   const [podeRolarDireita, setPodeRolarDireita] = useState(false)
 
@@ -38,11 +39,21 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
 
   useEffect(() => {
     atualizarSetas()
-    const el = scrollRef.current
-    if (!el) return
+    // Observa o wrapper interno do conteudo (que cresce livremente com as
+    // abas), nao o container com overflow-x-auto - esse ultimo nunca muda de
+    // tamanho quando o conteudo transborda, entao nunca dispararia o observer.
+    const conteudo = conteudoRef.current
+    if (!conteudo) return
     const observer = new ResizeObserver(atualizarSetas)
-    observer.observe(el)
-    return () => observer.disconnect()
+    observer.observe(conteudo)
+    // O ResizeObserver acima nao cobre o redimensionamento da janela em si -
+    // isso muda a largura visivel do container (clientWidth) sem mudar o
+    // tamanho do conteudo observado.
+    window.addEventListener("resize", atualizarSetas)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", atualizarSetas)
+    }
   }, [abas, atualizarSetas])
 
   function rolar(direcao: -1 | 1) {
@@ -63,20 +74,20 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
 
   return (
     <div className="flex shrink-0 items-end border-b border-slate-700 bg-slate-800">
-      {podeRolarEsquerda && (
-        <button
-          onClick={() => rolar(-1)}
-          aria-label="Rolar abas para a esquerda"
-          className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white"
-        >
-          <ChevronLeft size={16} />
-        </button>
-      )}
+      <button
+        onClick={() => rolar(-1)}
+        disabled={!podeRolarEsquerda}
+        aria-label="Rolar abas para a esquerda"
+        className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white disabled:pointer-events-none disabled:opacity-30"
+      >
+        <ChevronLeft size={16} />
+      </button>
       <div
         ref={scrollRef}
         onScroll={atualizarSetas}
-        className="flex min-w-0 shrink items-end gap-0 overflow-x-auto px-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="min-w-0 shrink overflow-x-auto px-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
+      <div ref={conteudoRef} className="flex w-max items-end gap-0">
       {abas.map((aba) => {
         const ativa = pathname.startsWith(aba.path)
         const Icone = iconeDaAba(aba.path)
@@ -114,15 +125,15 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
         )
       })}
       </div>
-      {podeRolarDireita && (
-        <button
-          onClick={() => rolar(1)}
-          aria-label="Rolar abas para a direita"
-          className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white"
-        >
-          <ChevronRight size={16} />
-        </button>
-      )}
+      </div>
+      <button
+        onClick={() => rolar(1)}
+        disabled={!podeRolarDireita}
+        aria-label="Rolar abas para a direita"
+        className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white disabled:pointer-events-none disabled:opacity-30"
+      >
+        <ChevronRight size={16} />
+      </button>
     </div>
   )
 }
