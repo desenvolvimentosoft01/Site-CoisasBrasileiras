@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 export async function GET() {
   const sessaoOuErro = await exigirSessao()
@@ -29,6 +30,11 @@ export async function PUT(request: Request) {
       [chave, valor]
     )
   }
+
+  // O site publico (home, catalogo, produto) e pre-renderizado estaticamente
+  // no build por nao usar cookies/headers - sem isso, uma config salva aqui
+  // (whatsapp, instagram, cor, textos) so apareceria no proximo deploy.
+  revalidatePath("/", "layout")
 
   return NextResponse.json({ sucesso: true })
 }

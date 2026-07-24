@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 export async function GET() {
   const sessaoOuErro = await exigirSessao()
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
       ordem || 0,
     ]
   )
+
+  revalidatePath("/", "layout")
 
   return NextResponse.json(banner, { status: 201 })
 }

@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 function gerarSlug(nome: string) {
   return nome
@@ -43,6 +44,8 @@ export async function POST(request: Request) {
     "INSERT INTO TAB_CATEGORIA (nome, slug) VALUES ($1, $2) RETURNING id, nome, slug, ativa, criado_em",
     [nome.trim(), slug]
   )
+
+  revalidatePath("/", "layout")
 
   return NextResponse.json(categoria, { status: 201 })
 }

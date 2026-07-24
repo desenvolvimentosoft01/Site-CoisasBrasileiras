@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const sessaoOuErro = await exigirSessao()
@@ -22,6 +23,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ erro: "Categoria nao encontrada" }, { status: 404 })
   }
 
+  revalidatePath("/", "layout")
+
   return NextResponse.json(categoria)
 }
 
@@ -32,6 +35,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const { id } = await params
 
   await query("DELETE FROM TAB_CATEGORIA WHERE id = $1", [id])
+
+  revalidatePath("/", "layout")
 
   return NextResponse.json({ sucesso: true })
 }
