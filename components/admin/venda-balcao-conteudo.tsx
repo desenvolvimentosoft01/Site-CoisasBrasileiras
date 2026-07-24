@@ -352,7 +352,7 @@ export function VendaBalcaoConteudo({
                     disabled={produto.estoque < 1}
                     className="text-left disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <Card className="h-full transition-colors hover:border-primary/50">
+                    <Card className="h-full transition-colors hover:border-primary/50 hover:bg-accent">
                       <CardContent className="space-y-2 p-3">
                         <div className="flex h-20 items-center justify-center rounded-md bg-slate-100 text-xs text-slate-400">
                           {produto.imagem_url ? (
