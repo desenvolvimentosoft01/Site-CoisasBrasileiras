@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Filter, Search, X } from "lucide-react"
+import { BotaoImprimir } from "@/components/admin/botao-imprimir"
 
 export type RegistroAuditoria = {
   id: string
@@ -95,14 +96,17 @@ export function AuditoriaConteudo({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Auditoria</h1>
-        <p className="text-sm text-muted-foreground">
-          Historico de cadastros, edicoes e exclusoes feitas no painel (ate 500 registros no periodo).
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Auditoria</h1>
+          <p className="text-sm text-muted-foreground">
+            Historico de cadastros, edicoes e exclusoes feitas no painel (ate 500 registros no periodo).
+          </p>
+        </div>
+        <BotaoImprimir descricaoPeriodo={`Periodo: ${inicioPeriodo} a ${fimPeriodo}`} />
       </div>
 
-      <Card>
+      <Card className="print:hidden">
         <CardContent className="space-y-3 pt-6">
           <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             <Filter size={14} />

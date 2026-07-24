@@ -128,3 +128,18 @@
     @apply font-sans;
   }
 }
+
+/* Impressao de relatorios do admin (ver lib/impressao.ts) - esconde a
+   navegacao do painel e deixa so o conteudo do relatorio na folha. */
+@media print {
+  aside,
+  header {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  body {
+    background: white !important;
+  }
+}

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { formatarMoeda } from "@/lib/mascaras"
 import { AlertTriangle } from "lucide-react"
+import { BotaoImprimir } from "@/components/admin/botao-imprimir"
 import {
   ResponsiveContainer,
   LineChart,
@@ -50,29 +51,56 @@ export function RelatoriosConteudo({
     total: Number(v.total),
   }))
 
+  function aplicarCamposOcultos(camposOcultos: Record<string, boolean>) {
+    for (const [secao, oculto] of Object.entries(camposOcultos)) {
+      document.querySelectorAll<HTMLElement>(`[data-print-section="${secao}"]`).forEach((el) => {
+        el.style.display = oculto ? "none" : ""
+      })
+    }
+    // Restaura depois de imprimir - senao a secao fica escondida na tela tambem.
+    setTimeout(() => {
+      document.querySelectorAll<HTMLElement>("[data-print-section]").forEach((el) => {
+        el.style.display = ""
+      })
+    }, 1500)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Relatorios</h1>
 
-        {/* Form GET simples - recarrega a pagina com o periodo escolhido,
-            sem precisar de estado client pra isso. */}
-        <form action="/admin/relatorios" method="get" className="flex items-end gap-2">
-          <div className="space-y-1">
-            <Label className="text-xs">De</Label>
-            <Input type="date" name="inicio" defaultValue={inicioPeriodo} className="w-40" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Ate</Label>
-            <Input type="date" name="fim" defaultValue={fimPeriodo} className="w-40" />
-          </div>
-          <Button type="submit" variant="outline">
-            Filtrar
-          </Button>
-        </form>
+        <div className="flex flex-wrap items-end gap-2">
+          {/* Form GET simples - recarrega a pagina com o periodo escolhido,
+              sem precisar de estado client pra isso. */}
+          <form action="/admin/relatorios" method="get" className="flex items-end gap-2 print:hidden">
+            <div className="space-y-1">
+              <Label className="text-xs">De</Label>
+              <Input type="date" name="inicio" defaultValue={inicioPeriodo} className="w-40" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Ate</Label>
+              <Input type="date" name="fim" defaultValue={fimPeriodo} className="w-40" />
+            </div>
+            <Button type="submit" variant="outline">
+              Filtrar
+            </Button>
+          </form>
+          <BotaoImprimir
+            descricaoPeriodo={`Periodo: ${inicioPeriodo} a ${fimPeriodo}`}
+            campos={[
+              { chave: "resumo", rotulo: "Resumo (pedidos, faturamento, ticket)" },
+              { chave: "grafico", rotulo: "Grafico de vendas" },
+              { chave: "origem", rotulo: "Vendas por origem" },
+              { chave: "maisVendidos", rotulo: "Produtos mais vendidos" },
+              { chave: "estoque", rotulo: "Posicao de estoque" },
+            ]}
+            onCamposOcultos={aplicarCamposOcultos}
+          />
+        </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div data-print-section="resumo" className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-slate-500">Pedidos pagos</CardTitle>
@@ -97,7 +125,7 @@ export function RelatoriosConteudo({
         </Card>
       </div>
 
-      <Card>
+      <Card data-print-section="grafico">
         <CardHeader>
           <CardTitle className="text-sm text-slate-500">Vendas no periodo</CardTitle>
         </CardHeader>
@@ -123,7 +151,7 @@ export function RelatoriosConteudo({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card data-print-section="origem">
         <CardHeader>
           <CardTitle className="text-sm text-slate-500">Vendas por origem</CardTitle>
         </CardHeader>
@@ -155,7 +183,7 @@ export function RelatoriosConteudo({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card data-print-section="maisVendidos">
         <CardHeader>
           <CardTitle className="text-sm text-slate-500">Produtos mais vendidos no periodo</CardTitle>
         </CardHeader>
@@ -187,7 +215,7 @@ export function RelatoriosConteudo({
         </CardContent>
       </Card>
 
-      <div>
+      <div data-print-section="estoque">
         <h2 className="mb-3 text-lg font-semibold">Estoque (posicao atual)</h2>
         <div className="grid gap-4 sm:grid-cols-4">
           <Card>
@@ -228,7 +256,7 @@ export function RelatoriosConteudo({
         </div>
       </div>
 
-      <Card>
+      <Card data-print-section="estoque">
         <CardHeader>
           <CardTitle className="text-sm text-slate-500">Produtos com estoque baixo</CardTitle>
         </CardHeader>
