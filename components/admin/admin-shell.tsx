@@ -103,9 +103,11 @@ function itensVisiveis(papel: string): { href: string; label: string; icone: Luc
 
 export function AdminShell({
   sessao,
+  corPrimaria,
   children,
 }: {
   sessao: SessaoAdmin
+  corPrimaria: string
   children: React.ReactNode
 }) {
   const router = useRouter()
@@ -158,7 +160,10 @@ export function AdminShell({
     // antes, com "min-h-screen"), a pagina inteira crescia e a sidebar (que
     // tem altura fixa de tela) "acabava" no meio da rolagem, bagunçando o
     // layout.
-    <div className="flex h-screen overflow-hidden bg-slate-100">
+    <div
+      className="flex h-screen overflow-hidden bg-slate-100"
+      style={{ "--primary": corPrimaria } as React.CSSProperties}
+    >
       {sidebarAberta && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -191,7 +196,9 @@ export function AdminShell({
                   href={item.href}
                   onClick={() => setSidebarAberta(false)}
                   className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
-                    ativo ? "bg-amber-500 text-white shadow-sm" : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                    ativo
+                      ? "bg-[var(--primary)] text-white shadow-sm"
+                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
                   <Icone size={15} />
@@ -230,7 +237,9 @@ export function AdminShell({
                           href={filho.href}
                           onClick={() => setSidebarAberta(false)}
                           className={`block rounded-md px-2 py-1.5 text-left text-[12px] font-medium transition-all ${
-                            ativo ? "bg-slate-800 text-amber-400" : "text-slate-500 hover:bg-slate-800 hover:text-slate-200"
+                            ativo
+                              ? "bg-slate-800 text-[var(--primary)]"
+                              : "text-slate-500 hover:bg-slate-800 hover:text-slate-200"
                           }`}
                         >
                           {filho.label}
@@ -245,7 +254,7 @@ export function AdminShell({
         </nav>
 
         <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-sm font-semibold text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-semibold text-white">
             {iniciais}
           </div>
           <div className="flex-1 overflow-hidden">
