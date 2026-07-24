@@ -8,7 +8,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const { id } = await params
-  const { nome, papel, ativo, senha } = await request.json()
+  const { nome, papel, ativo, senha, usuario } = await request.json()
 
   if (!nome?.trim()) {
     return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
@@ -27,25 +27,36 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ erro: "A senha precisa ter pelo menos 8 caracteres" }, { status: 400 })
   }
 
-  const [usuario] = senha
+  const usuarioLogin = usuario?.trim() || null
+  if (usuarioLogin) {
+    const conflito = await query(
+      "SELECT id FROM TAB_USUARIO_ADMIN WHERE lower(usuario) = lower($1) AND id != $2",
+      [usuarioLogin, id]
+    )
+    if (conflito.length > 0) {
+      return NextResponse.json({ erro: "Ja existe um usuario com esse nome de usuario" }, { status: 409 })
+    }
+  }
+
+  const [usuarioAtualizado] = senha
     ? await query(
-        `UPDATE TAB_USUARIO_ADMIN SET nome = $1, papel = $2, ativo = $3, senha_hash = $4
-         WHERE id = $5
-         RETURNING id, nome, email, papel, ativo, criado_em`,
-        [nome.trim(), papel, ativo ?? true, await bcrypt.hash(senha, 10), id]
+        `UPDATE TAB_USUARIO_ADMIN SET nome = $1, papel = $2, ativo = $3, usuario = $4, senha_hash = $5
+         WHERE id = $6
+         RETURNING id, nome, email, usuario, papel, ativo, criado_em, ultimo_login`,
+        [nome.trim(), papel, ativo ?? true, usuarioLogin, await bcrypt.hash(senha, 10), id]
       )
     : await query(
-        `UPDATE TAB_USUARIO_ADMIN SET nome = $1, papel = $2, ativo = $3
-         WHERE id = $4
-         RETURNING id, nome, email, papel, ativo, criado_em`,
-        [nome.trim(), papel, ativo ?? true, id]
+        `UPDATE TAB_USUARIO_ADMIN SET nome = $1, papel = $2, ativo = $3, usuario = $4
+         WHERE id = $5
+         RETURNING id, nome, email, usuario, papel, ativo, criado_em, ultimo_login`,
+        [nome.trim(), papel, ativo ?? true, usuarioLogin, id]
       )
 
-  if (!usuario) {
+  if (!usuarioAtualizado) {
     return NextResponse.json({ erro: "Usuario nao encontrado" }, { status: 404 })
   }
 
-  return NextResponse.json(usuario)
+  return NextResponse.json(usuarioAtualizado)
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function EntrarPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
+  const [login, setLogin] = useState("")
   const [senha, setSenha] = useState("")
   const [erro, setErro] = useState("")
   const [carregando, setCarregando] = useState(false)
@@ -23,7 +23,7 @@ export default function EntrarPage() {
     const resposta = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
+      body: JSON.stringify({ login, senha }),
     })
 
     setCarregando(false)
@@ -51,12 +51,12 @@ export default function EntrarPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="login">Usuario ou e-mail</Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="login"
+                type="text"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
                 required
               />
             </div>

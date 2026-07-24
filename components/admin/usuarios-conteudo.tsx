@@ -21,9 +21,11 @@ export type Usuario = {
   id: string
   nome: string
   email: string
+  usuario: string | null
   papel: "admin" | "operador"
   ativo: boolean
   criado_em: string
+  ultimo_login: string | null
 }
 
 export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuario[] }) {
@@ -32,6 +34,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null)
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
+  const [usuarioLogin, setUsuarioLogin] = useState("")
   const [senha, setSenha] = useState("")
   const [papel, setPapel] = useState<"admin" | "operador">("operador")
   const [ativo, setAtivo] = useState(true)
@@ -48,6 +51,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
     setUsuarioEditando(null)
     setNome("")
     setEmail("")
+    setUsuarioLogin("")
     setSenha("")
     setPapel("operador")
     setAtivo(true)
@@ -59,6 +63,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
     setUsuarioEditando(usuario)
     setNome(usuario.nome)
     setEmail(usuario.email)
+    setUsuarioLogin(usuario.usuario || "")
     setSenha("")
     setPapel(usuario.papel)
     setAtivo(usuario.ativo)
@@ -73,8 +78,8 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
     const url = usuarioEditando ? `/api/admin/usuarios/${usuarioEditando.id}` : "/api/admin/usuarios"
     const method = usuarioEditando ? "PUT" : "POST"
     const corpo = usuarioEditando
-      ? { nome, papel, ativo, senha: senha || undefined }
-      : { nome, email, senha, papel }
+      ? { nome, papel, ativo, usuario: usuarioLogin, senha: senha || undefined }
+      : { nome, email, senha, papel, usuario: usuarioLogin }
 
     const resposta = await fetch(url, {
       method,
@@ -98,9 +103,14 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
       tabela: "TAB_USUARIO_ADMIN",
       registroId: usuarioEditando?.id ?? salvo.id,
       antes: usuarioEditando
-        ? { nome: usuarioEditando.nome, papel: usuarioEditando.papel, ativo: usuarioEditando.ativo }
+        ? {
+            nome: usuarioEditando.nome,
+            papel: usuarioEditando.papel,
+            ativo: usuarioEditando.ativo,
+            usuario: usuarioEditando.usuario,
+          }
         : null,
-      depois: { nome, papel, ativo },
+      depois: { nome, papel, ativo, usuario: usuarioLogin },
     })
 
     setAba("lista")
@@ -156,13 +166,15 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                 <p className="p-6 text-sm text-slate-500">Nenhum usuario cadastrado ainda.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[560px] text-sm">
+                  <table className="w-full min-w-[720px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Nome</th>
+                        <th className="p-4 font-medium">Usuario</th>
                         <th className="p-4 font-medium">Email</th>
                         <th className="p-4 font-medium">Papel</th>
                         <th className="p-4 font-medium">Status</th>
+                        <th className="p-4 font-medium">Ultimo acesso</th>
                         <th className="p-4 font-medium text-right">Acoes</th>
                       </tr>
                     </thead>
@@ -170,6 +182,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                       {usuarios.map((usuario) => (
                         <tr key={usuario.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4">{usuario.nome}</td>
+                          <td className="p-4 font-mono text-xs text-slate-500">{usuario.usuario || "-"}</td>
                           <td className="p-4 text-slate-500">{usuario.email}</td>
                           <td className="p-4 capitalize text-slate-500">{usuario.papel}</td>
                           <td className="p-4">
@@ -182,6 +195,11 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                             >
                               {usuario.ativo ? "Ativo" : "Inativo"}
                             </span>
+                          </td>
+                          <td className="p-4 text-xs text-slate-500">
+                            {usuario.ultimo_login
+                              ? new Date(usuario.ultimo_login).toLocaleString("pt-BR")
+                              : "Nunca acessou"}
                           </td>
                           <td className="p-4 text-right">
                             <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(usuario)}>
@@ -237,6 +255,15 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={!!usuarioEditando}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Usuario de login (opcional)</Label>
+                <Input
+                  value={usuarioLogin}
+                  onChange={(e) => setUsuarioLogin(e.target.value)}
+                  placeholder="Ex: joao.silva - se vazio, entra so com o e-mail"
                 />
               </div>
 
