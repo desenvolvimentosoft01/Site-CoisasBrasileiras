@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const sessaoOuErro = await exigirSessao()
@@ -120,6 +121,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
   }
 
+  revalidatePath("/", "layout")
+
   return NextResponse.json(produto)
 }
 
@@ -142,6 +145,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     }
     throw erro
   }
+
+  revalidatePath("/", "layout")
 
   return NextResponse.json({ sucesso: true })
 }

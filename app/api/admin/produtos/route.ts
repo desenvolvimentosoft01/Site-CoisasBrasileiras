@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 function gerarSlug(nome: string) {
   return nome
@@ -105,6 +106,8 @@ export async function POST(request: Request) {
       )
     }
   }
+
+  revalidatePath("/", "layout")
 
   return NextResponse.json(produto, { status: 201 })
 }

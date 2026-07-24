@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 // Ajuste rapido de estoque de um produto (usado pela tela de Controle de
 // Estoque). So mexe no campo estoque - o cadastro completo do produto continua
@@ -28,6 +29,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!produto) {
     return NextResponse.json({ erro: "Produto nao encontrado" }, { status: 404 })
   }
+
+  revalidatePath("/", "layout")
 
   return NextResponse.json(produto)
 }
