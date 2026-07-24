@@ -65,12 +65,13 @@ export async function POST(request: Request) {
         quantidade: number
         precoUnitario: number
       }[] = []
+      const itensDetalhados: Parameters<typeof calcularFrete>[0]["itensDetalhados"] = []
 
       // Recalcula o preco e valida estoque a partir do banco - nunca confia
       // no preco/quantidade que vem do client.
       for (const item of itens as ItemRequisicao[]) {
         const [produto] = await q(
-          "SELECT id, nome, preco, preco_promocional, estoque, peso_kg FROM TAB_PRODUTO WHERE id = $1 AND ativo = true FOR UPDATE",
+          "SELECT id, nome, preco, preco_promocional, estoque, peso_kg, altura_cm, largura_cm, comprimento_cm FROM TAB_PRODUTO WHERE id = $1 AND ativo = true FOR UPDATE",
           [item.produtoId]
         )
 
@@ -91,6 +92,14 @@ export async function POST(request: Request) {
           quantidade: item.quantidade,
           precoUnitario,
         })
+        itensDetalhados!.push({
+          quantidade: item.quantidade,
+          pesoKg: Number(produto.peso_kg || 0),
+          alturaCm: Number(produto.altura_cm || 0),
+          larguraCm: Number(produto.largura_cm || 0),
+          comprimentoCm: Number(produto.comprimento_cm || 0),
+          valorUnitario: precoUnitario,
+        })
 
         // O estoque so e baixado quando o pagamento e confirmado (webhook do
         // Mercado Pago) - se o cliente abandonar o checkout sem pagar, o
@@ -98,8 +107,14 @@ export async function POST(request: Request) {
       }
 
       // Frete calculado no servidor a partir do peso real dos itens e do
-      // estado de entrega - nunca confia num valor de frete vindo do client.
-      const { valor: valorFrete } = await calcularFrete({ subtotal, pesoKg, estado: endereco.estado })
+      // estado/CEP de entrega - nunca confia num valor de frete vindo do client.
+      const { valor: valorFrete } = await calcularFrete({
+        subtotal,
+        pesoKg,
+        estado: endereco.estado,
+        cepDestino: endereco.cep,
+        itensDetalhados,
+      })
 
       // Cupom revalidado e aplicado dentro da propria transacao, com
       // FOR UPDATE na linha do cupom - evita que dois checkouts simultaneos

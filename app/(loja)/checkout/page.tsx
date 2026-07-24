@@ -53,6 +53,7 @@ export default function CheckoutPage() {
       body: JSON.stringify({
         itens: itens.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
         estado,
+        cep,
       }),
     })
       .then((r) => r.json())
@@ -60,7 +61,7 @@ export default function CheckoutPage() {
         setValorFrete(dados.valorFrete)
         setFreteGratisAcimaDe(dados.freteGratisAcimaDe)
       })
-  }, [itens, estado, subtotal])
+  }, [itens, estado, cep, subtotal])
 
   async function handleCepChange(valor: string) {
     const formatado = mascaraCEP(valor)

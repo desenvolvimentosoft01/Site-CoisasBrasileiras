@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone } from "@/lib/mascaras"
+import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
 import { Phone, Truck, Megaphone, Palette, Plug } from "lucide-react"
 
 export type ConfiguracoesIniciais = {
@@ -16,6 +16,7 @@ export type ConfiguracoesIniciais = {
   whatsapp_mensagem: string
   instagram: string
   email_contato: string
+  cep_origem: string
   frete_valor_base: string
   frete_gratis_acima_de: string
   banner_texto_topo: string
@@ -57,6 +58,9 @@ function ConfiguracoesFormulario({
   const [whatsappMensagem, setWhatsappMensagem] = useState(configuracoesIniciais.whatsapp_mensagem)
   const [instagram, setInstagram] = useState(configuracoesIniciais.instagram)
   const [emailContato, setEmailContato] = useState(configuracoesIniciais.email_contato)
+  const [cepOrigem, setCepOrigem] = useState(
+    configuracoesIniciais.cep_origem ? mascaraCEP(configuracoesIniciais.cep_origem) : ""
+  )
   const [freteValorBase, setFreteValorBase] = useState(
     configuracoesIniciais.frete_valor_base
       ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.frete_valor_base) * 100)))
@@ -87,6 +91,7 @@ function ConfiguracoesFormulario({
         whatsapp_mensagem: whatsappMensagem,
         instagram,
         email_contato: emailContato,
+        cep_origem: cepOrigem.replace(/\D/g, ""),
         frete_valor_base: String(valorMoedaParaNumero(freteValorBase)),
         frete_gratis_acima_de: String(valorMoedaParaNumero(freteGratisAcimaDe)),
         banner_texto_topo: bannerTextoTopo,
@@ -182,6 +187,21 @@ function ConfiguracoesFormulario({
                 <CardTitle className="text-sm text-slate-500">Frete</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>CEP de origem (endereco da loja)</Label>
+                  <Input
+                    value={cepOrigem}
+                    onChange={(e) => setCepOrigem(mascaraCEP(e.target.value))}
+                    inputMode="numeric"
+                    placeholder="00000-000"
+                    className="max-w-40"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Necessario so se for usar cotacao real de frete (Melhor Envio). Preenchido +
+                    token configurado no ambiente, o frete passa a ser calculado automaticamente
+                    pela transportadora real em vez da tabela abaixo.
+                  </p>
+                </div>
                 <div className="space-y-2">
                   <Label>Valor base / fallback (R$)</Label>
                   <Input
