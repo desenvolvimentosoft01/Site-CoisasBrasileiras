@@ -23,6 +23,8 @@ export default async function RelatoriosPage({
     vendasPorOrigem,
     [resumoEstoque],
     produtosEmBaixa,
+    pedidosPeriodo,
+    categorias,
   ] = await Promise.all([
     query(
       `SELECT to_char(criado_em, 'YYYY-MM-DD') AS dia, SUM(total) AS total
@@ -77,11 +79,38 @@ export default async function RelatoriosPage({
        ORDER BY estoque
        LIMIT 20`
     ),
+    // Lista de pedidos do periodo pra filtrar por canal/status/entrega/categoria
+    // no client (mesmo padrao do in-mente-gestao) - as categorias de cada
+    // pedido vem agregadas via subquery pra nao duplicar linha por item.
+    query(
+      `SELECT
+         p.id, p.status, p.total, p.origem, p.canal, p.criado_em,
+         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcao') AS cliente_nome,
+         te.nome AS tipo_entrega,
+         COALESCE(
+           (SELECT json_agg(DISTINCT cat.nome)
+            FROM TAB_PEDIDO_ITEM pi
+            JOIN TAB_PRODUTO_CATEGORIA pc ON pc.produto_id = pi.produto_id
+            JOIN TAB_CATEGORIA cat ON cat.id = pc.categoria_id
+            WHERE pi.pedido_id = p.id),
+           '[]'
+         ) AS categorias
+       FROM TAB_PEDIDO p
+       LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
+       LEFT JOIN TAB_TIPO_ENTREGA te ON te.id = p.tipo_entrega_id
+       WHERE p.criado_em BETWEEN $1 AND $2
+       ORDER BY p.criado_em DESC
+       LIMIT 500`,
+      [inicioTs, fimTs]
+    ),
+    query("SELECT id, nome FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"),
   ])
 
   return (
     <RelatoriosConteudo
       dados={{ vendasPorDia, produtosMaisVendidos, resumo, vendasPorOrigem, resumoEstoque, produtosEmBaixa }}
+      pedidosPeriodo={pedidosPeriodo}
+      categorias={categorias}
       inicioPeriodo={inicioPeriodo}
       fimPeriodo={fimPeriodo}
     />

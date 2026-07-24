@@ -1,13 +1,23 @@
 "use client"
 
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { formatarMoeda } from "@/lib/mascaras"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Filter, X } from "lucide-react"
 import { BotaoImprimir } from "@/components/admin/botao-imprimir"
+import { LabelCanal } from "@/components/admin/label-canal"
+import type { CanalPedido } from "@/lib/canal-pedido"
 import {
   ResponsiveContainer,
   LineChart,
@@ -32,6 +42,29 @@ export type Relatorio = {
   produtosEmBaixa: { id: string; nome: string; sku: string | null; estoque: number; estoque_minimo: number }[]
 }
 
+export type PedidoRelatorio = {
+  id: string
+  status: string
+  total: string
+  origem: "site" | "balcao"
+  canal: CanalPedido | null
+  criado_em: string
+  cliente_nome: string
+  tipo_entrega: string | null
+  categorias: string[]
+}
+
+const ROTULOS_STATUS: Record<string, string> = {
+  aguardando_pagamento: "Aguardando pagamento",
+  pago: "Pago",
+  em_separacao: "Em separacao",
+  enviado: "Enviado",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+}
+
+const TODOS = "__todos__"
+
 function formatarDia(dia: string) {
   const [, mes, diaNum] = dia.split("-")
   return `${diaNum}/${mes}`
@@ -39,10 +72,14 @@ function formatarDia(dia: string) {
 
 export function RelatoriosConteudo({
   dados,
+  pedidosPeriodo,
+  categorias,
   inicioPeriodo,
   fimPeriodo,
 }: {
   dados: Relatorio
+  pedidosPeriodo: PedidoRelatorio[]
+  categorias: { id: string; nome: string }[]
   inicioPeriodo: string
   fimPeriodo: string
 }) {
@@ -50,6 +87,39 @@ export function RelatoriosConteudo({
     dia: formatarDia(v.dia),
     total: Number(v.total),
   }))
+
+  const [filtroCanal, setFiltroCanal] = useState(TODOS)
+  const [filtroStatus, setFiltroStatus] = useState(TODOS)
+  const [filtroEntrega, setFiltroEntrega] = useState(TODOS)
+  const [filtroCategoria, setFiltroCategoria] = useState(TODOS)
+
+  const tiposEntrega = useMemo(
+    () => Array.from(new Set(pedidosPeriodo.map((p) => p.tipo_entrega).filter(Boolean) as string[])).sort(),
+    [pedidosPeriodo]
+  )
+
+  const pedidosFiltrados = useMemo(() => {
+    return pedidosPeriodo.filter((p) => {
+      const canalPedido = p.canal ?? (p.origem === "balcao" ? "balcao" : "site")
+      if (filtroCanal !== TODOS && canalPedido !== filtroCanal) return false
+      if (filtroStatus !== TODOS && p.status !== filtroStatus) return false
+      if (filtroEntrega === "__sem_entrega__" && p.tipo_entrega) return false
+      else if (filtroEntrega !== TODOS && filtroEntrega !== "__sem_entrega__" && p.tipo_entrega !== filtroEntrega)
+        return false
+      if (filtroCategoria !== TODOS && !p.categorias.includes(filtroCategoria)) return false
+      return true
+    })
+  }, [pedidosPeriodo, filtroCanal, filtroStatus, filtroEntrega, filtroCategoria])
+
+  const filtrosAtivos =
+    filtroCanal !== TODOS || filtroStatus !== TODOS || filtroEntrega !== TODOS || filtroCategoria !== TODOS
+
+  function limparFiltrosPedidos() {
+    setFiltroCanal(TODOS)
+    setFiltroStatus(TODOS)
+    setFiltroEntrega(TODOS)
+    setFiltroCategoria(TODOS)
+  }
 
   function aplicarCamposOcultos(camposOcultos: Record<string, boolean>) {
     for (const [secao, oculto] of Object.entries(camposOcultos)) {
@@ -94,6 +164,7 @@ export function RelatoriosConteudo({
               { chave: "origem", rotulo: "Vendas por origem" },
               { chave: "maisVendidos", rotulo: "Produtos mais vendidos" },
               { chave: "estoque", rotulo: "Posicao de estoque" },
+              { chave: "pedidos", rotulo: "Lista de pedidos" },
             ]}
             onCamposOcultos={aplicarCamposOcultos}
           />
@@ -293,6 +364,153 @@ export function RelatoriosConteudo({
           )}
         </CardContent>
       </Card>
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Pedidos do periodo</h2>
+
+        <Card className="mb-4 print:hidden">
+          <CardContent className="space-y-3 pt-6">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+              <Filter size={14} />
+              Filtros
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Canal</Label>
+                <Select value={filtroCanal} onValueChange={(v) => setFiltroCanal(v || TODOS)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TODOS}>Todos os canais</SelectItem>
+                    <SelectItem value="site">
+                      <LabelCanal canal="site" />
+                    </SelectItem>
+                    <SelectItem value="whatsapp">
+                      <LabelCanal canal="whatsapp" />
+                    </SelectItem>
+                    <SelectItem value="instagram">
+                      <LabelCanal canal="instagram" />
+                    </SelectItem>
+                    <SelectItem value="balcao">
+                      <LabelCanal canal="balcao" />
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Status</Label>
+                <Select value={filtroStatus} onValueChange={(v) => setFiltroStatus(v || TODOS)}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TODOS}>Todos os status</SelectItem>
+                    {Object.entries(ROTULOS_STATUS).map(([valor, rotulo]) => (
+                      <SelectItem key={valor} value={valor}>
+                        {rotulo}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Entrega</Label>
+                <Select value={filtroEntrega} onValueChange={(v) => setFiltroEntrega(v || TODOS)}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TODOS}>Todas as vendas</SelectItem>
+                    <SelectItem value="__sem_entrega__">Somente sem entrega</SelectItem>
+                    {tiposEntrega.map((tipo) => (
+                      <SelectItem key={tipo} value={tipo}>
+                        {tipo}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Categoria</Label>
+                <Select value={filtroCategoria} onValueChange={(v) => setFiltroCategoria(v || TODOS)}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TODOS}>Todas as categorias</SelectItem>
+                    {categorias.map((c) => (
+                      <SelectItem key={c.id} value={c.nome}>
+                        {c.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {filtrosAtivos && (
+                <Button size="sm" variant="outline" onClick={limparFiltrosPedidos}>
+                  <X size={14} className="mr-1" />
+                  Limpar filtros
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <p className="mb-2 text-xs text-muted-foreground">
+          {pedidosFiltrados.length} pedido{pedidosFiltrados.length === 1 ? "" : "s"} encontrado
+          {pedidosFiltrados.length === 1 ? "" : "s"}
+        </p>
+
+        <Card data-print-section="pedidos">
+          <CardContent className="p-0">
+            {pedidosFiltrados.length === 0 ? (
+              <p className="p-6 text-sm text-slate-400">Nenhum pedido encontrado com esses filtros.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-slate-500">
+                      <th className="p-4 font-medium">Data</th>
+                      <th className="p-4 font-medium">Cliente</th>
+                      <th className="p-4 font-medium">Canal</th>
+                      <th className="p-4 font-medium">Entrega</th>
+                      <th className="p-4 font-medium">Status</th>
+                      <th className="p-4 font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pedidosFiltrados.map((pedido) => (
+                      <tr key={pedido.id} className="border-b border-slate-200 last:border-0">
+                        <td className="p-4 whitespace-nowrap text-slate-500">
+                          {new Date(pedido.criado_em).toLocaleString("pt-BR")}
+                        </td>
+                        <td className="p-4">
+                          <Link href={`/admin/pedidos/${pedido.id}`} className="hover:underline">
+                            {pedido.cliente_nome}
+                          </Link>
+                        </td>
+                        <td className="p-4">
+                          <LabelCanal canal={pedido.canal ?? (pedido.origem === "balcao" ? "balcao" : "site")} />
+                        </td>
+                        <td className="p-4 text-slate-500">{pedido.tipo_entrega || "-"}</td>
+                        <td className="p-4 text-slate-500">
+                          {ROTULOS_STATUS[pedido.status] ?? pedido.status}
+                        </td>
+                        <td className="p-4 font-medium">{formatarMoeda(pedido.total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
