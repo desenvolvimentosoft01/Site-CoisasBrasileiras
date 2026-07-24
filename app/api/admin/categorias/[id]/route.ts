@@ -8,15 +8,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const { id } = await params
-  const { nome, ativa } = await request.json()
+  const { nome, ativa, imagemUrl } = await request.json()
 
   if (!nome || !nome.trim()) {
     return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
   }
 
   const [categoria] = await query(
-    "UPDATE TAB_CATEGORIA SET nome = $1, ativa = $2 WHERE id = $3 RETURNING id, nome, slug, ativa, criado_em",
-    [nome.trim(), ativa ?? true, id]
+    "UPDATE TAB_CATEGORIA SET nome = $1, ativa = $2, imagem_url = $3 WHERE id = $4 RETURNING id, nome, slug, imagem_url, ativa, criado_em",
+    [nome.trim(), ativa ?? true, imagemUrl || null, id]
   )
 
   if (!categoria) {

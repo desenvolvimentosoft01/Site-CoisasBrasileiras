@@ -1,19 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List } from "lucide-react"
+import { Trash2, Pencil, Plus, List, ImagePlus, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Categoria = {
   id: string
   nome: string
   slug: string
+  imagem_url: string | null
   ativa: boolean
   criado_em: string
 }
@@ -27,8 +29,36 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
   const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
   const [nome, setNome] = useState("")
   const [ativa, setAtiva] = useState(true)
+  const [imagemUrl, setImagemUrl] = useState<string | null>(null)
+  const [enviandoImagem, setEnviandoImagem] = useState(false)
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
+  const inputArquivoRef = useRef<HTMLInputElement>(null)
+
+  async function selecionarImagem(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    if (!arquivo) return
+
+    setErro("")
+    setEnviandoImagem(true)
+
+    const formData = new FormData()
+    formData.append("arquivo", arquivo)
+    formData.append("pasta", "categorias")
+
+    const resposta = await fetch("/api/admin/upload", { method: "POST", body: formData })
+    setEnviandoImagem(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErro(dados.erro || "Erro ao enviar imagem")
+      return
+    }
+
+    const { url } = await resposta.json()
+    setImagemUrl(url)
+    if (inputArquivoRef.current) inputArquivoRef.current.value = ""
+  }
 
   async function recarregar() {
     const resposta = await fetch("/api/admin/categorias")
@@ -39,6 +69,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     setCategoriaEditando(null)
     setNome("")
     setAtiva(true)
+    setImagemUrl(null)
     setErro("")
     setAba("formulario")
   }
@@ -47,6 +78,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     setCategoriaEditando(categoria)
     setNome(categoria.nome)
     setAtiva(categoria.ativa)
+    setImagemUrl(categoria.imagem_url)
     setErro("")
     setAba("formulario")
   }
@@ -63,7 +95,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     const resposta = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, ativa }),
+      body: JSON.stringify({ nome, ativa, imagemUrl }),
     })
 
     setSalvando(false)
@@ -135,6 +167,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                   <table className="w-full min-w-[480px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="p-4 font-medium">Imagem</th>
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">Slug</th>
                         <th className="p-4 font-medium">Status</th>
@@ -144,6 +177,15 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                     <tbody>
                       {categorias.map((categoria) => (
                         <tr key={categoria.id} className="border-b border-slate-200 last:border-0">
+                          <td className="p-4">
+                            {categoria.imagem_url ? (
+                              <div className="relative h-10 w-10 overflow-hidden rounded-md">
+                                <Image src={categoria.imagem_url} alt="" fill className="object-cover" sizes="40px" />
+                              </div>
+                            ) : (
+                              <div className="h-10 w-10 rounded-md bg-slate-100" />
+                            )}
+                          </td>
                           <td className="p-4">{categoria.nome}</td>
                           <td className="p-4 text-slate-500">{categoria.slug}</td>
                           <td className="p-4">
@@ -195,6 +237,40 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
               <div className="space-y-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Imagem</Label>
+                {imagemUrl ? (
+                  <div className="relative h-32 w-32 overflow-hidden rounded-lg border border-border">
+                    <Image src={imagemUrl} alt="" fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setImagemUrl(null)}
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                      aria-label="Remover imagem"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => inputArquivoRef.current?.click()}
+                    disabled={enviandoImagem}
+                    className="flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border text-muted-foreground hover:bg-accent"
+                  >
+                    <ImagePlus size={20} />
+                    <span className="text-xs">{enviandoImagem ? "Enviando..." : "Adicionar"}</span>
+                  </button>
+                )}
+                <input
+                  ref={inputArquivoRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={selecionarImagem}
+                />
               </div>
 
               {categoriaEditando && (

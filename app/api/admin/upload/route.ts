@@ -7,6 +7,7 @@ import { randomUUID } from "crypto"
 
 const EXTENSOES_PERMITIDAS = ["jpg", "jpeg", "png", "webp", "gif"]
 const TAMANHO_MAXIMO = 5 * 1024 * 1024 // 5MB
+const PASTAS_PERMITIDAS = ["produtos", "categorias", "feedbacks"]
 
 export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
@@ -14,6 +15,8 @@ export async function POST(request: Request) {
 
   const formData = await request.formData()
   const arquivo = formData.get("arquivo") as File | null
+  const pastaSolicitada = formData.get("pasta") as string | null
+  const pasta = PASTAS_PERMITIDAS.includes(pastaSolicitada || "") ? pastaSolicitada! : "produtos"
 
   if (!arquivo) {
     return NextResponse.json({ erro: "Nenhum arquivo enviado" }, { status: 400 })
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
   // disco local mesmo, pra nao exigir conta no Cloudinary so pra testar.
   if (cloudinaryConfigurado()) {
     try {
-      const url = await uploadImagemCloudinary(bytes, "coisas-brasileiras/produtos")
+      const url = await uploadImagemCloudinary(bytes, `coisas-brasileiras/${pasta}`)
       return NextResponse.json({ url })
     } catch (erro) {
       console.error("[upload] Falha no Cloudinary:", erro)
@@ -44,9 +47,9 @@ export async function POST(request: Request) {
   }
 
   const nomeArquivo = `${randomUUID()}.${extensao}`
-  const pastaDestino = path.join(process.cwd(), "public", "uploads", "produtos")
+  const pastaDestino = path.join(process.cwd(), "public", "uploads", pasta)
   await mkdir(pastaDestino, { recursive: true })
   await writeFile(path.join(pastaDestino, nomeArquivo), bytes)
 
-  return NextResponse.json({ url: `/uploads/produtos/${nomeArquivo}` })
+  return NextResponse.json({ url: `/uploads/${pasta}/${nomeArquivo}` })
 }

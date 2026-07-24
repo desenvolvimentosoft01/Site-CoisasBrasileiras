@@ -1,7 +1,8 @@
+import Image from "next/image"
 import Link from "next/link"
 import { Leaf } from "lucide-react"
 
-type Categoria = { id: string; nome: string; slug: string }
+type Categoria = { id: string; nome: string; slug: string; imagem_url?: string | null }
 
 export function CategoriaGrid({ categorias }: { categorias: Categoria[] }) {
   if (categorias.length === 0) return null
@@ -18,9 +19,15 @@ export function CategoriaGrid({ categorias }: { categorias: Categoria[] }) {
             href={`/produtos?categoria=${categoria.slug}`}
             className="group flex flex-col items-center gap-3 rounded-xl border border-black/5 bg-emerald-50/60 p-6 text-center transition-colors hover:bg-emerald-100"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white transition-transform group-hover:scale-105">
-              <Leaf size={22} />
-            </div>
+            {categoria.imagem_url ? (
+              <div className="relative h-12 w-12 overflow-hidden rounded-full transition-transform group-hover:scale-105">
+                <Image src={categoria.imagem_url} alt="" fill className="object-cover" sizes="48px" />
+              </div>
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white transition-transform group-hover:scale-105">
+                <Leaf size={22} />
+              </div>
+            )}
             <span className="text-sm font-medium text-emerald-900">{categoria.nome}</span>
           </Link>
         ))}

@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
       dynamic: 30,
     },
   },
+  // Libera o next/image pra renderizar imagens vindas do Cloudinary (upload
+  // de produto/categoria cai la quando configurado - ver lib/cloudinary.ts).
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

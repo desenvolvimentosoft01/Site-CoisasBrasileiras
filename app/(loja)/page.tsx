@@ -9,7 +9,7 @@ export default async function HomePage() {
   )
 
   const categorias = await query(
-    "SELECT id, nome, slug FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"
+    "SELECT id, nome, slug, imagem_url FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"
   )
 
   const destaques = await query(`
