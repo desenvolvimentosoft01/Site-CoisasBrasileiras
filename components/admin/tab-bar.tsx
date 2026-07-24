@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { X } from "lucide-react"
+import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAbasAdmin } from "@/lib/abas-admin-store"
 import type { LucideIcon } from "lucide-react"
 
@@ -12,6 +12,9 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   const router = useRouter()
   const pathname = usePathname()
   const { abas, abrirAba, fecharAba } = useAbasAdmin()
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [podeRolarEsquerda, setPodeRolarEsquerda] = useState(false)
+  const [podeRolarDireita, setPodeRolarDireita] = useState(false)
 
   // Se o usuario chegou numa secao por link direto/F5 (nao pelo clique no
   // menu lateral), registra a aba mesmo assim - a barra sempre reflete onde
@@ -23,6 +26,28 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
+
+  // Mostra/esconde as setas conforme o conteudo realmente ultrapassa a
+  // largura visivel - recalcula a cada mudanca na lista de abas e no resize.
+  const atualizarSetas = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setPodeRolarEsquerda(el.scrollLeft > 4)
+    setPodeRolarDireita(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    atualizarSetas()
+    const el = scrollRef.current
+    if (!el) return
+    const observer = new ResizeObserver(atualizarSetas)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [abas, atualizarSetas])
+
+  function rolar(direcao: -1 | 1) {
+    scrollRef.current?.scrollBy({ left: direcao * 160, behavior: "smooth" })
+  }
 
   function handleFechar(evento: React.MouseEvent, path: string) {
     evento.stopPropagation()
@@ -37,7 +62,21 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   }
 
   return (
-    <div className="flex shrink-0 items-end gap-0 overflow-x-auto border-b border-slate-700 bg-slate-800 px-2 pt-1">
+    <div className="flex shrink-0 items-end border-b border-slate-700 bg-slate-800">
+      {podeRolarEsquerda && (
+        <button
+          onClick={() => rolar(-1)}
+          aria-label="Rolar abas para a esquerda"
+          className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white"
+        >
+          <ChevronLeft size={16} />
+        </button>
+      )}
+      <div
+        ref={scrollRef}
+        onScroll={atualizarSetas}
+        className="flex shrink items-end gap-0 overflow-x-auto px-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
       {abas.map((aba) => {
         const ativa = pathname.startsWith(aba.path)
         const Icone = iconeDaAba(aba.path)
@@ -74,6 +113,16 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
           </div>
         )
       })}
+      </div>
+      {podeRolarDireita && (
+        <button
+          onClick={() => rolar(1)}
+          aria-label="Rolar abas para a direita"
+          className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white"
+        >
+          <ChevronRight size={16} />
+        </button>
+      )}
     </div>
   )
 }
