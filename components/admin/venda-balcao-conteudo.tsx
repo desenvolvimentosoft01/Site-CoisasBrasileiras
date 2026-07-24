@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List } from "lucide-react"
-import { formatarMoeda } from "@/lib/mascaras"
+import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj } from "@/lib/mascaras"
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
 
@@ -119,12 +119,57 @@ export function VendaBalcaoConteudo({
   const [categoriaAtiva, setCategoriaAtiva] = useState("todas")
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([])
 
-  const clientes = clientesIniciais
+  const [clientes, setClientes] = useState(clientesIniciais)
   const tiposEntrega = tiposEntregaIniciais
   const [buscaCliente, setBuscaCliente] = useState("")
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
   const [clienteNomeAvulso, setClienteNomeAvulso] = useState("")
   const [clienteTelefoneAvulso, setClienteTelefoneAvulso] = useState("")
+
+  // Cadastro completo de cliente novo (grava em TAB_CLIENTE de verdade, em
+  // vez do "cadastro rapido" que so guarda nome/telefone soltos no pedido) -
+  // fica disponivel pro proximo atendimento tambem, nao so essa venda.
+  const [cadastrandoCliente, setCadastrandoCliente] = useState(false)
+  const [novoClienteNome, setNovoClienteNome] = useState("")
+  const [novoClienteEmail, setNovoClienteEmail] = useState("")
+  const [novoClienteTelefone, setNovoClienteTelefone] = useState("")
+  const [novoClienteCpfCnpj, setNovoClienteCpfCnpj] = useState("")
+  const [salvandoCliente, setSalvandoCliente] = useState(false)
+  const [erroCliente, setErroCliente] = useState("")
+
+  async function cadastrarCliente() {
+    setErroCliente("")
+    setSalvandoCliente(true)
+
+    const resposta = await fetch("/api/admin/clientes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome: novoClienteNome,
+        email: novoClienteEmail || null,
+        telefone: novoClienteTelefone.replace(/\D/g, "") || null,
+        cpf_cnpj: novoClienteCpfCnpj.replace(/\D/g, "") || null,
+      }),
+    })
+
+    setSalvandoCliente(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErroCliente(dados.erro || "Erro ao cadastrar cliente")
+      return
+    }
+
+    const clienteCriado = await resposta.json()
+    const cliente: Cliente = { id: clienteCriado.id, nome: clienteCriado.nome, email: clienteCriado.email || "", telefone: clienteCriado.telefone }
+    setClientes((atual) => [...atual, cliente].sort((a, b) => a.nome.localeCompare(b.nome)))
+    setClienteSelecionado(cliente)
+    setCadastrandoCliente(false)
+    setNovoClienteNome("")
+    setNovoClienteEmail("")
+    setNovoClienteTelefone("")
+    setNovoClienteCpfCnpj("")
+  }
 
   const [vendas, setVendas] = useState<Venda[]>(vendasIniciais)
   const [filtroOrigem, setFiltroOrigem] = useState<"todas" | "site" | "balcao">("todas")
@@ -492,17 +537,74 @@ export function VendaBalcaoConteudo({
                         ))}
                       </div>
                     )}
-                    <p className="text-xs text-slate-400">Ou cadastro rapido, sem conta no site:</p>
-                    <Input
-                      placeholder="Nome"
-                      value={clienteNomeAvulso}
-                      onChange={(e) => setClienteNomeAvulso(e.target.value)}
-                    />
-                    <Input
-                      placeholder="Telefone"
-                      value={clienteTelefoneAvulso}
-                      onChange={(e) => setClienteTelefoneAvulso(e.target.value)}
-                    />
+                    {cadastrandoCliente ? (
+                      <div className="space-y-2 rounded-md border border-input p-3">
+                        <p className="text-xs font-medium text-slate-500">Cadastro completo de cliente</p>
+                        <Input
+                          placeholder="Nome *"
+                          value={novoClienteNome}
+                          onChange={(e) => setNovoClienteNome(e.target.value)}
+                        />
+                        <Input
+                          type="email"
+                          placeholder="Email (opcional)"
+                          value={novoClienteEmail}
+                          onChange={(e) => setNovoClienteEmail(e.target.value)}
+                        />
+                        <Input
+                          placeholder="Telefone"
+                          inputMode="tel"
+                          value={novoClienteTelefone}
+                          onChange={(e) => setNovoClienteTelefone(mascaraTelefone(e.target.value))}
+                        />
+                        <Input
+                          placeholder="CPF/CNPJ (opcional)"
+                          inputMode="numeric"
+                          value={novoClienteCpfCnpj}
+                          onChange={(e) => setNovoClienteCpfCnpj(mascaraCpfCnpj(e.target.value))}
+                        />
+                        {erroCliente && <p className="text-xs text-red-500">{erroCliente}</p>}
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => setCadastrandoCliente(false)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={cadastrarCliente}
+                            disabled={salvandoCliente || !novoClienteNome.trim()}
+                          >
+                            {salvandoCliente ? "Salvando..." : "Salvar cliente"}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setCadastrandoCliente(true)}
+                          className="text-xs font-medium text-primary hover:underline"
+                        >
+                          + Cadastrar novo cliente (completo)
+                        </button>
+                        <p className="text-xs text-slate-400">Ou cadastro rapido, sem conta no site:</p>
+                        <Input
+                          placeholder="Nome"
+                          value={clienteNomeAvulso}
+                          onChange={(e) => setClienteNomeAvulso(e.target.value)}
+                        />
+                        <Input
+                          placeholder="Telefone"
+                          value={clienteTelefoneAvulso}
+                          onChange={(e) => setClienteTelefoneAvulso(e.target.value)}
+                        />
+                      </>
+                    )}
                   </div>
                 )}
               </div>
