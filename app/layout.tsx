@@ -14,7 +14,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Coisas Brasileiras — Porcelanas, presentes e artigos religiosos",
+  // Titulo curto na aba do navegador (mesmo padrao "Coisas Brasileiras — X"
+  // usado no admin) - a descricao completa continua no meta description,
+  // que e o que aparece no Google, nao na aba.
+  title: "Coisas Brasileiras — Loja",
   description: "Porcelanas decorativas, presentes, artigos religiosos e perfumaria, direto pra sua casa.",
 };
 
