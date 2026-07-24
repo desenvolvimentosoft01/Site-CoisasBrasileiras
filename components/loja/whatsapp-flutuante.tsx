@@ -5,11 +5,17 @@ import { MessageCircle } from "lucide-react"
 // (Configuracoes > Contato no admin). Sem numero configurado, o botao nao aparece.
 const MENSAGEM_PADRAO = "Olá, quero saber mais sobre os seus produtos"
 
-export function WhatsappFlutuante({ whatsapp }: { whatsapp: string | null }) {
+export function WhatsappFlutuante({
+  whatsapp,
+  mensagem,
+}: {
+  whatsapp: string | null
+  mensagem: string | null
+}) {
   const digitos = whatsapp?.replace(/\D/g, "")
   if (!digitos) return null
 
-  const href = `https://wa.me/55${digitos}?text=${encodeURIComponent(MENSAGEM_PADRAO)}`
+  const href = `https://wa.me/55${digitos}?text=${encodeURIComponent(mensagem || MENSAGEM_PADRAO)}`
 
   return (
     <Link

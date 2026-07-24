@@ -13,6 +13,7 @@ import { Phone, Truck, Megaphone, Palette, Plug } from "lucide-react"
 
 export type ConfiguracoesIniciais = {
   whatsapp: string
+  whatsapp_mensagem: string
   instagram: string
   email_contato: string
   frete_valor_base: string
@@ -53,6 +54,7 @@ function ConfiguracoesFormulario({
   const [whatsapp, setWhatsapp] = useState(
     configuracoesIniciais.whatsapp ? mascaraTelefone(configuracoesIniciais.whatsapp) : ""
   )
+  const [whatsappMensagem, setWhatsappMensagem] = useState(configuracoesIniciais.whatsapp_mensagem)
   const [instagram, setInstagram] = useState(configuracoesIniciais.instagram)
   const [emailContato, setEmailContato] = useState(configuracoesIniciais.email_contato)
   const [freteValorBase, setFreteValorBase] = useState(
@@ -82,6 +84,7 @@ function ConfiguracoesFormulario({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         whatsapp: whatsapp.replace(/\D/g, ""),
+        whatsapp_mensagem: whatsappMensagem,
         instagram,
         email_contato: emailContato,
         frete_valor_base: String(valorMoedaParaNumero(freteValorBase)),
@@ -141,6 +144,17 @@ function ConfiguracoesFormulario({
                     inputMode="tel"
                     placeholder="(00) 00000-0000"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Mensagem padrao do WhatsApp</Label>
+                  <Input
+                    value={whatsappMensagem}
+                    onChange={(e) => setWhatsappMensagem(e.target.value)}
+                    placeholder="Olá, quero saber mais sobre os seus produtos"
+                  />
+                  <p className="text-xs text-slate-400">
+                    Preenchida automaticamente quando o cliente clica no botao de WhatsApp do site.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label>Instagram</Label>

@@ -7,7 +7,7 @@ import { query } from "@/lib/db"
 
 export default async function LojaLayout({ children }: { children: React.ReactNode }) {
   const [config, categorias] = await Promise.all([
-    getConfiguracoes(["banner_texto_topo", "cor_primaria", "nome_loja", "whatsapp"]),
+    getConfiguracoes(["banner_texto_topo", "cor_primaria", "nome_loja", "whatsapp", "whatsapp_mensagem"]),
     query("SELECT id, nome, slug FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"),
   ])
 
@@ -28,7 +28,7 @@ export default async function LojaLayout({ children }: { children: React.ReactNo
       <main className="flex-1">{children}</main>
       <Footer />
       <CarrinhoDrawer />
-      <WhatsappFlutuante whatsapp={config.whatsapp || null} />
+      <WhatsappFlutuante whatsapp={config.whatsapp || null} mensagem={config.whatsapp_mensagem || null} />
     </div>
   )
 }

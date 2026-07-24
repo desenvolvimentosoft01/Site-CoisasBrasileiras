@@ -6,6 +6,7 @@ import { getConfiguracoes } from "@/lib/configuracoes"
 export async function Footer() {
   const config = await getConfiguracoes([
     "whatsapp",
+    "whatsapp_mensagem",
     "instagram",
     "email_contato",
     "nome_loja",
@@ -39,7 +40,9 @@ export async function Footer() {
           </div>
           {whatsappDigitos && (
             <Link
-              href={`https://wa.me/55${whatsappDigitos}`}
+              href={`https://wa.me/55${whatsappDigitos}${
+                config.whatsapp_mensagem ? `?text=${encodeURIComponent(config.whatsapp_mensagem)}` : ""
+              }`}
               target="_blank"
               className="flex items-center gap-2 hover:text-white"
             >

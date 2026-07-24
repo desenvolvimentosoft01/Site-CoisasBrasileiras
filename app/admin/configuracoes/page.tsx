@@ -6,6 +6,7 @@ import { ConfiguracoesConteudo } from "@/components/admin/configuracoes-conteudo
 
 const CHAVES = [
   "whatsapp",
+  "whatsapp_mensagem",
   "instagram",
   "email_contato",
   "frete_valor_base",
@@ -32,6 +33,7 @@ export default async function ConfiguracoesPage() {
     <ConfiguracoesConteudo
       configuracoesIniciais={{
         whatsapp: configuracoes.whatsapp || "",
+        whatsapp_mensagem: configuracoes.whatsapp_mensagem || "",
         instagram: configuracoes.instagram || "",
         email_contato: configuracoes.email_contato || "",
         frete_valor_base: configuracoes.frete_valor_base || "",
