@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { Pencil, Plus } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Pencil, Plus, Ban, RotateCcw } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Cliente = {
@@ -14,6 +15,7 @@ export type Cliente = {
   email: string | null
   telefone: string | null
   cpf_cnpj: string | null
+  ativo: boolean
   criado_em: string
   veio_do_site: boolean
 }
@@ -21,6 +23,7 @@ export type Cliente = {
 export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Cliente[] }) {
   const [clientes, setClientes] = useState<Cliente[]>(clientesIniciais)
   const [busca, setBusca] = useState("")
+  const [filtroStatus, setFiltroStatus] = useState<"ativos" | "inativos" | "todos">("ativos")
   // clienteEditando === null e modalAberto === false: modal fechado.
   // clienteEditando === null e modalAberto === true: cadastrando um novo.
   // clienteEditando preenchido: editando o cliente existente.
@@ -72,7 +75,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     const url = clienteEditando ? `/api/admin/clientes/${clienteEditando.id}` : "/api/admin/clientes"
     const method = clienteEditando ? "PUT" : "POST"
     const corpo = clienteEditando
-      ? { nome, telefone, cpf_cnpj: cpfCnpj }
+      ? { nome, telefone, cpf_cnpj: cpfCnpj, ativo: clienteEditando.ativo }
       : { nome, email, telefone, cpf_cnpj: cpfCnpj }
 
     const resposta = await fetch(url, {
@@ -109,9 +112,47 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     recarregar()
   }
 
-  const clientesFiltrados = clientes.filter((c) =>
-    `${c.nome} ${c.email || ""} ${c.telefone || ""}`.toLowerCase().includes(busca.toLowerCase())
-  )
+  async function alternarAtivo(cliente: Cliente) {
+    const novoStatus = !cliente.ativo
+    const acao = novoStatus ? "reativar" : "inativar"
+    if (!confirm(`Quer mesmo ${acao} o cliente "${cliente.nome}"?`)) return
+
+    const resposta = await fetch(`/api/admin/clientes/${cliente.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome: cliente.nome,
+        telefone: cliente.telefone,
+        cpf_cnpj: cliente.cpf_cnpj,
+        ativo: novoStatus,
+      }),
+    })
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      alert(dados.erro || "Erro ao atualizar status")
+      return
+    }
+
+    registrarAuditoria({
+      tela: "Clientes",
+      acao: novoStatus ? "ativacao" : "inativacao",
+      tabela: "TAB_CLIENTE",
+      registroId: cliente.id,
+      antes: { ativo: cliente.ativo },
+      depois: { ativo: novoStatus },
+    })
+
+    recarregar()
+  }
+
+  const clientesFiltrados = clientes
+    .filter((c) => {
+      if (filtroStatus === "ativos") return c.ativo
+      if (filtroStatus === "inativos") return !c.ativo
+      return true
+    })
+    .filter((c) => `${c.nome} ${c.email || ""} ${c.telefone || ""}`.toLowerCase().includes(busca.toLowerCase()))
 
   return (
     <div className="space-y-6">
@@ -123,12 +164,21 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
         </Button>
       </div>
 
-      <Input
-        placeholder="Buscar por nome, email ou telefone..."
-        value={busca}
-        onChange={(e) => setBusca(e.target.value)}
-        className="max-w-sm"
-      />
+      <div className="flex flex-wrap items-center gap-3">
+        <Input
+          placeholder="Buscar por nome, email ou telefone..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="max-w-sm"
+        />
+        <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
+          <TabsList>
+            <TabsTrigger value="ativos">Ativos</TabsTrigger>
+            <TabsTrigger value="inativos">Inativos</TabsTrigger>
+            <TabsTrigger value="todos">Todos</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
 
       <Card>
         <CardContent className="p-0">
@@ -136,7 +186,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
             <p className="p-6 text-sm text-slate-500">Nenhum cliente encontrado.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-sm">
+              <table className="w-full min-w-[780px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Nome</th>
@@ -144,6 +194,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                     <th className="p-4 font-medium">Email</th>
                     <th className="p-4 font-medium">Telefone</th>
                     <th className="p-4 font-medium">CPF/CNPJ</th>
+                    <th className="p-4 font-medium">Status</th>
                     <th className="p-4 font-medium text-right">Acoes</th>
                   </tr>
                 </thead>
@@ -165,9 +216,32 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                       <td className="p-4 text-slate-500">{cliente.email || "-"}</td>
                       <td className="p-4 text-slate-500">{cliente.telefone || "-"}</td>
                       <td className="p-4 text-slate-500">{cliente.cpf_cnpj || "-"}</td>
+                      <td className="p-4">
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs ${
+                            cliente.ativo
+                              ? "bg-emerald-600/20 text-emerald-400"
+                              : "bg-slate-200 text-slate-500"
+                          }`}
+                        >
+                          {cliente.ativo ? "Ativo" : "Inativo"}
+                        </span>
+                      </td>
                       <td className="p-4 text-right">
                         <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(cliente)}>
                           <Pencil size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={() => alternarAtivo(cliente)}
+                          title={cliente.ativo ? "Inativar cliente" : "Reativar cliente"}
+                        >
+                          {cliente.ativo ? (
+                            <Ban size={16} className="text-red-500" />
+                          ) : (
+                            <RotateCcw size={16} className="text-emerald-500" />
+                          )}
                         </Button>
                       </td>
                     </tr>

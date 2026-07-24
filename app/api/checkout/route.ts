@@ -13,6 +13,14 @@ export async function POST(request: Request) {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
   const cliente = sessaoOuErro
 
+  // O cookie de sessao pode ter sido emitido antes do admin inativar o
+  // cliente (sessao dura 30 dias) - reconfere no banco pra nao deixar um
+  // cliente inativado finalizar compra so porque ainda esta logado.
+  const [clienteAtual] = await query("SELECT ativo FROM TAB_CLIENTE WHERE id = $1", [cliente.id])
+  if (!clienteAtual || !clienteAtual.ativo) {
+    return NextResponse.json({ erro: "Conta desativada. Entre em contato com a loja." }, { status: 403 })
+  }
+
   const { endereco, itens, cupomCodigo, gateway } = await request.json()
   const gatewayEscolhido: "mercadopago" | "pagbank" = gateway === "pagbank" ? "pagbank" : "mercadopago"
 

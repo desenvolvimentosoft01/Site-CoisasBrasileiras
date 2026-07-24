@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   const clientes = await query(
-    "SELECT id, nome, email, senha_hash FROM TAB_CLIENTE WHERE email = $1",
+    "SELECT id, nome, email, senha_hash, ativo FROM TAB_CLIENTE WHERE email = $1",
     [email]
   )
 
@@ -29,6 +29,15 @@ export async function POST(request: Request) {
   }
 
   const cliente = clientes[0]
+
+  // Cliente inativado pelo admin nao consegue mais entrar no site - o
+  // cadastro e o historico de pedidos continuam intactos, so o acesso e
+  // bloqueado. Mensagem generica de proposito, igual ao caso de senha errada,
+  // pra nao revelar pra quem tenta logar que a conta existe mas foi bloqueada.
+  if (!cliente.ativo) {
+    return NextResponse.json({ erro: "Email ou senha invalidos" }, { status: 401 })
+  }
+
   const senhaCorreta = await bcrypt.compare(senha, cliente.senha_hash)
 
   if (!senhaCorreta) {
