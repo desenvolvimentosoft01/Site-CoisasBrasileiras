@@ -2,7 +2,41 @@ import { query } from "@/lib/db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatarMoeda } from "@/lib/mascaras"
 import Link from "next/link"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Package, ShoppingCart, Store, Wallet, Clock, type LucideIcon } from "lucide-react"
+
+// Um "tema" de cor por indicador do dashboard, pra cada card ter identidade
+// visual propria em vez de ficar tudo branco/cinza igual.
+const coresIndicador = {
+  verde: "bg-emerald-50 text-emerald-600",
+  azul: "bg-blue-50 text-blue-600",
+  ambar: "bg-amber-50 text-amber-600",
+  roxo: "bg-purple-50 text-purple-600",
+  rosa: "bg-rose-50 text-rose-600",
+} as const
+
+function CardIndicador({
+  titulo,
+  icone: Icone,
+  cor,
+  children,
+}: {
+  titulo: string
+  icone: LucideIcon
+  cor: keyof typeof coresIndicador
+  children: React.ReactNode
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm text-slate-500">{titulo}</CardTitle>
+        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${coresIndicador[cor]}`}>
+          <Icone size={18} />
+        </div>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  )
+}
 
 const rotulosStatus: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
@@ -50,41 +84,22 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Produtos ativos</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">{produtosAtivos}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Pedidos hoje (site)</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">{pedidosHoje}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Vendas balcao hoje</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold">{vendasBalcaoHoje}</div>
-            <div className="text-xs text-slate-400">{formatarMoeda(faturamentoBalcaoHoje)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Faturamento do mes</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">
-            {formatarMoeda(faturamentoMes)}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Aguardando pagamento</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">{pedidosPendentes}</CardContent>
-        </Card>
+        <CardIndicador titulo="Produtos ativos" icone={Package} cor="verde">
+          <div className="text-3xl font-semibold">{produtosAtivos}</div>
+        </CardIndicador>
+        <CardIndicador titulo="Pedidos hoje (site)" icone={ShoppingCart} cor="azul">
+          <div className="text-3xl font-semibold">{pedidosHoje}</div>
+        </CardIndicador>
+        <CardIndicador titulo="Vendas balcao hoje" icone={Store} cor="roxo">
+          <div className="text-3xl font-semibold">{vendasBalcaoHoje}</div>
+          <div className="text-xs text-slate-400">{formatarMoeda(faturamentoBalcaoHoje)}</div>
+        </CardIndicador>
+        <CardIndicador titulo="Faturamento do mes" icone={Wallet} cor="verde">
+          <div className="text-3xl font-semibold">{formatarMoeda(faturamentoMes)}</div>
+        </CardIndicador>
+        <CardIndicador titulo="Aguardando pagamento" icone={Clock} cor="ambar">
+          <div className="text-3xl font-semibold">{pedidosPendentes}</div>
+        </CardIndicador>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -100,7 +115,7 @@ export default async function DashboardPage() {
                 <Link
                   key={pedido.id}
                   href={`/admin/pedidos/${pedido.id}`}
-                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-slate-100"
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent"
                 >
                   <div>
                     <div className="font-medium">{pedido.cliente_nome}</div>
@@ -135,7 +150,7 @@ export default async function DashboardPage() {
                 <Link
                   key={produto.id}
                   href={`/admin/produtos/${produto.id}`}
-                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-slate-100"
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent"
                 >
                   <span className="font-medium">{produto.nome}</span>
                   <span className="text-amber-500">
