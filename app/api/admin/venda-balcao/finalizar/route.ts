@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     clienteNomeAvulso,
     clienteTelefoneAvulso,
     tipoEntregaId,
+    canal,
   }: {
     itens: ItemVenda[]
     formaPagamento: string
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
     clienteNomeAvulso?: string | null
     clienteTelefoneAvulso?: string | null
     tipoEntregaId?: string | null
+    canal?: string
   } = await request.json()
 
   if (!Array.isArray(itens) || itens.length === 0) {
@@ -59,8 +61,8 @@ export async function POST(request: Request) {
 
       const [pedidoCriado] = await executar(
         `INSERT INTO TAB_PEDIDO
-           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, tipo_entrega_id)
-         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6)
+           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, tipo_entrega_id, canal)
+         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6, $7)
          RETURNING id, total, criado_em`,
         [
           clienteId || null,
@@ -69,6 +71,7 @@ export async function POST(request: Request) {
           clienteNomeAvulso || null,
           clienteTelefoneAvulso || null,
           tipoEntregaId || null,
+          canal || "balcao",
         ]
       )
 

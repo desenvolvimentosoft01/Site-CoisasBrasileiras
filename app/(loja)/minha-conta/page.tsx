@@ -37,6 +37,7 @@ type Pedido = {
   codigo_rastreio: string | null
   transportadora: string | null
   criado_em: string
+  bling_link_danfe: string | null
 }
 
 const rotulosStatus: Record<string, string> = {

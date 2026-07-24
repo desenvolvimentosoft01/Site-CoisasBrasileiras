@@ -23,7 +23,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const [pedido] = await query(
     `
     SELECT
-      p.id, p.status, p.total, p.forma_pagamento, p.nota_fiscal_url, p.criado_em, p.origem,
+      p.id, p.status, p.total, p.forma_pagamento, p.nota_fiscal_url, p.criado_em, p.origem, p.canal,
       p.codigo_rastreio, p.transportadora,
       p.bling_nota_id, p.bling_link_danfe, p.bling_link_pdf,
       COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome,

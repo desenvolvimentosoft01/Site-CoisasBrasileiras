@@ -162,8 +162,8 @@ export async function POST(request: Request) {
       const total = subtotal + valorFrete - valorDesconto
 
       const [pedidoCriado] = await q(
-        `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status, gateway_pagamento)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento', $8)
+        `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status, gateway_pagamento, canal)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento', $8, 'site')
          RETURNING id`,
         [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total, gatewayEscolhido]
       )

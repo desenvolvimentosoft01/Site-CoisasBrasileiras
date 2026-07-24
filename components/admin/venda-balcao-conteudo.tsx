@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select"
 import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
+import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
+import { LabelCanal } from "@/components/admin/label-canal"
 
 export type Produto = {
   id: string
@@ -50,6 +52,7 @@ export type TipoEntrega = {
 export type Venda = {
   id: string
   origem: "site" | "balcao"
+  canal: CanalPedido | null
   status: string
   total: string
   forma_pagamento: string | null
@@ -64,6 +67,7 @@ type PedidoDetalhe = {
   forma_pagamento: string | null
   criado_em: string
   origem: "site" | "balcao"
+  canal: CanalPedido | null
   cliente_nome: string
   cliente_email: string | null
   cliente_telefone: string | null
@@ -137,6 +141,7 @@ export function VendaBalcaoConteudo({
 
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false)
   const [formaPagamento, setFormaPagamento] = useState("dinheiro")
+  const [canal, setCanal] = useState<string>("balcao")
   const [tipoEntregaId, setTipoEntregaId] = useState<string>("nenhum")
   const [finalizando, setFinalizando] = useState(false)
   const [erro, setErro] = useState("")
@@ -224,6 +229,7 @@ export function VendaBalcaoConteudo({
           precoUnitario: i.preco,
         })),
         formaPagamento,
+        canal,
         clienteId: clienteSelecionado?.id || null,
         clienteNomeAvulso: clienteSelecionado ? null : clienteNomeAvulso || null,
         clienteTelefoneAvulso: clienteSelecionado ? null : clienteTelefoneAvulso || null,
@@ -245,6 +251,7 @@ export function VendaBalcaoConteudo({
     setClienteNomeAvulso("")
     setClienteTelefoneAvulso("")
     setFormaPagamento("dinheiro")
+    setCanal("balcao")
     setTipoEntregaId("nenhum")
     setModalPagamentoAberto(false)
     // Recarrega produtos (estoque baixado) e a grade de vendas (nova venda).
@@ -295,7 +302,7 @@ export function VendaBalcaoConteudo({
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Cliente</th>
-                        <th className="p-4 font-medium">Origem</th>
+                        <th className="p-4 font-medium">Canal</th>
                         <th className="p-4 font-medium">Status</th>
                         <th className="p-4 font-medium">Total</th>
                         <th className="p-4 font-medium">Data</th>
@@ -314,15 +321,7 @@ export function VendaBalcaoConteudo({
                             </span>
                           </td>
                           <td className="p-4">
-                            <span
-                              className={`rounded-full px-2 py-1 text-xs ${
-                                venda.origem === "balcao"
-                                  ? "bg-amber-600/20 text-amber-400"
-                                  : "bg-blue-600/20 text-blue-400"
-                              }`}
-                            >
-                              {venda.origem === "balcao" ? "Balcao" : "Site"}
-                            </span>
+                            <LabelCanal canal={venda.canal ?? (venda.origem === "balcao" ? "balcao" : "site")} />
                           </td>
                           <td className="p-4 text-slate-500">
                             {ROTULOS_STATUS[venda.status] ?? venda.status}
@@ -553,6 +552,22 @@ export function VendaBalcaoConteudo({
               </Select>
             </div>
 
+            <div className="space-y-2">
+              <Label>Canal da venda</Label>
+              <Select value={canal} onValueChange={(v) => setCanal(v || "balcao")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CANAIS_VENDA_BALCAO.map((c) => (
+                    <SelectItem key={c.valor} value={c.valor}>
+                      {c.rotulo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {tiposEntrega.length > 0 && (
               <div className="space-y-2">
                 <Label>Tipo de entrega (opcional)</Label>
@@ -608,15 +623,10 @@ export function VendaBalcaoConteudo({
                     <p className="text-xs text-slate-500">{vendaPreview.cliente_telefone}</p>
                   )}
                 </div>
-                <span
-                  className={`rounded-full px-2 py-1 text-xs ${
-                    vendaPreview.origem === "balcao"
-                      ? "bg-amber-600/20 text-amber-400"
-                      : "bg-blue-600/20 text-blue-400"
-                  }`}
-                >
-                  {vendaPreview.origem === "balcao" ? "Balcao" : "Site"}
-                </span>
+                <LabelCanal
+                  canal={vendaPreview.canal ?? (vendaPreview.origem === "balcao" ? "balcao" : "site")}
+                  className="rounded-full bg-slate-100 px-2 py-1 text-xs"
+                />
               </div>
 
               <div className="flex items-center justify-between text-sm text-slate-500">
