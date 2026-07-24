@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AlertTriangle, Search } from "lucide-react"
+import { AlertTriangle, Search, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type ProdutoEstoque = {
@@ -98,6 +98,19 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
             <TabsTrigger value="baixo">Estoque baixo</TabsTrigger>
           </TabsList>
         </Tabs>
+        {(busca || filtro !== "todos") && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setBusca("")
+              setFiltro("todos")
+            }}
+          >
+            <X size={14} className="mr-1" />
+            Limpar filtros
+          </Button>
+        )}
       </div>
 
       <Card>

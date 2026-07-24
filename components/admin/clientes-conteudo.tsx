@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Pencil, Plus, Ban, RotateCcw } from "lucide-react"
+import { Pencil, Plus, Ban, RotateCcw, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Cliente = {
@@ -171,6 +171,19 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
           onChange={(e) => setBusca(e.target.value)}
           className="max-w-sm"
         />
+        {(busca || filtroStatus !== "ativos") && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setBusca("")
+              setFiltroStatus("ativos")
+            }}
+          >
+            <X size={14} className="mr-1" />
+            Limpar filtros
+          </Button>
+        )}
         <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
           <TabsList>
             <TabsTrigger value="ativos">Ativos</TabsTrigger>
