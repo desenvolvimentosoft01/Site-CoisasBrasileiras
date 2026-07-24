@@ -75,7 +75,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
       <div
         ref={scrollRef}
         onScroll={atualizarSetas}
-        className="flex shrink items-end gap-0 overflow-x-auto px-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex min-w-0 shrink items-end gap-0 overflow-x-auto px-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
       {abas.map((aba) => {
         const ativa = pathname.startsWith(aba.path)
