@@ -1,8 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Filter, Search, X } from "lucide-react"
 
 export type RegistroAuditoria = {
   id: string
@@ -24,29 +34,183 @@ const corAcao: Record<RegistroAuditoria["acao"], string> = {
   ativacao: "bg-emerald-600/20 text-emerald-400",
 }
 
-export function AuditoriaConteudo({ registrosIniciais }: { registrosIniciais: RegistroAuditoria[] }) {
-  const [busca, setBusca] = useState("")
-  const [detalhe, setDetalhe] = useState<RegistroAuditoria | null>(null)
+const ROTULOS_ACAO: Record<RegistroAuditoria["acao"], string> = {
+  cadastro: "Cadastro",
+  edicao: "Edicao",
+  exclusao: "Exclusao",
+  inativacao: "Inativacao",
+  ativacao: "Ativacao",
+}
 
-  const filtrados = registrosIniciais.filter((r) =>
-    `${r.usuario_nome || ""} ${r.tela} ${r.tabela} ${r.acao}`.toLowerCase().includes(busca.toLowerCase())
+const TODOS = "__todos__"
+
+type FiltroAuditoria = { tela: string; acao: string; usuario: string; texto: string }
+
+const FILTRO_VAZIO: FiltroAuditoria = { tela: TODOS, acao: TODOS, usuario: TODOS, texto: "" }
+
+export function AuditoriaConteudo({
+  registrosIniciais,
+  inicioPeriodo,
+  fimPeriodo,
+}: {
+  registrosIniciais: RegistroAuditoria[]
+  inicioPeriodo: string
+  fimPeriodo: string
+}) {
+  const [detalhe, setDetalhe] = useState<RegistroAuditoria | null>(null)
+  // Estado do formulario (digitando) separado do aplicado - evita refiltrar a
+  // cada tecla no campo de texto; so refiltra ao clicar Pesquisar ou dar Enter.
+  const [filtro, setFiltro] = useState<FiltroAuditoria>(FILTRO_VAZIO)
+  const [filtroAplicado, setFiltroAplicado] = useState<FiltroAuditoria>(FILTRO_VAZIO)
+
+  const telas = useMemo(
+    () => Array.from(new Set(registrosIniciais.map((r) => r.tela))).sort(),
+    [registrosIniciais]
   )
+  const usuarios = useMemo(
+    () =>
+      Array.from(new Set(registrosIniciais.map((r) => r.usuario_nome).filter(Boolean) as string[])).sort(),
+    [registrosIniciais]
+  )
+
+  const filtrados = registrosIniciais.filter((r) => {
+    if (filtroAplicado.tela !== TODOS && r.tela !== filtroAplicado.tela) return false
+    if (filtroAplicado.acao !== TODOS && r.acao !== filtroAplicado.acao) return false
+    if (filtroAplicado.usuario !== TODOS && r.usuario_nome !== filtroAplicado.usuario) return false
+    if (filtroAplicado.texto) {
+      const alvo = `${r.usuario_nome || ""} ${r.tela} ${r.tabela} ${r.acao} ${r.registro_id || ""}`.toLowerCase()
+      if (!alvo.includes(filtroAplicado.texto.toLowerCase())) return false
+    }
+    return true
+  })
+
+  function pesquisar() {
+    setFiltroAplicado(filtro)
+  }
+
+  function limpar() {
+    setFiltro(FILTRO_VAZIO)
+    setFiltroAplicado(FILTRO_VAZIO)
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Auditoria</h1>
         <p className="text-sm text-muted-foreground">
-          Historico de cadastros, edicoes e exclusoes feitas no painel (ultimos 500 registros).
+          Historico de cadastros, edicoes e exclusoes feitas no painel (ate 500 registros no periodo).
         </p>
       </div>
 
-      <Input
-        placeholder="Buscar por usuario, tela ou tabela..."
-        value={busca}
-        onChange={(e) => setBusca(e.target.value)}
-        className="max-w-sm"
-      />
+      <Card>
+        <CardContent className="space-y-3 pt-6">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            <Filter size={14} />
+            Filtros
+          </div>
+
+          <form
+            action="/admin/auditoria"
+            method="get"
+            className="flex flex-wrap items-end gap-3"
+          >
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">De</Label>
+              <Input type="date" name="inicio" defaultValue={inicioPeriodo} className="w-40" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">Ate</Label>
+              <Input type="date" name="fim" defaultValue={fimPeriodo} className="w-40" />
+            </div>
+            <Button type="submit" variant="outline" size="sm">
+              Aplicar periodo
+            </Button>
+          </form>
+
+          <div className="flex flex-wrap items-end gap-3 border-t border-border pt-3">
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">Tela</Label>
+              <Select value={filtro.tela} onValueChange={(v) => setFiltro((f) => ({ ...f, tela: v || TODOS }))}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={TODOS}>Todas as telas</SelectItem>
+                  {telas.map((tela) => (
+                    <SelectItem key={tela} value={tela}>
+                      {tela}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">Acao</Label>
+              <Select value={filtro.acao} onValueChange={(v) => setFiltro((f) => ({ ...f, acao: v || TODOS }))}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={TODOS}>Todas as acoes</SelectItem>
+                  {(Object.keys(ROTULOS_ACAO) as RegistroAuditoria["acao"][]).map((acao) => (
+                    <SelectItem key={acao} value={acao}>
+                      {ROTULOS_ACAO[acao]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">Usuario</Label>
+              <Select
+                value={filtro.usuario}
+                onValueChange={(v) => setFiltro((f) => ({ ...f, usuario: v || TODOS }))}
+              >
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={TODOS}>Todos os usuarios</SelectItem>
+                  {usuarios.map((usuario) => (
+                    <SelectItem key={usuario} value={usuario}>
+                      {usuario}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">Buscar</Label>
+              <div className="relative">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Usuario, tela, tabela..."
+                  value={filtro.texto}
+                  onChange={(e) => setFiltro((f) => ({ ...f, texto: e.target.value }))}
+                  onKeyDown={(e) => e.key === "Enter" && pesquisar()}
+                  className="w-56 pl-8"
+                />
+              </div>
+            </div>
+
+            <Button size="sm" onClick={pesquisar}>
+              Pesquisar
+            </Button>
+            <Button size="sm" variant="outline" onClick={limpar}>
+              <X size={14} className="mr-1" />
+              Limpar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <p className="text-xs text-muted-foreground">
+        {filtrados.length} registro{filtrados.length === 1 ? "" : "s"} encontrado
+        {filtrados.length === 1 ? "" : "s"}
+      </p>
 
       <Card>
         <CardContent className="p-0">
