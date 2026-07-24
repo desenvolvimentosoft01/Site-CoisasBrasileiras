@@ -70,6 +70,7 @@ const menu: ItemMenu[] = [
     icone: BarChart3,
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
+      { href: "/admin/relatorios/estoque", label: "Estoque" },
       { href: "/admin/auditoria", label: "Auditoria", somenteAdmin: true },
     ],
   },
