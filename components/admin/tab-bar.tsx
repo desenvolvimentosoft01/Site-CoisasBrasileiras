@@ -74,14 +74,15 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
 
   return (
     <div className="flex min-w-0 shrink-0 items-end border-b border-slate-700 bg-slate-800">
-      <button
-        onClick={() => rolar(-1)}
-        disabled={!podeRolarEsquerda}
-        aria-label="Rolar abas para a esquerda"
-        className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white disabled:pointer-events-none disabled:opacity-30"
-      >
-        <ChevronLeft size={16} />
-      </button>
+      {podeRolarEsquerda && (
+        <button
+          onClick={() => rolar(-1)}
+          aria-label="Rolar abas para a esquerda"
+          className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white"
+        >
+          <ChevronLeft size={16} />
+        </button>
+      )}
       <div
         ref={scrollRef}
         onScroll={atualizarSetas}
@@ -126,14 +127,15 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
       })}
       </div>
       </div>
-      <button
-        onClick={() => rolar(1)}
-        disabled={!podeRolarDireita}
-        aria-label="Rolar abas para a direita"
-        className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white disabled:pointer-events-none disabled:opacity-30"
-      >
-        <ChevronRight size={16} />
-      </button>
+      {podeRolarDireita && (
+        <button
+          onClick={() => rolar(1)}
+          aria-label="Rolar abas para a direita"
+          className="flex h-8 w-7 shrink-0 items-center justify-center self-center text-slate-400 hover:bg-slate-700 hover:text-white"
+        >
+          <ChevronRight size={16} />
+        </button>
+      )}
     </div>
   )
 }
