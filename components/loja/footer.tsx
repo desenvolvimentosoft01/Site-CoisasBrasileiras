@@ -71,8 +71,9 @@ export async function Footer() {
           )}
         </div>
 
-        <div className="text-sm text-emerald-300">
+        <div className="space-y-1 text-sm text-emerald-300">
           <p>&copy; {new Date().getFullYear()} {nomeLoja}. Todos os direitos reservados.</p>
+          <p className="text-xs text-emerald-400">Desenvolvido por InMente Agência</p>
         </div>
       </div>
     </footer>
