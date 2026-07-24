@@ -30,15 +30,13 @@ npm install
 
 ### 3. Configurar o banco de dados
 
-Crie um banco chamado `coisas_brasileiras` e rode as migrations, na ordem, com `psql` ou outro cliente de sua preferência:
+Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `015_usuario_login_e_ultimo_acesso.sql`), com `psql` ou outro cliente de sua preferência:
 
 ```bash
-psql -U postgres -d coisas_brasileiras -f migrations/000_schema_inicial.sql
-psql -U postgres -d coisas_brasileiras -f migrations/001_admin_padrao.sql
-psql -U postgres -d coisas_brasileiras -f migrations/002_expansao_recursos.sql
+for f in migrations/0*.sql; do psql -U postgres -d coisas_brasileiras -f "$f"; done
 ```
 
-As migrations não são aplicadas automaticamente — sempre que houver uma nova, rode manualmente na ordem.
+As migrations não são aplicadas automaticamente — sempre que houver uma nova, rode manualmente. Para ver o que já foi aplicado num banco específico, use `migrations/consultar_migrations_aplicadas.sql`. Detalhe de cada migration em `DOCS/tecnico.md`.
 
 ### 4. Variáveis de ambiente
 
@@ -57,6 +55,9 @@ cp .env.example .env.local
 | `MERCADOPAGO_WEBHOOK_SECRET` | Assinatura secreta do webhook do Mercado Pago (opcional em dev) |
 | `EMAIL_USER` / `EMAIL_PASS` | Conta Gmail e senha de app para envio de e-mails transacionais |
 | `EMAIL_NOTIFICACOES_ADMIN` | E-mail que recebe cópia de notificações internas (novo pedido pago) |
+| `PAGBANK_TOKEN` / `PAGBANK_API_URL` | Credenciais do gateway alternativo PagBank (sandbox por padrão) |
+| `BLING_CLIENT_ID` / `BLING_CLIENT_SECRET` | Credenciais OAuth do Bling, usadas só na emissão manual de NF-e |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Upload de imagem em ambiente serverless (opcional em VPS com disco persistente) |
 
 ### 5. Rodar o servidor de desenvolvimento
 
@@ -94,18 +95,29 @@ migrations/       scripts SQL numerados, aplicados manualmente
 
 ## Deploy
 
-Plano de hospedagem: **VPS na Hostinger**, com PostgreSQL rodando no mesmo
+Plano de **produção**: **VPS na Hostinger**, com PostgreSQL rodando no mesmo
 servidor (self-hosted) e o Next.js como processo contínuo (`npm run build` +
-`npm run start`), não serverless.
+`npm run start`), não serverless. Nesse cenário o disco é persistente de
+verdade — o upload de imagem de produto em `public/uploads/` (comportamento
+padrão, sem configuração extra) funciona sem custo adicional, e o Cloudinary
+(`lib/cloudinary.ts`) fica **desligado por padrão**, só necessário se algum
+dia quiser CDN/otimização automática de imagem.
 
-Isso significa que o disco é persistente de verdade — o upload de imagem de
-produto em `public/uploads/` (comportamento padrão, sem configuração extra)
-funciona sem custo adicional. O Cloudinary (`lib/cloudinary.ts`) existe só
-como opção **desligada por padrão** — só ativa se algum dia quiser CDN/
-otimização automática de imagem; não é necessário nesse plano de hospedagem.
+Hoje existe também um ambiente de **homologação na Vercel + Neon**
+(Postgres gerenciado), usado para testes antes da produção final:
 
-Se um dia o site for pra um ambiente serverless (Vercel, por exemplo), aí sim
-o Cloudinary passa a ser obrigatório (defina `CLOUDINARY_CLOUD_NAME`,
-`CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`) e o banco precisa ser um
-Postgres gerenciado na nuvem (Neon, Supabase etc.), já que a VPS não seria
-mais o servidor.
+- `vercel.json` fixa a região das funções em `gru1` (São Paulo) — perto do
+  Neon (`sa-east-1`), evitando a latência cruzada de rodar as funções nos
+  EUA (`iad1`, região padrão da Vercel) enquanto o banco fica no Brasil.
+- Todas as migrations em `migrations/` precisam ser aplicadas manualmente
+  contra a `DATABASE_URL` do Neon (mesmo processo do setup local).
+- O primeiro usuário admin também precisa ser criado rodando
+  `node scripts/criar-admin.js` com a `DATABASE_URL` do Neon — não existe
+  seed automático (ver seção "Login do admin").
+- **Upload de imagem não persiste** nesse ambiente (Vercel é serverless,
+  disco efêmero) — o Cloudinary ainda não foi ligado aqui; é uma limitação
+  conhecida do ambiente de homologação, não um requisito da produção final.
+- O Neon (plano free) hiberna depois de ficar ocioso — a primeira query após
+  um tempo parado pode ter um atraso de 1-3s pra "acordar" o banco.
+
+Ver `DOCS/tecnico.md` para o modelo de dados e os módulos completos.
