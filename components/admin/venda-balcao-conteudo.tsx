@@ -425,13 +425,13 @@ export function VendaBalcaoConteudo({
                   >
                     <Card className="h-full transition-colors hover:border-primary/50 hover:bg-accent">
                       <CardContent className="space-y-2 p-3">
-                        <div className="flex h-20 items-center justify-center rounded-md bg-slate-100 text-xs text-slate-400">
+                        <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-slate-100 text-xs text-slate-400">
                           {produto.imagem_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={produto.imagem_url}
                               alt=""
-                              className="h-full w-full rounded-md object-cover"
+                              className="absolute inset-0 h-full w-full rounded-md object-cover"
                             />
                           ) : (
                             "Sem imagem"
