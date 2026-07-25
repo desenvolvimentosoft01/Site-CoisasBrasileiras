@@ -18,7 +18,7 @@ export async function GET() {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const categorias = await query(
-    "SELECT id, nome, slug, imagem_url, ativa, criado_em FROM TAB_CATEGORIA ORDER BY nome"
+    "SELECT id, nome, slug, imagem_url, ativa, categoria_pai_id, criado_em FROM TAB_CATEGORIA ORDER BY nome"
   )
   return NextResponse.json(categorias)
 }
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
-  const { nome, imagemUrl } = await request.json()
+  const { nome, imagemUrl, categoriaPaiId } = await request.json()
 
   if (!nome || !nome.trim()) {
     return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
@@ -41,8 +41,8 @@ export async function POST(request: Request) {
   }
 
   const [categoria] = await query(
-    "INSERT INTO TAB_CATEGORIA (nome, slug, imagem_url) VALUES ($1, $2, $3) RETURNING id, nome, slug, imagem_url, ativa, criado_em",
-    [nome.trim(), slug, imagemUrl || null]
+    "INSERT INTO TAB_CATEGORIA (nome, slug, imagem_url, categoria_pai_id) VALUES ($1, $2, $3, $4) RETURNING id, nome, slug, imagem_url, ativa, categoria_pai_id, criado_em",
+    [nome.trim(), slug, imagemUrl || null, categoriaPaiId || null]
   )
 
   revalidatePath("/", "layout")

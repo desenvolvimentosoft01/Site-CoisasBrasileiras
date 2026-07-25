@@ -8,7 +8,7 @@ import { query } from "@/lib/db"
 export default async function LojaLayout({ children }: { children: React.ReactNode }) {
   const [config, categorias] = await Promise.all([
     getConfiguracoes(["banner_texto_topo", "cor_primaria", "nome_loja", "whatsapp", "whatsapp_mensagem"]),
-    query("SELECT id, nome, slug FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"),
+    query("SELECT id, nome, slug, categoria_pai_id FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"),
   ])
 
   return (

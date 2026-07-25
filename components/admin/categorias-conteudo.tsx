@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List, ImagePlus, X } from "lucide-react"
+import { Trash2, Pencil, Plus, List, ImagePlus, X, CornerDownRight } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Categoria = {
@@ -17,6 +17,7 @@ export type Categoria = {
   slug: string
   imagem_url: string | null
   ativa: boolean
+  categoria_pai_id: string | null
   criado_em: string
 }
 
@@ -29,6 +30,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
   const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
   const [nome, setNome] = useState("")
   const [ativa, setAtiva] = useState(true)
+  const [categoriaPaiId, setCategoriaPaiId] = useState<string | null>(null)
   const [imagemUrl, setImagemUrl] = useState<string | null>(null)
   const [enviandoImagem, setEnviandoImagem] = useState(false)
   const [erro, setErro] = useState("")
@@ -69,6 +71,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     setCategoriaEditando(null)
     setNome("")
     setAtiva(true)
+    setCategoriaPaiId(null)
     setImagemUrl(null)
     setErro("")
     setAba("formulario")
@@ -78,6 +81,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     setCategoriaEditando(categoria)
     setNome(categoria.nome)
     setAtiva(categoria.ativa)
+    setCategoriaPaiId(categoria.categoria_pai_id)
     setImagemUrl(categoria.imagem_url)
     setErro("")
     setAba("formulario")
@@ -95,7 +99,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     const resposta = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, ativa, imagemUrl }),
+      body: JSON.stringify({ nome, ativa, imagemUrl, categoriaPaiId }),
     })
 
     setSalvando(false)
@@ -132,6 +136,14 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     })
     recarregar()
   }
+
+  // Categorias principais primeiro, com as subcategorias logo abaixo do
+  // respectivo pai (em vez de tudo em ordem alfabetica misturado).
+  const principais = categorias.filter((c) => !c.categoria_pai_id)
+  const categoriasOrdenadas = principais.flatMap((principal) => [
+    principal,
+    ...categorias.filter((c) => c.categoria_pai_id === principal.id),
+  ])
 
   return (
     <div className="space-y-6">
@@ -175,7 +187,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                       </tr>
                     </thead>
                     <tbody>
-                      {categorias.map((categoria) => (
+                      {categoriasOrdenadas.map((categoria) => (
                         <tr key={categoria.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4">
                             {categoria.imagem_url ? (
@@ -186,7 +198,12 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                               <div className="h-10 w-10 rounded-md bg-slate-100" />
                             )}
                           </td>
-                          <td className="p-4">{categoria.nome}</td>
+                          <td className="p-4">
+                            <span className={categoria.categoria_pai_id ? "flex items-center gap-1.5 pl-4 text-slate-600" : "font-medium"}>
+                              {categoria.categoria_pai_id && <CornerDownRight size={14} className="text-slate-400" />}
+                              {categoria.nome}
+                            </span>
+                          </td>
                           <td className="p-4 text-slate-500">{categoria.slug}</td>
                           <td className="p-4">
                             <span
@@ -237,6 +254,27 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
               <div className="space-y-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Categoria pai</Label>
+                <select
+                  value={categoriaPaiId ?? ""}
+                  onChange={(e) => setCategoriaPaiId(e.target.value || null)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                >
+                  <option value="">Nenhuma (categoria principal)</option>
+                  {categorias
+                    .filter((c) => !c.categoria_pai_id && c.id !== categoriaEditando?.id)
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.nome}
+                      </option>
+                    ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  Escolha uma categoria pai para criar uma subcategoria (ex: "Bowls" dentro de "Casa"). Deixe em branco para uma categoria principal, exibida no menu do site.
+                </p>
               </div>
 
               <div className="space-y-2">

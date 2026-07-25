@@ -11,7 +11,7 @@ import { ImagePlus, X } from "lucide-react"
 import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 
-type Categoria = { id: string; nome: string }
+type Categoria = { id: string; nome: string; categoria_pai_id: string | null }
 
 type ProdutoExistente = {
   id: string
@@ -307,20 +307,23 @@ export function ProdutoForm({
             <div className="space-y-2">
               <Label>Categorias</Label>
               <div className="flex flex-wrap gap-2">
-                {categoriasDisponiveis.map((categoria) => (
-                  <button
-                    key={categoria.id}
-                    type="button"
-                    onClick={() => alternarCategoria(categoria.id)}
-                    className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                      categoriaIds.includes(categoria.id)
-                        ? "border-primary bg-primary/15 text-primary"
-                        : "border-input text-muted-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    {categoria.nome}
-                  </button>
-                ))}
+                {categoriasDisponiveis.map((categoria) => {
+                  const pai = categoriasDisponiveis.find((c) => c.id === categoria.categoria_pai_id)
+                  return (
+                    <button
+                      key={categoria.id}
+                      type="button"
+                      onClick={() => alternarCategoria(categoria.id)}
+                      className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+                        categoriaIds.includes(categoria.id)
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-input text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {pai ? `${pai.nome} › ${categoria.nome}` : categoria.nome}
+                    </button>
+                  )
+                })}
                 {categoriasDisponiveis.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     Nenhuma categoria cadastrada ainda.

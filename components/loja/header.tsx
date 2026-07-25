@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { LayoutDashboard, Menu, Search, ShoppingCart, User, X } from "lucide-react"
+import { ChevronDown, LayoutDashboard, Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
 
-type Categoria = { id: string; nome: string; slug: string }
+type Categoria = { id: string; nome: string; slug: string; categoria_pai_id: string | null }
 
 export function Header({
   nomeLoja = "Coisas Brasileiras",
@@ -15,12 +15,12 @@ export function Header({
   nomeLoja?: string
   categorias?: Categoria[]
 }) {
-  const linksNav = [
-    { href: "/produtos", label: "Todos os produtos" },
-    ...categorias.map((c) => ({ href: `/produtos?categoria=${c.slug}`, label: c.nome })),
-    { href: "/#destaques", label: "Destaques" },
-  ]
+  // So as categorias principais viram item de menu; as subcategorias aparecem
+  // num dropdown embaixo do respectivo pai (quando existirem).
+  const principais = categorias.filter((c) => !c.categoria_pai_id)
+  const subcategoriasPorPai = (paiId: string) => categorias.filter((c) => c.categoria_pai_id === paiId)
   const [menuAberto, setMenuAberto] = useState(false)
+  const [submenuAberto, setSubmenuAberto] = useState<string | null>(null)
   const [montado, setMontado] = useState(false)
   const [logado, setLogado] = useState(false)
   const itens = useCarrinho((s) => s.itens)
@@ -44,15 +44,50 @@ export function Header({
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {linksNav.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            href="/produtos"
+            className="text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
+          >
+            Todos os produtos
+          </Link>
+          {principais.map((categoria) => {
+            const subcategorias = subcategoriasPorPai(categoria.id)
+            return (
+              <div
+                key={categoria.id}
+                className="group relative"
+                onMouseEnter={() => setSubmenuAberto(categoria.id)}
+                onMouseLeave={() => setSubmenuAberto(null)}
+              >
+                <Link
+                  href={`/produtos?categoria=${categoria.slug}`}
+                  className="flex items-center gap-1 text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
+                >
+                  {categoria.nome}
+                  {subcategorias.length > 0 && <ChevronDown size={14} />}
+                </Link>
+                {subcategorias.length > 0 && submenuAberto === categoria.id && (
+                  <div className="absolute left-0 top-full min-w-[180px] rounded-lg border border-black/5 bg-white py-2 shadow-lg">
+                    {subcategorias.map((sub) => (
+                      <Link
+                        key={sub.id}
+                        href={`/produtos?categoria=${sub.slug}`}
+                        className="block px-4 py-2 text-sm text-neutral-700 hover:bg-emerald-50 hover:text-primary"
+                      >
+                        {sub.nome}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          <Link
+            href="/#destaques"
+            className="text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
+          >
+            Destaques
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -102,16 +137,41 @@ export function Header({
 
       {menuAberto && (
         <nav className="flex flex-col gap-1 border-t border-black/5 bg-white px-4 py-3 md:hidden">
-          {linksNav.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuAberto(false)}
-              className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
-            >
-              {link.label}
-            </Link>
+          <Link
+            href="/produtos"
+            onClick={() => setMenuAberto(false)}
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+          >
+            Todos os produtos
+          </Link>
+          {principais.map((categoria) => (
+            <div key={categoria.id}>
+              <Link
+                href={`/produtos?categoria=${categoria.slug}`}
+                onClick={() => setMenuAberto(false)}
+                className="block rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+              >
+                {categoria.nome}
+              </Link>
+              {subcategoriasPorPai(categoria.id).map((sub) => (
+                <Link
+                  key={sub.id}
+                  href={`/produtos?categoria=${sub.slug}`}
+                  onClick={() => setMenuAberto(false)}
+                  className="block rounded-md py-2 pl-6 text-sm text-neutral-600 hover:bg-emerald-50"
+                >
+                  {sub.nome}
+                </Link>
+              ))}
+            </div>
           ))}
+          <Link
+            href="/#destaques"
+            onClick={() => setMenuAberto(false)}
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+          >
+            Destaques
+          </Link>
           <Link
             href="/admin/entrar"
             onClick={() => setMenuAberto(false)}

@@ -15,7 +15,12 @@ export default async function CatalogoPage({
 
   if (categoria) {
     parametros.push(categoria)
-    condicoes.push(`c.slug = $${parametros.length}`)
+    // Casa tanto a categoria (se for uma subcategoria) quanto qualquer
+    // subcategoria dela (se `categoria` for uma categoria principal) -
+    // filtrar pela categoria "Casa" tambem deve trazer produtos de "Bowls".
+    condicoes.push(
+      `(c.slug = $${parametros.length} OR c.categoria_pai_id = (SELECT id FROM TAB_CATEGORIA WHERE slug = $${parametros.length}))`
+    )
   }
 
   if (busca) {
