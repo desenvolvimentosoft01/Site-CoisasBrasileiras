@@ -7,7 +7,7 @@ import { randomUUID } from "crypto"
 
 const EXTENSOES_PERMITIDAS = ["jpg", "jpeg", "png", "webp", "gif"]
 const TAMANHO_MAXIMO = 5 * 1024 * 1024 // 5MB
-const PASTAS_PERMITIDAS = ["produtos", "categorias", "feedbacks"]
+const PASTAS_PERMITIDAS = ["produtos", "categorias", "feedbacks", "loja"]
 
 export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()

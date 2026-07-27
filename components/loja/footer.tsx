@@ -11,6 +11,7 @@ export async function Footer() {
     "email_contato",
     "nome_loja",
     "texto_rodape",
+    "logo_url",
   ])
   const whatsappDigitos = config.whatsapp?.replace(/\D/g, "")
   const nomeLoja = config.nome_loja || "Coisas Brasileiras"
@@ -20,7 +21,7 @@ export async function Footer() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3 md:px-6">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Image src="/logo.webp" alt={nomeLoja} width={36} height={36} />
+            <Image src={config.logo_url || "/logo.webp"} alt={nomeLoja} width={36} height={36} />
             <span className="font-heading text-lg font-semibold">{nomeLoja}</span>
           </div>
           <p className="text-sm text-emerald-200">

@@ -19,10 +19,12 @@ type ProdutoExistente = {
   descricao: string | null
   preco: string
   preco_promocional: string | null
+  custo: string
   estoque: number
   estoque_minimo: number
   ativo: boolean
   sku: string | null
+  ncm: string | null
   peso_kg: string | null
   altura_cm: string | null
   largura_cm: string | null
@@ -54,6 +56,7 @@ export function ProdutoForm({
   const [estoqueMinimo, setEstoqueMinimo] = useState(String(produto?.estoque_minimo ?? 0))
   const [ativo, setAtivo] = useState(produto?.ativo ?? true)
   const [sku, setSku] = useState(produto?.sku ?? "")
+  const [ncm, setNcm] = useState(produto?.ncm ?? "")
   const [pesoKg, setPesoKg] = useState(produto?.peso_kg ?? "")
   const [alturaCm, setAlturaCm] = useState(produto?.altura_cm ?? "")
   const [larguraCm, setLarguraCm] = useState(produto?.largura_cm ?? "")
@@ -129,6 +132,7 @@ export function ProdutoForm({
       estoqueMinimo: Number(estoqueMinimo) || 0,
       ativo,
       sku: sku || null,
+      ncm: ncm || null,
       pesoKg: pesoKg ? Number(pesoKg) : null,
       alturaCm: alturaCm ? Number(alturaCm) : null,
       larguraCm: larguraCm ? Number(larguraCm) : null,
@@ -197,7 +201,7 @@ export function ProdutoForm({
             <CardTitle className="text-sm text-muted-foreground">Dados do produto</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-4">
               <div className="space-y-2 sm:col-span-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -209,6 +213,18 @@ export function ProdutoForm({
                   onChange={(e) => setSku(e.target.value)}
                   placeholder="Opcional"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>NCM (fiscal)</Label>
+                <Input
+                  value={ncm}
+                  onChange={(e) => setNcm(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                  placeholder="Opcional"
+                  inputMode="numeric"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enviado na nota fiscal quando emitida pelo Bling.
+                </p>
               </div>
             </div>
 
@@ -259,6 +275,32 @@ export function ProdutoForm({
                 />
               </div>
             </div>
+
+            {produto && Number(produto.custo) > 0 && (
+              <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
+                <span className="text-muted-foreground">
+                  Custo medio atual:{" "}
+                  <span className="font-medium text-foreground">
+                    {Number(produto.custo).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </span>
+                </span>
+                {valorMoedaParaNumero(preco) > 0 && (
+                  <span className="text-muted-foreground">
+                    Margem:{" "}
+                    <span className="font-medium text-foreground">
+                      {(
+                        ((valorMoedaParaNumero(preco) - Number(produto.custo)) / valorMoedaParaNumero(preco)) *
+                        100
+                      ).toFixed(1)}
+                      %
+                    </span>
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  (atualizado automaticamente ao receber uma compra em Compras &gt; Fornecedores)
+                </span>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label className="text-muted-foreground">

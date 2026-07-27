@@ -19,6 +19,7 @@ type Pedido = {
   bling_nota_id: string | null
   bling_link_danfe: string | null
   bling_link_pdf: string | null
+  bling_nota_cancelada_em: string | null
   origem: "site" | "balcao"
   criado_em: string
   cliente_nome: string
@@ -72,6 +73,10 @@ export default function DetalhePedidoPage() {
   const [rastreioSalvo, setRastreioSalvo] = useState(false)
   const [emitindoNfe, setEmitindoNfe] = useState(false)
   const [erroNfe, setErroNfe] = useState("")
+  const [justificativaCancelamento, setJustificativaCancelamento] = useState("")
+  const [cancelandoNfe, setCancelandoNfe] = useState(false)
+  const [erroCancelamento, setErroCancelamento] = useState("")
+  const [mostrarFormCancelar, setMostrarFormCancelar] = useState(false)
 
   async function carregar() {
     const resposta = await fetch(`/api/admin/pedidos/${params.id}`)
@@ -128,6 +133,27 @@ export default function DetalhePedidoPage() {
     carregar()
   }
 
+  async function cancelarNfe() {
+    if (!pedido) return
+    setErroCancelamento("")
+    setCancelandoNfe(true)
+    const resposta = await fetch(`/api/admin/pedidos/${pedido.id}/cancelar-nfe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ justificativa: justificativaCancelamento }),
+    })
+    setCancelandoNfe(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErroCancelamento(dados.erro || "Erro ao cancelar NF-e")
+      return
+    }
+    setMostrarFormCancelar(false)
+    setJustificativaCancelamento("")
+    carregar()
+  }
+
   if (!pedido) {
     return <p className="text-sm text-slate-500">Carregando...</p>
   }
@@ -176,8 +202,8 @@ export default function DetalhePedidoPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {pedido.bling_nota_id ? (
-            <div className="space-y-2 text-sm">
+          {pedido.bling_nota_id && !pedido.bling_nota_cancelada_em ? (
+            <div className="space-y-3 text-sm">
               <p className="text-slate-500">NF-e emitida (Bling #{pedido.bling_nota_id}).</p>
               <div className="flex gap-3">
                 {pedido.bling_link_danfe && (
@@ -201,9 +227,47 @@ export default function DetalhePedidoPage() {
                   </a>
                 )}
               </div>
+
+              {!mostrarFormCancelar ? (
+                <Button size="sm" variant="outline" onClick={() => setMostrarFormCancelar(true)}>
+                  Cancelar NF-e
+                </Button>
+              ) : (
+                <div className="space-y-2 rounded-lg border border-red-500/30 bg-red-500/5 p-3">
+                  <Label className="text-xs">
+                    Justificativa do cancelamento (minimo 15 caracteres, exigencia da Sefaz)
+                  </Label>
+                  <Input
+                    value={justificativaCancelamento}
+                    onChange={(e) => setJustificativaCancelamento(e.target.value)}
+                    placeholder="Ex: Erro no valor da nota, pedido cancelado pelo cliente..."
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={cancelarNfe}
+                      disabled={cancelandoNfe || justificativaCancelamento.trim().length < 15}
+                    >
+                      {cancelandoNfe ? "Cancelando..." : "Confirmar cancelamento"}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setMostrarFormCancelar(false)}>
+                      Voltar
+                    </Button>
+                  </div>
+                  {erroCancelamento && <p className="text-sm text-red-500">{erroCancelamento}</p>}
+                </div>
+              )}
             </div>
           ) : (
             <>
+              {pedido.bling_nota_cancelada_em && (
+                <p className="text-sm text-amber-500">
+                  NF-e anterior (Bling #{pedido.bling_nota_id}) cancelada em{" "}
+                  {new Date(pedido.bling_nota_cancelada_em).toLocaleString("pt-BR")}. Pode emitir uma nova
+                  abaixo.
+                </p>
+              )}
               <Button size="sm" onClick={emitirNfe} disabled={emitindoNfe}>
                 {emitindoNfe ? "Emitindo..." : "Emitir NF-e"}
               </Button>

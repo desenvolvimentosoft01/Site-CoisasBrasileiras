@@ -20,6 +20,8 @@ import {
   ChevronRight,
   Home,
   FileText,
+  ArrowLeft,
+  Truck,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
@@ -66,10 +68,20 @@ const menu: ItemMenu[] = [
   { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: Wallet, somenteAdmin: true },
   {
     tipo: "grupo",
+    label: "Compras",
+    icone: Truck,
+    filhos: [
+      { href: "/admin/compras", label: "Compras", somenteAdmin: true },
+      { href: "/admin/fornecedores", label: "Fornecedores", somenteAdmin: true },
+    ],
+  },
+  {
+    tipo: "grupo",
     label: "Relatorios",
     icone: BarChart3,
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
+      { href: "/admin/relatorios/lucro", label: "Lucro / DRE", somenteAdmin: true },
       { href: "/admin/relatorios/estoque", label: "Estoque" },
       { href: "/admin/auditoria", label: "Auditoria", somenteAdmin: true },
     ],
@@ -106,10 +118,14 @@ function itensVisiveis(papel: string): { href: string; label: string; icone: Luc
 export function AdminShell({
   sessao,
   corPrimaria,
+  logoUrl,
+  nomeLoja,
   children,
 }: {
   sessao: SessaoAdmin
   corPrimaria: string
+  logoUrl?: string
+  nomeLoja?: string
   children: React.ReactNode
 }) {
   const router = useRouter()
@@ -179,9 +195,9 @@ export function AdminShell({
         }`}
       >
         <div className="flex items-center gap-2.5 border-b border-slate-800 px-4 py-5">
-          <Image src="/logo.webp" alt="" width={32} height={32} className="shrink-0 rounded-lg" />
+          <Image src={logoUrl || "/logo.webp"} alt="" width={32} height={32} className="shrink-0 rounded-lg" />
           <div>
-            <p className="text-sm font-bold leading-tight text-white">Coisas Brasileiras</p>
+            <p className="text-sm font-bold leading-tight text-white">{nomeLoja || "Coisas Brasileiras"}</p>
             <p className="text-[10px] text-slate-400">Painel Admin</p>
           </div>
         </div>
@@ -288,6 +304,15 @@ export function AdminShell({
           </nav>
 
           <div className="flex shrink-0 items-center gap-3">
+            <Link
+              href="/"
+              target="_blank"
+              className="hidden items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 sm:flex"
+              title="Abrir o site em uma nova aba"
+            >
+              <ArrowLeft size={14} />
+              Voltar ao site
+            </Link>
             <span className="hidden text-xs font-semibold text-slate-500 sm:block">{sessao.nome}</span>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut size={16} className="mr-2" />

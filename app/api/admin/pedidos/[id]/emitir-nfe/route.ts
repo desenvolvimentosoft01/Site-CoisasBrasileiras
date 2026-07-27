@@ -1,4 +1,4 @@
-import { query } from "@/lib/db"
+import { transacao } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { emitirNotaFiscalBling } from "@/lib/bling"
 import { NextResponse } from "next/server"
@@ -12,67 +12,78 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   const { id } = await params
 
-  const [pedido] = await query(
-    `SELECT p.id, p.valor_frete, p.bling_nota_id,
-       COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome,
-       c.email AS cliente_email, c.cpf_cnpj AS cliente_documento,
-       e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
-     FROM TAB_PEDIDO p
-     LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
-     LEFT JOIN TAB_ENDERECO e ON e.id = p.endereco_id
-     WHERE p.id = $1`,
-    [id]
-  )
-
-  if (!pedido) {
-    return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
-  }
-  if (pedido.bling_nota_id) {
-    return NextResponse.json({ erro: "Este pedido ja tem uma NF-e emitida" }, { status: 409 })
-  }
-
-  const itens = await query(
-    `SELECT pi.quantidade, pi.preco_unitario, pr.nome
-     FROM TAB_PEDIDO_ITEM pi JOIN TAB_PRODUTO pr ON pr.id = pi.produto_id
-     WHERE pi.pedido_id = $1`,
-    [id]
-  )
-
   try {
-    const resultado = await emitirNotaFiscalBling({
-      clienteNome: pedido.cliente_nome,
-      clienteDocumento: pedido.cliente_documento,
-      clienteEmail: pedido.cliente_email,
-      endereco: pedido.logradouro
-        ? {
-            cep: pedido.cep,
-            logradouro: pedido.logradouro,
-            numero: pedido.numero,
-            complemento: pedido.complemento,
-            bairro: pedido.bairro,
-            cidade: pedido.cidade,
-            estado: pedido.estado,
-          }
-        : null,
-      itens: itens.map((item) => ({
-        descricao: item.nome,
-        quantidade: item.quantidade,
-        valorUnitario: Number(item.preco_unitario),
-      })),
-      valorFrete: Number(pedido.valor_frete || 0),
-      numeroPedidoLoja: String(pedido.id).slice(0, 8).toUpperCase(),
-    })
+    // FOR UPDATE trava o pedido ate o fim da transacao (incluindo a chamada
+    // ao Bling) - evita que dois cliques quase simultaneos no botao "Emitir
+    // NF-e" passem os dois pela checagem antes de qualquer um gravar.
+    const pedidoAtualizado = await transacao(async (q) => {
+      const [pedido] = await q(
+        `SELECT p.id, p.valor_frete, p.bling_nota_id, p.bling_nota_cancelada_em,
+           COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome,
+           c.email AS cliente_email, c.cpf_cnpj AS cliente_documento,
+           e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
+         FROM TAB_PEDIDO p
+         LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
+         LEFT JOIN TAB_ENDERECO e ON e.id = p.endereco_id
+         WHERE p.id = $1
+         FOR UPDATE OF p`,
+        [id]
+      )
 
-    const [pedidoAtualizado] = await query(
-      `UPDATE TAB_PEDIDO
-       SET bling_nota_id = $1, bling_link_danfe = $2, bling_link_pdf = $3
-       WHERE id = $4
-       RETURNING bling_nota_id, bling_link_danfe, bling_link_pdf`,
-      [resultado.blingNotaId, resultado.linkDanfe, resultado.linkPdf, id]
-    )
+      if (!pedido) throw new Error("NOT_FOUND")
+      // So bloqueia se ja tem nota emitida E ela NAO foi cancelada - depois
+      // de cancelada, o admin pode emitir uma nova pro mesmo pedido.
+      if (pedido.bling_nota_id && !pedido.bling_nota_cancelada_em) {
+        throw new Error("Este pedido ja tem uma NF-e emitida")
+      }
+
+      const itens = await q(
+        `SELECT pi.quantidade, pi.preco_unitario, pr.nome, pr.ncm
+         FROM TAB_PEDIDO_ITEM pi JOIN TAB_PRODUTO pr ON pr.id = pi.produto_id
+         WHERE pi.pedido_id = $1`,
+        [id]
+      )
+
+      const resultado = await emitirNotaFiscalBling({
+        clienteNome: pedido.cliente_nome,
+        clienteDocumento: pedido.cliente_documento,
+        clienteEmail: pedido.cliente_email,
+        endereco: pedido.logradouro
+          ? {
+              cep: pedido.cep,
+              logradouro: pedido.logradouro,
+              numero: pedido.numero,
+              complemento: pedido.complemento,
+              bairro: pedido.bairro,
+              cidade: pedido.cidade,
+              estado: pedido.estado,
+            }
+          : null,
+        itens: itens.map((item) => ({
+          descricao: item.nome,
+          quantidade: item.quantidade,
+          valorUnitario: Number(item.preco_unitario),
+          ncm: item.ncm,
+        })),
+        valorFrete: Number(pedido.valor_frete || 0),
+        numeroPedidoLoja: String(pedido.id).slice(0, 8).toUpperCase(),
+      })
+
+      const [atualizado] = await q(
+        `UPDATE TAB_PEDIDO
+         SET bling_nota_id = $1, bling_link_danfe = $2, bling_link_pdf = $3, bling_nota_cancelada_em = NULL
+         WHERE id = $4
+         RETURNING bling_nota_id, bling_link_danfe, bling_link_pdf, bling_nota_cancelada_em`,
+        [resultado.blingNotaId, resultado.linkDanfe, resultado.linkPdf, id]
+      )
+      return atualizado
+    })
 
     return NextResponse.json(pedidoAtualizado)
   } catch (erro) {
+    if (erro instanceof Error && erro.message === "NOT_FOUND") {
+      return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
+    }
     return NextResponse.json(
       { erro: erro instanceof Error ? erro.message : "Erro ao emitir NF-e no Bling" },
       { status: 400 }

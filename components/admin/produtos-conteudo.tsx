@@ -26,10 +26,12 @@ type ProdutoDetalhado = {
   descricao: string | null
   preco: string
   preco_promocional: string | null
+  custo: string
   estoque: number
   estoque_minimo: number
   ativo: boolean
   sku: string | null
+  ncm: string | null
   peso_kg: string | null
   altura_cm: string | null
   largura_cm: string | null

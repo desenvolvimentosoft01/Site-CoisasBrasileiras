@@ -1,15 +1,16 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
-import { Phone, Truck, Megaphone, Palette, Plug } from "lucide-react"
+import { Phone, Truck, Megaphone, Palette, Plug, Percent } from "lucide-react"
 
 export type ConfiguracoesIniciais = {
   whatsapp: string
@@ -23,6 +24,12 @@ export type ConfiguracoesIniciais = {
   nome_loja: string
   cor_primaria: string
   texto_rodape: string
+  logo_url: string
+  taxa_mercadopago_percentual: string
+  taxa_mercadopago_fixo: string
+  taxa_pagbank_percentual: string
+  taxa_pagbank_fixo: string
+  aliquota_imposto_percentual: string
 }
 
 export type BlingStatus = { conectado: boolean; expiraEm: string | null } | null
@@ -75,8 +82,45 @@ function ConfiguracoesFormulario({
   const [nomeLoja, setNomeLoja] = useState(configuracoesIniciais.nome_loja)
   const [corPrimaria, setCorPrimaria] = useState(configuracoesIniciais.cor_primaria || "#047857")
   const [textoRodape, setTextoRodape] = useState(configuracoesIniciais.texto_rodape)
+  const [logoUrl, setLogoUrl] = useState(configuracoesIniciais.logo_url)
+  const [enviandoLogo, setEnviandoLogo] = useState(false)
+  const inputLogoRef = useRef<HTMLInputElement>(null)
+
+  const [taxaMpPercentual, setTaxaMpPercentual] = useState(configuracoesIniciais.taxa_mercadopago_percentual)
+  const [taxaMpFixo, setTaxaMpFixo] = useState(
+    configuracoesIniciais.taxa_mercadopago_fixo
+      ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.taxa_mercadopago_fixo) * 100)))
+      : ""
+  )
+  const [taxaPagbankPercentual, setTaxaPagbankPercentual] = useState(
+    configuracoesIniciais.taxa_pagbank_percentual
+  )
+  const [taxaPagbankFixo, setTaxaPagbankFixo] = useState(
+    configuracoesIniciais.taxa_pagbank_fixo
+      ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.taxa_pagbank_fixo) * 100)))
+      : ""
+  )
+  const [aliquotaImposto, setAliquotaImposto] = useState(configuracoesIniciais.aliquota_imposto_percentual)
 
   const mensagemBling = searchParams.get("bling")
+
+  async function selecionarLogo(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    if (!arquivo) return
+
+    setEnviandoLogo(true)
+    const formData = new FormData()
+    formData.append("arquivo", arquivo)
+    formData.append("pasta", "loja")
+
+    const resposta = await fetch("/api/admin/upload", { method: "POST", body: formData })
+    if (resposta.ok) {
+      const { url } = await resposta.json()
+      setLogoUrl(url)
+    }
+    setEnviandoLogo(false)
+    if (inputLogoRef.current) inputLogoRef.current.value = ""
+  }
 
   async function salvar(evento: React.FormEvent) {
     evento.preventDefault()
@@ -98,6 +142,12 @@ function ConfiguracoesFormulario({
         nome_loja: nomeLoja,
         cor_primaria: corPrimaria,
         texto_rodape: textoRodape,
+        logo_url: logoUrl,
+        taxa_mercadopago_percentual: taxaMpPercentual,
+        taxa_mercadopago_fixo: String(valorMoedaParaNumero(taxaMpFixo || "0,00")),
+        taxa_pagbank_percentual: taxaPagbankPercentual,
+        taxa_pagbank_fixo: String(valorMoedaParaNumero(taxaPagbankFixo || "0,00")),
+        aliquota_imposto_percentual: aliquotaImposto,
       }),
     })
 
@@ -128,6 +178,10 @@ function ConfiguracoesFormulario({
             <TabsTrigger value="anuncio">
               <Megaphone size={14} className="mr-1.5" />
               Anuncio
+            </TabsTrigger>
+            <TabsTrigger value="custos">
+              <Percent size={14} className="mr-1.5" />
+              Custos
             </TabsTrigger>
             <TabsTrigger value="integracoes">
               <Plug size={14} className="mr-1.5" />
@@ -272,6 +326,52 @@ function ConfiguracoesFormulario({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
+                  <Label>Logo da loja</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
+                      {logoUrl ? (
+                        <Image src={logoUrl} alt="Logo" width={64} height={64} className="h-full w-full object-contain" />
+                      ) : (
+                        <Image src="/logo.webp" alt="Logo padrao" width={64} height={64} className="h-full w-full object-contain" />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <input
+                        ref={inputLogoRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={selecionarLogo}
+                        className="hidden"
+                        id="upload-logo"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={enviandoLogo}
+                        onClick={() => inputLogoRef.current?.click()}
+                      >
+                        {enviandoLogo ? "Enviando..." : "Trocar logo"}
+                      </Button>
+                      {logoUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2"
+                          onClick={() => setLogoUrl("")}
+                        >
+                          Usar padrao
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Usada no cabecalho e rodape do site e no painel administrativo. Se nao enviar
+                    nenhuma, usa a logo padrao do sistema.
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label>Nome da loja</Label>
                   <Input
                     value={nomeLoja}
@@ -323,6 +423,93 @@ function ConfiguracoesFormulario({
                   onChange={(e) => setBannerTextoTopo(e.target.value)}
                   placeholder="Ex: Ganhe 10% off na primeira compra com o cupom BEMVINDO10"
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="custos" className="mt-4 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm text-slate-500">Taxas de pagamento</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  Usadas so pro calculo do relatorio de lucro (nao afetam o valor cobrado do
+                  cliente no checkout). Confira a taxa real no painel do gateway - varia por
+                  forma de pagamento e volume negociado. Deixe em branco ate a implantacao.
+                </p>
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase text-slate-400">Mercado Pago</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Taxa percentual (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={taxaMpPercentual}
+                        onChange={(e) => setTaxaMpPercentual(e.target.value)}
+                        placeholder="4,99"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Taxa fixa por transacao (R$)</Label>
+                      <Input
+                        inputMode="numeric"
+                        value={taxaMpFixo}
+                        onChange={(e) => setTaxaMpFixo(mascaraMoeda(e.target.value))}
+                        placeholder="0,00"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase text-slate-400">PagBank</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Taxa percentual (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={taxaPagbankPercentual}
+                        onChange={(e) => setTaxaPagbankPercentual(e.target.value)}
+                        placeholder="3,99"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Taxa fixa por transacao (R$)</Label>
+                      <Input
+                        inputMode="numeric"
+                        value={taxaPagbankFixo}
+                        onChange={(e) => setTaxaPagbankFixo(mascaraMoeda(e.target.value))}
+                        placeholder="0,00"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm text-slate-500">Imposto</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label>Aliquota sobre faturamento (%)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={aliquotaImposto}
+                  onChange={(e) => setAliquotaImposto(e.target.value)}
+                  placeholder="Ex: 6 (Simples Nacional)"
+                  className="max-w-48"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Percentual estimado usado so no relatorio de lucro liquido - confirme a
+                  aliquota real com o contador da loja antes de configurar aqui.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>

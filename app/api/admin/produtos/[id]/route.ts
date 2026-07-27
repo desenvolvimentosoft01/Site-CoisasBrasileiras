@@ -52,6 +52,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     alturaCm,
     larguraCm,
     comprimentoCm,
+    ncm,
     categoriaIds,
     imagensUrls,
   } = await request.json()
@@ -75,8 +76,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
      SET nome = $1, descricao = $2, preco = $3, preco_promocional = $4,
          estoque = $5, estoque_minimo = $6, ativo = $7, sku = $8,
          peso_kg = $9, altura_cm = $10, largura_cm = $11, comprimento_cm = $12,
-         atualizado_em = NOW()
-     WHERE id = $13
+         ncm = $13, atualizado_em = NOW()
+     WHERE id = $14
      RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo`,
     [
       nome.trim(),
@@ -91,6 +92,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       alturaCm || null,
       larguraCm || null,
       comprimentoCm || null,
+      ncm || null,
       id,
     ]
   )

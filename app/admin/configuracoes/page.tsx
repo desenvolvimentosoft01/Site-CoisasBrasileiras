@@ -16,6 +16,12 @@ const CHAVES = [
   "nome_loja",
   "cor_primaria",
   "texto_rodape",
+  "logo_url",
+  "taxa_mercadopago_percentual",
+  "taxa_mercadopago_fixo",
+  "taxa_pagbank_percentual",
+  "taxa_pagbank_fixo",
+  "aliquota_imposto_percentual",
 ]
 
 export default async function ConfiguracoesPage() {
@@ -44,6 +50,12 @@ export default async function ConfiguracoesPage() {
         nome_loja: configuracoes.nome_loja || "",
         cor_primaria: configuracoes.cor_primaria || "",
         texto_rodape: configuracoes.texto_rodape || "",
+        logo_url: configuracoes.logo_url || "",
+        taxa_mercadopago_percentual: configuracoes.taxa_mercadopago_percentual || "",
+        taxa_mercadopago_fixo: configuracoes.taxa_mercadopago_fixo || "",
+        taxa_pagbank_percentual: configuracoes.taxa_pagbank_percentual || "",
+        taxa_pagbank_fixo: configuracoes.taxa_pagbank_fixo || "",
+        aliquota_imposto_percentual: configuracoes.aliquota_imposto_percentual || "",
       }}
       blingStatus={blingStatus}
     />

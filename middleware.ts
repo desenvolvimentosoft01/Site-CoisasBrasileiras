@@ -5,6 +5,12 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (pathname === "/admin/entrar") {
+    const sessao = await lerTokenSessao(request.cookies.get("admin_sessao")?.value)
+    if (sessao) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/admin/dashboard"
+      return NextResponse.redirect(url)
+    }
     return NextResponse.next()
   }
 
@@ -20,7 +26,10 @@ export async function middleware(request: NextRequest) {
     const somenteAdmin =
       pathname.startsWith("/admin/usuarios") ||
       pathname.startsWith("/admin/auditoria") ||
-      pathname.startsWith("/admin/financeiro")
+      pathname.startsWith("/admin/financeiro") ||
+      pathname.startsWith("/admin/relatorios/lucro") ||
+      pathname.startsWith("/admin/compras") ||
+      pathname.startsWith("/admin/fornecedores")
     if (somenteAdmin && sessao.papel !== "admin") {
       const url = request.nextUrl.clone()
       url.pathname = "/admin/dashboard"

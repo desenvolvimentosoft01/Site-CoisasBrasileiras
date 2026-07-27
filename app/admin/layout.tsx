@@ -23,10 +23,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Mesma cor primaria configurada em Configuracoes > Aparencia (a que o site
   // publico usa) - o admin usa a cor de verdade da loja em vez de uma cor fixa
   // propria, pra nao destoar visualmente do site.
-  const { cor_primaria } = await getConfiguracoes(["cor_primaria"])
+  const { cor_primaria, logo_url, nome_loja } = await getConfiguracoes([
+    "cor_primaria",
+    "logo_url",
+    "nome_loja",
+  ])
 
   return (
-    <AdminShell sessao={sessao} corPrimaria={cor_primaria || "#047857"}>
+    <AdminShell
+      sessao={sessao}
+      corPrimaria={cor_primaria || "#047857"}
+      logoUrl={logo_url || undefined}
+      nomeLoja={nome_loja || undefined}
+    >
       {children}
     </AdminShell>
   )

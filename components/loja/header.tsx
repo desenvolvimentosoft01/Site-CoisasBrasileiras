@@ -10,9 +10,11 @@ type Categoria = { id: string; nome: string; slug: string; categoria_pai_id: str
 
 export function Header({
   nomeLoja = "Coisas Brasileiras",
+  logoUrl,
   categorias = [],
 }: {
   nomeLoja?: string
+  logoUrl?: string
   categorias?: Categoria[]
 }) {
   // So as categorias principais viram item de menu; as subcategorias aparecem
@@ -37,7 +39,7 @@ export function Header({
     <header className="sticky top-0 z-50 border-b border-black/5 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.webp" alt={nomeLoja} width={44} height={44} priority />
+          <Image src={logoUrl || "/logo.webp"} alt={nomeLoja} width={44} height={44} priority />
           <span className="font-heading text-lg font-semibold text-primary">
             {nomeLoja}
           </span>

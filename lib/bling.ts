@@ -148,7 +148,7 @@ async function chamarBling(caminho: string, opcoes: RequestInit = {}) {
   return resposta.json()
 }
 
-type ItemNota = { descricao: string; quantidade: number; valorUnitario: number }
+type ItemNota = { descricao: string; quantidade: number; valorUnitario: number; ncm?: string | null }
 
 // Cria a NF-e no Bling, envia pra autorizacao na Sefaz e devolve os dados pra
 // gravar no pedido. Erros aqui nunca devem apagar nada do pedido - so
@@ -179,11 +179,15 @@ export async function emitirNotaFiscalBling(params: {
       ...(params.clienteDocumento ? { numeroDocumento: params.clienteDocumento } : {}),
       ...(params.clienteEmail ? { email: params.clienteEmail } : {}),
     },
+    // classificacaoFiscal = NCM do item. Enviado direto aqui (sem precisar
+    // que o produto exista cadastrado no Bling) - mantem o Bling restrito a
+    // emissao de nota, sem sincronizar catalogo de produto.
     itens: params.itens.map((item, indice) => ({
       numeroItem: indice + 1,
       descricao: item.descricao,
       quantidade: item.quantidade,
       valorUnitario: item.valorUnitario,
+      ...(item.ncm ? { classificacaoFiscal: item.ncm } : {}),
     })),
   }
 
@@ -220,4 +224,17 @@ export async function emitirNotaFiscalBling(params: {
     linkDanfe: dadosNota?.linkDanfe ?? null,
     linkPdf: dadosNota?.linkPDF ?? dadosNota?.linkPdf ?? null,
   }
+}
+
+// Cancela uma NF-e ja autorizada na Sefaz. O Bling exige justificativa com
+// pelo menos 15 caracteres (regra da propria Sefaz para cancelamento de NF-e).
+export async function cancelarNotaFiscalBling(blingNotaId: string, justificativa: string): Promise<void> {
+  if (justificativa.trim().length < 15) {
+    throw new Error("Justificativa precisa ter pelo menos 15 caracteres (exigencia da Sefaz)")
+  }
+
+  await chamarBling(`/nfe/${blingNotaId}/cancelar`, {
+    method: "POST",
+    body: JSON.stringify({ justificativa: justificativa.trim() }),
+  })
 }
