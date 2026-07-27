@@ -19,6 +19,7 @@ type ProdutoExistente = {
   descricao: string | null
   preco: string
   preco_promocional: string | null
+  preco_clube: string | null
   custo: string
   estoque: number
   estoque_minimo: number
@@ -51,6 +52,9 @@ export function ProdutoForm({
     produto?.preco_promocional
       ? mascaraMoeda(String(Math.round(Number(produto.preco_promocional) * 100)))
       : ""
+  )
+  const [precoClube, setPrecoClube] = useState(
+    produto?.preco_clube ? mascaraMoeda(String(Math.round(Number(produto.preco_clube) * 100))) : ""
   )
   const [estoque, setEstoque] = useState(String(produto?.estoque ?? 0))
   const [estoqueMinimo, setEstoqueMinimo] = useState(String(produto?.estoque_minimo ?? 0))
@@ -128,6 +132,7 @@ export function ProdutoForm({
       descricao: descricao || null,
       preco: valorMoedaParaNumero(preco),
       precoPromocional: precoPromocional ? valorMoedaParaNumero(precoPromocional) : null,
+      precoClube: precoClube ? valorMoedaParaNumero(precoClube) : null,
       estoque: Number(estoque) || 0,
       estoqueMinimo: Number(estoqueMinimo) || 0,
       ativo,
@@ -237,7 +242,7 @@ export function ProdutoForm({
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-5">
               <div className="space-y-2">
                 <Label>Preco (R$)</Label>
                 <Input
@@ -255,6 +260,18 @@ export function ProdutoForm({
                   onChange={(e) => setPrecoPromocional(mascaraMoeda(e.target.value))}
                   placeholder="0,00"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Preco do Clube (R$)</Label>
+                <Input
+                  inputMode="numeric"
+                  value={precoClube}
+                  onChange={(e) => setPrecoClube(mascaraMoeda(e.target.value))}
+                  placeholder="0,00"
+                />
+                <p className="text-xs text-muted-foreground">
+                  So aparece pra clientes com assinatura do Clube ativa. Vazio = nao participa.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Estoque</Label>

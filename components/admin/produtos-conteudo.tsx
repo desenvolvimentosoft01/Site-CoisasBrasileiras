@@ -26,6 +26,7 @@ type ProdutoDetalhado = {
   descricao: string | null
   preco: string
   preco_promocional: string | null
+  preco_clube: string | null
   custo: string
   estoque: number
   estoque_minimo: number

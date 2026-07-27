@@ -52,6 +52,7 @@ export async function POST(request: Request) {
     larguraCm,
     comprimentoCm,
     ncm,
+    precoClube,
     categoriaIds,
     imagensUrls,
   } = await request.json()
@@ -71,8 +72,8 @@ export async function POST(request: Request) {
 
   const [produto] = await query(
     `INSERT INTO TAB_PRODUTO
-       (nome, slug, descricao, preco, preco_promocional, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       (nome, slug, descricao, preco, preco_promocional, preco_clube, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, criado_em`,
     [
       nome.trim(),
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
       descricao || null,
       preco,
       precoPromocional || null,
+      precoClube || null,
       estoque || 0,
       estoqueMinimo || 0,
       sku || null,

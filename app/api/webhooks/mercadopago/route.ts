@@ -1,5 +1,6 @@
 import { transacao, query } from "@/lib/db"
 import { paymentMP } from "@/lib/mercadopago"
+import { sincronizarAssinaturaClube } from "@/lib/clube"
 import { enviarEmail, templatePedidoPago, templateNovoPedidoAdmin } from "@/lib/email"
 import { NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
@@ -46,7 +47,23 @@ function assinaturaValida(request: Request, dataId: string): boolean {
 // legitimo antes de atualizar o pedido.
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
-  const paymentId = body?.data?.id
+  const dataId = body?.data?.id
+
+  // Notificacao de assinatura do Clube (cobranca recorrente) - fluxo
+  // separado do pagamento avulso de pedido, so atualiza TAB_ASSINATURA_CLUBE.
+  if (body?.type === "subscription_preapproval" && dataId) {
+    if (!assinaturaValida(request, String(dataId))) {
+      return NextResponse.json({ erro: "Assinatura invalida" }, { status: 401 })
+    }
+    try {
+      await sincronizarAssinaturaClube(String(dataId))
+    } catch {
+      // Se a API do MP falhar, so confirma o recebimento - o MP reenvia depois.
+    }
+    return NextResponse.json({ recebido: true })
+  }
+
+  const paymentId = dataId
 
   if (body?.type !== "payment" || !paymentId) {
     return NextResponse.json({ recebido: true })

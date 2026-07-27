@@ -115,6 +115,17 @@ Usuário perguntou sobre enviar produtos pro Bling (evitar recadastro duplicado)
 
 **Carta de Correção Eletrônica (CC-e)**: usuário pediu pra completar o fluxo (cancelamento já existe). **Não implementada ainda** — a documentação do Bling disponível via Context7 é enxuta e não trouxe um endpoint confirmado pra CC-e; decidido não "chutar" o formato de uma ação fiscal sem confirmação (mesmo cuidado que já vale pra NF-e/PagBank, registrado no `PLAN.md` como pendente de validação contra conta real). **Por enquanto, CC-e fica manual direto no painel do Bling** (recurso que já existe lá). Retomar implementação quando houver acesso a uma conta Bling real pra validar o endpoint certo.
 
+### Fase 4.2 — Importação de XML de NF-e na entrada de Compra (2026-07-27)
+
+Usuário perguntou como funciona a entrada de compra hoje (era manual). Confirmado que importar XML de nota de **entrada** (a que o fornecedor já emitiu e autorizou) não tem nenhuma sobreposição com o certificado digital do Bling — é só leitura de um arquivo já pronto, sem assinar nem comunicar com a Sefaz.
+
+- [x] `lib/nfe-xml.ts`: parser de XML de NF-e (`fast-xml-parser`) + `validarChaveAcesso()` (dígito verificador módulo 11, validação local, sem consultar a Sefaz)
+- [x] `POST /api/admin/compras/importar-xml` (admin, só leitura — não grava nada no banco)
+- [x] UI em Compras > Cadastro: botão "Importar XML da NF-e", preenche fornecedor/número/data/frete automaticamente
+- [x] **Fornecedor**: casa por CNPJ com os já cadastrados; se não achar, cadastra automaticamente a partir dos dados do XML (decisão do usuário) — registra auditoria (`tela: "Compras (importação XML)"`)
+- [x] **Itens**: ficam pendentes de mapeamento manual — admin associa cada item do XML a um produto do catálogo (pré-seleciona por SKU quando bate, mas sempre pede confirmação, decisão do usuário) antes de entrarem na compra
+- [x] Aviso visual se a chave de acesso não bater na validação (arquivo pode estar incompleto/alterado) — não bloqueia, só avisa
+
 ## Revisão de segurança (skill `revisar_seguranca`) — 2026-07-26
 
 Rodada sobre todos os arquivos alterados/criados nas Fases 1-4.1 (usuário perguntou "está tudo completo, podemos vender?" antes de rodar). Achados e correções:
@@ -135,6 +146,39 @@ Status: ⏸️ pausada a pedido do usuário (2026-07-26) — as fases 1-4 (base 
 - [ ] Multi-moeda (preço-base + exibição/cobrança na moeda do visitante)
 - [ ] Frete internacional (cálculo próprio, provavelmente valor fixo por região no início)
 - [ ] Exportação fiscal (DU-E/Siscomex) — fora do sistema, fica com despachante aduaneiro/contador
+
+### Fase 6 — Clube de assinatura (desconto exclusivo por produto) — pedido do cliente
+Status: ✅ implementada (2026-07-27), pendente de teste contra Mercado Pago real
+
+Cliente pediu uma forma de "clube": cliente com assinatura ativa vê um preço com desconto em produtos marcados como elegíveis, com selo tipo "oferta apenas para o clube" na página do produto (exemplo visual mostrado pelo usuário: preço cheio riscado + preço de clube ao lado).
+
+- [x] **Cobrança recorrente automática de verdade**, confirmada via Mercado Pago (`PreApproval`/assinaturas), mesma conta já usada no checkout — nenhum gateway novo
+- [x] Migration `023_clube_assinatura.sql`: `TAB_PRODUTO.preco_clube`, `TAB_ASSINATURA_CLUBE` (cliente, `mp_preapproval_id`, status, valor, próximo vencimento) — aplicada local + Neon
+- [x] `lib/clube.ts`: `criarAssinaturaClube`, `cancelarAssinaturaClube`, `sincronizarAssinaturaClube` (sempre rebusca na API do MP antes de confiar, mesmo padrão do webhook de pagamento), `clienteTemClubeAtivo`
+- [x] `POST /api/cliente/clube/assinar` e `/cancelar`, `GET /api/cliente/clube` (status atual) — todas exigem sessão de cliente
+- [x] Webhook do Mercado Pago (`app/api/webhooks/mercadopago/route.ts`) estendido pro tópico `subscription_preapproval` (confirmado via Context7 — nome exato do tópico), com a mesma validação de assinatura (`x-signature`) já usada no pagamento avulso
+- [x] Valor da mensalidade configurável em **Configurações > Custos** (`clube_valor_mensalidade`), decisão do usuário
+- [x] Campo "Preço do Clube" no cadastro de produto (`produto-form.tsx`) — vazio = produto não participa
+- [x] Página de produto: preço de clube + selo "Oferta exclusiva para membros do Clube" só pra quem tem assinatura `autorizada`; teaser discreto pra quem não é membro ainda
+- [x] "Minha Conta" ganhou seção Clube: assinar (redireciona pro checkout do MP), ver status/próxima cobrança, cancelar
+- [x] Tela admin `/admin/clube` (só leitura, restrita a admin) listando assinantes e status — criação/cancelamento continua sendo self-service do cliente
+- [x] Proteção contra duplo-clique criando duas assinaturas em paralelo (`criarAssinaturaClube` bloqueia se já existe uma não-cancelada)
+
+**Pendência antes de operar com assinatura real**: assim como PagBank/Bling, o fluxo do Mercado Pago `PreApproval` nunca foi executado contra uma conta real — precisa validar o `init_point` redirecionando corretamente e o webhook `subscription_preapproval` chegando com o formato esperado.
+
+### Fase 7 — Troca Melhor Envio → Frenet + múltiplas opções de frete no checkout (2026-07-27)
+Status: ✅ implementada, pendente de teste contra conta Frenet real
+
+Usuário perguntou se o checkout mostrava várias opções de frete (não mostrava — só a mais barata) e confirmou que o provedor real era pra ser Frenet, não Melhor Envio (decisão original da primeira conversa, que tinha ficado só documentada mas nunca implementada — quem foi implementado numa sessão anterior foi Melhor Envio).
+
+- [x] `lib/melhorenvio.ts` removido, substituído por `lib/frenet.ts` (`cotarFreteFrenet`, `frenetConfigurado`) — **formato do payload/resposta não confirmado contra API real** (documentação oficial é renderizada em JS, não pôde ser lida automaticamente); segue o formato publicamente conhecido da Frenet (`POST /shipping/quote`, header `token`). Risco mitigado pelo fallback existente: se o formato estiver errado, a chamada falha e cai automaticamente na tabela de faixas por região, nunca trava o checkout.
+- [x] `lib/configuracoes.ts`: `calcularFrete()` (uma opção) virou `calcularOpcoesFrete()` (lista de opções, ordenada da mais barata pra mais cara)
+- [x] `/api/frete` devolve a lista completa de opções (transportadora, serviço, valor, prazo)
+- [x] Checkout do site (`app/(loja)/checkout/page.tsx`): mostra as opções como rádio, cliente escolhe, pré-selecionada a mais barata por padrão
+- [x] `/api/checkout`: recebe qual opção o cliente escolheu (transportadora+serviço), mas **recalcula tudo no servidor** e usa o preço da opção correspondente recém-calculada — nunca confia em preço de frete vindo do client (mesmo princípio já seguido em todo o checkout)
+- [x] `.env.example` atualizado: `MELHOR_ENVIO_TOKEN`/`MELHOR_ENVIO_API_URL` → `FRENET_TOKEN`/`FRENET_API_URL`
+
+**Pendência antes de operar com frete real via Frenet**: testar contra uma conta Frenet real (token de teste ou produção) pra confirmar que o payload/resposta batem com o que o código espera. Até lá, funciona normalmente através do fallback (tabela de faixas por região).
 
 ## Concluído fora da ordem das fases (pedidos pontuais do cliente)
 

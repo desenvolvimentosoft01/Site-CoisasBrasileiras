@@ -30,6 +30,7 @@ export type ConfiguracoesIniciais = {
   taxa_pagbank_percentual: string
   taxa_pagbank_fixo: string
   aliquota_imposto_percentual: string
+  clube_valor_mensalidade: string
 }
 
 export type BlingStatus = { conectado: boolean; expiraEm: string | null } | null
@@ -101,6 +102,11 @@ function ConfiguracoesFormulario({
       : ""
   )
   const [aliquotaImposto, setAliquotaImposto] = useState(configuracoesIniciais.aliquota_imposto_percentual)
+  const [clubeMensalidade, setClubeMensalidade] = useState(
+    configuracoesIniciais.clube_valor_mensalidade
+      ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.clube_valor_mensalidade) * 100)))
+      : ""
+  )
 
   const mensagemBling = searchParams.get("bling")
 
@@ -148,6 +154,7 @@ function ConfiguracoesFormulario({
         taxa_pagbank_percentual: taxaPagbankPercentual,
         taxa_pagbank_fixo: String(valorMoedaParaNumero(taxaPagbankFixo || "0,00")),
         aliquota_imposto_percentual: aliquotaImposto,
+        clube_valor_mensalidade: String(valorMoedaParaNumero(clubeMensalidade || "0,00")),
       }),
     })
 
@@ -509,6 +516,27 @@ function ConfiguracoesFormulario({
                 <p className="text-xs text-muted-foreground">
                   Percentual estimado usado so no relatorio de lucro liquido - confirme a
                   aliquota real com o contador da loja antes de configurar aqui.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm text-slate-500">Clube (assinatura mensal)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label>Valor da mensalidade (R$)</Label>
+                <Input
+                  inputMode="numeric"
+                  value={clubeMensalidade}
+                  onChange={(e) => setClubeMensalidade(mascaraMoeda(e.target.value))}
+                  placeholder="0,00"
+                  className="max-w-48"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cobrada automaticamente todo mes via Mercado Pago enquanto a assinatura
+                  estiver ativa. Produtos com "Preco do Clube" preenchido (no cadastro de
+                  produto) mostram esse preco so pra quem tem assinatura ativa.
                 </p>
               </CardContent>
             </Card>

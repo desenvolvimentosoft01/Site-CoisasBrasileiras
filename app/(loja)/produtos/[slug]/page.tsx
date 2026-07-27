@@ -1,8 +1,11 @@
+import { cookies } from "next/headers"
 import { query } from "@/lib/db"
 import { notFound } from "next/navigation"
-import { Truck } from "lucide-react"
+import { Truck, Sparkles } from "lucide-react"
 import { ProdutoGaleria } from "@/components/loja/produto-galeria"
 import { AdicionarCarrinhoButton } from "@/components/loja/adicionar-carrinho-button"
+import { lerTokenSessaoCliente } from "@/lib/auth"
+import { clienteTemClubeAtivo } from "@/lib/clube"
 
 function formatarPreco(valor: string) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -22,7 +25,12 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
     [produto.id]
   )
 
-  const precoFinal = produto.preco_promocional ?? produto.preco
+  const cookieStore = await cookies()
+  const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
+  const clubeAtivo = sessaoCliente ? await clienteTemClubeAtivo(sessaoCliente.id) : false
+  const precoClubeDisponivel = clubeAtivo && produto.preco_clube
+
+  const precoFinal = precoClubeDisponivel ? produto.preco_clube : (produto.preco_promocional ?? produto.preco)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
@@ -36,7 +44,16 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
             </h1>
 
             <div className="mt-3">
-              {produto.preco_promocional ? (
+              {precoClubeDisponivel ? (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-lg text-neutral-400 line-through">
+                    {formatarPreco(produto.preco_promocional ?? produto.preco)}
+                  </span>
+                  <span className="text-3xl font-semibold text-emerald-700">
+                    {formatarPreco(produto.preco_clube)}
+                  </span>
+                </div>
+              ) : produto.preco_promocional ? (
                 <div className="flex items-baseline gap-3">
                   <span className="text-lg text-neutral-400 line-through">
                     {formatarPreco(produto.preco)}
@@ -49,6 +66,20 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
                 <span className="text-3xl font-semibold text-emerald-700">
                   {formatarPreco(produto.preco)}
                 </span>
+              )}
+              {precoClubeDisponivel && (
+                <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-amber-600">
+                  <Sparkles size={14} />
+                  Oferta exclusiva para membros do Clube
+                </p>
+              )}
+              {!clubeAtivo && produto.preco_clube && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Membros do Clube pagam {formatarPreco(produto.preco_clube)} neste produto.{" "}
+                  <a href="/minha-conta" className="underline hover:text-emerald-700">
+                    Saiba mais
+                  </a>
+                </p>
               )}
             </div>
           </div>

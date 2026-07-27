@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { mascaraCpfCnpj, mascaraTelefone, formatarMoeda } from "@/lib/mascaras"
-import { MapPin, Package, LogOut } from "lucide-react"
+import { MapPin, Package, LogOut, Sparkles } from "lucide-react"
 
 type Endereco = {
   id: string
@@ -49,11 +49,28 @@ const rotulosStatus: Record<string, string> = {
   cancelado: "Cancelado",
 }
 
+type Assinatura = {
+  status: "pendente" | "autorizada" | "pausada" | "cancelada"
+  valor_mensalidade: string
+  proximo_vencimento: string | null
+} | null
+
+const rotulosAssinatura: Record<string, string> = {
+  pendente: "Aguardando confirmacao do pagamento",
+  autorizada: "Ativa",
+  pausada: "Pausada",
+  cancelada: "Cancelada",
+}
+
 export default function MinhaContaPage() {
   const router = useRouter()
   const [carregando, setCarregando] = useState(true)
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [assinatura, setAssinatura] = useState<Assinatura>(null)
+  const [valorMensalidadeClube, setValorMensalidadeClube] = useState(0)
+  const [processandoClube, setProcessandoClube] = useState(false)
+  const [erroClube, setErroClube] = useState("")
 
   const [nome, setNome] = useState("")
   const [telefone, setTelefone] = useState("")
@@ -77,10 +94,47 @@ export default function MinhaContaPage() {
       const respostaPedidos = await fetch("/api/cliente/pedidos")
       if (respostaPedidos.ok) setPedidos(await respostaPedidos.json())
 
+      const respostaClube = await fetch("/api/cliente/clube")
+      if (respostaClube.ok) {
+        const dadosClube = await respostaClube.json()
+        setAssinatura(dadosClube.assinatura)
+        setValorMensalidadeClube(dadosClube.valorMensalidade)
+      }
+
       setCarregando(false)
     }
     carregar()
   }, [router])
+
+  async function assinarClube() {
+    setErroClube("")
+    setProcessandoClube(true)
+    const resposta = await fetch("/api/cliente/clube/assinar", { method: "POST" })
+    const dados = await resposta.json()
+    setProcessandoClube(false)
+
+    if (!resposta.ok) {
+      setErroClube(dados.erro || "Erro ao criar assinatura")
+      return
+    }
+    window.location.href = dados.initPoint
+  }
+
+  async function cancelarClube() {
+    if (!confirm("Cancelar sua assinatura do Clube? Voce perde acesso aos precos exclusivos.")) return
+
+    setErroClube("")
+    setProcessandoClube(true)
+    const resposta = await fetch("/api/cliente/clube/cancelar", { method: "POST" })
+    const dados = await resposta.json()
+    setProcessandoClube(false)
+
+    if (!resposta.ok) {
+      setErroClube(dados.erro || "Erro ao cancelar assinatura")
+      return
+    }
+    setAssinatura((atual) => (atual ? { ...atual, status: "cancelada" } : atual))
+  }
 
   async function salvarPerfil(evento: React.FormEvent) {
     evento.preventDefault()
@@ -161,6 +215,55 @@ export default function MinhaContaPage() {
               {salvo && <span className="text-sm text-emerald-600">Salvo!</span>}
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles size={18} />
+            Clube
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {!assinatura || assinatura.status === "cancelada" ? (
+            <>
+              <p className="text-sm text-neutral-600">
+                Assine o Clube por {formatarMoeda(String(valorMensalidadeClube))}/mes e tenha preco
+                exclusivo em produtos selecionados.
+              </p>
+              <Button onClick={assinarClube} disabled={processandoClube || valorMensalidadeClube <= 0}>
+                {processandoClube ? "Redirecionando..." : "Assinar o Clube"}
+              </Button>
+              {valorMensalidadeClube <= 0 && (
+                <p className="text-xs text-neutral-400">Assinatura ainda nao disponivel.</p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-sm">
+                Status:{" "}
+                <span
+                  className={
+                    assinatura.status === "autorizada" ? "font-medium text-emerald-600" : "font-medium text-amber-600"
+                  }
+                >
+                  {rotulosAssinatura[assinatura.status]}
+                </span>
+              </p>
+              <p className="text-sm text-neutral-500">
+                Mensalidade: {formatarMoeda(assinatura.valor_mensalidade)}
+                {assinatura.proximo_vencimento &&
+                  ` · Proxima cobranca: ${new Date(assinatura.proximo_vencimento).toLocaleDateString("pt-BR")}`}
+              </p>
+              {assinatura.status === "autorizada" && (
+                <Button variant="outline" size="sm" onClick={cancelarClube} disabled={processandoClube}>
+                  {processandoClube ? "Cancelando..." : "Cancelar assinatura"}
+                </Button>
+              )}
+            </>
+          )}
+          {erroClube && <p className="text-sm text-red-500">{erroClube}</p>}
         </CardContent>
       </Card>
 
