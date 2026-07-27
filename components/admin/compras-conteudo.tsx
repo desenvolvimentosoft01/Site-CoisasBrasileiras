@@ -11,10 +11,18 @@ import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascara
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null }
-export type ProdutoSelecionavel = { id: string; nome: string; sku: string | null; custo: string; estoque: number }
+export type ProdutoSelecionavel = {
+  id: string
+  nome: string
+  sku: string | null
+  codigo_barras: string | null
+  custo: string
+  estoque: number
+}
 
 type ItemNfeXml = {
   codigoFornecedor: string
+  codigoBarras: string | null
   descricao: string
   ncm: string | null
   quantidade: number
@@ -222,12 +230,16 @@ export function ComprasConteudo({
     }
 
     setItensXmlPendentes(dados.itens)
-    // Pre-seleciona por SKU quando o codigo do fornecedor bate com o nosso -
-    // o admin ainda confirma (ou troca) cada item antes de adicionar.
+    // Pre-seleciona por codigo de barras (mais confiavel, o EAN e o mesmo
+    // em qualquer lugar) e cai pro SKU se nao achar - o admin ainda confirma
+    // (ou troca) cada item antes de adicionar.
     const mapeamentoInicial: Record<number, string> = {}
     dados.itens.forEach((item, indice) => {
+      const produtoPorCodigoBarras =
+        item.codigoBarras && produtos.find((p) => p.codigo_barras && p.codigo_barras === item.codigoBarras)
       const produtoPorSku = produtos.find((p) => p.sku && p.sku === item.codigoFornecedor)
-      if (produtoPorSku) mapeamentoInicial[indice] = produtoPorSku.id
+      const encontrado = produtoPorCodigoBarras || produtoPorSku
+      if (encontrado) mapeamentoInicial[indice] = encontrado.id
     })
     setMapeamentoXml(mapeamentoInicial)
   }

@@ -33,6 +33,7 @@ type ProdutoDetalhado = {
   ativo: boolean
   sku: string | null
   ncm: string | null
+  codigo_barras: string | null
   peso_kg: string | null
   altura_cm: string | null
   largura_cm: string | null

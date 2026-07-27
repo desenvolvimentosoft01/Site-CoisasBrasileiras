@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List } from "lucide-react"
+import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List, Barcode } from "lucide-react"
 import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj } from "@/lib/mascaras"
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
@@ -33,6 +33,7 @@ export type Produto = {
   preco: string
   preco_promocional: string | null
   estoque: number
+  codigo_barras: string | null
   categorias: string[]
   imagem_url: string | null
 }
@@ -116,6 +117,8 @@ export function VendaBalcaoConteudo({
   const [aba, setAba] = useState("produtos")
   const [produtos, setProdutos] = useState<Produto[]>(produtosIniciais)
   const [busca, setBusca] = useState("")
+  const [codigoBarrasLido, setCodigoBarrasLido] = useState("")
+  const [erroCodigoBarras, setErroCodigoBarras] = useState("")
   const [categoriaAtiva, setCategoriaAtiva] = useState("todas")
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([])
 
@@ -233,6 +236,28 @@ export function VendaBalcaoConteudo({
         },
       ]
     })
+  }
+
+  // Leitor USB de codigo de barras funciona como teclado: digita os numeros
+  // rapido e manda Enter no final - so precisa escutar o Enter e casar com
+  // o produto pelo codigo_barras cadastrado.
+  function lerCodigoBarras(evento: React.KeyboardEvent<HTMLInputElement>) {
+    if (evento.key !== "Enter") return
+    evento.preventDefault()
+
+    const codigo = codigoBarrasLido.trim()
+    setCodigoBarrasLido("")
+    if (!codigo) return
+
+    const produto = produtos.find((p) => p.codigo_barras === codigo)
+    if (!produto) {
+      setErroCodigoBarras(`Nenhum produto com o codigo "${codigo}"`)
+      setTimeout(() => setErroCodigoBarras(""), 3000)
+      return
+    }
+
+    setErroCodigoBarras("")
+    adicionarAoCarrinho(produto)
   }
 
   function alterarQuantidade(produtoId: string, delta: number) {
@@ -397,6 +422,17 @@ export function VendaBalcaoConteudo({
                   className="pl-9"
                 />
               </div>
+              <div className="relative max-w-56 flex-1">
+                <Barcode size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Input
+                  placeholder="Ler codigo de barras..."
+                  value={codigoBarrasLido}
+                  onChange={(e) => setCodigoBarrasLido(e.target.value)}
+                  onKeyDown={lerCodigoBarras}
+                  className="pl-9"
+                  autoFocus
+                />
+              </div>
               {categorias.map((categoria) => (
                 <button
                   key={categoria}
@@ -411,6 +447,7 @@ export function VendaBalcaoConteudo({
                 </button>
               ))}
             </div>
+            {erroCodigoBarras && <p className="text-sm text-red-500">{erroCodigoBarras}</p>}
 
             {produtosFiltrados.length === 0 ? (
               <p className="text-sm text-slate-500">Nenhum produto encontrado.</p>

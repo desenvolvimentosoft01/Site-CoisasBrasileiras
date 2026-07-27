@@ -38,7 +38,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       }
 
       const itens = await q(
-        `SELECT pi.quantidade, pi.preco_unitario, pr.nome, pr.ncm
+        `SELECT pi.quantidade, pi.preco_unitario, pr.nome, pr.ncm, pr.codigo_barras
          FROM TAB_PEDIDO_ITEM pi JOIN TAB_PRODUTO pr ON pr.id = pi.produto_id
          WHERE pi.pedido_id = $1`,
         [id]
@@ -64,6 +64,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
           quantidade: item.quantidade,
           valorUnitario: Number(item.preco_unitario),
           ncm: item.ncm,
+          gtin: item.codigo_barras,
         })),
         valorFrete: Number(pedido.valor_frete || 0),
         numeroPedidoLoja: String(pedido.id).slice(0, 8).toUpperCase(),

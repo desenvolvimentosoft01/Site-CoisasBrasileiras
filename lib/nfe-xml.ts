@@ -7,6 +7,7 @@ import { XMLParser } from "fast-xml-parser"
 
 export type ItemNfeXml = {
   codigoFornecedor: string
+  codigoBarras: string | null
   descricao: string
   ncm: string | null
   quantidade: number
@@ -96,8 +97,12 @@ export function parseNfeXml(xmlTexto: string): DadosNfeXml {
 
   const itens: ItemNfeXml[] = detalhes.map((det: any) => {
     const prod = det.prod ?? {}
+    // cEAN vem como "SEM GTIN" quando o produto nao tem codigo de barras -
+    // nesse caso tratamos como ausente, nao como um codigo de verdade.
+    const ean = String(prod.cEAN ?? "")
     return {
       codigoFornecedor: String(prod.cProd ?? ""),
+      codigoBarras: ean && ean.toUpperCase() !== "SEM GTIN" ? ean : null,
       descricao: String(prod.xProd ?? ""),
       ncm: prod.NCM ? String(prod.NCM) : null,
       quantidade: Number(prod.qCom) || 0,

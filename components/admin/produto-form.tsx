@@ -26,6 +26,7 @@ type ProdutoExistente = {
   ativo: boolean
   sku: string | null
   ncm: string | null
+  codigo_barras: string | null
   peso_kg: string | null
   altura_cm: string | null
   largura_cm: string | null
@@ -61,6 +62,7 @@ export function ProdutoForm({
   const [ativo, setAtivo] = useState(produto?.ativo ?? true)
   const [sku, setSku] = useState(produto?.sku ?? "")
   const [ncm, setNcm] = useState(produto?.ncm ?? "")
+  const [codigoBarras, setCodigoBarras] = useState(produto?.codigo_barras ?? "")
   const [pesoKg, setPesoKg] = useState(produto?.peso_kg ?? "")
   const [alturaCm, setAlturaCm] = useState(produto?.altura_cm ?? "")
   const [larguraCm, setLarguraCm] = useState(produto?.largura_cm ?? "")
@@ -138,6 +140,7 @@ export function ProdutoForm({
       ativo,
       sku: sku || null,
       ncm: ncm || null,
+      codigoBarras: codigoBarras || null,
       pesoKg: pesoKg ? Number(pesoKg) : null,
       alturaCm: alturaCm ? Number(alturaCm) : null,
       larguraCm: larguraCm ? Number(larguraCm) : null,
@@ -206,7 +209,7 @@ export function ProdutoForm({
             <CardTitle className="text-sm text-muted-foreground">Dados do produto</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-5">
               <div className="space-y-2 sm:col-span-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -218,6 +221,18 @@ export function ProdutoForm({
                   onChange={(e) => setSku(e.target.value)}
                   placeholder="Opcional"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Codigo de barras (GTIN/EAN)</Label>
+                <Input
+                  value={codigoBarras}
+                  onChange={(e) => setCodigoBarras(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Opcional"
+                  inputMode="numeric"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Usado no leitor da Venda Balcao e na importacao de XML de compra.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>NCM (fiscal)</Label>

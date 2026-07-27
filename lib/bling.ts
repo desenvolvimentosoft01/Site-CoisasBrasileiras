@@ -148,7 +148,13 @@ async function chamarBling(caminho: string, opcoes: RequestInit = {}) {
   return resposta.json()
 }
 
-type ItemNota = { descricao: string; quantidade: number; valorUnitario: number; ncm?: string | null }
+type ItemNota = {
+  descricao: string
+  quantidade: number
+  valorUnitario: number
+  ncm?: string | null
+  gtin?: string | null
+}
 
 // Cria a NF-e no Bling, envia pra autorizacao na Sefaz e devolve os dados pra
 // gravar no pedido. Erros aqui nunca devem apagar nada do pedido - so
@@ -188,6 +194,7 @@ export async function emitirNotaFiscalBling(params: {
       quantidade: item.quantidade,
       valorUnitario: item.valorUnitario,
       ...(item.ncm ? { classificacaoFiscal: item.ncm } : {}),
+      ...(item.gtin ? { gtin: item.gtin } : {}),
     })),
   }
 

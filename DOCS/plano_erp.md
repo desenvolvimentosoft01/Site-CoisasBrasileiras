@@ -180,6 +180,17 @@ Usuário perguntou se o checkout mostrava várias opções de frete (não mostra
 
 **Pendência antes de operar com frete real via Frenet**: testar contra uma conta Frenet real (token de teste ou produção) pra confirmar que o payload/resposta batem com o que o código espera. Até lá, funciona normalmente através do fallback (tabela de faixas por região).
 
+### Fase 8 — Código de barras (GTIN/EAN) do produto (2026-07-27)
+Status: ✅ implementada
+
+Usuário perguntou se o código de barras que o cliente já tem nos produtos estava coberto no sistema — não estava (nenhum campo existia). Adicionado nos três lugares onde faz diferença prática:
+
+- [x] Migration `024_codigo_barras.sql`: `TAB_PRODUTO.codigo_barras` (aplicada local + Neon)
+- [x] Campo no cadastro de produto (`produto-form.tsx`)
+- [x] **Leitor no PDV (Venda Balcão)**: campo dedicado que aceita leitor USB/scanner (funciona como teclado + Enter) — lê o código, casa com o produto e adiciona direto no carrinho, sem precisar clicar na grade
+- [x] **NF-e (Bling)**: campo `gtin` enviado por item, junto com o NCM
+- [x] **Importação de XML de compra**: `lib/nfe-xml.ts` extrai `cEAN` do item; pré-seleção do produto no mapeamento agora prioriza código de barras (mais confiável, é sempre o mesmo em qualquer lugar) e cai pro SKU se não achar
+
 ## Concluído fora da ordem das fases (pedidos pontuais do cliente)
 
 - [x] Logo configurável pelo admin (Configurações > Aparência), com upload via Cloudinary/disco local, fallback pro arquivo padrão
