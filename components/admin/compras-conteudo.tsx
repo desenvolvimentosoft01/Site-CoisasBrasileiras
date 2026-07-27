@@ -1,17 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { List, Plus, Trash2, PackageCheck, Ban } from "lucide-react"
+import { List, Plus, Trash2, PackageCheck, Ban, FileUp, AlertTriangle } from "lucide-react"
 import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 
-export type Fornecedor = { id: string; razao_social: string }
+export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null }
 export type ProdutoSelecionavel = { id: string; nome: string; sku: string | null; custo: string; estoque: number }
+
+type ItemNfeXml = {
+  codigoFornecedor: string
+  descricao: string
+  ncm: string | null
+  quantidade: number
+  valorUnitario: number
+}
+
+type DadosNfeXml = {
+  chaveAcesso: string | null
+  chaveValida: boolean
+  numero: string | null
+  serie: string | null
+  dataEmissao: string | null
+  emitente: {
+    cnpj: string
+    razaoSocial: string
+    nomeFantasia: string | null
+    telefone: string | null
+    cep: string | null
+    logradouro: string | null
+    numero: string | null
+    bairro: string | null
+    cidade: string | null
+    estado: string | null
+  }
+  itens: ItemNfeXml[]
+  valorFrete: number
+  valorTotal: number
+}
 
 export type Compra = {
   id: string
@@ -48,7 +79,15 @@ export function ComprasConteudo({
   produtos: ProdutoSelecionavel[]
 }) {
   const [compras, setCompras] = useState<Compra[]>(comprasIniciais)
+  const [fornecedoresDisponiveis, setFornecedoresDisponiveis] = useState<Fornecedor[]>(fornecedores)
   const [aba, setAba] = useState("lista")
+
+  const [importandoXml, setImportandoXml] = useState(false)
+  const [erroXml, setErroXml] = useState("")
+  const [chaveXmlInvalida, setChaveXmlInvalida] = useState(false)
+  const [itensXmlPendentes, setItensXmlPendentes] = useState<ItemNfeXml[]>([])
+  const [mapeamentoXml, setMapeamentoXml] = useState<Record<number, string>>({})
+  const inputXmlRef = useRef<HTMLInputElement>(null)
 
   const [fornecedorId, setFornecedorId] = useState("")
   const [numeroNota, setNumeroNota] = useState("")
@@ -81,6 +120,10 @@ export function ComprasConteudo({
     setQuantidade("1")
     setCustoUnitario("")
     setErro("")
+    setErroXml("")
+    setChaveXmlInvalida(false)
+    setItensXmlPendentes([])
+    setMapeamentoXml({})
     setAba("formulario")
   }
 
@@ -106,6 +149,105 @@ export function ComprasConteudo({
 
   function removerItem(produtoId: string) {
     setItens((atual) => atual.filter((i) => i.produtoId !== produtoId))
+  }
+
+  // Le e valida o XML no servidor (lib/nfe-xml.ts) - nunca grava nada
+  // sozinho no banco. Fornecedor so e criado automaticamente aqui (decisao
+  // do usuario); os itens ficam pendentes de mapeamento manual pro admin
+  // associar cada um a um produto do catalogo antes de entrarem na compra.
+  async function importarXml(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    if (!arquivo) return
+
+    setErroXml("")
+    setImportandoXml(true)
+
+    const formData = new FormData()
+    formData.append("arquivo", arquivo)
+
+    const resposta = await fetch("/api/admin/compras/importar-xml", { method: "POST", body: formData })
+    const dados: DadosNfeXml | { erro: string } = await resposta.json()
+    setImportandoXml(false)
+    if (inputXmlRef.current) inputXmlRef.current.value = ""
+
+    if (!resposta.ok || "erro" in dados) {
+      setErroXml("erro" in dados ? dados.erro : "Erro ao ler o XML")
+      return
+    }
+
+    setChaveXmlInvalida(!dados.chaveValida)
+
+    const cnpjEmitente = dados.emitente.cnpj
+    const fornecedorExistente = fornecedoresDisponiveis.find(
+      (f) => f.cnpj_cpf?.replace(/\D/g, "") === cnpjEmitente
+    )
+
+    if (fornecedorExistente) {
+      setFornecedorId(fornecedorExistente.id)
+    } else {
+      const respostaFornecedor = await fetch("/api/admin/fornecedores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razaoSocial: dados.emitente.razaoSocial,
+          nomeFantasia: dados.emitente.nomeFantasia,
+          cnpjCpf: cnpjEmitente,
+          telefone: dados.emitente.telefone,
+          cep: dados.emitente.cep,
+          logradouro: dados.emitente.logradouro,
+          numero: dados.emitente.numero,
+          bairro: dados.emitente.bairro,
+          cidade: dados.emitente.cidade,
+          estado: dados.emitente.estado,
+        }),
+      })
+      if (respostaFornecedor.ok) {
+        const novoFornecedor = await respostaFornecedor.json()
+        setFornecedoresDisponiveis((atual) => [...atual, novoFornecedor])
+        setFornecedorId(novoFornecedor.id)
+        registrarAuditoria({
+          tela: "Compras (importacao XML)",
+          acao: "cadastro",
+          tabela: "TAB_FORNECEDOR",
+          registroId: novoFornecedor.id,
+          depois: { razao_social: novoFornecedor.razao_social, cnpj_cpf: novoFornecedor.cnpj_cpf },
+        })
+      }
+    }
+
+    if (dados.numero) setNumeroNota(dados.numero)
+    if (dados.dataEmissao) setDataCompra(dados.dataEmissao)
+    if (dados.valorFrete > 0) {
+      setValorFrete(mascaraMoeda(String(Math.round(dados.valorFrete * 100))))
+    }
+
+    setItensXmlPendentes(dados.itens)
+    // Pre-seleciona por SKU quando o codigo do fornecedor bate com o nosso -
+    // o admin ainda confirma (ou troca) cada item antes de adicionar.
+    const mapeamentoInicial: Record<number, string> = {}
+    dados.itens.forEach((item, indice) => {
+      const produtoPorSku = produtos.find((p) => p.sku && p.sku === item.codigoFornecedor)
+      if (produtoPorSku) mapeamentoInicial[indice] = produtoPorSku.id
+    })
+    setMapeamentoXml(mapeamentoInicial)
+  }
+
+  function adicionarItemMapeado(indice: number) {
+    const itemXml = itensXmlPendentes[indice]
+    const produtoIdSelecionado = mapeamentoXml[indice]
+    const produto = produtos.find((p) => p.id === produtoIdSelecionado)
+    if (!itemXml || !produto) return
+
+    setItens((atual) => [
+      ...atual,
+      {
+        produtoId: produto.id,
+        nome: produto.nome,
+        quantidade: itemXml.quantidade || 1,
+        custoUnitario: mascaraMoeda(String(Math.round(itemXml.valorUnitario * 100))),
+      },
+    ])
+    setItensXmlPendentes((atual) => atual.filter((_, i) => i !== indice))
   }
 
   const totalItens = itens.reduce((soma, i) => soma + i.quantidade * valorMoedaParaNumero(i.custoUnitario), 0)
@@ -317,6 +459,42 @@ export function ComprasConteudo({
           </div>
 
           <Card>
+            <CardContent className="space-y-4 pt-6">
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-border p-3">
+                <input
+                  ref={inputXmlRef}
+                  type="file"
+                  accept=".xml"
+                  className="hidden"
+                  onChange={importarXml}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={importandoXml}
+                  onClick={() => inputXmlRef.current?.click()}
+                >
+                  <FileUp size={16} className="mr-2" />
+                  {importandoXml ? "Lendo XML..." : "Importar XML da NF-e"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Le o XML que o fornecedor enviou e preenche fornecedor, numero e itens
+                  automaticamente. Nao precisa de certificado digital - so leitura.
+                </p>
+              </div>
+              {erroXml && <p className="text-sm text-red-500">{erroXml}</p>}
+              {chaveXmlInvalida && (
+                <p className="flex items-center gap-1.5 text-sm text-amber-500">
+                  <AlertTriangle size={14} />
+                  A chave de acesso deste XML nao bateu na validacao (dados podem estar
+                  incompletos ou o arquivo alterado) - confira os valores antes de salvar.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
             <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Fornecedor</Label>
@@ -326,7 +504,7 @@ export function ComprasConteudo({
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                 >
                   <option value="">Selecione...</option>
-                  {fornecedores.map((f) => (
+                  {fornecedoresDisponiveis.map((f) => (
                     <option key={f.id} value={f.id}>
                       {f.razao_social}
                     </option>
@@ -356,6 +534,59 @@ export function ComprasConteudo({
               </div>
             </CardContent>
           </Card>
+
+          {itensXmlPendentes.length > 0 && (
+            <Card className="border-amber-500/40">
+              <CardContent className="space-y-3 pt-6">
+                <p className="text-sm font-medium">
+                  Itens do XML pendentes de mapeamento ({itensXmlPendentes.length})
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Associe cada item da nota a um produto do catalogo e clique em "Adicionar" -
+                  itens nao mapeados nao entram na compra.
+                </p>
+                <div className="space-y-2">
+                  {itensXmlPendentes.map((item, indice) => (
+                    <div
+                      key={`${item.codigoFornecedor}-${indice}`}
+                      className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-center"
+                    >
+                      <div className="text-sm">
+                        <p className="font-medium">{item.descricao}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Cod. fornecedor: {item.codigoFornecedor || "-"} · Qtd: {item.quantidade} ·{" "}
+                          {formatarMoeda(item.valorUnitario)}/un
+                        </p>
+                      </div>
+                      <select
+                        value={mapeamentoXml[indice] ?? ""}
+                        onChange={(e) =>
+                          setMapeamentoXml((atual) => ({ ...atual, [indice]: e.target.value }))
+                        }
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                      >
+                        <option value="">Mapear pra qual produto?</option>
+                        {produtos.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.nome} {p.sku ? `(${p.sku})` : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={!mapeamentoXml[indice]}
+                        onClick={() => adicionarItemMapeado(indice)}
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardContent className="space-y-4 pt-6">
