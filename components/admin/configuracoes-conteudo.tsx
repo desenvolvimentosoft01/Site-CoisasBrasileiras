@@ -539,6 +539,12 @@ function ConfiguracoesFormulario({
                     tente novamente.
                   </p>
                 )}
+                {mensagemBling === "erro_nao_configurado" && (
+                  <p className="text-sm text-red-500">
+                    Integracao com o Bling ainda nao configurada neste ambiente
+                    (BLING_CLIENT_ID/BLING_CLIENT_SECRET faltando nas variaveis de ambiente).
+                  </p>
+                )}
 
                 {blingStatus === null ? (
                   <p className="text-sm text-slate-500">

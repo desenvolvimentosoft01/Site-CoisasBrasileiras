@@ -12,10 +12,18 @@ export async function GET() {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+
   const redirectUri = `${siteUrl}/api/admin/bling/callback`
   const state = randomBytes(16).toString("hex")
 
-  const url = montarUrlAutorizacaoBling(redirectUri, state)
+  let url: string
+  try {
+    url = montarUrlAutorizacaoBling(redirectUri, state)
+  } catch {
+    // BLING_CLIENT_ID/SECRET nao configurados no ambiente - volta pra
+    // Configuracoes com uma mensagem amigavel em vez de estourar erro 500.
+    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?bling=erro_nao_configurado`)
+  }
 
   const resposta = NextResponse.redirect(url)
   resposta.cookies.set("bling_oauth_state", state, {
