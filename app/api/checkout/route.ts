@@ -1,11 +1,12 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
 import { preferenceMP } from "@/lib/mercadopago"
-import { calcularFrete } from "@/lib/configuracoes"
+import { calcularOpcoesFrete } from "@/lib/configuracoes"
 import { enviarEmail, templatePedidoCriado } from "@/lib/email"
 import { NextResponse } from "next/server"
 
 type ItemRequisicao = { produtoId: string; quantidade: number }
+type OpcaoFreteEscolhida = { transportadora: string; servico: string }
 
 export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessaoCliente()
@@ -20,7 +21,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "Conta desativada. Entre em contato com a loja." }, { status: 403 })
   }
 
-  const { endereco, itens, cupomCodigo } = await request.json()
+  const { endereco, itens, cupomCodigo, freteEscolhido } = await request.json() as {
+    endereco: any
+    itens: ItemRequisicao[]
+    cupomCodigo?: string
+    freteEscolhido?: OpcaoFreteEscolhida
+  }
 
   if (!Array.isArray(itens) || itens.length === 0) {
     return NextResponse.json({ erro: "Carrinho vazio" }, { status: 400 })
@@ -63,7 +69,7 @@ export async function POST(request: Request) {
         quantidade: number
         precoUnitario: number
       }[] = []
-      const itensDetalhados: Parameters<typeof calcularFrete>[0]["itensDetalhados"] = []
+      const itensDetalhados: Parameters<typeof calcularOpcoesFrete>[0]["itensDetalhados"] = []
 
       // Recalcula o preco e valida estoque a partir do banco - nunca confia
       // no preco/quantidade que vem do client.
@@ -104,15 +110,28 @@ export async function POST(request: Request) {
         // produto continua disponivel normalmente.
       }
 
-      // Frete calculado no servidor a partir do peso real dos itens e do
-      // estado/CEP de entrega - nunca confia num valor de frete vindo do client.
-      const { valor: valorFrete } = await calcularFrete({
+      // Opcoes de frete recalculadas no servidor a partir do peso real dos
+      // itens e do estado/CEP de entrega - nunca confia num valor de frete
+      // vindo do client. O client so manda QUAL opcao o cliente escolheu
+      // (transportadora + servico); o preco usado e sempre o que o servidor
+      // acabou de calcular pra essa opcao, nunca o que veio no corpo da
+      // requisicao.
+      const opcoesFrete = await calcularOpcoesFrete({
         subtotal,
         pesoKg,
         estado: endereco.estado,
         cepDestino: endereco.cep,
         itensDetalhados,
       })
+
+      const opcaoEscolhida =
+        (freteEscolhido &&
+          opcoesFrete.find(
+            (o) => o.transportadora === freteEscolhido.transportadora && o.servico === freteEscolhido.servico
+          )) ||
+        opcoesFrete[0] // se nao veio escolha valida (ou a lista mudou entre a cotacao e o envio), usa a mais barata
+
+      const valorFrete = opcaoEscolhida.valor
 
       // Cupom revalidado e aplicado dentro da propria transacao, com
       // FOR UPDATE na linha do cupom - evita que dois checkouts simultaneos

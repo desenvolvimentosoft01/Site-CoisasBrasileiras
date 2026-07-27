@@ -1,4 +1,4 @@
-import { getConfiguracoes, calcularFrete } from "@/lib/configuracoes"
+import { getConfiguracoes, calcularOpcoesFrete } from "@/lib/configuracoes"
 import { query } from "@/lib/db"
 import { NextResponse } from "next/server"
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
   let subtotal = 0
   let pesoKg = 0
-  const itensDetalhados: Parameters<typeof calcularFrete>[0]["itensDetalhados"] = []
+  const itensDetalhados: Parameters<typeof calcularOpcoesFrete>[0]["itensDetalhados"] = []
 
   for (const item of itens) {
     const [produto] = await query(
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     })
   }
 
-  const { valor: valorFrete, prazoDias } = await calcularFrete({
+  const opcoes = await calcularOpcoesFrete({
     subtotal,
     pesoKg,
     estado: estado || "",
@@ -49,8 +49,7 @@ export async function POST(request: Request) {
   const config = await getConfiguracoes(["frete_gratis_acima_de"])
 
   return NextResponse.json({
-    valorFrete,
-    prazoDias,
+    opcoes,
     freteGratisAcimaDe: Number(config.frete_gratis_acima_de) || 0,
   })
 }

@@ -1,5 +1,5 @@
 import { query } from "@/lib/db"
-import { cotarFreteMelhorEnvio, melhorEnvioConfigurado } from "@/lib/melhorenvio"
+import { cotarFreteFrenet, frenetConfigurado } from "@/lib/frenet"
 
 // Le configuracoes da loja (TAB_CONFIGURACAO, chave/valor) de uma vez so.
 // Usado tanto no calculo de frete quanto nas telas publicas (contato, etc.).
@@ -39,23 +39,31 @@ type ItemFreteDetalhado = {
   valorUnitario: number
 }
 
-// Dimensoes minimas aceitas pelas transportadoras (Melhor Envio recusa
-// pacotes menores que isso) - usadas quando o produto nao tem dimensoes
-// cadastradas, pra nao quebrar a cotacao.
+// Dimensoes minimas aceitas pelas transportadoras - usadas quando o produto
+// nao tem dimensoes cadastradas, pra nao quebrar a cotacao.
 const DIMENSAO_MINIMA_CM = 11
 
-// Calcula o frete. Se o Melhor Envio estiver configurado (MELHOR_ENVIO_TOKEN)
-// e tivermos CEP de destino + dimensoes dos itens, cota o valor real por API.
-// Caso contrario (ou se a API falhar), cai na tabela de faixas por regiao/peso
-// (TAB_FRETE_FAIXA), cadastrada e ajustada pelo admin em Configuracoes > Frete -
-// nunca trava o checkout por falta de configuracao ou instabilidade externa.
-export async function calcularFrete(params: {
+export type OpcaoFrete = {
+  transportadora: string
+  servico: string
+  valor: number
+  prazoDias: number | null
+}
+
+// Calcula as opcoes de frete disponiveis (uma ou mais). Se o Frenet estiver
+// configurado (FRENET_TOKEN) e tivermos CEP de destino + dimensoes dos itens,
+// cota o valor real por API, com todas as transportadoras/servicos
+// retornados por eles. Caso contrario (ou se a API falhar), cai numa unica
+// opcao vinda da tabela de faixas por regiao/peso (TAB_FRETE_FAIXA),
+// cadastrada e ajustada pelo admin em Configuracoes > Frete - nunca trava o
+// checkout por falta de configuracao ou instabilidade externa.
+export async function calcularOpcoesFrete(params: {
   subtotal: number
   pesoKg: number
   estado: string
   cepDestino?: string
   itensDetalhados?: ItemFreteDetalhado[]
-}): Promise<{ valor: number; prazoDias: number | null }> {
+}): Promise<OpcaoFrete[]> {
   const config = await getConfiguracoes([
     "frete_valor_base",
     "frete_gratis_acima_de",
@@ -65,36 +73,34 @@ export async function calcularFrete(params: {
   const freteGratisAcimaDe = Number(config.frete_gratis_acima_de) || 0
 
   if (freteGratisAcimaDe > 0 && params.subtotal >= freteGratisAcimaDe) {
-    return { valor: 0, prazoDias: null }
+    return [{ transportadora: "Frete gratis", servico: "Padrao", valor: 0, prazoDias: null }]
   }
 
   if (
-    melhorEnvioConfigurado() &&
+    frenetConfigurado() &&
     config.cep_origem &&
     params.cepDestino &&
     params.itensDetalhados &&
     params.itensDetalhados.length > 0
   ) {
     try {
-      const cotacao = await cotarFreteMelhorEnvio({
+      const opcoes = await cotarFreteFrenet({
         cepOrigem: config.cep_origem,
         cepDestino: params.cepDestino,
+        valorDeclaradoTotal: params.subtotal,
         itens: params.itensDetalhados.map((item) => ({
           quantidade: item.quantidade,
           pesoKg: Math.max(item.pesoKg, 0.1),
           alturaCm: Math.max(item.alturaCm, DIMENSAO_MINIMA_CM),
           larguraCm: Math.max(item.larguraCm, DIMENSAO_MINIMA_CM),
           comprimentoCm: Math.max(item.comprimentoCm, DIMENSAO_MINIMA_CM),
-          valorDeclarado: item.valorUnitario,
         })),
       })
-      if (cotacao) {
-        return { valor: cotacao.valor, prazoDias: cotacao.prazoDias }
-      }
+      if (opcoes.length > 0) return opcoes
     } catch (erro) {
       // Falha na API externa (fora do ar, CEP invalido, etc.) nunca deve
       // travar o checkout - so registra e cai no fallback abaixo.
-      console.error("Falha ao cotar frete no Melhor Envio, usando fallback:", erro)
+      console.error("Falha ao cotar frete no Frenet, usando fallback:", erro)
     }
   }
 
@@ -109,11 +115,20 @@ export async function calcularFrete(params: {
       [regiao, pesoConsiderado]
     )
     if (faixa) {
-      return { valor: Number(faixa.valor), prazoDias: faixa.prazo_dias }
+      return [
+        {
+          transportadora: "Transportadora padrao",
+          servico: "Padrao",
+          valor: Number(faixa.valor),
+          prazoDias: faixa.prazo_dias,
+        },
+      ]
     }
   }
 
   // Sem faixa cadastrada pra essa regiao/peso (ou estado invalido/nao
   // informado) - cai pro valor fixo configurado, pra nunca travar o checkout.
-  return { valor: valorBaseFallback, prazoDias: null }
+  return [
+    { transportadora: "Transportadora padrao", servico: "Padrao", valor: valorBaseFallback, prazoDias: null },
+  ]
 }

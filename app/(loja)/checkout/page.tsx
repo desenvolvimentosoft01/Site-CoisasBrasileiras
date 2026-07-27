@@ -16,6 +16,8 @@ function formatarPreco(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
+type OpcaoFrete = { transportadora: string; servico: string; valor: number; prazoDias: number | null }
+
 export default function CheckoutPage() {
   const router = useRouter()
   const { itens, limpar, cupom } = useCarrinho()
@@ -31,8 +33,13 @@ export default function CheckoutPage() {
   const [buscandoCep, setBuscandoCep] = useState(false)
   const [erro, setErro] = useState("")
   const [enviando, setEnviando] = useState(false)
-  const [valorFrete, setValorFrete] = useState(0)
+  const [opcoesFrete, setOpcoesFrete] = useState<OpcaoFrete[]>([])
+  const [freteEscolhidoIndice, setFreteEscolhidoIndice] = useState(0)
   const [freteGratisAcimaDe, setFreteGratisAcimaDe] = useState(0)
+  const [carregandoFrete, setCarregandoFrete] = useState(false)
+
+  const opcaoFrete = opcoesFrete[freteEscolhidoIndice]
+  const valorFrete = opcaoFrete?.valor ?? 0
 
   useEffect(() => {
     fetch("/api/cliente/me").then((r) => setLogado(r.ok))
@@ -46,6 +53,7 @@ export default function CheckoutPage() {
     // disso o back-end nao tem regiao pra achar a faixa de frete.
     if (!estado) return
 
+    setCarregandoFrete(true)
     fetch("/api/frete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,9 +65,11 @@ export default function CheckoutPage() {
     })
       .then((r) => r.json())
       .then((dados) => {
-        setValorFrete(dados.valorFrete)
+        setOpcoesFrete(dados.opcoes || [])
+        setFreteEscolhidoIndice(0) // sempre comeca com a mais barata pre-selecionada
         setFreteGratisAcimaDe(dados.freteGratisAcimaDe)
       })
+      .finally(() => setCarregandoFrete(false))
   }, [itens, estado, cep, subtotal])
 
   async function handleCepChange(valor: string) {
@@ -102,6 +112,9 @@ export default function CheckoutPage() {
         endereco: { cep, logradouro, numero, complemento, bairro, cidade, estado },
         itens: itens.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
         cupomCodigo: cupom?.codigo,
+        freteEscolhido: opcaoFrete
+          ? { transportadora: opcaoFrete.transportadora, servico: opcaoFrete.servico }
+          : undefined,
       }),
     })
 
@@ -238,10 +251,48 @@ export default function CheckoutPage() {
                 <span>Subtotal</span>
                 <span>{formatarPreco(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-sm text-neutral-600">
-                <span>Frete</span>
-                <span>{valorFrete === 0 ? "Gratis" : formatarPreco(valorFrete)}</span>
-              </div>
+
+              {estado && (
+                <div className="space-y-2 py-1">
+                  <span className="text-sm text-neutral-600">Frete</span>
+                  {carregandoFrete ? (
+                    <p className="text-xs text-neutral-400">Calculando opcoes de frete...</p>
+                  ) : opcoesFrete.length === 0 ? (
+                    <p className="text-xs text-neutral-400">Nenhuma opcao de frete encontrada.</p>
+                  ) : (
+                    opcoesFrete.map((opcao, indice) => (
+                      <label
+                        key={`${opcao.transportadora}-${opcao.servico}`}
+                        className={`flex cursor-pointer items-center justify-between gap-3 rounded-md border p-2 text-sm ${
+                          freteEscolhidoIndice === indice
+                            ? "border-emerald-600 bg-emerald-50"
+                            : "border-black/10"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="opcaoFrete"
+                            checked={freteEscolhidoIndice === indice}
+                            onChange={() => setFreteEscolhidoIndice(indice)}
+                          />
+                          <span>
+                            {opcao.transportadora} - {opcao.servico}
+                            {opcao.prazoDias != null && (
+                              <span className="block text-xs text-neutral-500">
+                                Prazo: {opcao.prazoDias} dia(s) util(is)
+                              </span>
+                            )}
+                          </span>
+                        </span>
+                        <span className="font-medium">
+                          {opcao.valor === 0 ? "Gratis" : formatarPreco(opcao.valor)}
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              )}
               {freteGratisAcimaDe > 0 && valorFrete > 0 && (
                 <p className="text-xs text-emerald-600">
                   Frete gratis em compras acima de {formatarPreco(freteGratisAcimaDe)}
