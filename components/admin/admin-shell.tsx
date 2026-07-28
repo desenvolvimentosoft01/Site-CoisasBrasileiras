@@ -53,6 +53,7 @@ const menu: ItemMenu[] = [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
       { href: "/admin/estoque", label: "Estoque" },
+      { href: "/admin/precos", label: "Reajuste de Precos", somenteAdmin: true },
     ],
   },
   {
