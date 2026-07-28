@@ -291,6 +291,16 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] **Restrição de alteração manual de status do pedido**: não é mais possível setar "Pago" manualmente pela tela `/admin/pedidos/[id]` — esse status só é definido automaticamente pela confirmação de pagamento do Mercado Pago (webhook). Quando o pedido está "Aguardando pagamento", a tela não mostra mais um seletor de status livre; mostra um badge estático + botão "Cancelar pedido" (única ação segura nesse estado). Nos demais estados, o seletor permite só as transições operacionais (em separação → enviado → entregue, cancelar), nunca "Pago" nem voltar pra "Aguardando pagamento".
   - Reforçado também no servidor (`PUT /api/admin/pedidos/[id]`): a rota agora rejeita explicitamente `status: "pago"` vindo de qualquer chamada manual, já que o webhook do MP grava esse status direto no banco (não passa por essa rota) — proteção contra alguém liberar um pedido sem o pagamento ter de fato entrado, mesmo via chamada direta de API.
 
+## 2026-07-27 — Bug sistêmico: `<Select>` mostrava o `value` bruto em vez do rótulo (`__todas__`, `aumento`...)
+
+- [x] Causa raiz: `SelectPrimitive.Root` do `@base-ui/react` só resolve o texto exibido (`Select.Value`) pro rótulo do item quando recebe a prop `items` (mapa `value -> rótulo`). Sem isso, mostra o `value` bruto — daí telas como Relatório de Estoque e Auditoria exibirem `__todas__`/`__todos__` em vez de "Todas as categorias"/"Todos", e o Reajuste de Preços mostrar "percentual"/"aumento" em vez dos rótulos com acento e formatação.
+- [x] Corrigido uma única vez em `components/ui/select.tsx`: o `Select` (antes um alias direto de `SelectPrimitive.Root`) virou um componente que varre os `<SelectItem>` dentro dos `children` e monta o mapa `items` sozinho, sem precisar mexer em cada uma das 9 telas que usam `<Select>`. Continua aceitando `items` explícito se algum dia for necessário sobrescrever.
+
+## 2026-07-27 — Site: botão "voltar" e "comprar agora" na página de produto
+
+- [x] Link "Voltar para todos os produtos" no topo de `/produtos/[slug]`, levando pra `/produtos`.
+- [x] `AdicionarCarrinhoButton`: "Adicionar ao carrinho" virou `variant="outline"` e ganhou um irmão "Comprar agora" (`variant` padrão, destaque) que adiciona o item ao carrinho e leva direto pro `/checkout` — padrão convencional de e-commerce (compra rápida sem passar pela tela de carrinho).
+
 ## 2026-07-27 — Balão de dica em campos de formulário (corrige desalinhamento de grid)
 
 - [x] `components/ui/campo-dica.tsx`: ícone "?" clicável (popover do `@base-ui/react`, já usado no resto do projeto) ao lado do rótulo do campo. Corrige o mesmo tipo de bug do reajuste de preços: texto de ajuda longo embaixo de um campo, dentro de uma grade de colunas, empurrava só aquela célula pra baixo e desalinhava a linha inteira com os campos vizinhos.

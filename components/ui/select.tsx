@@ -6,7 +6,41 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+// SelectPrimitive.Root so mostra o rotulo do item selecionado (em vez do
+// value bruto, tipo "__todas__" ou "aumento") quando recebe a prop `items`
+// mapeando value -> rotulo. Em vez de exigir isso manualmente em toda tela
+// que usa <Select>, monta esse mapa sozinho varrendo os <SelectItem> dentro
+// dos children (SelectContent/SelectGroup), na hora da renderizacao.
+function extrairItens(children: React.ReactNode): Record<string, React.ReactNode> {
+  const mapa: Record<string, React.ReactNode> = {}
+  React.Children.forEach(children, (filho) => {
+    if (!React.isValidElement(filho)) return
+    const props = filho.props as { value?: unknown; children?: React.ReactNode }
+    if (filho.type === SelectItem) {
+      if (props.value !== undefined && props.value !== null) {
+        mapa[String(props.value)] = props.children
+      }
+      return
+    }
+    if (props.children) {
+      Object.assign(mapa, extrairItens(props.children))
+    }
+  })
+  return mapa
+}
+
+function Select<Value, Multiple extends boolean | undefined = false>({
+  children,
+  items,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple>) {
+  const itensResolvidos = items ?? extrairItens(children)
+  return (
+    <SelectPrimitive.Root items={itensResolvidos} {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (

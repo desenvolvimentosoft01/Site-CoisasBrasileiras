@@ -1,7 +1,8 @@
 import { cookies } from "next/headers"
+import Link from "next/link"
 import { query } from "@/lib/db"
 import { notFound } from "next/navigation"
-import { Truck, Sparkles, Star } from "lucide-react"
+import { ArrowLeft, Truck, Sparkles, Star } from "lucide-react"
 import { ProdutoGaleria } from "@/components/loja/produto-galeria"
 import { AdicionarCarrinhoButton } from "@/components/loja/adicionar-carrinho-button"
 import { AvaliacaoProduto } from "@/components/loja/avaliacao-produto"
@@ -63,6 +64,14 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
+      <Link
+        href="/produtos"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-primary"
+      >
+        <ArrowLeft size={16} />
+        Voltar para todos os produtos
+      </Link>
+
       <div className="grid gap-10 md:grid-cols-2">
         <ProdutoGaleria imagens={imagens.map((i) => i.url)} nome={produto.nome} />
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Minus, Plus, ShoppingBag, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCarrinho } from "@/lib/carrinho-store"
@@ -23,6 +24,7 @@ export function AdicionarCarrinhoButton({
   estoque,
 }: Props) {
   const adicionar = useCarrinho((s) => s.adicionar)
+  const router = useRouter()
   const [quantidade, setQuantidade] = useState(1)
   const [adicionado, setAdicionado] = useState(false)
 
@@ -32,6 +34,11 @@ export function AdicionarCarrinhoButton({
     adicionar({ produtoId, nome, slug, preco, imagemCapa }, quantidade)
     setAdicionado(true)
     setTimeout(() => setAdicionado(false), 1500)
+  }
+
+  function handleComprarAgora() {
+    adicionar({ produtoId, nome, slug, preco, imagemCapa }, quantidade)
+    router.push("/checkout")
   }
 
   if (semEstoque) {
@@ -62,7 +69,12 @@ export function AdicionarCarrinhoButton({
         </button>
       </div>
 
-      <Button size="lg" onClick={handleAdicionar} className="flex-1 shadow-sm sm:flex-none">
+      <Button
+        size="lg"
+        variant="outline"
+        onClick={handleAdicionar}
+        className="flex-1 shadow-sm sm:flex-none"
+      >
         {adicionado ? (
           <>
             <Check size={18} className="mr-2" />
@@ -74,6 +86,10 @@ export function AdicionarCarrinhoButton({
             Adicionar ao carrinho
           </>
         )}
+      </Button>
+
+      <Button size="lg" onClick={handleComprarAgora} className="flex-1 shadow-sm sm:flex-none">
+        Comprar agora
       </Button>
     </div>
   )
