@@ -175,3 +175,17 @@ export function templateStatusAtualizado(params: {
     }
   `)
 }
+
+export function templateVoltouEstoque(params: { nomeProduto: string; linkProduto: string }): string {
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Voltou ao estoque!</h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#555;">
+      O produto <strong>${escapeHtml(params.nomeProduto)}</strong> que voce queria ja esta disponivel de novo.
+    </p>
+    <p style="margin:0;">
+      <a href="${params.linkProduto}" style="display:inline-block;background:#065f46;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
+        Ver produto
+      </a>
+    </p>
+  `)
+}

@@ -5,6 +5,7 @@ import { Truck, Sparkles, Star } from "lucide-react"
 import { ProdutoGaleria } from "@/components/loja/produto-galeria"
 import { AdicionarCarrinhoButton } from "@/components/loja/adicionar-carrinho-button"
 import { AvaliacaoProduto } from "@/components/loja/avaliacao-produto"
+import { NotificarEstoque } from "@/components/loja/notificar-estoque"
 import { lerTokenSessaoCliente } from "@/lib/auth"
 import { clienteTemClubeAtivo } from "@/lib/clube"
 
@@ -134,6 +135,8 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
             imagemCapa={imagens[0]?.url ?? null}
             estoque={produto.estoque}
           />
+
+          {produto.estoque <= 0 && <NotificarEstoque produtoId={produto.id} />}
         </div>
       </div>
 

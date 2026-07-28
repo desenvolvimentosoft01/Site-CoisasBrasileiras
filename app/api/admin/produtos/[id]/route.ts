@@ -1,5 +1,6 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { notificarClientesEstoqueVoltou } from "@/lib/notificar-estoque"
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
@@ -104,6 +105,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!produto) {
     return NextResponse.json({ erro: "Produto nao encontrado" }, { status: 404 })
   }
+
+  notificarClientesEstoqueVoltou(produto.id)
 
   // Substitui as associacoes por completo em vez de tentar um diff -
   // o volume de categorias/imagens por produto e pequeno, entao o custo e desprezivel.

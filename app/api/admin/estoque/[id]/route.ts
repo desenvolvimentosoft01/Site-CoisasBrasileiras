@@ -1,5 +1,6 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { notificarClientesEstoqueVoltou } from "@/lib/notificar-estoque"
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
@@ -30,6 +31,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ erro: "Produto nao encontrado" }, { status: 404 })
   }
 
+  notificarClientesEstoqueVoltou(produto.id)
   revalidatePath("/", "layout")
 
   return NextResponse.json(produto)

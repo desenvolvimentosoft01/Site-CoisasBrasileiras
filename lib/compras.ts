@@ -1,4 +1,5 @@
 import { transacao, query } from "@/lib/db"
+import { notificarClientesEstoqueVoltou } from "@/lib/notificar-estoque"
 
 // Marca uma compra como recebida: da alta no estoque de cada item, recalcula
 // o custo medio ponderado do produto e gera automaticamente uma conta a
@@ -79,6 +80,13 @@ export async function receberCompra(compraId: string) {
       [conta.id, compraId]
     )
 
+    return { compraAtualizada, produtosAfetados: itens.map((i) => i.produto_id) }
+  }).then(async ({ compraAtualizada, produtosAfetados }) => {
+    // Fora da transacao de proposito - envio de email nunca deve fazer o
+    // recebimento da compra falhar nem ficar mais lento esperando SMTP.
+    for (const produtoId of produtosAfetados) {
+      notificarClientesEstoqueVoltou(produtoId)
+    }
     return compraAtualizada
   })
 }

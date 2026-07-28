@@ -211,7 +211,7 @@ Lista de melhorias sugeridas numa conversa exploratória ("o que mais pode ter d
 - [x] **Avaliações de produto** (2026-07-27) — implementada, ver detalhe abaixo
 - [ ] Lista de desejos (favoritar produto sem comprar)
 - [ ] Busca com filtro avançado (categoria + faixa de preço + "só com desconto do clube")
-- [ ] Notificação automática de "voltou ao estoque" (cliente deixa e-mail, sistema avisa sozinho quando repor)
+- [x] **Notificação automática de "voltou ao estoque"** (2026-07-27) — ver detalhe abaixo
 - [ ] Programa de indicação (cupom por indicação de amigo)
 
 **Sistema (gestão)**
@@ -230,6 +230,15 @@ Primeiro item da Fase 10 escolhido pelo usuário. **Diferente de `TAB_FEEDBACK`*
 - [x] **Moderação**: avaliação nasce `aprovado = false`, só aparece no site depois que o admin aprova — nova tela `/admin/avaliacoes` (Grade com filtro pendentes/aprovadas/todas, aprovar ou excluir)
 - [x] Página de produto: resumo de estrelas (média + contagem) perto do título, lista das avaliações aprovadas, formulário de envio (só aparece pra quem comprou e ainda não avaliou)
 - [x] Auditoria registrada nas ações de aprovar/excluir
+
+### Fase 10.2 — Notificação automática "voltou ao estoque" (2026-07-27)
+Status: ✅ implementada
+
+- [x] Migration `027_notificacao_estoque.sql`: `TAB_NOTIFICACAO_ESTOQUE` (produto, e-mail, `notificado_em`, `UNIQUE(produto_id, email)` — reseta pra `NULL` se a pessoa se cadastra de novo depois de já ter sido avisada, cobrindo o ciclo esgotou-voltou-esgotou de novo)
+- [x] `lib/notificar-estoque.ts` → `notificarClientesEstoqueVoltou(produtoId)`: só dispara se o estoque ficou positivo, manda e-mail (`templateVoltouEstoque`) pra todo mundo pendente, marca como notificado
+- [x] **100% automático, sem intervenção do admin** — plugado nos três únicos pontos do sistema que aumentam estoque: `lib/compras.ts` (receber compra), `PATCH /api/admin/estoque/[id]` (ajuste manual), `PUT /api/admin/produtos/[id]` (edição de cadastro). Conferido que não existe nenhum outro ponto de alta de estoque no sistema.
+- [x] Rota pública `POST /api/produtos/[id]/notificar-estoque` (sem login — qualquer visitante pode deixar o e-mail)
+- [x] Componente `NotificarEstoque` na página de produto, aparece só quando o produto está esgotado
 
 ## Concluído fora da ordem das fases (pedidos pontuais do cliente)
 
