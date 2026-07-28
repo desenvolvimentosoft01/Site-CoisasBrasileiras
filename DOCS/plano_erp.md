@@ -12,6 +12,11 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Ações rápidas no card de produto (site: home + catálogo)
+
+- [x] `ProdutoCard` (usado na home e no `/produtos`) virou client component e ganhou: coração de favoritar (ícone, redireciona pro login se não estiver logado) e botão "Adicionar ao carrinho" — ambos direto no card da grade, sem precisar abrir o produto. Botão desabilita e mostra "Esgotado" quando `estoque <= 0`.
+- [x] Servidor (`app/(loja)/page.tsx` e `app/(loja)/produtos/page.tsx`) passa a consultar `TAB_LISTA_DESEJOS` do cliente logado (se houver sessão) numa query só, montando um `Set` de produto_ids favoritados — evita N+1 (uma query por card) e evita esperar um fetch client-side pra saber o estado inicial do coração.
+
 ## Checklist de go-live (produção de verdade)
 
 Marcar conforme for resolvendo. Levantado em 2026-07-27.

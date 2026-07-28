@@ -1,10 +1,21 @@
+import { cookies } from "next/headers"
 import { query } from "@/lib/db"
 import { HeroCarousel } from "@/components/loja/hero-carousel"
 import { CategoriaGrid } from "@/components/loja/categoria-grid"
 import { ProdutoCard } from "@/components/loja/produto-card"
 import { FeedbacksSecao } from "@/components/loja/feedbacks-secao"
+import { lerTokenSessaoCliente } from "@/lib/auth"
 
 export default async function HomePage() {
+  const cookieStore = await cookies()
+  const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
+  const favoritosIds = sessaoCliente
+    ? new Set(
+        (
+          await query("SELECT produto_id FROM TAB_LISTA_DESEJOS WHERE cliente_id = $1", [sessaoCliente.id])
+        ).map((f) => f.produto_id)
+      )
+    : new Set()
   const banners = await query(
     "SELECT id, titulo, subtitulo, link, imagem_url, cor_fundo FROM TAB_BANNER WHERE ativo = true ORDER BY ordem"
   )
@@ -15,7 +26,7 @@ export default async function HomePage() {
 
   const destaques = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.preco, p.preco_promocional,
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa
     FROM TAB_PRODUTO p
     WHERE p.ativo = true
@@ -33,7 +44,7 @@ export default async function HomePage() {
 
   const maisVendidos = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.preco, p.preco_promocional,
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa,
       SUM(pi.quantidade) AS total_vendido
     FROM TAB_PEDIDO_ITEM pi
@@ -58,7 +69,12 @@ export default async function HomePage() {
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {maisVendidos.map((produto) => (
-              <ProdutoCard key={produto.id} produto={produto} />
+              <ProdutoCard
+                key={produto.id}
+                produto={produto}
+                logado={Boolean(sessaoCliente)}
+                favoritadoInicial={favoritosIds.has(produto.id)}
+              />
             ))}
           </div>
         </section>
@@ -76,7 +92,12 @@ export default async function HomePage() {
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {destaques.map((produto) => (
-              <ProdutoCard key={produto.id} produto={produto} />
+              <ProdutoCard
+                key={produto.id}
+                produto={produto}
+                logado={Boolean(sessaoCliente)}
+                favoritadoInicial={favoritosIds.has(produto.id)}
+              />
             ))}
           </div>
         )}

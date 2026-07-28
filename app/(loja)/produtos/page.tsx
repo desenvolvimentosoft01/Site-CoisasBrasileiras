@@ -1,7 +1,9 @@
 import { Suspense } from "react"
+import { cookies } from "next/headers"
 import { query } from "@/lib/db"
 import { ProdutoCard } from "@/components/loja/produto-card"
 import { BuscaCatalogo } from "@/components/loja/busca-catalogo"
+import { lerTokenSessaoCliente } from "@/lib/auth"
 
 export default async function CatalogoPage({
   searchParams,
@@ -31,7 +33,7 @@ export default async function CatalogoPage({
   const produtos = await query(
     `
     SELECT
-      p.id, p.nome, p.slug, p.preco, p.preco_promocional,
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa
     FROM TAB_PRODUTO p
     ${categoria ? "JOIN TAB_PRODUTO_CATEGORIA pc ON pc.produto_id = p.id JOIN TAB_CATEGORIA c ON c.id = pc.categoria_id" : ""}
@@ -41,6 +43,16 @@ export default async function CatalogoPage({
     `,
     parametros
   )
+
+  const cookieStore = await cookies()
+  const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
+  const favoritosIds = sessaoCliente
+    ? new Set(
+        (
+          await query("SELECT produto_id FROM TAB_LISTA_DESEJOS WHERE cliente_id = $1", [sessaoCliente.id])
+        ).map((f) => f.produto_id)
+      )
+    : new Set()
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
@@ -59,7 +71,12 @@ export default async function CatalogoPage({
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {produtos.map((produto) => (
-            <ProdutoCard key={produto.id} produto={produto} />
+            <ProdutoCard
+              key={produto.id}
+              produto={produto}
+              logado={Boolean(sessaoCliente)}
+              favoritadoInicial={favoritosIds.has(produto.id)}
+            />
           ))}
         </div>
       )}
