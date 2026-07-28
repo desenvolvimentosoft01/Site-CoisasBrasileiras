@@ -22,7 +22,7 @@ export function Header({
   const principais = categorias.filter((c) => !c.categoria_pai_id)
   const subcategoriasPorPai = (paiId: string) => categorias.filter((c) => c.categoria_pai_id === paiId)
   const [menuAberto, setMenuAberto] = useState(false)
-  const [submenuAberto, setSubmenuAberto] = useState<string | null>(null)
+  const [categoriasAbertas, setCategoriasAbertas] = useState(false)
   const [montado, setMontado] = useState(false)
   const [logado, setLogado] = useState(false)
   const itens = useCarrinho((s) => s.itens)
@@ -52,38 +52,44 @@ export function Header({
           >
             Todos os produtos
           </Link>
-          {principais.map((categoria) => {
-            const subcategorias = subcategoriasPorPai(categoria.id)
-            return (
-              <div
-                key={categoria.id}
-                className="group relative"
-                onMouseEnter={() => setSubmenuAberto(categoria.id)}
-                onMouseLeave={() => setSubmenuAberto(null)}
-              >
-                <Link
-                  href={`/produtos?categoria=${categoria.slug}`}
-                  className="flex items-center gap-1 text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
-                >
-                  {categoria.nome}
-                  {subcategorias.length > 0 && <ChevronDown size={14} />}
-                </Link>
-                {subcategorias.length > 0 && submenuAberto === categoria.id && (
-                  <div className="absolute left-0 top-full min-w-[180px] rounded-lg border border-black/5 bg-white py-2 shadow-lg">
-                    {subcategorias.map((sub) => (
+
+          {principais.length > 0 && (
+            <div
+              className="group relative"
+              onMouseEnter={() => setCategoriasAbertas(true)}
+              onMouseLeave={() => setCategoriasAbertas(false)}
+            >
+              <button className="flex items-center gap-1 text-sm font-medium text-neutral-700 transition-colors hover:text-primary">
+                Categorias
+                <ChevronDown size={14} />
+              </button>
+
+              {categoriasAbertas && (
+                <div className="absolute left-1/2 top-full flex -translate-x-1/2 gap-8 rounded-lg border border-black/5 bg-white p-5 shadow-lg">
+                  {principais.map((categoria) => (
+                    <div key={categoria.id} className="flex flex-col gap-1">
                       <Link
-                        key={sub.id}
-                        href={`/produtos?categoria=${sub.slug}`}
-                        className="block px-4 py-2 text-sm text-neutral-700 hover:bg-emerald-50 hover:text-primary"
+                        href={`/produtos?categoria=${categoria.slug}`}
+                        className="whitespace-nowrap text-sm font-semibold text-emerald-950 hover:text-primary"
                       >
-                        {sub.nome}
+                        {categoria.nome}
                       </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                      {subcategoriasPorPai(categoria.id).map((sub) => (
+                        <Link
+                          key={sub.id}
+                          href={`/produtos?categoria=${sub.slug}`}
+                          className="whitespace-nowrap text-sm text-neutral-600 hover:text-primary"
+                        >
+                          {sub.nome}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <Link
             href="/#destaques"
             className="text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
