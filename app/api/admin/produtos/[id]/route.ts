@@ -63,6 +63,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
     return NextResponse.json({ erro: "Nome e preco sao obrigatorios" }, { status: 400 })
   }
+  if (!codigoBarras || !String(codigoBarras).trim()) {
+    return NextResponse.json({ erro: "Codigo de barras (GTIN/EAN) e obrigatorio" }, { status: 400 })
+  }
 
   if (sku) {
     const existente = await query("SELECT id FROM TAB_PRODUTO WHERE sku = $1 AND id != $2", [

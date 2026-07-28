@@ -191,6 +191,11 @@ export default function DetalhePedidoPage() {
               </option>
             ))}
           </select>
+          {pedido.forma_pagamento && (
+            <p className="mt-2 text-sm text-slate-500">
+              Forma de pagamento: <span className="font-medium">{pedido.forma_pagamento}</span>
+            </p>
+          )}
         </CardContent>
       </Card>
 

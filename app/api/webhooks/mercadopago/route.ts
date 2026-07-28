@@ -1,5 +1,5 @@
 import { transacao, query } from "@/lib/db"
-import { paymentMP } from "@/lib/mercadopago"
+import { paymentMP, rotuloFormaPagamentoMP } from "@/lib/mercadopago"
 import { sincronizarAssinaturaClube } from "@/lib/clube"
 import { enviarEmail, templatePedidoPago, templateNovoPedidoAdmin } from "@/lib/email"
 import { NextResponse } from "next/server"
@@ -88,10 +88,11 @@ export async function POST(request: Request) {
         ])
         if (!pedidoAtual || pedidoAtual.status === novoStatus) return false
 
-        await q("UPDATE TAB_PEDIDO SET status = $1, atualizado_em = NOW() WHERE id = $2", [
-          novoStatus,
-          pedidoId,
-        ])
+        const formaPagamento = rotuloFormaPagamentoMP(pagamento.payment_type_id, pagamento.payment_method_id)
+        await q(
+          "UPDATE TAB_PEDIDO SET status = $1, forma_pagamento = $2, atualizado_em = NOW() WHERE id = $3",
+          [novoStatus, formaPagamento, pedidoId]
+        )
 
         const viroPago = novoStatus === "pago" && pedidoAtual.status !== "pago"
 

@@ -100,8 +100,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 
   // Notifica o cliente por email sempre que o status muda manualmente pelo
-  // admin - "pago" ja tem seu proprio email disparado pelo webhook do MP.
-  if (status !== undefined && status !== "pago") {
+  // admin (exceto "pago", que ja tem email proprio disparado pelo webhook do
+  // MP) OU quando o rastreio e salvo/atualizado, mesmo sem trocar o status -
+  // antes o cliente nao ficava sabendo se o admin so preenchesse o rastreio.
+  const statusMudou = status !== undefined && status !== "pago"
+  const rastreioMudou = codigoRastreio !== undefined && status === undefined
+  if (statusMudou || rastreioMudou) {
     const [cliente] = await query(
       `SELECT c.nome, c.email FROM TAB_PEDIDO p JOIN TAB_CLIENTE c ON c.id = p.cliente_id WHERE p.id = $1`,
       [id]

@@ -86,6 +86,7 @@ type ItemCarrinho = {
 const FORMAS_PAGAMENTO = [
   { valor: "dinheiro", rotulo: "Dinheiro" },
   { valor: "pix", rotulo: "Pix" },
+  { valor: "boleto", rotulo: "Boleto" },
   { valor: "cartao_credito", rotulo: "Cartao de credito" },
   { valor: "cartao_debito", rotulo: "Cartao de debito" },
 ]
@@ -97,6 +98,19 @@ const ROTULOS_STATUS: Record<string, string> = {
   enviado: "Enviado",
   entregue: "Entregue",
   cancelado: "Cancelado",
+}
+
+// "Aguardando pagamento" pode significar boleto/pix realmente em
+// processamento OU carrinho abandonado (cliente nunca voltou pra pagar) - o
+// sistema nao tem como saber com certeza (o Mercado Pago so avisa quando o
+// pagamento e de fato tentado), entao usamos um limite de tempo como
+// indicativo visual, sem mudar o status real no banco.
+const HORAS_LIMITE_ABANDONADO = 24
+
+function statusExibicao(venda: Venda): string {
+  if (venda.status !== "aguardando_pagamento") return ROTULOS_STATUS[venda.status] ?? venda.status
+  const horasDesdeCriacao = (Date.now() - new Date(venda.criado_em).getTime()) / 3_600_000
+  return horasDesdeCriacao > HORAS_LIMITE_ABANDONADO ? "Provavelmente abandonado" : "Aguardando pagamento"
 }
 
 function precoEfetivo(produto: Produto) {
@@ -394,7 +408,18 @@ export function VendaBalcaoConteudo({
                             <LabelCanal canal={venda.canal ?? (venda.origem === "balcao" ? "balcao" : "site")} />
                           </td>
                           <td className="p-4 text-slate-500">
-                            {ROTULOS_STATUS[venda.status] ?? venda.status}
+                            <span
+                              className={
+                                statusExibicao(venda) === "Provavelmente abandonado"
+                                  ? "text-amber-500"
+                                  : undefined
+                              }
+                            >
+                              {statusExibicao(venda)}
+                            </span>
+                            {venda.forma_pagamento && (
+                              <span className="ml-1 text-xs text-slate-400">· {venda.forma_pagamento}</span>
+                            )}
                           </td>
                           <td className="p-4">{formatarMoeda(venda.total)}</td>
                           <td className="p-4 text-slate-500">

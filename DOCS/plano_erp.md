@@ -240,6 +240,21 @@ Status: ✅ implementada
 - [x] Rota pública `POST /api/produtos/[id]/notificar-estoque` (sem login — qualquer visitante pode deixar o e-mail)
 - [x] Componente `NotificarEstoque` na página de produto, aparece só quando o produto está esgotado
 
+### Fase 11 — Correções e ajustes de qualidade (2026-07-27, registrado, execução em andamento)
+Status: 🟡 em andamento
+
+Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado tudo aqui antes de começar a mexer, pra não perder nada:
+
+- [x] **Status "Aguardando pagamento" x abandonado**: heurística de tempo (>24h sem confirmação = "Provavelmente abandonado", visual só, não muda o status real no banco — o sistema não tem como saber com certeza sem o MP avisar) aplicada na grade combinada (Venda Balcão > Vendas)
+- [x] **Forma de pagamento do site salva e exibida**: `lib/mercadopago.ts` → `rotuloFormaPagamentoMP()` traduz `payment_type_id`/`payment_method_id` do MP (Pix/Boleto/Cartão de crédito/débito), gravado em `TAB_PEDIDO.forma_pagamento` pelo webhook, exibido na grade e na tela de detalhe do pedido
+- [x] **Boleto e Pix confirmados**: no site já funcionam sem nenhuma mudança de código (Checkout Pro do MP mostra todos os métodos habilitados na conta do vendedor automaticamente — sem restrição no payload da preferência). Na Venda Balcão, "Boleto" adicionado como opção manual (só tinha Pix/cartão/dinheiro)
+- [x] **Código de barras (EAN) agora obrigatório** no cadastro de produto — validado no client (`produto-form.tsx`) e no servidor (`POST`/`PUT /api/admin/produtos`)
+- [ ] **Auditoria geral de campos obrigatórios**: revisar o sistema inteiro e confirmar que campos que deveriam ser obrigatórios (não só EAN) estão validados de verdade, tanto na tela quanto na API — pendente
+- [ ] **Auditoria geral de formatação**: todo campo de valor monetário, CPF, CNPJ e telefone deve estar com máscara aplicada consistentemente em todas as telas — pendente
+- [x] **"Salvar rastreio" agora notifica o cliente por e-mail** mesmo sem trocar o status (antes só disparava em mudança de status)
+
+**Nota**: `/admin/pedidos` (lista separada da grade combinada de Venda Balcão) ainda não seleciona/exibe `forma_pagamento` — só a grade combinada (usada no print que o usuário mostrou) foi corrigida. Revisitar se fizer diferença.
+
 ## Concluído fora da ordem das fases (pedidos pontuais do cliente)
 
 - [x] Logo configurável pelo admin (Configurações > Aparência), com upload via Cloudinary/disco local, fallback pro arquivo padrão

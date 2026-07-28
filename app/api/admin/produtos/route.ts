@@ -61,6 +61,9 @@ export async function POST(request: Request) {
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
     return NextResponse.json({ erro: "Nome e preco sao obrigatorios" }, { status: 400 })
   }
+  if (!codigoBarras || !String(codigoBarras).trim()) {
+    return NextResponse.json({ erro: "Codigo de barras (GTIN/EAN) e obrigatorio" }, { status: 400 })
+  }
 
   const slug = gerarSlug(nome)
 

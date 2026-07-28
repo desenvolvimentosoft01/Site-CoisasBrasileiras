@@ -126,6 +126,10 @@ export function ProdutoForm({
       setErro("Nome e preco sao obrigatorios")
       return
     }
+    if (!codigoBarras.trim()) {
+      setErro("Codigo de barras (GTIN/EAN) e obrigatorio")
+      return
+    }
 
     setSalvando(true)
 
@@ -223,11 +227,11 @@ export function ProdutoForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Codigo de barras (GTIN/EAN)</Label>
+                <Label>Codigo de barras (GTIN/EAN) *</Label>
                 <Input
                   value={codigoBarras}
                   onChange={(e) => setCodigoBarras(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Opcional"
+                  placeholder="Obrigatorio"
                   inputMode="numeric"
                 />
                 <p className="text-xs text-muted-foreground">
