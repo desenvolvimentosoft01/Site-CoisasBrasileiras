@@ -1,4 +1,4 @@
-import { query } from "@/lib/db"
+import { query, transacao } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
 
@@ -40,20 +40,27 @@ export async function POST(request: Request) {
   }
 
   try {
-    const [cliente] = await query(
-      `INSERT INTO TAB_CLIENTE (nome, email, telefone, cpf_cnpj)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, nome, email, telefone, cpf_cnpj, criado_em`,
-      [nome.trim(), email?.trim() || null, telefone || null, cpf_cnpj || null]
-    )
-
-    if (cep && logradouro) {
-      await query(
-        `INSERT INTO TAB_ENDERECO (cliente_id, cep, logradouro, numero, complemento, bairro, cidade, estado, principal)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)`,
-        [cliente.id, cep, logradouro, numero || "", complemento || null, bairro || "", cidade || "", estado || ""]
+    // Cliente + endereco numa unica transacao - se o INSERT do endereco
+    // falhar, o cliente tambem nao fica gravado (sem isso, sobraria um
+    // cliente orfao sem endereco no ar).
+    const cliente = await transacao(async (q) => {
+      const [cliente] = await q(
+        `INSERT INTO TAB_CLIENTE (nome, email, telefone, cpf_cnpj)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, nome, email, telefone, cpf_cnpj, criado_em`,
+        [nome.trim(), email?.trim() || null, telefone || null, cpf_cnpj || null]
       )
-    }
+
+      if (cep && logradouro) {
+        await q(
+          `INSERT INTO TAB_ENDERECO (cliente_id, cep, logradouro, numero, complemento, bairro, cidade, estado, principal)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)`,
+          [cliente.id, cep, logradouro, numero || "", complemento || null, bairro || "", cidade || "", estado || ""]
+        )
+      }
+
+      return cliente
+    })
 
     return NextResponse.json(cliente, { status: 201 })
   } catch (erro) {
