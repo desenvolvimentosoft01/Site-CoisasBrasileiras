@@ -24,31 +24,56 @@ As migrations ficam em `migrations/*.sql`, numeradas e aplicadas manualmente na 
 | `013_orcamentos.sql` | Cria `TAB_ORCAMENTO` e `TAB_ORCAMENTO_ITEM` (documento pré-venda, convertido em pedido balcão quando aprovado) |
 | `014_cliente_inativo.sql` | `TAB_CLIENTE` ganha `ativo` (inativar sem apagar histórico) |
 | `015_usuario_login_e_ultimo_acesso.sql` | `TAB_USUARIO_ADMIN` ganha `usuario` (login curto opcional) e `ultimo_login` |
+| `016_categoria_imagem.sql` | `TAB_CATEGORIA` ganha `imagem_url` (foto ilustrativa na grade de categorias da home) |
+| `017_feedbacks.sql` | Cria `TAB_FEEDBACK` (depoimentos de cliente curados pelo admin, exibidos na home) |
+| `018_canal_venda.sql` | `TAB_PEDIDO` ganha `canal` (site/whatsapp/instagram/balcao) — complementa `origem`, sem tabela de cadastro separada |
+| `019_subcategorias.sql` | `TAB_CATEGORIA` ganha `categoria_pai_id` (auto-relacionamento — categoria sem pai é principal, com pai é subcategoria) |
+| `020_fornecedores_compras.sql` | Cria `TAB_FORNECEDOR`, `TAB_COMPRA`, `TAB_COMPRA_ITEM`. `TAB_PRODUTO` ganha `custo` (custo médio ponderado, atualizado a cada compra recebida) |
+| `021_bling_cancelamento.sql` | `TAB_PEDIDO` ganha `bling_nota_cancelada_em` (fecha o fluxo: emitir + cancelar NF-e) |
+| `022_produto_ncm.sql` | `TAB_PRODUTO` ganha `ncm` — enviado por item na emissão de NF-e (não sincroniza cadastro com o Bling) |
+| `023_clube_assinatura.sql` | `TAB_PRODUTO` ganha `preco_clube`. Cria `TAB_ASSINATURA_CLUBE` (assinatura recorrente via Mercado Pago PreApproval) |
+| `024_codigo_barras.sql` | `TAB_PRODUTO` ganha `codigo_barras` (GTIN/EAN) — leitor da Venda Balcão, campo `gtin` da NF-e, matching na importação de XML |
+| `025_compra_bling_nota.sql` | `TAB_COMPRA` ganha `bling_nota_id` (cruza nota de entrada do Bling com a compra lançada localmente) |
+| `026_avaliacoes_produto.sql` | Cria `TAB_AVALIACAO_PRODUTO` (avaliação de compra verificada, com aprovação do admin — diferente de `TAB_FEEDBACK`) |
+| `027_notificacao_estoque.sql` | Cria `TAB_NOTIFICACAO_ESTOQUE` ("avise-me quando voltar ao estoque") |
+| `028_lista_desejos.sql` | Cria `TAB_LISTA_DESEJOS` (favoritos do cliente) |
+| `029_compra_vencimento_fornecedor_ie.sql` | `TAB_COMPRA` ganha `data_vencimento`; `TAB_FORNECEDOR` ganha `inscricao_estadual` |
+| `030_integracao_segredos.sql` | Cria `TAB_INTEGRACAO_SEGREDO` (chave/valor, isolada como `TAB_INTEGRACAO_BLING`) — Frenet, Mercado Pago e Email passam a ser configuráveis pelo admin, sem depender só de variável de ambiente |
 
 ## Módulos do painel admin (`app/admin/*`)
 
 Todos os `page.tsx` são Server Components que consultam o banco direto (`query()`) e passam os dados iniciais para um componente client `*Conteudo` em `components/admin/`.
 
-- **dashboard** — indicadores gerais (produtos ativos, pedidos hoje, faturamento do mês, pendentes, estoque baixo) + últimos pedidos.
-- **venda-balcao** — PDV: produtos, clientes, tipos de entrega e grade combinada de pedidos site+balcão.
-- **pedidos** — lista todos os pedidos (site + balcão), com cliente via LEFT JOIN (cai pro nome avulso quando não tem conta).
+- **dashboard** — indicadores gerais (produtos ativos, pedidos hoje, faturamento do mês, pendentes, estoque baixo) + últimos pedidos (com canal, forma de pagamento e indicador de "provavelmente abandonado").
+- **venda-balcao** — PDV: produtos (com leitor de código de barras e cadastro rápido), clientes, tipos de entrega e grade combinada de pedidos site+balcão.
+- **pedidos** — lista todos os pedidos (site + balcão), com cliente via LEFT JOIN. Status "Pago" nunca é definido manualmente aqui — só pelo webhook do Mercado Pago; a tela restringe as transições possíveis conforme o status atual.
 - **orcamentos** — documento pré-venda (`TAB_ORCAMENTO`), convertido em pedido balcão quando aprovado.
-- **clientes** — cadastro, com flag de quem veio do site (tem `senha_hash`) vs. cadastrado só pelo admin.
-- **produtos**, **categorias**, **estoque** — CRUD de catálogo.
-- **cupons**, **banners** — CRUD de marketing.
+- **clientes** — cadastro (aba, não modal), com endereço completo e busca automática por CEP (BrasilAPI). Flag de quem veio do site (tem `senha_hash`) vs. cadastrado só pelo admin. Exclusão física só é permitida sem pedido vinculado; havendo histórico, só inativar.
+- **produtos**, **categorias**, **estoque** — CRUD de catálogo. Produto exige NCM e código de barras (GTIN/EAN, validado por dígito verificador).
+- **precos** — reajuste de preços em massa (percentual ou valor fixo, com pré-visualização) ou edição direta de uma linha na grade. Restrito a papel "admin".
+- **fornecedores** — cadastro, com endereço e Inscrição Estadual.
+- **compras** — entrada de compra manual (atualiza custo médio ponderado e dá alta no estoque ao ser recebida), com importação de XML de NF-e e painel de notas de entrada pendentes no Bling.
+- **cupons**, **banners**, **feedbacks**, **avaliacoes** — CRUD de marketing. Avaliações são de produto, feitas pelo cliente (compra verificada) e passam por aprovação do admin.
+- **clube** — assinantes do clube (assinatura recorrente via Mercado Pago), gerida pelo próprio cliente + webhook — sem CRUD manual aqui.
 - **financeiro** — contas a pagar/receber (`TAB_CONTA`) + faturamento do site. Restrito a papel "admin".
-- **relatorios** — vendas por período, produtos mais vendidos, resumo de estoque.
+- **relatorios** — vendas por período (com filtro por canal/status/categoria, vendas de hoje, produtos mais/menos vendidos), resumo de estoque (com filtro de estoque zerado), lucro/DRE.
 - **auditoria** — últimos 500 registros de `TAB_AUDITORIA`. Restrito a "admin".
 - **usuarios** — CRUD de usuários do admin. Restrito a "admin".
-- **configuracoes** — edita `TAB_CONFIGURACAO` (contato, frete, aparência) e mostra status da conexão Bling (só para "admin").
+- **configuracoes** — edita `TAB_CONFIGURACAO` (contato, frete, aparência, custos/impostos) e as integrações (Bling, Mercado Pago, Frenet, Email), cada uma em sua própria aba (só para "admin").
 
 ## Integrações externas (`lib/`)
 
-- **`lib/mercadopago.ts`** — Checkout Pro. Env: `MERCADOPAGO_ACCESS_TOKEN`. Usado no checkout (cria preferência) e no webhook (consulta pagamento).
-- **`lib/pagbank.ts`** — gateway alternativo, checkout hospedado. Env: `PAGBANK_TOKEN`, `PAGBANK_API_URL` (sandbox por padrão).
-- **`lib/bling.ts`** — OAuth2, só para emissão de NF-e (não sincroniza estoque/financeiro). Env: `BLING_CLIENT_ID`, `BLING_CLIENT_SECRET`. Token fica em `TAB_INTEGRACAO_BLING` (não em `TAB_CONFIGURACAO`, por segurança) e renova sozinho via refresh_token quando expira em <60s.
-- **`lib/email.ts`** — Nodemailer/Gmail. Env: `EMAIL_USER`, `EMAIL_PASS` (sem elas, envio é pulado silenciosamente). Templates: pedido criado, pedido pago, novo pedido (aviso ao admin), status atualizado.
+PagBank foi removido — todo pagamento hoje é só Mercado Pago.
+
+- **`lib/mercadopago.ts`** — Checkout Pro (compra avulsa) + `PreApproval` (assinatura recorrente do Clube). Usado no checkout, no webhook (consulta pagamento/assinatura) e na tela de configurações do Clube.
+- **`lib/frenet.ts`** — cotação real de frete por CEP (múltiplas transportadoras) e validação de código de rastreio (`/tracking/trackinginfo`). Sem token configurado, o frete cai automaticamente na tabela de faixas por região/peso (`TAB_FRETE_FAIXA`).
+- **`lib/bling.ts`** — OAuth2, emissão **e cancelamento** de NF-e (não sincroniza estoque/financeiro, não sincroniza cadastro de produto — NCM e GTIN vão por item na hora de emitir). `BLING_CLIENT_ID`/`BLING_CLIENT_SECRET` são credenciais do app (env, nível de deploy); token de acesso da loja fica em `TAB_INTEGRACAO_BLING` e renova sozinho via refresh_token quando expira em <60s.
+- **`lib/email.ts`** — Nodemailer/Gmail. Templates: pedido criado, pedido pago, novo pedido (aviso ao admin), status atualizado, rastreio salvo, "voltou ao estoque".
 - **`lib/cloudinary.ts`** — upload assinado via API REST (sem SDK). Só necessário em ambiente serverless (Vercel) sem disco persistente; em VPS cai pro disco local.
+
+### Segredos configuráveis pelo admin (`lib/segredos.ts`)
+
+Frenet, Mercado Pago e Email deixaram de depender só de variável de ambiente — o admin configura/troca direto em Configurações > Integrações, sem precisar de acesso ao painel de hospedagem (mesmo racional que já existia pro Bling). `getSegredo(chave)` lê de `TAB_INTEGRACAO_SEGREDO`, cai pra `process.env` se não houver nada configurado no banco (nada quebra num deploy novo antes do admin configurar), com cache em memória de 30s. Tabela isolada de `TAB_CONFIGURACAO` de propósito: o endpoint que devolve config geral nunca pode vazar um segredo.
 
 ## Autenticação e autorização
 
@@ -64,21 +89,19 @@ Todos os `page.tsx` são Server Components que consultam o banco direto (`query(
 
 ## Cálculo de frete
 
-Toda a lógica está em `lib/configuracoes.ts` (não existe pasta `lib/frete`):
+1. Se `subtotal >= frete_gratis_acima_de` (configurável), frete grátis — checagem sempre em primeiro lugar, independente da fonte do cálculo abaixo.
+2. Com Frenet configurado (`lib/frenet.ts`, token em `TAB_INTEGRACAO_SEGREDO`) e CEP de origem cadastrado, o checkout cota em tempo real com várias transportadoras e mostra a lista de opções (valor + prazo) pro cliente escolher — cotação de verdade, não estimativa.
+3. Sem Frenet configurado, cai na tabela local: `lib/configuracoes.ts` mapeia UF → região IBGE (`REGIAO_POR_UF`) e busca em `TAB_FRETE_FAIXA` a faixa (região + peso) mais específica; peso mínimo assumido é 0.3kg se o produto não tiver `peso_kg` cadastrado.
+4. Sem faixa cadastrada nem Frenet, cai no `frete_valor_base` fixo (nunca trava o checkout).
 
-1. `REGIAO_POR_UF` mapeia cada UF pra uma das 5 regiões IBGE.
-2. `calcularFrete({ subtotal, pesoKg, estado })`: se `subtotal >= frete_gratis_acima_de` (configurável), frete grátis.
-3. Senão, busca em `TAB_FRETE_FAIXA` a faixa (região + peso) mais específica; peso mínimo assumido é 0.3kg se o produto não tiver `peso_kg` cadastrado.
-4. Sem faixa cadastrada, cai no `frete_valor_base` fixo (nunca trava o checkout).
-
-É provisório — pensado pra trocar só o "miolo" da função quando a loja tiver contrato com Correios/transportadora (cotação real via API).
+Rastreio: a tela de pedido valida o código digitado contra a API real da Frenet (`rastrearPedidoFrenet`) automaticamente antes de salvar e notificar o cliente — não é só checagem de formato.
 
 ## Fluxo de pedido e pagamento
 
 **Checkout (`app/api/checkout/route.ts`)**:
 1. Exige sessão de cliente e reconfirma que está `ativo` no banco (sessão pode ter sido emitida antes de uma inativação).
 2. Dentro de uma transação: grava endereço, revalida cada item com `FOR UPDATE` (preço e estoque recalculados no servidor, nunca confia no client), calcula frete real, revalida cupom com `FOR UPDATE` (evita estourar `uso_maximo` em checkouts simultâneos), grava pedido (`aguardando_pagamento`) e itens. **Estoque não é baixado aqui.**
-3. Fora da transação, cria a preferência/checkout no gateway escolhido (Mercado Pago ou PagBank); erro do gateway retorna 502 genérico, sem vazar detalhe interno.
+3. Fora da transação, cria a preferência de checkout no Mercado Pago; erro do gateway retorna 502 genérico, sem vazar detalhe interno.
 4. Dispara e-mail de "pedido criado" sem bloquear a resposta.
 
 **Webhook Mercado Pago (`app/api/webhooks/mercadopago/route.ts`)**:
@@ -88,7 +111,7 @@ Toda a lógica está em `lib/configuracoes.ts` (não existe pasta `lib/frete`):
 4. Ao virar "pago" pela primeira vez, baixa estoque de cada item e dispara e-mails ao cliente e ao admin.
 5. Sempre responde `{ recebido: true }`, mesmo com erro interno, pra evitar reenvio infinito do MP por erro nosso.
 
-`app/api/webhooks/pagbank/route.ts` espelha a mesma lógica para o gateway PagBank.
+Também trata o tópico `subscription_preapproval` (assinatura do Clube), sincronizando o status em `TAB_ASSINATURA_CLUBE`.
 
 ## Deploy
 

@@ -31,7 +31,7 @@ npm install
 
 ### 3. Configurar o banco de dados
 
-Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `015_usuario_login_e_ultimo_acesso.sql`), com `psql` ou outro cliente de sua preferência:
+Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `030_integracao_segredos.sql`), com `psql` ou outro cliente de sua preferência:
 
 ```bash
 for f in migrations/0*.sql; do psql -U postgres -d coisas_brasileiras -f "$f"; done
@@ -56,9 +56,11 @@ cp .env.example .env.local
 | `MERCADOPAGO_WEBHOOK_SECRET` | Assinatura secreta do webhook do Mercado Pago (opcional em dev) |
 | `EMAIL_USER` / `EMAIL_PASS` | Conta Gmail e senha de app para envio de e-mails transacionais |
 | `EMAIL_NOTIFICACOES_ADMIN` | E-mail que recebe cópia de notificações internas (novo pedido pago) |
-| `PAGBANK_TOKEN` / `PAGBANK_API_URL` | Credenciais do gateway alternativo PagBank (sandbox por padrão) |
-| `BLING_CLIENT_ID` / `BLING_CLIENT_SECRET` | Credenciais OAuth do Bling, usadas só na emissão manual de NF-e |
+| `FRENET_TOKEN` / `FRENET_API_URL` | Cotação real de frete e validação de rastreio (opcional — sem isso, cai na tabela de faixas por região/peso) |
+| `BLING_CLIENT_ID` / `BLING_CLIENT_SECRET` | Credenciais OAuth do app Bling (emissão/cancelamento de NF-e) |
 | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Upload de imagem em ambiente serverless (opcional em VPS com disco persistente) |
+
+Frenet, Mercado Pago e Email também podem ser configurados direto pelo painel admin (Configurações > Integrações), sem precisar mexer em variável de ambiente — as variáveis acima servem de fallback/bootstrap inicial.
 
 ### 5. Rodar o servidor de desenvolvimento
 
