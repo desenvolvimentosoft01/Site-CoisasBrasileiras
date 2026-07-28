@@ -303,16 +303,24 @@ export default function DetalhePedidoPage() {
               <Label>Codigo de rastreio</Label>
               <Input
                 value={codigoRastreio}
-                onChange={(e) => setCodigoRastreio(e.target.value)}
+                onChange={(e) => setCodigoRastreio(e.target.value.toUpperCase())}
                 placeholder="Ex: BR123456789BR"
               />
+              {transportadora.trim().toLowerCase().includes("correios") &&
+                codigoRastreio.trim() !== "" &&
+                !/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(codigoRastreio.trim()) && (
+                  <p className="text-xs text-amber-500">
+                    Formato incomum pros Correios (esperado: 2 letras + 9 numeros + 2 letras, ex:
+                    BR123456789BR). Salva do mesmo jeito, so um alerta.
+                  </p>
+                )}
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Button size="sm" onClick={salvarRastreio} disabled={salvandoRastreio}>
-              {salvandoRastreio ? "Salvando..." : "Salvar rastreio"}
+              {salvandoRastreio ? "Salvando..." : "Salvar e notificar cliente"}
             </Button>
-            {rastreioSalvo && <span className="text-sm text-emerald-500">Salvo!</span>}
+            {rastreioSalvo && <span className="text-sm text-emerald-500">Salvo e cliente notificado!</span>}
           </div>
         </CardContent>
       </Card>

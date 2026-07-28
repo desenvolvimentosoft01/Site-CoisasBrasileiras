@@ -106,11 +106,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const statusMudou = status !== undefined && status !== "pago"
   const rastreioMudou = codigoRastreio !== undefined && status === undefined
   if (statusMudou || rastreioMudou) {
+    // LEFT JOIN de proposito - pedido de Venda Balcao pode nao ter
+    // cliente_id (cliente avulso), e o INNER JOIN anterior fazia esses
+    // pedidos sumirem da busca e o email ser pulado sem nenhum aviso.
     const [cliente] = await query(
-      `SELECT c.nome, c.email FROM TAB_PEDIDO p JOIN TAB_CLIENTE c ON c.id = p.cliente_id WHERE p.id = $1`,
+      `SELECT c.nome, c.email FROM TAB_PEDIDO p LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id WHERE p.id = $1`,
       [id]
     )
-    if (cliente) {
+    if (!cliente?.email) {
+      console.warn(`[pedidos] Pedido ${id}: sem cliente com email cadastrado - notificacao de rastreio/status pulada`)
+    } else {
       enviarEmail({
         to: cliente.email,
         subject: "Atualizacao do seu pedido - Coisas Brasileiras",
