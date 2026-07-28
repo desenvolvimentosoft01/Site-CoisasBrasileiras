@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { registrarAuditoria } from "@/lib/auditoria"
 
@@ -49,6 +50,11 @@ export function ReajustePrecosConteudo({
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState("")
   const [sucesso, setSucesso] = useState("")
+  const [linhaSalvando, setLinhaSalvando] = useState<string | null>(null)
+  // Preco digitado manualmente na propria grade, por produto - tem
+  // prioridade sobre o calculo por percentual/valor fixo. Permite ajustar
+  // um ou outro produto sem precisar mudar o reajuste em massa.
+  const [precosManuais, setPrecosManuais] = useState<Record<string, string>>({})
 
   const produtosFiltrados = useMemo(() => {
     return produtos.filter((p) => {
@@ -75,8 +81,15 @@ export function ReajustePrecosConteudo({
   function alternarSelecao(id: string) {
     setSelecionados((atual) => {
       const novo = new Set(atual)
-      if (novo.has(id)) novo.delete(id)
-      else novo.add(id)
+      if (novo.has(id)) {
+        novo.delete(id)
+        setPrecosManuais((manuais) => {
+          const { [id]: _removido, ...resto } = manuais
+          return resto
+        })
+      } else {
+        novo.add(id)
+      }
       return novo
     })
   }
@@ -87,6 +100,20 @@ export function ReajustePrecosConteudo({
 
   function limparSelecao() {
     setSelecionados(new Set())
+    setPrecosManuais({})
+  }
+
+  function editarPrecoManual(id: string, valorDigitado: string) {
+    setPrecosManuais((atual) => ({ ...atual, [id]: valorDigitado }))
+  }
+
+  function precoFinal(produto: Produto): number {
+    const manual = precosManuais[produto.id]
+    if (manual !== undefined && manual.trim() !== "") {
+      const numero = Number(manual.replace(",", "."))
+      if (!Number.isNaN(numero)) return numero
+    }
+    return calcularNovoPreco(Number(produto.preco))
   }
 
   async function aplicarReajuste() {
@@ -96,15 +123,15 @@ export function ReajustePrecosConteudo({
       setErro("Selecione ao menos um produto")
       return
     }
-    if (!valorNumerico) {
-      setErro("Informe um valor de reajuste")
+    if (!valorNumerico && Object.keys(precosManuais).length === 0) {
+      setErro("Informe um valor de reajuste ou digite um preco manualmente na grade")
       return
     }
 
     const itens = produtos
       .filter((p) => selecionados.has(p.id))
       .map((p) => {
-        const precoNovo = calcularNovoPreco(Number(p.preco))
+        const precoNovo = precoFinal(p)
         const promocionalNovo =
           aplicarNoPromocional && p.preco_promocional ? calcularNovoPreco(Number(p.preco_promocional)) : p.preco_promocional ? Number(p.preco_promocional) : null
         return { id: p.id, preco: precoNovo, precoPromocional: promocionalNovo, nome: p.nome, precoAntigo: Number(p.preco) }
@@ -137,10 +164,56 @@ export function ReajustePrecosConteudo({
 
     setSucesso(`${itens.length} produto(s) atualizado(s)`)
     setSelecionados(new Set())
+    setPrecosManuais({})
     setValor("")
 
     const atualizados = await fetch("/api/admin/precos").then((r) => r.json())
     setProdutos(atualizados)
+  }
+
+  // Salva o preco de uma unica linha da grade, sem depender da selecao em
+  // massa - digita o preco novo direto na coluna e clica em salvar.
+  async function salvarLinha(produto: Produto) {
+    const precoNovo = precoFinal(produto)
+    if (!precoNovo || precoNovo <= 0) {
+      setErro("Preco invalido")
+      return
+    }
+
+    setErro("")
+    setSucesso("")
+    setLinhaSalvando(produto.id)
+
+    const resposta = await fetch("/api/admin/precos", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itens: [{ id: produto.id, preco: precoNovo, precoPromocional: produto.preco_promocional ? Number(produto.preco_promocional) : null }],
+      }),
+    })
+    setLinhaSalvando(null)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json().catch(() => ({}))
+      setErro(dados.erro ?? "Erro ao salvar preco")
+      return
+    }
+
+    registrarAuditoria({
+      tela: "Reajuste de precos",
+      acao: "edicao",
+      tabela: "TAB_PRODUTO",
+      registroId: produto.id,
+      antes: { preco: Number(produto.preco) },
+      depois: { preco: precoNovo },
+    })
+
+    setProdutos((atual) => atual.map((p) => (p.id === produto.id ? { ...p, preco: String(precoNovo) } : p)))
+    setPrecosManuais((atual) => {
+      const { [produto.id]: _removido, ...resto } = atual
+      return resto
+    })
+    setSucesso(`Preco de "${produto.nome}" atualizado`)
   }
 
   return (
@@ -156,7 +229,7 @@ export function ReajustePrecosConteudo({
       <Card>
         <CardContent className="flex flex-wrap items-end gap-4 pt-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tipo</label>
+            <Label>Tipo</Label>
             <Select value={tipo} onValueChange={(v) => setTipo(v as "percentual" | "fixo")}>
               <SelectTrigger className="w-40">
                 <SelectValue />
@@ -169,7 +242,7 @@ export function ReajustePrecosConteudo({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Direcao</label>
+            <Label>Direcao</Label>
             <Select value={direcao} onValueChange={(v) => setDirecao(v as "aumento" | "reducao")}>
               <SelectTrigger className="w-40">
                 <SelectValue />
@@ -182,7 +255,7 @@ export function ReajustePrecosConteudo({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Valor</label>
+            <Label>Valor</Label>
             <Input
               value={valor}
               onChange={(e) => setValor(e.target.value)}
@@ -250,13 +323,14 @@ export function ReajustePrecosConteudo({
                   <th className="p-4 font-medium">Custo</th>
                   <th className="p-4 font-medium">Preco atual</th>
                   <th className="p-4 font-medium">Preco novo</th>
+                  <th className="p-4 font-medium"></th>
                 </tr>
               </thead>
               <tbody>
                 {produtosFiltrados.map((produto) => {
                   const precoAtual = Number(produto.preco)
-                  const precoNovo = selecionados.has(produto.id) ? calcularNovoPreco(precoAtual) : precoAtual
-                  const mudou = selecionados.has(produto.id) && valorNumerico > 0
+                  const valorCampo = precosManuais[produto.id] ?? String(calcularNovoPreco(precoAtual))
+                  const mudou = precoFinal(produto) !== precoAtual
                   return (
                     <tr key={produto.id} className="border-b border-slate-200 last:border-0">
                       <td className="p-4">
@@ -273,7 +347,23 @@ export function ReajustePrecosConteudo({
                       </td>
                       <td className="p-4 text-slate-500">{produto.custo ? formatarMoeda(Number(produto.custo)) : "-"}</td>
                       <td className="p-4 text-slate-500">{formatarMoeda(precoAtual)}</td>
-                      <td className={`p-4 font-medium ${mudou ? "text-emerald-600" : ""}`}>{formatarMoeda(precoNovo)}</td>
+                      <td className="p-4">
+                        <Input
+                          value={valorCampo}
+                          onChange={(e) => editarPrecoManual(produto.id, e.target.value)}
+                          className={`w-28 ${mudou ? "border-emerald-500 text-emerald-600 font-medium" : ""}`}
+                        />
+                      </td>
+                      <td className="p-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={linhaSalvando === produto.id}
+                          onClick={() => salvarLinha(produto)}
+                        >
+                          {linhaSalvando === produto.id ? "Salvando..." : "Salvar"}
+                        </Button>
+                      </td>
                     </tr>
                   )
                 })}
