@@ -1,13 +1,10 @@
 import { transacao, query } from "@/lib/db"
-import { paymentMP, rotuloFormaPagamentoMP } from "@/lib/mercadopago"
+import { getPaymentMP, rotuloFormaPagamentoMP } from "@/lib/mercadopago"
 import { sincronizarAssinaturaClube } from "@/lib/clube"
 import { enviarEmail, templatePedidoPago, templateNovoPedidoAdmin } from "@/lib/email"
+import { getSegredo } from "@/lib/segredos"
 import { NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
-
-// Sem e-mail pessoal fixo no codigo (projeto revendido pra outros clientes) -
-// cai pro proprio e-mail de envio configurado, que a loja ja precisa ter.
-const EMAIL_ADMIN = process.env.EMAIL_NOTIFICACOES_ADMIN || process.env.EMAIL_USER
 
 const STATUS_MP_PARA_PEDIDO: Record<string, string> = {
   approved: "pago",
@@ -74,6 +71,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const paymentMP = await getPaymentMP()
     const pagamento = await paymentMP.get({ id: paymentId })
     const pedidoId = pagamento.external_reference
     const novoStatus = STATUS_MP_PARA_PEDIDO[pagamento.status ?? ""]
@@ -143,9 +141,12 @@ export async function POST(request: Request) {
           }),
         })
 
-        if (EMAIL_ADMIN) {
+        // Sem e-mail pessoal fixo no codigo (projeto revendido pra outros
+        // clientes) - cai pro proprio e-mail de envio configurado.
+        const emailAdmin = (await getSegredo("email_notificacoes_admin")) || (await getSegredo("email_user"))
+        if (emailAdmin) {
           enviarEmail({
-            to: EMAIL_ADMIN,
+            to: emailAdmin,
             subject: `Novo pedido pago - ${pedido.cliente_nome}`,
             html: templateNovoPedidoAdmin({
               nomeCliente: pedido.cliente_nome,

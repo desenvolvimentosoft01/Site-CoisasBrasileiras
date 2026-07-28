@@ -1,24 +1,27 @@
 import nodemailer from "nodemailer"
+import { getSegredo } from "@/lib/segredos"
 
-// So cria o transporter se as credenciais existirem - em dev sem elas
-// configuradas, o envio e simplesmente pulado (nao quebra o fluxo principal).
-const transporter =
-  process.env.EMAIL_USER && process.env.EMAIL_PASS
-    ? nodemailer.createTransport({
-        service: "gmail",
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-      })
-    : null
-
+// Credenciais configuraveis em Configuracoes > Integracoes
+// (TAB_INTEGRACAO_SEGREDO, chaves "email_user"/"email_pass") - caem pra
+// EMAIL_USER/EMAIL_PASS se nao houver nada configurado no banco. O
+// transporter e criado por envio (nao cacheado como antes) pra uma troca de
+// credencial pelo admin refletir sem precisar reiniciar o processo.
 export async function enviarEmail(opcoes: { to: string; subject: string; html: string }) {
-  if (!transporter) {
-    console.warn("[email] EMAIL_USER/EMAIL_PASS nao configurados - email nao enviado")
+  const [user, pass] = await Promise.all([getSegredo("email_user"), getSegredo("email_pass")])
+
+  if (!user || !pass) {
+    console.warn("[email] Credenciais de email nao configuradas - email nao enviado")
     return
   }
 
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass },
+  })
+
   try {
     await transporter.sendMail({
-      from: `"Coisas Brasileiras" <${process.env.EMAIL_USER}>`,
+      from: `"Coisas Brasileiras" <${user}>`,
       ...opcoes,
     })
   } catch (erro) {

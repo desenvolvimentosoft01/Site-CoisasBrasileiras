@@ -77,7 +77,7 @@ export async function calcularOpcoesFrete(params: {
   }
 
   if (
-    frenetConfigurado() &&
+    (await frenetConfigurado()) &&
     config.cep_origem &&
     params.cepDestino &&
     params.itensDetalhados &&

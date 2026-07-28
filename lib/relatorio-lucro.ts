@@ -96,13 +96,7 @@ export async function calcularDRE(inicioTs: string, fimTs: string, inicioData: s
          AND vencimento BETWEEN $1::date AND $2::date`,
       [inicioData, fimData]
     ),
-    getConfiguracoes([
-      "taxa_mercadopago_percentual",
-      "taxa_mercadopago_fixo",
-      "taxa_pagbank_percentual",
-      "taxa_pagbank_fixo",
-      "aliquota_imposto_percentual",
-    ]),
+    getConfiguracoes(["taxa_mercadopago_percentual", "taxa_mercadopago_fixo", "aliquota_imposto_percentual"]),
   ])
 
   const faturamento = Number(totais.faturamento)
@@ -111,17 +105,12 @@ export async function calcularDRE(inicioTs: string, fimTs: string, inicioData: s
 
   const taxaMpPercentual = Number(config.taxa_mercadopago_percentual) || 0
   const taxaMpFixo = Number(config.taxa_mercadopago_fixo) || 0
-  const taxaPagbankPercentual = Number(config.taxa_pagbank_percentual) || 0
-  const taxaPagbankFixo = Number(config.taxa_pagbank_fixo) || 0
   const aliquotaImposto = Number(config.aliquota_imposto_percentual) || 0
 
+  // Unico gateway em uso (Mercado Pago) - venda balcao (sem gateway
+  // registrado) tambem cai aqui, ja que a taxa e so estimativa gerencial.
   const taxasPagamento = pedidosPagos.reduce((soma: number, pedido: any) => {
     const total = Number(pedido.total)
-    if (pedido.gateway_pagamento === "pagbank") {
-      return soma + (total * taxaPagbankPercentual) / 100 + taxaPagbankFixo
-    }
-    // Sem gateway informado (venda balcao, por exemplo) cai no Mercado Pago -
-    // unico gateway usado ate a integracao com PagBank existir.
     return soma + (total * taxaMpPercentual) / 100 + taxaMpFixo
   }, 0)
 

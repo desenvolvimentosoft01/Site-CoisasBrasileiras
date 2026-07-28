@@ -1,12 +1,15 @@
-import { MercadoPagoConfig, PreApproval } from "mercadopago"
+import { PreApproval } from "mercadopago"
 import { query } from "@/lib/db"
 import { getConfiguracoes } from "@/lib/configuracoes"
+import { getMercadoPagoConfig } from "@/lib/mercadopago"
 
 // Assinatura recorrente do "Clube" via Mercado Pago PreApproval - mesma
-// conta/credencial ja usada pro checkout (MERCADOPAGO_ACCESS_TOKEN), recurso
-// diferente (cobranca automatica mensal em vez de pagamento avulso).
-const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN! })
-const preApprovalMP = new PreApproval(client)
+// conta/credencial ja usada pro checkout, recurso diferente (cobranca
+// automatica mensal em vez de pagamento avulso). Client criado por chamada
+// (getMercadoPagoConfig ja resolve o token configuravel via lib/segredos.ts).
+async function getPreApprovalMP(): Promise<PreApproval> {
+  return new PreApproval(await getMercadoPagoConfig())
+}
 
 const STATUS_MP_PARA_ASSINATURA: Record<string, string> = {
   authorized: "autorizada",
@@ -55,7 +58,7 @@ export async function criarAssinaturaClube(params: {
     throw new Error("O valor da mensalidade do Clube ainda nao foi configurado pela loja")
   }
 
-  const preapproval = await preApprovalMP.create({
+  const preapproval = await (await getPreApprovalMP()).create({
     body: {
       reason: "Clube - assinatura mensal",
       payer_email: params.email,
@@ -88,7 +91,7 @@ export async function cancelarAssinaturaClube(clienteId: string): Promise<void> 
     throw new Error("Nenhuma assinatura ativa encontrada pra cancelar")
   }
 
-  await preApprovalMP.update({ id: assinatura.mp_preapproval_id, body: { status: "cancelled" } })
+  await (await getPreApprovalMP()).update({ id: assinatura.mp_preapproval_id, body: { status: "cancelled" } })
 
   await query("UPDATE TAB_ASSINATURA_CLUBE SET status = 'cancelada', atualizado_em = NOW() WHERE id = $1", [
     assinatura.id,
@@ -99,7 +102,7 @@ export async function cancelarAssinaturaClube(clienteId: string): Promise<void> 
 // nunca confia no corpo da notificacao, sempre rebusca o preapproval direto
 // na API do MP antes de atualizar o status local.
 export async function sincronizarAssinaturaClube(mpPreapprovalId: string): Promise<void> {
-  const preapproval = await preApprovalMP.get({ id: mpPreapprovalId })
+  const preapproval = await (await getPreApprovalMP()).get({ id: mpPreapprovalId })
   const novoStatus = STATUS_MP_PARA_ASSINATURA[preapproval.status ?? ""] ?? "pendente"
 
   const proximoVencimento = preapproval.next_payment_date

@@ -1,6 +1,6 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
-import { preferenceMP } from "@/lib/mercadopago"
+import { getPreferenceMP } from "@/lib/mercadopago"
 import { calcularOpcoesFrete } from "@/lib/configuracoes"
 import { enviarEmail, templatePedidoCriado } from "@/lib/email"
 import { NextResponse } from "next/server"
@@ -208,6 +208,7 @@ export async function POST(request: Request) {
     try {
       // auto_return exige back_urls publicas em https - em dev local (http) o
       // Mercado Pago rejeita, entao so habilitamos quando o site ja estiver publicado.
+      const preferenceMP = await getPreferenceMP()
       const preferencia = await preferenceMP.create({
         body: {
           items: [

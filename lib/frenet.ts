@@ -1,3 +1,5 @@
+import { getSegredo, segredoConfigurado } from "@/lib/segredos"
+
 // Cliente da API do Frenet (agrega Correios e outras transportadoras) para
 // cotacao de frete real por CEP, com varias opcoes (transportadora/servico)
 // pro cliente escolher no checkout - nao emite etiqueta, so cotacao.
@@ -10,14 +12,14 @@
 // (nunca trava o checkout) - mas isso PRECISA ser testado contra uma conta
 // Frenet real antes de operar com pedido de verdade.
 //
-// FRENET_TOKEN e o token de API gerado no painel da conta Frenet. Sem ele
-// configurado, calcularOpcoesFrete() (lib/configuracoes.ts) cai direto na
-// tabela de faixas por regiao.
+// O token e configuravel em Configuracoes > Integracoes (TAB_INTEGRACAO_SEGREDO,
+// chave "frenet_token") - cai pra variavel de ambiente FRENET_TOKEN se nao
+// houver nada configurado no banco. Sem nenhum dos dois, calcularOpcoesFrete()
+// (lib/configuracoes.ts) cai direto na tabela de faixas por regiao.
 const FRENET_API_URL = process.env.FRENET_API_URL || "https://api.frenet.com.br"
-const FRENET_TOKEN = process.env.FRENET_TOKEN
 
-export function frenetConfigurado() {
-  return Boolean(FRENET_TOKEN)
+export async function frenetConfigurado(): Promise<boolean> {
+  return segredoConfigurado("frenet_token")
 }
 
 type ItemCotacao = {
@@ -53,14 +55,15 @@ export async function cotarFreteFrenet(params: {
   valorDeclaradoTotal: number
   itens: ItemCotacao[]
 }): Promise<OpcaoFreteFrenet[]> {
-  if (!FRENET_TOKEN) {
-    throw new Error("FRENET_TOKEN nao configurado")
+  const token = await getSegredo("frenet_token")
+  if (!token) {
+    throw new Error("Token da Frenet nao configurado")
   }
 
   const resposta = await fetch(`${FRENET_API_URL}/shipping/quote`, {
     method: "POST",
     headers: {
-      token: FRENET_TOKEN,
+      token,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -107,13 +110,14 @@ export async function rastrearPedidoFrenet(params: {
   trackingNumber: string
   shippingServiceCode: string
 }): Promise<{ status: string; eventos: EventoRastreio[] }> {
-  if (!FRENET_TOKEN) {
-    throw new Error("FRENET_TOKEN nao configurado")
+  const token = await getSegredo("frenet_token")
+  if (!token) {
+    throw new Error("Token da Frenet nao configurado")
   }
 
   const resposta = await fetch(`${FRENET_API_URL}/tracking/trackinginfo`, {
     method: "POST",
-    headers: { token: FRENET_TOKEN, "Content-Type": "application/json" },
+    headers: { token, "Content-Type": "application/json" },
     body: JSON.stringify({
       TrackingNumber: params.trackingNumber,
       ShippingServiceCode: params.shippingServiceCode,

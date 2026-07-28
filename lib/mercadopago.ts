@@ -1,11 +1,32 @@
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago"
+import { getSegredo } from "@/lib/segredos"
 
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
-})
+// Token configuravel em Configuracoes > Integracoes (TAB_INTEGRACAO_SEGREDO,
+// chave "mercadopago_access_token") - cai pra variavel de ambiente
+// MERCADOPAGO_ACCESS_TOKEN se nao houver nada configurado no banco. Como o
+// SDK do Mercado Pago precisa do token na hora de criar o client, essas
+// funcoes criam um client novo a cada chamada (nunca cacheiam o client em si,
+// so o valor do token via lib/segredos.ts) - dessa forma uma troca de token
+// pelo admin reflete rapido, sem precisar reiniciar o processo.
+async function criarClienteMP(): Promise<MercadoPagoConfig> {
+  const accessToken = await getSegredo("mercadopago_access_token")
+  if (!accessToken) {
+    throw new Error("Token de acesso do Mercado Pago nao configurado")
+  }
+  return new MercadoPagoConfig({ accessToken })
+}
 
-export const preferenceMP = new Preference(client)
-export const paymentMP = new Payment(client)
+export async function getPreferenceMP(): Promise<Preference> {
+  return new Preference(await criarClienteMP())
+}
+
+export async function getPaymentMP(): Promise<Payment> {
+  return new Payment(await criarClienteMP())
+}
+
+export async function getMercadoPagoConfig(): Promise<MercadoPagoConfig> {
+  return criarClienteMP()
+}
 
 // Traduz o metodo de pagamento que o Mercado Pago devolve no pagamento
 // aprovado pra um rotulo legivel, salvo em TAB_PEDIDO.forma_pagamento -

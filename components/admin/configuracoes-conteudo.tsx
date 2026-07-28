@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useRef, useState } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
-import { Phone, Truck, Megaphone, Palette, Plug, Percent } from "lucide-react"
+import { Phone, Truck, Megaphone, Palette, Plug, Percent, KeyRound, Check } from "lucide-react"
 
 export type ConfiguracoesIniciais = {
   whatsapp: string
@@ -27,8 +27,6 @@ export type ConfiguracoesIniciais = {
   logo_url: string
   taxa_mercadopago_percentual: string
   taxa_mercadopago_fixo: string
-  taxa_pagbank_percentual: string
-  taxa_pagbank_fixo: string
   aliquota_imposto_percentual: string
   regime_tributario: string
   clube_valor_mensalidade: string
@@ -94,14 +92,6 @@ function ConfiguracoesFormulario({
       ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.taxa_mercadopago_fixo) * 100)))
       : ""
   )
-  const [taxaPagbankPercentual, setTaxaPagbankPercentual] = useState(
-    configuracoesIniciais.taxa_pagbank_percentual
-  )
-  const [taxaPagbankFixo, setTaxaPagbankFixo] = useState(
-    configuracoesIniciais.taxa_pagbank_fixo
-      ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.taxa_pagbank_fixo) * 100)))
-      : ""
-  )
   const [aliquotaImposto, setAliquotaImposto] = useState(configuracoesIniciais.aliquota_imposto_percentual)
   const [regimeTributario, setRegimeTributario] = useState(configuracoesIniciais.regime_tributario || "simples_nacional")
   const [clubeMensalidade, setClubeMensalidade] = useState(
@@ -109,6 +99,62 @@ function ConfiguracoesFormulario({
       ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.clube_valor_mensalidade) * 100)))
       : ""
   )
+
+  // Segredos (Frenet, Mercado Pago, Email) - carregados a parte, nunca vem
+  // no ConfiguracoesIniciais (evita misturar dado sensivel com config geral).
+  const [segredosStatus, setSegredosStatus] = useState<Record<string, boolean>>({})
+  const [frenetToken, setFrenetToken] = useState("")
+  const [mpAccessToken, setMpAccessToken] = useState("")
+  const [emailUser, setEmailUser] = useState("")
+  const [emailPass, setEmailPass] = useState("")
+  const [emailNotificacoesAdmin, setEmailNotificacoesAdmin] = useState("")
+  const [salvandoSegredos, setSalvandoSegredos] = useState(false)
+  const [segredosSalvos, setSegredosSalvos] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/admin/segredos")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((dados) => {
+        if (!dados) return
+        setSegredosStatus(
+          Object.fromEntries(Object.entries(dados).map(([chave, info]: [string, any]) => [chave, info.configurado]))
+        )
+        setEmailUser(dados.email_user?.valor || "")
+        setEmailNotificacoesAdmin(dados.email_notificacoes_admin?.valor || "")
+      })
+  }, [])
+
+  async function salvarSegredos() {
+    setSalvandoSegredos(true)
+    setSegredosSalvos(false)
+
+    await fetch("/api/admin/segredos", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        frenet_token: frenetToken,
+        mercadopago_access_token: mpAccessToken,
+        email_user: emailUser,
+        email_pass: emailPass,
+        email_notificacoes_admin: emailNotificacoesAdmin,
+      }),
+    })
+
+    setSalvandoSegredos(false)
+    setSegredosSalvos(true)
+    setFrenetToken("")
+    setMpAccessToken("")
+    setEmailPass("")
+    setTimeout(() => setSegredosSalvos(false), 2500)
+
+    const resposta = await fetch("/api/admin/segredos")
+    if (resposta.ok) {
+      const dados = await resposta.json()
+      setSegredosStatus(
+        Object.fromEntries(Object.entries(dados).map(([chave, info]: [string, any]) => [chave, info.configurado]))
+      )
+    }
+  }
 
   const mensagemBling = searchParams.get("bling")
 
@@ -153,8 +199,6 @@ function ConfiguracoesFormulario({
         logo_url: logoUrl,
         taxa_mercadopago_percentual: taxaMpPercentual,
         taxa_mercadopago_fixo: String(valorMoedaParaNumero(taxaMpFixo || "0,00")),
-        taxa_pagbank_percentual: taxaPagbankPercentual,
-        taxa_pagbank_fixo: String(valorMoedaParaNumero(taxaPagbankFixo || "0,00")),
         aliquota_imposto_percentual: aliquotaImposto,
         regime_tributario: regimeTributario,
         clube_valor_mensalidade: String(valorMoedaParaNumero(clubeMensalidade || "0,00")),
@@ -473,31 +517,6 @@ function ConfiguracoesFormulario({
                     </div>
                   </div>
                 </div>
-                <div>
-                  <p className="mb-2 text-xs font-semibold uppercase text-slate-400">PagBank</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Taxa percentual (%)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={taxaPagbankPercentual}
-                        onChange={(e) => setTaxaPagbankPercentual(e.target.value)}
-                        placeholder="3,99"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Taxa fixa por transacao (R$)</Label>
-                      <Input
-                        inputMode="numeric"
-                        value={taxaPagbankFixo}
-                        onChange={(e) => setTaxaPagbankFixo(mascaraMoeda(e.target.value))}
-                        placeholder="0,00"
-                      />
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
@@ -562,62 +581,215 @@ function ConfiguracoesFormulario({
           </TabsContent>
 
           <TabsContent value="integracoes" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Bling (emissao de NF-e)</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-xs text-muted-foreground">
-                  So emite nota fiscal a partir do pedido pago - nao sincroniza estoque nem
-                  financeiro com o Bling.
-                </p>
+            <Tabs defaultValue="bling">
+              <TabsList>
+                <TabsTrigger value="bling">Bling</TabsTrigger>
+                <TabsTrigger value="mercadopago">Mercado Pago</TabsTrigger>
+                <TabsTrigger value="frenet">Frenet</TabsTrigger>
+                <TabsTrigger value="email">Email</TabsTrigger>
+              </TabsList>
 
-                {mensagemBling === "conectado" && (
-                  <p className="text-sm text-emerald-500">Bling conectado com sucesso!</p>
-                )}
-                {mensagemBling === "erro_state" && (
-                  <p className="text-sm text-red-500">
-                    Nao foi possivel confirmar a conexao (state invalido). Tente novamente.
-                  </p>
-                )}
-                {mensagemBling === "erro_token" && (
-                  <p className="text-sm text-red-500">
-                    O Bling recusou a conexao. Confira as credenciais (BLING_CLIENT_ID/SECRET) e
-                    tente novamente.
-                  </p>
-                )}
-                {mensagemBling === "erro_nao_configurado" && (
-                  <p className="text-sm text-red-500">
-                    Integracao com o Bling ainda nao configurada neste ambiente
-                    (BLING_CLIENT_ID/BLING_CLIENT_SECRET faltando nas variaveis de ambiente).
-                  </p>
-                )}
+              <TabsContent value="bling" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm text-slate-500">Bling (emissao de NF-e)</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-xs text-muted-foreground">
+                      So emite nota fiscal a partir do pedido pago - nao sincroniza estoque nem
+                      financeiro com o Bling.
+                    </p>
 
-                {blingStatus === null ? (
-                  <p className="text-sm text-slate-500">
-                    Apenas administradores podem conectar o Bling.
-                  </p>
-                ) : blingStatus.conectado ? (
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-emerald-600/20 px-2 py-1 text-xs text-emerald-400">
-                      Conectado
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      nativeButton={false}
-                      render={<a href="/api/admin/bling/conectar" />}
-                    >
-                      Reconectar
-                    </Button>
-                  </div>
-                ) : (
-                  <Button size="sm" nativeButton={false} render={<a href="/api/admin/bling/conectar" />}>
-                    Conectar com o Bling
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+                    {mensagemBling === "conectado" && (
+                      <p className="text-sm text-emerald-500">Bling conectado com sucesso!</p>
+                    )}
+                    {mensagemBling === "erro_state" && (
+                      <p className="text-sm text-red-500">
+                        Nao foi possivel confirmar a conexao (state invalido). Tente novamente.
+                      </p>
+                    )}
+                    {mensagemBling === "erro_token" && (
+                      <p className="text-sm text-red-500">
+                        O Bling recusou a conexao. Confira as credenciais (BLING_CLIENT_ID/SECRET) e
+                        tente novamente.
+                      </p>
+                    )}
+                    {mensagemBling === "erro_nao_configurado" && (
+                      <p className="text-sm text-red-500">
+                        Integracao com o Bling ainda nao configurada neste ambiente
+                        (BLING_CLIENT_ID/BLING_CLIENT_SECRET faltando nas variaveis de ambiente).
+                      </p>
+                    )}
+
+                    {blingStatus === null ? (
+                      <p className="text-sm text-slate-500">
+                        Apenas administradores podem conectar o Bling.
+                      </p>
+                    ) : blingStatus.conectado ? (
+                      <div className="flex items-center justify-between">
+                        <span className="rounded-full bg-emerald-600/20 px-2 py-1 text-xs text-emerald-400">
+                          Conectado
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          nativeButton={false}
+                          render={<a href="/api/admin/bling/conectar" />}
+                        >
+                          Reconectar
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" nativeButton={false} render={<a href="/api/admin/bling/conectar" />}>
+                        Conectar com o Bling
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="mercadopago" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
+                      <KeyRound size={16} />
+                      Mercado Pago
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-xs text-muted-foreground">
+                      Token guardado de forma isolada, nunca aparece em nenhuma tela ou resposta
+                      de API - so mostramos se ja esta "configurado". Deixe em branco pra nao
+                      mexer no que ja esta salvo.
+                    </p>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        Token de acesso (producao)
+                        {segredosStatus.mercadopago_access_token && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-500">
+                            <Check size={12} /> configurado
+                          </span>
+                        )}
+                      </Label>
+                      <Input
+                        type="password"
+                        value={mpAccessToken}
+                        onChange={(e) => setMpAccessToken(e.target.value)}
+                        placeholder={
+                          segredosStatus.mercadopago_access_token
+                            ? "•••••••• (deixe em branco pra manter)"
+                            : "Colar access token"
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button type="button" onClick={salvarSegredos} disabled={salvandoSegredos}>
+                        {salvandoSegredos ? "Salvando..." : "Salvar"}
+                      </Button>
+                      {segredosSalvos && <span className="text-sm text-emerald-500">Salvo!</span>}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="frenet" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
+                      <KeyRound size={16} />
+                      Frenet (frete)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-xs text-muted-foreground">
+                      Usado pra cotacao real de frete no checkout e validacao de rastreio. Sem
+                      isso configurado, o frete cai na tabela de faixas por regiao.
+                    </p>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        Token
+                        {segredosStatus.frenet_token && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-500">
+                            <Check size={12} /> configurado
+                          </span>
+                        )}
+                      </Label>
+                      <Input
+                        type="password"
+                        value={frenetToken}
+                        onChange={(e) => setFrenetToken(e.target.value)}
+                        placeholder={
+                          segredosStatus.frenet_token ? "•••••••• (deixe em branco pra manter)" : "Colar token"
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button type="button" onClick={salvarSegredos} disabled={salvandoSegredos}>
+                        {salvandoSegredos ? "Salvando..." : "Salvar"}
+                      </Button>
+                      {segredosSalvos && <span className="text-sm text-emerald-500">Salvo!</span>}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="email" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
+                      <KeyRound size={16} />
+                      Email (Gmail, envio de notificacoes)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>E-mail remetente</Label>
+                        <Input
+                          type="email"
+                          value={emailUser}
+                          onChange={(e) => setEmailUser(e.target.value)}
+                          placeholder="loja@gmail.com"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-1.5">
+                          Senha de app
+                          {segredosStatus.email_pass && (
+                            <span className="flex items-center gap-1 text-xs text-emerald-500">
+                              <Check size={12} /> configurado
+                            </span>
+                          )}
+                        </Label>
+                        <Input
+                          type="password"
+                          value={emailPass}
+                          onChange={(e) => setEmailPass(e.target.value)}
+                          placeholder={
+                            segredosStatus.email_pass ? "•••••••• (deixe em branco pra manter)" : "Senha de app do Gmail"
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label>E-mail pra receber notificacoes internas (opcional)</Label>
+                        <Input
+                          type="email"
+                          value={emailNotificacoesAdmin}
+                          onChange={(e) => setEmailNotificacoesAdmin(e.target.value)}
+                          placeholder="Vazio usa o proprio e-mail remetente acima"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button type="button" onClick={salvarSegredos} disabled={salvandoSegredos}>
+                        {salvandoSegredos ? "Salvando..." : "Salvar"}
+                      </Button>
+                      {segredosSalvos && <span className="text-sm text-emerald-500">Salvo!</span>}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
 
