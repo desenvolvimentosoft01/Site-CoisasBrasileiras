@@ -295,7 +295,7 @@ function ConfiguracoesFormulario({
               <CardHeader>
                 <CardTitle className="text-sm text-slate-500">Frete</CardTitle>
               </CardHeader>
-              <CardContent className="grid items-end gap-4 sm:grid-cols-2">
+              <CardContent className="grid items-start gap-4 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
                   <Label>CEP de origem (endereco da loja)</Label>
                   <Input
@@ -495,7 +495,7 @@ function ConfiguracoesFormulario({
                 </p>
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase text-slate-400">Mercado Pago</p>
-                  <div className="grid items-end gap-4 sm:grid-cols-2">
+                  <div className="grid items-start gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Taxa percentual (%)</Label>
                       <Input
@@ -746,7 +746,7 @@ function ConfiguracoesFormulario({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid items-end gap-4 sm:grid-cols-2">
+                    <div className="grid items-start gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label>E-mail remetente</Label>
                         <Input

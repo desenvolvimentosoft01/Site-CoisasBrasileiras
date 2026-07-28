@@ -9,7 +9,14 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImagePlus, X } from "lucide-react"
 import { CampoDica } from "@/components/ui/campo-dica"
-import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
+import {
+  mascaraMoeda,
+  valorMoedaParaNumero,
+  mascaraNCM,
+  somenteDigitos,
+  mascaraDecimal,
+  decimalParaNumero,
+} from "@/lib/mascaras"
 import { validarCodigoBarras } from "@/lib/codigo-barras"
 import { registrarAuditoria } from "@/lib/auditoria"
 
@@ -65,10 +72,10 @@ export function ProdutoForm({
   const [sku, setSku] = useState(produto?.sku ?? "")
   const [ncm, setNcm] = useState(produto?.ncm ?? "")
   const [codigoBarras, setCodigoBarras] = useState(produto?.codigo_barras ?? "")
-  const [pesoKg, setPesoKg] = useState(produto?.peso_kg ?? "")
-  const [alturaCm, setAlturaCm] = useState(produto?.altura_cm ?? "")
-  const [larguraCm, setLarguraCm] = useState(produto?.largura_cm ?? "")
-  const [comprimentoCm, setComprimentoCm] = useState(produto?.comprimento_cm ?? "")
+  const [pesoKg, setPesoKg] = useState((produto?.peso_kg ?? "").replace(".", ","))
+  const [alturaCm, setAlturaCm] = useState((produto?.altura_cm ?? "").replace(".", ","))
+  const [larguraCm, setLarguraCm] = useState((produto?.largura_cm ?? "").replace(".", ","))
+  const [comprimentoCm, setComprimentoCm] = useState((produto?.comprimento_cm ?? "").replace(".", ","))
   const [categoriaIds, setCategoriaIds] = useState<string[]>(produto?.categoriaIds ?? [])
   const [imagensUrls, setImagensUrls] = useState<string[]>(
     produto?.imagens.map((i) => i.url) ?? []
@@ -155,10 +162,10 @@ export function ProdutoForm({
       sku: sku || null,
       ncm: ncm || null,
       codigoBarras: codigoBarras || null,
-      pesoKg: pesoKg ? Number(pesoKg) : null,
-      alturaCm: alturaCm ? Number(alturaCm) : null,
-      larguraCm: larguraCm ? Number(larguraCm) : null,
-      comprimentoCm: comprimentoCm ? Number(comprimentoCm) : null,
+      pesoKg: pesoKg ? decimalParaNumero(pesoKg) : null,
+      alturaCm: alturaCm ? decimalParaNumero(alturaCm) : null,
+      larguraCm: larguraCm ? decimalParaNumero(larguraCm) : null,
+      comprimentoCm: comprimentoCm ? decimalParaNumero(comprimentoCm) : null,
       categoriaIds,
       imagensUrls,
     }
@@ -214,10 +221,10 @@ export function ProdutoForm({
     setSku(produto?.sku ?? "")
     setNcm(produto?.ncm ?? "")
     setCodigoBarras(produto?.codigo_barras ?? "")
-    setPesoKg(produto?.peso_kg ?? "")
-    setAlturaCm(produto?.altura_cm ?? "")
-    setLarguraCm(produto?.largura_cm ?? "")
-    setComprimentoCm(produto?.comprimento_cm ?? "")
+    setPesoKg((produto?.peso_kg ?? "").replace(".", ","))
+    setAlturaCm((produto?.altura_cm ?? "").replace(".", ","))
+    setLarguraCm((produto?.largura_cm ?? "").replace(".", ","))
+    setComprimentoCm((produto?.comprimento_cm ?? "").replace(".", ","))
     setCategoriaIds(produto?.categoriaIds ?? [])
     setImagensUrls(produto?.imagens.map((i) => i.url) ?? [])
     setErro("")
@@ -257,7 +264,7 @@ export function ProdutoForm({
             {/* items-end: se um rotulo quebrar em 2 linhas (coluna estreita),
                 a celula fica mais alta - alinhando pelo fim, os campos
                 continuam na mesma linha em vez de um descer sozinho. */}
-            <div className="grid items-end gap-3 sm:grid-cols-5">
+            <div className="grid items-start gap-3 sm:grid-cols-5">
               <div className="space-y-2 sm:col-span-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -275,9 +282,10 @@ export function ProdutoForm({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Cod. de barras *
+                  EAN *
                   <CampoDica>
-                    GTIN/EAN-13. Usado no leitor da Venda Balcao e na importacao de XML de compra.
+                    Codigo de barras (GTIN/EAN-13), 13 digitos. Usado no leitor da Venda Balcao e na
+                    importacao de XML de compra.
                   </CampoDica>
                 </Label>
                 <Input
@@ -300,9 +308,9 @@ export function ProdutoForm({
                   <CampoDica>Enviado na nota fiscal quando emitida pelo Bling.</CampoDica>
                 </Label>
                 <Input
-                  value={ncm}
+                  value={mascaraNCM(ncm)}
                   onChange={(e) => setNcm(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  placeholder="Obrigatorio"
+                  placeholder="0000.00.00"
                   inputMode="numeric"
                 />
               </div>
@@ -317,7 +325,7 @@ export function ProdutoForm({
               />
             </div>
 
-            <div className="grid items-end gap-4 sm:grid-cols-5">
+            <div className="grid items-start gap-4 sm:grid-cols-5">
               <div className="space-y-2">
                 <Label>Preco (R$)</Label>
                 <Input
@@ -354,19 +362,17 @@ export function ProdutoForm({
               <div className="space-y-2">
                 <Label>Estoque</Label>
                 <Input
-                  type="number"
                   inputMode="numeric"
                   value={estoque}
-                  onChange={(e) => setEstoque(e.target.value)}
+                  onChange={(e) => setEstoque(somenteDigitos(e.target.value))}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Estoque minimo</Label>
                 <Input
-                  type="number"
                   inputMode="numeric"
                   value={estoqueMinimo}
-                  onChange={(e) => setEstoqueMinimo(e.target.value)}
+                  onChange={(e) => setEstoqueMinimo(somenteDigitos(e.target.value))}
                 />
               </div>
             </div>
@@ -405,37 +411,33 @@ export function ProdutoForm({
                 <div className="space-y-2">
                   <Label className="text-xs">Peso (kg)</Label>
                   <Input
-                    type="number"
-                    step="0.01"
+                    inputMode="decimal"
                     value={pesoKg}
-                    onChange={(e) => setPesoKg(e.target.value)}
+                    onChange={(e) => setPesoKg(mascaraDecimal(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Altura (cm)</Label>
                   <Input
-                    type="number"
-                    step="0.1"
+                    inputMode="decimal"
                     value={alturaCm}
-                    onChange={(e) => setAlturaCm(e.target.value)}
+                    onChange={(e) => setAlturaCm(mascaraDecimal(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Largura (cm)</Label>
                   <Input
-                    type="number"
-                    step="0.1"
+                    inputMode="decimal"
                     value={larguraCm}
-                    onChange={(e) => setLarguraCm(e.target.value)}
+                    onChange={(e) => setLarguraCm(mascaraDecimal(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Comprimento (cm)</Label>
                   <Input
-                    type="number"
-                    step="0.1"
+                    inputMode="decimal"
                     value={comprimentoCm}
-                    onChange={(e) => setComprimentoCm(e.target.value)}
+                    onChange={(e) => setComprimentoCm(mascaraDecimal(e.target.value))}
                   />
                 </div>
               </div>

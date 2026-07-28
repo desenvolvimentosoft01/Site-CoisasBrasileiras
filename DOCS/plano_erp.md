@@ -306,6 +306,20 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] CEP com autopreenchimento via BrasilAPI (`https://brasilapi.com.br/api/cep/v1/{cep}`), mesmo padrão já usado no checkout público (`app/(loja)/checkout/page.tsx`).
 - [x] `GET /api/admin/clientes/[id]` criado (não existia) — traz cliente + endereço principal pro formulário de edição. `POST`/`PUT` de clientes agora fazem upsert do endereço principal quando `cep` + `logradouro` vêm preenchidos.
 
+## 2026-07-28 — Campos numéricos: máscara de NCM e bloqueio de letras
+
+- [x] `mascaraNCM()` — NCM exibido no padrão da Receita (`0000.00.00`), limitado a 8 dígitos. Guardado no banco só com os dígitos.
+- [x] `somenteDigitos()` e `mascaraDecimal()` / `decimalParaNumero()` em `lib/mascaras.ts`. Estoque e estoque mínimo passaram a aceitar só dígitos; peso e dimensões aceitam dígitos com uma vírgula (padrão BR), convertidos pra ponto só na hora de salvar.
+- [x] `components/ui/input.tsx` bloqueia as teclas `e`, `E`, `+` e `-` em qualquer campo numérico (`type="number"`, `inputMode="numeric"` ou `"decimal"`). O `type="number"` do navegador deixa digitar notação científica e sinal, o que virava `NaN` ao salvar. Corrigido no componente compartilhado, cobrindo os ~19 campos numéricos do admin de uma vez.
+
+## 2026-07-28 — Alinhamento de grade: `items-start` + rótulo de 1 linha
+
+Fechamento do assunto do desalinhamento. A regra final é **`items-start` na grade + rótulo que cabe em 1 linha**:
+
+- `items-start` alinha as células pelo topo. Como todos os rótulos têm a mesma altura (`min-h-5`), os campos ficam na mesma linha — e conteúdo que aparece *abaixo* do campo (mensagem de validação do EAN, input escondido que o `Select` do base-ui renderiza) não desloca mais nada.
+- `items-end` foi tentado antes e estava errado: alinhava pelo rodapé, então o input escondido do `Select` empurrava o rótulo "Valor" pra baixo no Reajuste de Preços, e a mensagem de validação do EAN deslocaria o campo pra cima quando aparecesse.
+- "Cod. de barras *" virou **"EAN *"** — mesmo encurtado ainda quebrava linha na coluna estreita (o `*` caía sozinho na 2ª linha).
+
 ## 2026-07-28 — Convenção: rótulo curto + explicação no balão de dica
 
 Fechando o assunto do desalinhamento de grade, a regra do projeto passa a ser: **o rótulo (`<Label>`) precisa caber em 1 linha; todo texto explicativo vai no `<CampoDica>`** (ícone "?" ao lado). `components/ui/label.tsx` reserva `min-h-5` (1 linha) — rótulo que quebra linha fica mais alto que os vizinhos da mesma grade e desalinha os campos abaixo.

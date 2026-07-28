@@ -271,7 +271,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                 />
               </div>
 
-              <div className="grid items-end grid-cols-2 gap-4">
+              <div className="grid items-start grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Tipo</Label>
                   <select
@@ -294,7 +294,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                 </div>
               </div>
 
-              <div className="grid items-end grid-cols-2 gap-4">
+              <div className="grid items-start grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>
                     Valor minimo (R$)

@@ -313,7 +313,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                 <Input value={descricao} onChange={(e) => setDescricao(e.target.value)} autoFocus />
               </div>
 
-              <div className="grid items-end grid-cols-2 gap-4">
+              <div className="grid items-start grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Valor (R$)</Label>
                   <Input type="number" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} />
