@@ -261,9 +261,10 @@ export function ProdutoForm({
             <CardTitle className="text-sm text-muted-foreground">Dados do produto</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* items-end: se um rotulo quebrar em 2 linhas (coluna estreita),
-                a celula fica mais alta - alinhando pelo fim, os campos
-                continuam na mesma linha em vez de um descer sozinho. */}
+            {/* items-start: com todos os rotulos em 1 linha, os campos alinham
+                pelo topo - e o que aparece abaixo do campo (aviso de validacao
+                do EAN) nao desloca os vizinhos. max-w nos campos curtos pra
+                nao esticarem alem do conteudo que recebem. */}
             <div className="grid items-start gap-3 sm:grid-cols-5">
               <div className="space-y-2 sm:col-span-2">
                 <Label>Nome</Label>
@@ -278,6 +279,7 @@ export function ProdutoForm({
                   value={sku}
                   onChange={(e) => setSku(e.target.value)}
                   placeholder="Opcional"
+                  className="max-w-40"
                 />
               </div>
               <div className="space-y-2">
@@ -293,6 +295,7 @@ export function ProdutoForm({
                   onChange={(e) => setCodigoBarras(e.target.value.replace(/\D/g, "").slice(0, 13))}
                   placeholder="13 digitos"
                   inputMode="numeric"
+                  className="max-w-40"
                 />
                 {codigoBarras.length > 0 && codigoBarras.length < 13 ? (
                   <p className="text-xs text-amber-500">Faltam {13 - codigoBarras.length} digito(s)</p>
@@ -312,6 +315,7 @@ export function ProdutoForm({
                   onChange={(e) => setNcm(e.target.value.replace(/\D/g, "").slice(0, 8))}
                   placeholder="0000.00.00"
                   inputMode="numeric"
+                  className="max-w-36"
                 />
               </div>
             </div>
@@ -333,6 +337,7 @@ export function ProdutoForm({
                   value={preco}
                   onChange={(e) => setPreco(mascaraMoeda(e.target.value))}
                   placeholder="0,00"
+                  className="max-w-32"
                 />
               </div>
               <div className="space-y-2">
@@ -345,6 +350,7 @@ export function ProdutoForm({
                   value={precoPromocional}
                   onChange={(e) => setPrecoPromocional(mascaraMoeda(e.target.value))}
                   placeholder="0,00"
+                  className="max-w-32"
                 />
               </div>
               <div className="space-y-2">
@@ -357,6 +363,7 @@ export function ProdutoForm({
                   value={precoClube}
                   onChange={(e) => setPrecoClube(mascaraMoeda(e.target.value))}
                   placeholder="0,00"
+                  className="max-w-32"
                 />
               </div>
               <div className="space-y-2">
@@ -365,6 +372,7 @@ export function ProdutoForm({
                   inputMode="numeric"
                   value={estoque}
                   onChange={(e) => setEstoque(somenteDigitos(e.target.value))}
+                  className="max-w-28"
                 />
               </div>
               <div className="space-y-2">
@@ -373,6 +381,7 @@ export function ProdutoForm({
                   inputMode="numeric"
                   value={estoqueMinimo}
                   onChange={(e) => setEstoqueMinimo(somenteDigitos(e.target.value))}
+                  className="max-w-28"
                 />
               </div>
             </div>
@@ -414,6 +423,7 @@ export function ProdutoForm({
                     inputMode="decimal"
                     value={pesoKg}
                     onChange={(e) => setPesoKg(mascaraDecimal(e.target.value))}
+                    className="max-w-32"
                   />
                 </div>
                 <div className="space-y-2">
@@ -422,6 +432,7 @@ export function ProdutoForm({
                     inputMode="decimal"
                     value={alturaCm}
                     onChange={(e) => setAlturaCm(mascaraDecimal(e.target.value))}
+                    className="max-w-32"
                   />
                 </div>
                 <div className="space-y-2">
@@ -430,6 +441,7 @@ export function ProdutoForm({
                     inputMode="decimal"
                     value={larguraCm}
                     onChange={(e) => setLarguraCm(mascaraDecimal(e.target.value))}
+                    className="max-w-32"
                   />
                 </div>
                 <div className="space-y-2">
@@ -438,6 +450,7 @@ export function ProdutoForm({
                     inputMode="decimal"
                     value={comprimentoCm}
                     onChange={(e) => setComprimentoCm(mascaraDecimal(e.target.value))}
+                    className="max-w-32"
                   />
                 </div>
               </div>
