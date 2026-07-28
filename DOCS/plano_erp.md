@@ -274,7 +274,15 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] **Acesso rápido aos favoritos**: página `/favoritos` + ícone no cabeçalho do site, sem precisar entrar em Minha Conta
 - [x] **Cadastro rápido de produto via leitor de código de barras** (Venda Balcão): se o código não bate com nenhum produto, abre modal perguntando se quer cadastrar na hora (só nome + preço) — cria o produto deliberadamente incompleto (sem NCM), com aviso visual (△ amarelo) na grade de Produtos pra lembrar de completar depois
 
-**Nota**: `/admin/pedidos` (lista separada da grade combinada de Venda Balcão) ainda não seleciona/exibe `forma_pagamento` — só a grade combinada (usada no print que o usuário mostrou) foi corrigida. Revisitar se fizer diferença.
+## 2026-07-27 — Ajustes de pedidos: paridade de exibição + restrição de status
+
+- [x] **Lógica de "status de exibição" centralizada** em `lib/status-pedido.ts` (`ROTULOS_STATUS` + `statusExibicao()`), extraída da Venda Balcão. Antes só a grade combinada de Venda Balcão mostrava o ícone de canal, forma de pagamento e o aviso "Provavelmente abandonado" (heurística de 24h sem pagamento); `/admin/pedidos` (lista separada) e o widget "Últimos pedidos" do Dashboard ficaram desatualizados e não mostravam nada disso. Agora as três telas usam a mesma função, então não há mais divergência.
+- [x] **Restrição de alteração manual de status do pedido**: não é mais possível setar "Pago" manualmente pela tela `/admin/pedidos/[id]` — esse status só é definido automaticamente pela confirmação de pagamento do Mercado Pago (webhook). Quando o pedido está "Aguardando pagamento", a tela não mostra mais um seletor de status livre; mostra um badge estático + botão "Cancelar pedido" (única ação segura nesse estado). Nos demais estados, o seletor permite só as transições operacionais (em separação → enviado → entregue, cancelar), nunca "Pago" nem voltar pra "Aguardando pagamento".
+  - Reforçado também no servidor (`PUT /api/admin/pedidos/[id]`): a rota agora rejeita explicitamente `status: "pago"` vindo de qualquer chamada manual, já que o webhook do MP grava esse status direto no banco (não passa por essa rota) — proteção contra alguém liberar um pedido sem o pagamento ter de fato entrado, mesmo via chamada direta de API.
+
+## 2026-07-27 — Validação real de código de barras (checksum EAN-13/EAN-8)
+
+- [x] `lib/codigo-barras.ts`: `validarCodigoBarras()` confere não só o tamanho (13 ou 8 dígitos) mas o dígito verificador (algoritmo GTIN/EAN padrão), tanto no cadastro/edição de produto (`produto-form.tsx`, com feedback visual em tempo real) quanto nas rotas `POST`/`PUT /api/admin/produtos`. O cadastro rápido via leitor na Venda Balcão (`/api/admin/produtos/rapido`) continua **sem** essa validação bloqueante de propósito — não pode travar uma venda real por causa de um código de barras fora do padrão.
 
 ## Concluído fora da ordem das fases (pedidos pontuais do cliente)
 

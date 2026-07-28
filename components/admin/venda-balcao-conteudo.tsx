@@ -26,6 +26,7 @@ import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List, Barc
 import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
+import { ROTULOS_STATUS, statusExibicao } from "@/lib/status-pedido"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Produto = {
@@ -91,28 +92,6 @@ const FORMAS_PAGAMENTO = [
   { valor: "cartao_credito", rotulo: "Cartao de credito" },
   { valor: "cartao_debito", rotulo: "Cartao de debito" },
 ]
-
-const ROTULOS_STATUS: Record<string, string> = {
-  aguardando_pagamento: "Aguardando pagamento",
-  pago: "Pago",
-  em_separacao: "Em separacao",
-  enviado: "Enviado",
-  entregue: "Entregue",
-  cancelado: "Cancelado",
-}
-
-// "Aguardando pagamento" pode significar boleto/pix realmente em
-// processamento OU carrinho abandonado (cliente nunca voltou pra pagar) - o
-// sistema nao tem como saber com certeza (o Mercado Pago so avisa quando o
-// pagamento e de fato tentado), entao usamos um limite de tempo como
-// indicativo visual, sem mudar o status real no banco.
-const HORAS_LIMITE_ABANDONADO = 24
-
-function statusExibicao(venda: Venda): string {
-  if (venda.status !== "aguardando_pagamento") return ROTULOS_STATUS[venda.status] ?? venda.status
-  const horasDesdeCriacao = (Date.now() - new Date(venda.criado_em).getTime()) / 3_600_000
-  return horasDesdeCriacao > HORAS_LIMITE_ABANDONADO ? "Provavelmente abandonado" : "Aguardando pagamento"
-}
 
 function precoEfetivo(produto: Produto) {
   return Number(produto.preco_promocional || produto.preco)
@@ -471,12 +450,12 @@ export function VendaBalcaoConteudo({
                           <td className="p-4 text-slate-500">
                             <span
                               className={
-                                statusExibicao(venda) === "Provavelmente abandonado"
+                                statusExibicao(venda.status, venda.criado_em) === "Provavelmente abandonado"
                                   ? "text-amber-500"
                                   : undefined
                               }
                             >
-                              {statusExibicao(venda)}
+                              {statusExibicao(venda.status, venda.criado_em)}
                             </span>
                             {venda.forma_pagamento && (
                               <span className="ml-1 text-xs text-slate-400">· {venda.forma_pagamento}</span>

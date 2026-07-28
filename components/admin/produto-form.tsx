@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImagePlus, X } from "lucide-react"
 import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
+import { validarCodigoBarras } from "@/lib/codigo-barras"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 type Categoria = { id: string; nome: string; categoria_pai_id: string | null }
@@ -130,6 +131,10 @@ export function ProdutoForm({
       setErro("Codigo de barras (GTIN/EAN) e obrigatorio")
       return
     }
+    if (!validarCodigoBarras(codigoBarras)) {
+      setErro("Codigo de barras invalido - precisa ter 13 digitos (EAN-13) com digito verificador correto")
+      return
+    }
     if (!ncm.trim()) {
       setErro("NCM e obrigatorio")
       return
@@ -231,16 +236,24 @@ export function ProdutoForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Codigo de barras (GTIN/EAN) *</Label>
+                <Label>Codigo de barras (GTIN/EAN-13) *</Label>
                 <Input
                   value={codigoBarras}
-                  onChange={(e) => setCodigoBarras(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Obrigatorio"
+                  onChange={(e) => setCodigoBarras(e.target.value.replace(/\D/g, "").slice(0, 13))}
+                  placeholder="13 digitos"
                   inputMode="numeric"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Usado no leitor da Venda Balcao e na importacao de XML de compra.
-                </p>
+                {codigoBarras.length > 0 && codigoBarras.length < 13 ? (
+                  <p className="text-xs text-amber-500">Faltam {13 - codigoBarras.length} digito(s)</p>
+                ) : codigoBarras.length === 13 && !validarCodigoBarras(codigoBarras) ? (
+                  <p className="text-xs text-red-500">Digito verificador nao confere - confira o codigo</p>
+                ) : codigoBarras.length === 13 ? (
+                  <p className="text-xs text-emerald-500">Codigo valido</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Usado no leitor da Venda Balcao e na importacao de XML de compra.
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>NCM (fiscal) *</Label>

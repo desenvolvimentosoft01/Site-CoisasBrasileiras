@@ -35,6 +35,7 @@ type Pedido = {
   itens: { quantidade: number; preco_unitario: string; produto_nome: string }[]
 }
 
+// Todos os status possiveis - usado so pra rotulo/exibicao (rotulosStatus).
 const opcoesStatus = [
   { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento" },
   { valor: "pago", rotulo: "Pago" },
@@ -43,6 +44,16 @@ const opcoesStatus = [
   { valor: "entregue", rotulo: "Entregue" },
   { valor: "cancelado", rotulo: "Cancelado" },
 ]
+
+// So esses podem ser escolhidos manualmente no dropdown. "Pago" fica de fora
+// de proposito - so o webhook do Mercado Pago confirma pagamento de verdade
+// (ou o pedido ja nasce pago, na Venda Balcao); deixar o admin marcar "Pago"
+// na mao abriria brecha pra liberar um pedido sem o dinheiro ter entrado.
+// "Aguardando pagamento" tambem fica de fora - nao faz sentido voltar pra
+// esse estado manualmente.
+const opcoesStatusSelecionaveis = opcoesStatus.filter(
+  (opcao) => opcao.valor !== "pago" && opcao.valor !== "aguardando_pagamento"
+)
 
 function formatarPreco(valor: string) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -218,18 +229,43 @@ export default function DetalhePedidoPage() {
           <CardTitle className="text-sm text-slate-500">Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <select
-            value={pedido.status}
-            onChange={(e) => alterarStatus(e.target.value)}
-            disabled={salvandoStatus}
-            className="w-full max-w-xs rounded-md border border-slate-300 bg-slate-100 p-2 text-sm"
-          >
-            {opcoesStatus.map((opcao) => (
-              <option key={opcao.valor} value={opcao.valor}>
-                {opcao.rotulo}
-              </option>
-            ))}
-          </select>
+          {pedido.status === "aguardando_pagamento" ? (
+            <div className="space-y-2">
+              <span className="inline-block rounded-full bg-amber-500/20 px-3 py-1.5 text-sm text-amber-600">
+                Aguardando pagamento (automatico via Mercado Pago)
+              </span>
+              <p className="text-xs text-muted-foreground">
+                So vira "Pago" quando o Mercado Pago confirmar - nao da pra marcar manualmente
+                (evita liberar pedido sem o pagamento ter entrado de verdade). So resta cancelar.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => alterarStatus("cancelado")}
+                disabled={salvandoStatus}
+              >
+                {salvandoStatus ? "Cancelando..." : "Cancelar pedido"}
+              </Button>
+            </div>
+          ) : (
+            <select
+              value={pedido.status}
+              onChange={(e) => alterarStatus(e.target.value)}
+              disabled={salvandoStatus}
+              className="w-full max-w-xs rounded-md border border-slate-300 bg-slate-100 p-2 text-sm"
+            >
+              {pedido.status === "pago" && (
+                <option value="pago" disabled>
+                  Pago
+                </option>
+              )}
+              {opcoesStatusSelecionaveis.map((opcao) => (
+                <option key={opcao.valor} value={opcao.valor}>
+                  {opcao.rotulo}
+                </option>
+              ))}
+            </select>
+          )}
           {pedido.forma_pagamento && (
             <p className="mt-2 text-sm text-slate-500">
               Forma de pagamento: <span className="font-medium">{pedido.forma_pagamento}</span>

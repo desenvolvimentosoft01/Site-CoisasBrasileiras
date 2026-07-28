@@ -1,5 +1,6 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { validarCodigoBarras } from "@/lib/codigo-barras"
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
@@ -63,6 +64,9 @@ export async function POST(request: Request) {
   }
   if (!codigoBarras || !String(codigoBarras).trim()) {
     return NextResponse.json({ erro: "Codigo de barras (GTIN/EAN) e obrigatorio" }, { status: 400 })
+  }
+  if (!validarCodigoBarras(String(codigoBarras))) {
+    return NextResponse.json({ erro: "Codigo de barras invalido (precisa ser EAN-13/EAN-8 com digito verificador correto)" }, { status: 400 })
   }
   if (!ncm || !String(ncm).trim()) {
     return NextResponse.json({ erro: "NCM e obrigatorio" }, { status: 400 })

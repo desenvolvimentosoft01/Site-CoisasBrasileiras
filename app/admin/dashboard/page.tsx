@@ -4,6 +4,7 @@ import { formatarMoeda } from "@/lib/mascaras"
 import Link from "next/link"
 import { AlertTriangle, Package, ShoppingCart, Store, Wallet, Clock, type LucideIcon } from "lucide-react"
 import { LabelCanal } from "@/components/admin/label-canal"
+import { statusExibicao } from "@/lib/status-pedido"
 
 // Um "tema" de cor por indicador do dashboard, pra cada card ter identidade
 // visual propria em vez de ficar tudo branco/cinza igual.
@@ -39,15 +40,6 @@ function CardIndicador({
   )
 }
 
-const rotulosStatus: Record<string, string> = {
-  aguardando_pagamento: "Aguardando pagamento",
-  pago: "Pago",
-  em_separacao: "Em separacao",
-  enviado: "Enviado",
-  entregue: "Entregue",
-  cancelado: "Cancelado",
-}
-
 export default async function DashboardPage() {
   const [
     [{ count: produtosAtivos }],
@@ -73,7 +65,7 @@ export default async function DashboardPage() {
       "SELECT id, nome, estoque, estoque_minimo FROM TAB_PRODUTO WHERE ativo = true AND estoque <= estoque_minimo ORDER BY estoque LIMIT 5"
     ),
     query(
-      `SELECT p.id, p.status, p.total, p.origem, p.canal, p.criado_em,
+      `SELECT p.id, p.status, p.total, p.origem, p.canal, p.forma_pagamento, p.criado_em,
          COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcao') AS cliente_nome
        FROM TAB_PEDIDO p LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
        ORDER BY p.criado_em DESC LIMIT 5`
@@ -121,7 +113,16 @@ export default async function DashboardPage() {
                   <div>
                     <div className="font-medium">{pedido.cliente_nome}</div>
                     <div className="flex items-center gap-2 text-xs text-slate-400">
-                      {rotulosStatus[pedido.status] ?? pedido.status}
+                      <span
+                        className={
+                          statusExibicao(pedido.status, pedido.criado_em) === "Provavelmente abandonado"
+                            ? "text-amber-500"
+                            : undefined
+                        }
+                      >
+                        {statusExibicao(pedido.status, pedido.criado_em)}
+                      </span>
+                      {pedido.forma_pagamento && <span>· {pedido.forma_pagamento}</span>}
                       <LabelCanal canal={pedido.canal ?? (pedido.origem === "balcao" ? "balcao" : "site")} />
                     </div>
                   </div>

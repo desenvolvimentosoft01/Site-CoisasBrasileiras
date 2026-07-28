@@ -4,12 +4,17 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { LabelCanal } from "@/components/admin/label-canal"
+import { type CanalPedido } from "@/lib/canal-pedido"
+import { statusExibicao } from "@/lib/status-pedido"
 
 export type Pedido = {
   id: string
   status: string
   total: string
   origem: "site" | "balcao"
+  canal: CanalPedido | null
+  forma_pagamento: string | null
   criado_em: string
   cliente_nome: string
 }
@@ -23,15 +28,6 @@ const ABAS_STATUS = [
   { valor: "entregue", rotulo: "Entregue" },
   { valor: "cancelado", rotulo: "Cancelado" },
 ]
-
-const rotulosStatus: Record<string, string> = {
-  aguardando_pagamento: "Aguardando pagamento",
-  pago: "Pago",
-  em_separacao: "Em separacao",
-  enviado: "Enviado",
-  entregue: "Entregue",
-  cancelado: "Cancelado",
-}
 
 export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[] }) {
   const [aba, setAba] = useState("todos")
@@ -81,6 +77,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Cliente</th>
+                        <th className="p-4 font-medium">Canal</th>
                         <th className="p-4 font-medium">Status</th>
                         <th className="p-4 font-medium">Total</th>
                         <th className="p-4 font-medium">Data</th>
@@ -95,16 +92,27 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                           <td className="p-0">
                             <Link href={`/admin/pedidos/${pedido.id}`} className="flex items-center gap-2 p-4">
                               {pedido.cliente_nome}
-                              {pedido.origem === "balcao" && (
-                                <span className="rounded-full bg-amber-600/20 px-1.5 py-0.5 text-xs text-amber-400">
-                                  Balcao
-                                </span>
-                              )}
                             </Link>
                           </td>
                           <td className="p-0">
                             <Link href={`/admin/pedidos/${pedido.id}`} className="block p-4">
-                              {rotulosStatus[pedido.status] ?? pedido.status}
+                              <LabelCanal canal={pedido.canal ?? (pedido.origem === "balcao" ? "balcao" : "site")} />
+                            </Link>
+                          </td>
+                          <td className="p-0">
+                            <Link href={`/admin/pedidos/${pedido.id}`} className="block p-4 text-slate-500">
+                              <span
+                                className={
+                                  statusExibicao(pedido.status, pedido.criado_em) === "Provavelmente abandonado"
+                                    ? "text-amber-500"
+                                    : undefined
+                                }
+                              >
+                                {statusExibicao(pedido.status, pedido.criado_em)}
+                              </span>
+                              {pedido.forma_pagamento && (
+                                <span className="ml-1 text-xs text-slate-400">· {pedido.forma_pagamento}</span>
+                              )}
                             </Link>
                           </td>
                           <td className="p-0">

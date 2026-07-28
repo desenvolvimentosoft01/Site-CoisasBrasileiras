@@ -63,6 +63,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (status !== undefined && !STATUS_VALIDOS.includes(status)) {
     return NextResponse.json({ erro: "Status invalido" }, { status: 400 })
   }
+  // "Pago" so pode ser definido automaticamente pelo webhook do Mercado
+  // Pago (confirmacao real de pagamento) - nunca manualmente pelo admin,
+  // que poderia liberar um pedido sem o pagamento ter de fato entrado.
+  if (status === "pago") {
+    return NextResponse.json(
+      { erro: "Status 'Pago' e definido automaticamente pela confirmacao do Mercado Pago e nao pode ser alterado manualmente" },
+      { status: 400 }
+    )
+  }
 
   // Monta o SET dinamicamente para permitir atualizar so o status, so o
   // rastreio, ou os dois juntos, sem precisar de duas rotas separadas.
