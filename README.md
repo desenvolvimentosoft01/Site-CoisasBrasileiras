@@ -7,8 +7,9 @@ E-commerce de porcelanas decorativas, presentes, artigos religiosos e perfumaria
 - **Next.js 16** (App Router) + React 19 + TypeScript
 - **Tailwind CSS 4** + shadcn/ui (`@base-ui/react`)
 - **PostgreSQL**, acessado com SQL puro via `pg` (sem ORM) — ver `lib/db.ts`
-- **Mercado Pago** (Checkout Pro) e **PagBank** (checkout hospedado) para pagamento
-- **Bling** para emissão manual de NF-e a partir do pedido (`lib/bling.ts`)
+- **Mercado Pago** (Checkout Pro + assinatura recorrente do Clube via PreApproval) para pagamento
+- **Frenet** para cotação real de frete por CEP (várias transportadoras) e validação de código de rastreio
+- **Bling** para emissão/cancelamento de NF-e a partir do pedido (`lib/bling.ts`)
 - **Nodemailer** (Gmail) para notificações por e-mail
 - **BrasilAPI** para autopreenchimento de endereço por CEP
 - **Cloudinary** (opcional) para upload de imagem — se não configurado, cai pro

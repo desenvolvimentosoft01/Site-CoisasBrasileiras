@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { List, Plus, Trash2, PackageCheck, Ban, FileUp, AlertTriangle, Radio, RefreshCw, Link2 } from "lucide-react"
 import { toast } from "sonner"
+import { CampoDica } from "@/components/ui/campo-dica"
 import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
@@ -612,11 +613,11 @@ export function ComprasConteudo({
                 <Input type="date" value={dataCompra} onChange={(e) => setDataCompra(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Vencimento (prazo de pagamento)</Label>
+                <Label>
+                  Vencimento (prazo de pagamento)
+                  <CampoDica>Se o fornecedor der prazo (30/60 dias etc). Vazio usa a data da compra.</CampoDica>
+                </Label>
                 <Input type="date" value={dataVencimento} onChange={(e) => setDataVencimento(e.target.value)} />
-                <p className="text-xs text-muted-foreground">
-                  Se o fornecedor der prazo (30/60 dias etc). Vazio usa a data da compra.
-                </p>
               </div>
               <div className="space-y-2">
                 <Label>Valor do frete (R$)</Label>

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImagePlus, X } from "lucide-react"
+import { CampoDica } from "@/components/ui/campo-dica"
 import { mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { validarCodigoBarras } from "@/lib/codigo-barras"
 import { registrarAuditoria } from "@/lib/auditoria"
@@ -236,7 +237,10 @@ export function ProdutoForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Codigo de barras (GTIN/EAN-13) *</Label>
+                <Label>
+                  Codigo de barras (GTIN/EAN-13) *
+                  <CampoDica>Usado no leitor da Venda Balcao e na importacao de XML de compra.</CampoDica>
+                </Label>
                 <Input
                   value={codigoBarras}
                   onChange={(e) => setCodigoBarras(e.target.value.replace(/\D/g, "").slice(0, 13))}
@@ -249,23 +253,19 @@ export function ProdutoForm({
                   <p className="text-xs text-red-500">Digito verificador nao confere - confira o codigo</p>
                 ) : codigoBarras.length === 13 ? (
                   <p className="text-xs text-emerald-500">Codigo valido</p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Usado no leitor da Venda Balcao e na importacao de XML de compra.
-                  </p>
-                )}
+                ) : null}
               </div>
               <div className="space-y-2">
-                <Label>NCM (fiscal) *</Label>
+                <Label>
+                  NCM (fiscal) *
+                  <CampoDica>Enviado na nota fiscal quando emitida pelo Bling.</CampoDica>
+                </Label>
                 <Input
                   value={ncm}
                   onChange={(e) => setNcm(e.target.value.replace(/\D/g, "").slice(0, 8))}
                   placeholder="Obrigatorio"
                   inputMode="numeric"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Enviado na nota fiscal quando emitida pelo Bling.
-                </p>
               </div>
             </div>
 
@@ -298,16 +298,16 @@ export function ProdutoForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Preco do Clube (R$)</Label>
+                <Label>
+                  Preco do Clube (R$)
+                  <CampoDica>So aparece pra clientes com assinatura do Clube ativa. Vazio = nao participa.</CampoDica>
+                </Label>
                 <Input
                   inputMode="numeric"
                   value={precoClube}
                   onChange={(e) => setPrecoClube(mascaraMoeda(e.target.value))}
                   placeholder="0,00"
                 />
-                <p className="text-xs text-muted-foreground">
-                  So aparece pra clientes com assinatura do Clube ativa. Vazio = nao participa.
-                </p>
               </div>
               <div className="space-y-2">
                 <Label>Estoque</Label>

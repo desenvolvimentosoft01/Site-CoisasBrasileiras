@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { CampoDica } from "@/components/ui/campo-dica"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
@@ -311,16 +312,16 @@ function ConfiguracoesFormulario({
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Valor base / fallback (R$)</Label>
+                  <Label>
+                    Valor base / fallback (R$)
+                    <CampoDica>Usado so quando nao ha faixa de peso/regiao cadastrada pro estado do cliente.</CampoDica>
+                  </Label>
                   <Input
                     inputMode="numeric"
                     value={freteValorBase}
                     onChange={(e) => setFreteValorBase(mascaraMoeda(e.target.value))}
                     placeholder="0,00"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Usado so quando nao ha faixa de peso/regiao cadastrada pro estado do cliente.
-                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label>Frete gratis acima de (R$)</Label>
