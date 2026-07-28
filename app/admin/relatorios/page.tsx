@@ -41,8 +41,7 @@ export default async function RelatoriosPage({
        JOIN TAB_PRODUTO p ON p.id = pi.produto_id
        WHERE ped.status = 'pago' AND ped.criado_em BETWEEN $1 AND $2
        GROUP BY p.id, p.nome
-       ORDER BY quantidade DESC
-       LIMIT 10`,
+       ORDER BY quantidade DESC`,
       [inicioTs, fimTs]
     ),
     query(

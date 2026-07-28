@@ -291,6 +291,17 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] **Restrição de alteração manual de status do pedido**: não é mais possível setar "Pago" manualmente pela tela `/admin/pedidos/[id]` — esse status só é definido automaticamente pela confirmação de pagamento do Mercado Pago (webhook). Quando o pedido está "Aguardando pagamento", a tela não mostra mais um seletor de status livre; mostra um badge estático + botão "Cancelar pedido" (única ação segura nesse estado). Nos demais estados, o seletor permite só as transições operacionais (em separação → enviado → entregue, cancelar), nunca "Pago" nem voltar pra "Aguardando pagamento".
   - Reforçado também no servidor (`PUT /api/admin/pedidos/[id]`): a rota agora rejeita explicitamente `status: "pago"` vindo de qualquer chamada manual, já que o webhook do MP grava esse status direto no banco (não passa por essa rota) — proteção contra alguém liberar um pedido sem o pagamento ter de fato entrado, mesmo via chamada direta de API.
 
+## 2026-07-28 — Relatórios: estoque zerado, vendas de hoje, ordenar mais/menos vendidos
+
+- [x] Relatório de Estoque: novo filtro "Somente estoque zerado" + card "Zerados" no resumo (antes só tinha "abaixo do mínimo").
+- [x] Relatório de Vendas: cards "Vendas de hoje" e "Faturamento de hoje" (reaproveita a lista de pedidos do período já carregada, filtrando por data de hoje — só funciona se o período escolhido cobrir a data atual, o que é o padrão).
+- [x] "Produtos mais vendidos" perdeu o `LIMIT 10` da query (agora traz todos do período) e ganhou um botão de alternar ordenação (mais vendidos ↔ menos vendidos), pra identificar também os produtos parados.
+
+## 2026-07-27 — Rótulo de campo com texto longo desalinhava a grade do formulário
+
+- [x] Causa: `components/ui/label.tsx` não reservava altura fixa — um rótulo mais comprido que quebra em 2 linhas (ex: "Codigo de barras (GTIN/EAN-13) *" + ícone de dica) ficava mais alto que os rótulos vizinhos na mesma grade, empurrando só aquele campo pra baixo e desalinhando a linha inteira (reportado pelo cliente com print do Cadastro de Produtos).
+- [x] Corrigido uma única vez no componente compartilhado (`min-h-9`, reserva espaço pra até 2 linhas) — resolve em qualquer tela que use `<Label>`, não só no formulário de produto.
+
 ## 2026-07-27 — Bug sistêmico: `<Select>` mostrava o `value` bruto em vez do rótulo (`__todas__`, `aumento`...)
 
 - [x] Causa raiz: `SelectPrimitive.Root` do `@base-ui/react` só resolve o texto exibido (`Select.Value`) pro rótulo do item quando recebe a prop `items` (mapa `value -> rótulo`). Sem isso, mostra o `value` bruto — daí telas como Relatório de Estoque e Auditoria exibirem `__todas__`/`__todos__` em vez de "Todas as categorias"/"Todos", e o Reajuste de Preços mostrar "percentual"/"aumento" em vez dos rótulos com acento e formatação.

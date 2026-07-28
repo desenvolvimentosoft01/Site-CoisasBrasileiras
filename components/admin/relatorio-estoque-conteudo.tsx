@@ -39,29 +39,33 @@ export function RelatorioEstoqueConteudo({
   const [busca, setBusca] = useState("")
   const [categoria, setCategoria] = useState(TODAS)
   const [somenteAlerta, setSomenteAlerta] = useState(false)
+  const [somenteZerado, setSomenteZerado] = useState(false)
 
   const produtosFiltrados = useMemo(() => {
     return produtosIniciais.filter((p) => {
       if (busca && !p.nome.toLowerCase().includes(busca.toLowerCase())) return false
       if (categoria !== TODAS && !p.categorias.includes(categoria)) return false
       if (somenteAlerta && p.estoque > p.estoque_minimo) return false
+      if (somenteZerado && p.estoque > 0) return false
       return true
     })
-  }, [produtosIniciais, busca, categoria, somenteAlerta])
+  }, [produtosIniciais, busca, categoria, somenteAlerta, somenteZerado])
 
   const valorEmEstoque = produtosFiltrados.reduce(
     (soma, p) => soma + Number(p.preco_promocional ?? p.preco) * p.estoque,
     0
   )
   const qtdAbaixoMinimo = produtosFiltrados.filter((p) => p.estoque <= p.estoque_minimo).length
+  const qtdZerado = produtosFiltrados.filter((p) => p.estoque <= 0).length
 
   function limpar() {
     setBusca("")
     setCategoria(TODAS)
     setSomenteAlerta(false)
+    setSomenteZerado(false)
   }
 
-  const filtrosAtivos = busca !== "" || categoria !== TODAS || somenteAlerta
+  const filtrosAtivos = busca !== "" || categoria !== TODAS || somenteAlerta || somenteZerado
 
   return (
     <div className="space-y-6">
@@ -135,6 +139,15 @@ export function RelatorioEstoqueConteudo({
               />
               Somente abaixo do minimo
             </label>
+            <label className="flex items-center gap-2 pb-2 text-sm">
+              <input
+                type="checkbox"
+                checked={somenteZerado}
+                onChange={(e) => setSomenteZerado(e.target.checked)}
+                className="h-4 w-4 rounded border-input accent-primary"
+              />
+              Somente estoque zerado
+            </label>
             {filtrosAtivos && (
               <Button size="sm" variant="outline" onClick={limpar}>
                 <X size={14} className="mr-1" />
@@ -145,7 +158,7 @@ export function RelatorioEstoqueConteudo({
         </CardContent>
       </Card>
 
-      <div data-print-section="resumo" className="grid gap-4 sm:grid-cols-3">
+      <div data-print-section="resumo" className="grid gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-slate-500">Produtos listados</CardTitle>
@@ -166,6 +179,15 @@ export function RelatorioEstoqueConteudo({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold text-amber-500">{qtdAbaixoMinimo}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
+              <AlertTriangle size={14} className="text-red-500" />
+              Zerados
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-3xl font-semibold text-red-500">{qtdZerado}</CardContent>
         </Card>
       </div>
 

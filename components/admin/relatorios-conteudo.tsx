@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { formatarMoeda } from "@/lib/mascaras"
-import { AlertTriangle, Filter, X } from "lucide-react"
+import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, Filter, X } from "lucide-react"
 import { BotaoImprimir } from "@/components/admin/botao-imprimir"
 import { LabelCanal } from "@/components/admin/label-canal"
 import type { CanalPedido } from "@/lib/canal-pedido"
@@ -92,6 +92,28 @@ export function RelatoriosConteudo({
   const [filtroStatus, setFiltroStatus] = useState(TODOS)
   const [filtroEntrega, setFiltroEntrega] = useState(TODOS)
   const [filtroCategoria, setFiltroCategoria] = useState(TODOS)
+  const [ordemVendidos, setOrdemVendidos] = useState<"desc" | "asc">("desc")
+
+  const produtosMaisVendidosOrdenados = useMemo(() => {
+    const copia = [...dados.produtosMaisVendidos]
+    copia.sort((a, b) =>
+      ordemVendidos === "desc" ? Number(b.quantidade) - Number(a.quantidade) : Number(a.quantidade) - Number(b.quantidade)
+    )
+    return copia
+  }, [dados.produtosMaisVendidos, ordemVendidos])
+
+  // "Hoje" so faz sentido se o periodo escolhido cobrir a data de hoje - fora
+  // disso (ex: relatorio de um mes passado) a lista fica vazia de proposito,
+  // nao e um bug.
+  const hojeISO = new Date().toISOString().slice(0, 10)
+  const pedidosHoje = useMemo(
+    () =>
+      pedidosPeriodo.filter(
+        (p) => p.status === "pago" && new Date(p.criado_em).toISOString().slice(0, 10) === hojeISO
+      ),
+    [pedidosPeriodo, hojeISO]
+  )
+  const faturamentoHoje = pedidosHoje.reduce((soma, p) => soma + Number(p.total), 0)
 
   const tiposEntrega = useMemo(
     () => Array.from(new Set(pedidosPeriodo.map((p) => p.tipo_entrega).filter(Boolean) as string[])).sort(),
@@ -159,6 +181,7 @@ export function RelatoriosConteudo({
           <BotaoImprimir
             descricaoPeriodo={`Periodo: ${inicioPeriodo} a ${fimPeriodo}`}
             campos={[
+              { chave: "hoje", rotulo: "Vendas de hoje" },
               { chave: "resumo", rotulo: "Resumo (pedidos, faturamento, ticket)" },
               { chave: "grafico", rotulo: "Grafico de vendas" },
               { chave: "origem", rotulo: "Vendas por origem" },
@@ -169,6 +192,21 @@ export function RelatoriosConteudo({
             onCamposOcultos={aplicarCamposOcultos}
           />
         </div>
+      </div>
+
+      <div data-print-section="hoje" className="grid gap-4 sm:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-slate-500">Vendas de hoje</CardTitle>
+          </CardHeader>
+          <CardContent className="text-3xl font-semibold">{pedidosHoje.length}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-slate-500">Faturamento de hoje</CardTitle>
+          </CardHeader>
+          <CardContent className="text-3xl font-semibold">{formatarMoeda(String(faturamentoHoje))}</CardContent>
+        </Card>
       </div>
 
       <div data-print-section="resumo" className="grid gap-4 sm:grid-cols-3">
@@ -255,11 +293,29 @@ export function RelatoriosConteudo({
       </Card>
 
       <Card data-print-section="maisVendidos">
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
           <CardTitle className="text-sm text-slate-500">Produtos mais vendidos no periodo</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            className="print:hidden"
+            onClick={() => setOrdemVendidos((atual) => (atual === "desc" ? "asc" : "desc"))}
+          >
+            {ordemVendidos === "desc" ? (
+              <>
+                <ArrowDownAZ size={14} className="mr-1.5" />
+                Mais vendidos
+              </>
+            ) : (
+              <>
+                <ArrowUpAZ size={14} className="mr-1.5" />
+                Menos vendidos
+              </>
+            )}
+          </Button>
         </CardHeader>
         <CardContent className="p-0">
-          {dados.produtosMaisVendidos.length === 0 ? (
+          {produtosMaisVendidosOrdenados.length === 0 ? (
             <p className="p-6 text-sm text-slate-400">Nenhuma venda no periodo.</p>
           ) : (
             <div className="overflow-x-auto">
@@ -272,7 +328,7 @@ export function RelatoriosConteudo({
                   </tr>
                 </thead>
                 <tbody>
-                  {dados.produtosMaisVendidos.map((produto, i) => (
+                  {produtosMaisVendidosOrdenados.map((produto, i) => (
                     <tr key={i} className="border-b border-slate-200 last:border-0">
                       <td className="p-4">{produto.nome}</td>
                       <td className="p-4">{produto.quantidade}</td>
