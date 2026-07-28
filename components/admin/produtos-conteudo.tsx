@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Plus, Pencil, Trash2, List } from "lucide-react"
+import { Plus, Pencil, Trash2, List, AlertTriangle } from "lucide-react"
 import { ProdutoForm } from "@/components/admin/produto-form"
 import { registrarAuditoria } from "@/lib/auditoria"
 
@@ -12,6 +12,8 @@ export type Produto = {
   id: string
   nome: string
   sku: string | null
+  ncm: string | null
+  codigo_barras: string | null
   preco: string
   preco_promocional: string | null
   estoque: number
@@ -157,7 +159,21 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                     <tbody>
                       {produtosFiltrados.map((produto) => (
                         <tr key={produto.id} className="border-b border-slate-200 last:border-0">
-                          <td className="p-4">{produto.nome}</td>
+                          <td className="p-4">
+                            <span className="flex items-center gap-1.5">
+                              {produto.nome}
+                              {(!produto.ncm || !produto.codigo_barras) && (
+                                <AlertTriangle
+                                  size={14}
+                                  className="text-amber-500"
+                                  aria-label="Cadastro incompleto"
+                                  role="img"
+                                >
+                                  <title>Cadastro incompleto - falta NCM e/ou codigo de barras</title>
+                                </AlertTriangle>
+                              )}
+                            </span>
+                          </td>
                           <td className="p-4 text-slate-500">{produto.sku || "-"}</td>
                           <td className="p-4 text-slate-500">
                             {produto.categorias.length > 0 ? produto.categorias.join(", ") : "-"}

@@ -23,9 +23,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List, Barcode } from "lucide-react"
-import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj } from "@/lib/mascaras"
+import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
+import { registrarAuditoria } from "@/lib/auditoria"
 
 export type Produto = {
   id: string
@@ -133,6 +134,11 @@ export function VendaBalcaoConteudo({
   const [busca, setBusca] = useState("")
   const [codigoBarrasLido, setCodigoBarrasLido] = useState("")
   const [erroCodigoBarras, setErroCodigoBarras] = useState("")
+  const [modalCadastroRapido, setModalCadastroRapido] = useState<{ codigoBarras: string } | null>(null)
+  const [novoProdutoNome, setNovoProdutoNome] = useState("")
+  const [novoProdutoPreco, setNovoProdutoPreco] = useState("")
+  const [cadastrandoRapido, setCadastrandoRapido] = useState(false)
+  const [erroCadastroRapido, setErroCadastroRapido] = useState("")
   const [categoriaAtiva, setCategoriaAtiva] = useState("todas")
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([])
 
@@ -265,13 +271,68 @@ export function VendaBalcaoConteudo({
 
     const produto = produtos.find((p) => p.codigo_barras === codigo)
     if (!produto) {
-      setErroCodigoBarras(`Nenhum produto com o codigo "${codigo}"`)
-      setTimeout(() => setErroCodigoBarras(""), 3000)
+      // Produto nao cadastrado - oferece cadastro rapido em vez de so travar
+      // a venda. O modal pergunta (Cancelar = nao quer cadastrar).
+      setModalCadastroRapido({ codigoBarras: codigo })
+      setNovoProdutoNome("")
+      setNovoProdutoPreco("")
+      setErroCadastroRapido("")
       return
     }
 
     setErroCodigoBarras("")
     adicionarAoCarrinho(produto)
+  }
+
+  async function confirmarCadastroRapido() {
+    if (!modalCadastroRapido) return
+    setErroCadastroRapido("")
+
+    if (!novoProdutoNome.trim() || !valorMoedaParaNumero(novoProdutoPreco)) {
+      setErroCadastroRapido("Nome e preco sao obrigatorios")
+      return
+    }
+
+    setCadastrandoRapido(true)
+    const resposta = await fetch("/api/admin/produtos/rapido", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome: novoProdutoNome,
+        preco: valorMoedaParaNumero(novoProdutoPreco),
+        codigoBarras: modalCadastroRapido.codigoBarras,
+      }),
+    })
+    setCadastrandoRapido(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErroCadastroRapido(dados.erro || "Erro ao cadastrar produto")
+      return
+    }
+
+    const produtoCriado = await resposta.json()
+    const produtoCompleto: Produto = {
+      id: produtoCriado.id,
+      nome: produtoCriado.nome,
+      preco: produtoCriado.preco,
+      preco_promocional: null,
+      estoque: produtoCriado.estoque,
+      codigo_barras: produtoCriado.codigo_barras,
+      categorias: [],
+      imagem_url: null,
+    }
+    setProdutos((atual) => [...atual, produtoCompleto])
+    registrarAuditoria({
+      tela: "Venda Balcao (cadastro rapido)",
+      acao: "cadastro",
+      tabela: "TAB_PRODUTO",
+      registroId: produtoCriado.id,
+      depois: { nome: produtoCriado.nome, codigo_barras: produtoCriado.codigo_barras },
+    })
+
+    adicionarAoCarrinho(produtoCompleto)
+    setModalCadastroRapido(null)
   }
 
   function alterarQuantidade(produtoId: string, delta: number) {
@@ -828,6 +889,46 @@ export function VendaBalcaoConteudo({
                 Abrir pedido completo
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!modalCadastroRapido} onOpenChange={(aberto) => !aberto && setModalCadastroRapido(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Produto nao cadastrado</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500">
+              Nenhum produto com o codigo <strong>{modalCadastroRapido?.codigoBarras}</strong>. Deseja
+              cadastrar agora pra continuar a venda?
+            </p>
+            <div className="space-y-2">
+              <Label>Nome do produto</Label>
+              <Input value={novoProdutoNome} onChange={(e) => setNovoProdutoNome(e.target.value)} autoFocus />
+            </div>
+            <div className="space-y-2">
+              <Label>Preco (R$)</Label>
+              <Input
+                inputMode="numeric"
+                value={novoProdutoPreco}
+                onChange={(e) => setNovoProdutoPreco(mascaraMoeda(e.target.value))}
+                placeholder="0,00"
+              />
+            </div>
+            <p className="rounded-md bg-amber-500/10 p-2 text-xs text-amber-600">
+              Esse e um cadastro rapido, so com o essencial pra vender agora. Depois va em Produtos e
+              complete o cadastro (NCM, categoria, fotos, dimensoes) antes de emitir nota fiscal desse item.
+            </p>
+            {erroCadastroRapido && <p className="text-sm text-red-500">{erroCadastroRapido}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setModalCadastroRapido(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmarCadastroRapido} disabled={cadastrandoRapido}>
+              {cadastrandoRapido ? "Cadastrando..." : "Cadastrar e adicionar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
