@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Pencil, Plus, Ban, RotateCcw, X } from "lucide-react"
+import { Pencil, Plus, Ban, RotateCcw, Trash2, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { mascaraTelefone, mascaraCpfCnpj } from "@/lib/mascaras"
 
@@ -149,6 +149,31 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     recarregar()
   }
 
+  // So tem efeito de fato quando o cliente nunca teve pedido - se ja tiver
+  // historico de venda vinculado, a API recusa (23503) e pede pra inativar
+  // em vez de excluir, pra nao perder o vinculo do pedido com o cliente.
+  async function excluir(cliente: Cliente) {
+    if (!confirm(`Excluir o cliente "${cliente.nome}"? So funciona se ele nunca tiver feito nenhum pedido.`)) return
+
+    const resposta = await fetch(`/api/admin/clientes/${cliente.id}`, { method: "DELETE" })
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      alert(dados.erro || "Erro ao excluir")
+      return
+    }
+
+    registrarAuditoria({
+      tela: "Clientes",
+      acao: "exclusao",
+      tabela: "TAB_CLIENTE",
+      registroId: cliente.id,
+      antes: { nome: cliente.nome },
+      depois: null,
+    })
+
+    recarregar()
+  }
+
   const clientesFiltrados = clientes
     .filter((c) => {
       if (filtroStatus === "ativos") return c.ativo
@@ -258,6 +283,14 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                           ) : (
                             <RotateCcw size={16} className="text-emerald-500" />
                           )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={() => excluir(cliente)}
+                          title="Excluir cliente (so se nunca teve pedido)"
+                        >
+                          <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </td>
                     </tr>
