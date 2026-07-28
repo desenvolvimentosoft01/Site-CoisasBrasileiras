@@ -111,7 +111,7 @@ export default function DetalhePedidoPage() {
     carregar()
   }
 
-  async function validarRastreio() {
+  async function validarRastreio(): Promise<boolean> {
     setErroValidacao("")
     setResultadoValidacao(null)
     setValidandoRastreio(true)
@@ -126,14 +126,25 @@ export default function DetalhePedidoPage() {
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErroValidacao(dados.erro || "Erro ao validar")
-      return
+      setErroValidacao(dados.erro || "Codigo de rastreio invalido na Frenet")
+      return false
     }
     setResultadoValidacao(await resposta.json())
+    return true
   }
 
   async function salvarRastreio() {
     if (!pedido) return
+    setErroValidacao("")
+
+    // Se o codigo de servico da Frenet estiver preenchido, valida o rastreio
+    // ANTES de salvar/notificar - sem isso, um codigo digitado errado seria
+    // salvo e o cliente notificado com uma informacao falsa.
+    if (codigoRastreio.trim() && codigoServicoFrenet.trim()) {
+      const valido = await validarRastreio()
+      if (!valido) return
+    }
+
     setSalvandoRastreio(true)
     await fetch(`/api/admin/pedidos/${pedido.id}`, {
       method: "PUT",
@@ -361,15 +372,17 @@ export default function DetalhePedidoPage() {
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={validarRastreio}
+                onClick={() => validarRastreio()}
                 disabled={validandoRastreio || !codigoRastreio || !codigoServicoFrenet}
               >
-                {validandoRastreio ? "Validando..." : "Validar"}
+                {validandoRastreio ? "Validando..." : "Validar agora"}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Confirma que o codigo existe de verdade na transportadora (consulta a Frenet) - nao e
-              obrigatorio pra salvar o rastreio.
+              Se preencher o codigo de servico, o rastreio e validado automaticamente ao clicar em
+              "Salvar e notificar cliente" - se o codigo nao existir de verdade na transportadora,
+              o salvamento e a notificacao sao bloqueados. Sem o codigo de servico preenchido, nao
+              da pra validar (fica so o aviso de formato) e o salvamento funciona normal.
             </p>
             {erroValidacao && <p className="text-sm text-red-500">{erroValidacao}</p>}
             {resultadoValidacao && (
