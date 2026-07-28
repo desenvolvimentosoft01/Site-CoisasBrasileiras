@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { List, Plus, Trash2, PackageCheck, Ban, FileUp, AlertTriangle } from "lucide-react"
+import { List, Plus, Trash2, PackageCheck, Ban, FileUp, AlertTriangle, Radio, RefreshCw, Link2 } from "lucide-react"
 import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 
@@ -18,6 +18,31 @@ export type ProdutoSelecionavel = {
   codigo_barras: string | null
   custo: string
   estoque: number
+}
+
+type NotaEntradaBling = {
+  id: string
+  numero: string
+  serie: string
+  dataEmissao: string | null
+  situacao: number
+  valorTotal: number
+  fornecedorNome: string | null
+  statusLocal: "pendente" | "lancada" | "cancelada"
+}
+
+const SITUACAO_BLING_LABEL: Record<number, string> = {
+  1: "Pendente",
+  2: "Cancelada",
+  3: "Aguardando recibo",
+  4: "Rejeitada",
+  5: "Autorizada",
+  6: "Emitida DANFE",
+  7: "Registrada",
+  8: "Aguardando protocolo",
+  9: "Denegada",
+  10: "Consulta situacao",
+  11: "Bloqueada",
 }
 
 type ItemNfeXml = {
@@ -112,6 +137,38 @@ export function ComprasConteudo({
   const [salvando, setSalvando] = useState(false)
   const [processandoId, setProcessandoId] = useState<string | null>(null)
 
+  const [notasBling, setNotasBling] = useState<NotaEntradaBling[]>([])
+  const [carregandoNotasBling, setCarregandoNotasBling] = useState(false)
+  const [erroNotasBling, setErroNotasBling] = useState("")
+  const [filtroStatusBling, setFiltroStatusBling] = useState<"todas" | "pendente" | "lancada" | "cancelada">(
+    "pendente"
+  )
+  const [blingNotaVinculada, setBlingNotaVinculada] = useState<{ id: string; numero: string } | null>(null)
+
+  async function buscarNotasBling() {
+    setErroNotasBling("")
+    setCarregandoNotasBling(true)
+    const resposta = await fetch("/api/admin/bling/notas-entrada")
+    const dados = await resposta.json()
+    setCarregandoNotasBling(false)
+
+    if (!resposta.ok) {
+      setErroNotasBling(dados.erro || "Erro ao consultar notas no Bling")
+      return
+    }
+    setNotasBling(dados)
+  }
+
+  function lancarEntradaDeNotaBling(nota: NotaEntradaBling) {
+    abrirNova()
+    setBlingNotaVinculada({ id: nota.id, numero: nota.numero })
+    setNumeroNota(nota.numero)
+    setAba("formulario")
+  }
+
+  const notasBlingFiltradas =
+    filtroStatusBling === "todas" ? notasBling : notasBling.filter((n) => n.statusLocal === filtroStatusBling)
+
   async function recarregar() {
     const resposta = await fetch("/api/admin/compras")
     setCompras(await resposta.json())
@@ -132,6 +189,7 @@ export function ComprasConteudo({
     setChaveXmlInvalida(false)
     setItensXmlPendentes([])
     setMapeamentoXml({})
+    setBlingNotaVinculada(null)
     setAba("formulario")
   }
 
@@ -293,6 +351,7 @@ export function ComprasConteudo({
           quantidade: i.quantidade,
           custoUnitario: valorMoedaParaNumero(i.custoUnitario),
         })),
+        blingNotaId: blingNotaVinculada?.id || null,
       }),
     })
 
@@ -379,6 +438,10 @@ export function ComprasConteudo({
             <TabsTrigger value="formulario">
               <Plus size={14} className="mr-1.5" />
               Cadastro
+            </TabsTrigger>
+            <TabsTrigger value="notas-bling" onClick={() => notasBling.length === 0 && buscarNotasBling()}>
+              <Radio size={14} className="mr-1.5" />
+              Notas do Bling
             </TabsTrigger>
           </TabsList>
           {aba === "lista" && (
@@ -469,6 +532,17 @@ export function ComprasConteudo({
               </Button>
             </div>
           </div>
+
+          {blingNotaVinculada && (
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="flex items-center gap-2 pt-6 text-sm">
+                <Link2 size={16} className="text-primary" />
+                Lançando a entrada da nota Bling #{blingNotaVinculada.numero}. Importe o XML dessa
+                nota abaixo pra preencher os itens - ao salvar, a compra fica vinculada e some da
+                lista de pendentes em "Notas do Bling".
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardContent className="space-y-4 pt-6">
@@ -677,6 +751,110 @@ export function ComprasConteudo({
               </div>
 
               {erro && <p className="text-sm text-red-500">{erro}</p>}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notas-bling" className="mt-4 space-y-4">
+          <Card>
+            <CardContent className="space-y-4 pt-6">
+              <p className="text-xs text-muted-foreground">
+                Acompanha as notas de entrada ja registradas no Bling (fornecedor emitiu, Sefaz
+                autorizou). O lancamento no nosso sistema (dar entrada no estoque/custo) continua
+                sendo feito importando o XML dessa nota em "Cadastro".
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {(["pendente", "lancada", "cancelada", "todas"] as const).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setFiltroStatusBling(status)}
+                    className={`rounded-full border px-3 py-1 text-xs capitalize transition-colors ${
+                      filtroStatusBling === status
+                        ? "border-primary bg-primary/15 text-primary"
+                        : "border-input text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={buscarNotasBling}
+                  disabled={carregandoNotasBling}
+                  className="ml-auto"
+                >
+                  <RefreshCw size={14} className={`mr-2 ${carregandoNotasBling ? "animate-spin" : ""}`} />
+                  {carregandoNotasBling ? "Consultando..." : "Atualizar"}
+                </Button>
+              </div>
+
+              {erroNotasBling && <p className="text-sm text-red-500">{erroNotasBling}</p>}
+
+              {notasBlingFiltradas.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  {carregandoNotasBling ? "Consultando o Bling..." : "Nenhuma nota encontrada."}
+                </p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-border">
+                  <table className="w-full min-w-[640px] text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-left text-slate-500">
+                        <th className="p-3 font-medium">NF</th>
+                        <th className="p-3 font-medium">Fornecedor</th>
+                        <th className="p-3 font-medium">Emissao</th>
+                        <th className="p-3 font-medium">Valor</th>
+                        <th className="p-3 font-medium">Situacao (Bling)</th>
+                        <th className="p-3 font-medium">Status</th>
+                        <th className="p-3 font-medium text-right">Acoes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {notasBlingFiltradas.map((nota) => (
+                        <tr key={nota.id} className="border-b border-border last:border-0">
+                          <td className="p-3">
+                            {nota.numero}/{nota.serie}
+                          </td>
+                          <td className="p-3">{nota.fornecedorNome || "-"}</td>
+                          <td className="p-3 text-muted-foreground">
+                            {nota.dataEmissao ? new Date(nota.dataEmissao).toLocaleDateString("pt-BR") : "-"}
+                          </td>
+                          <td className="p-3">{formatarMoeda(nota.valorTotal)}</td>
+                          <td className="p-3 text-muted-foreground">
+                            {SITUACAO_BLING_LABEL[nota.situacao] ?? nota.situacao}
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`rounded-full px-2 py-1 text-xs ${
+                                nota.statusLocal === "lancada"
+                                  ? "bg-emerald-600/20 text-emerald-400"
+                                  : nota.statusLocal === "cancelada"
+                                    ? "bg-slate-200 text-slate-500"
+                                    : "bg-amber-500/20 text-amber-500"
+                              }`}
+                            >
+                              {nota.statusLocal === "lancada"
+                                ? "Lancada"
+                                : nota.statusLocal === "cancelada"
+                                  ? "Cancelada"
+                                  : "Pendente"}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            {nota.statusLocal === "pendente" && (
+                              <Button variant="outline" size="sm" onClick={() => lancarEntradaDeNotaBling(nota)}>
+                                Lancar entrada
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const dados = await request.json()
-  const { fornecedorId, numeroNota, valorFrete, dataCompra, observacao, itens } = dados
+  const { fornecedorId, numeroNota, valorFrete, dataCompra, observacao, itens, blingNotaId } = dados
 
   if (!fornecedorId) {
     return NextResponse.json({ erro: "Fornecedor e obrigatorio" }, { status: 400 })
@@ -34,10 +34,17 @@ export async function POST(request: Request) {
   // loop de itens deixava uma compra "orfa" com itens incompletos no banco.
   const compra = await transacao(async (q) => {
     const [novaCompra] = await q(
-      `INSERT INTO TAB_COMPRA (fornecedor_id, numero_nota, valor_frete, data_compra, observacao)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO TAB_COMPRA (fornecedor_id, numero_nota, valor_frete, data_compra, observacao, bling_nota_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, fornecedor_id, numero_nota, status, valor_frete, data_compra, observacao, criado_em`,
-      [fornecedorId, numeroNota || null, Number(valorFrete) || 0, dataCompra || new Date(), observacao || null]
+      [
+        fornecedorId,
+        numeroNota || null,
+        Number(valorFrete) || 0,
+        dataCompra || new Date(),
+        observacao || null,
+        blingNotaId || null,
+      ]
     )
 
     for (const item of itens) {

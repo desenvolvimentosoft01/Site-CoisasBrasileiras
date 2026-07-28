@@ -245,3 +245,41 @@ export async function cancelarNotaFiscalBling(blingNotaId: string, justificativa
     body: JSON.stringify({ justificativa: justificativa.trim() }),
   })
 }
+
+export type NotaEntradaBlingResumo = {
+  id: string
+  numero: string
+  serie: string
+  dataEmissao: string | null
+  situacao: number
+  valorTotal: number
+  fornecedorNome: string | null
+}
+
+// Lista notas de ENTRADA (tipo=0) ja registradas no Bling - usado no painel
+// "Notas do Bling" (Compras) como acompanhamento, cruzado com o que ja foi
+// lancado localmente (TAB_COMPRA.bling_nota_id). So a listagem/status: o
+// formato exato dos itens de cada nota (pro lancamento automatico) ainda nao
+// foi confirmado contra uma conta real, entao o lancamento continua via
+// importacao de XML (ver lib/nfe-xml.ts).
+export async function listarNotasEntradaBling(params: {
+  dataEmissaoInicial?: string
+  dataEmissaoFinal?: string
+}): Promise<NotaEntradaBlingResumo[]> {
+  const query = new URLSearchParams({ tipo: "0" })
+  if (params.dataEmissaoInicial) query.set("dataEmissaoInicial", `${params.dataEmissaoInicial} 00:00:00`)
+  if (params.dataEmissaoFinal) query.set("dataEmissaoFinal", `${params.dataEmissaoFinal} 23:59:59`)
+
+  const resposta = await chamarBling(`/notas-fiscais?${query.toString()}`)
+  const lista = resposta?.data ?? []
+
+  return lista.map((nota: any) => ({
+    id: String(nota.id),
+    numero: String(nota.numero ?? ""),
+    serie: String(nota.serie ?? ""),
+    dataEmissao: nota.dataEmissao ?? null,
+    situacao: Number(nota.situacao),
+    valorTotal: Number(nota.valorTotal) || 0,
+    fornecedorNome: nota.contato?.nome ?? nota.emitente?.nome ?? null,
+  }))
+}

@@ -191,6 +191,35 @@ Usuário perguntou se o código de barras que o cliente já tem nos produtos est
 - [x] **NF-e (Bling)**: campo `gtin` enviado por item, junto com o NCM
 - [x] **Importação de XML de compra**: `lib/nfe-xml.ts` extrai `cEAN` do item; pré-seleção do produto no mapeamento agora prioriza código de barras (mais confiável, é sempre o mesmo em qualquer lugar) e cai pro SKU se não achar
 
+### Fase 9 — Painel "Notas do Bling" (acompanhamento de entrada) (2026-07-27)
+Status: ✅ implementada, lançamento em si continua via importação de XML
+
+Usuário perguntou se dava pra ter uma tela recebendo as notas de fornecedor automaticamente. Confirmado via Context7 que o Bling expõe `GET /notas-fiscais?tipo=0` (notas de entrada) — dá pra listar sem tocar em certificado (fica isolado no Bling). Mas o formato dos **itens** de cada nota não está confirmado na documentação disponível, então o lançamento (criar a compra de fato) continua via importação de XML — a tela serve de painel de acompanhamento pra saber o que já foi lançado e o que falta.
+
+- [x] Migration `025_compra_bling_nota.sql`: `TAB_COMPRA.bling_nota_id` (link local, aplicada em ambos os bancos)
+- [x] `lib/bling.ts` → `listarNotasEntradaBling()`
+- [x] `GET /api/admin/bling/notas-entrada`: lista as notas de entrada do Bling, cruza com o que já virou `TAB_COMPRA` localmente, classifica em pendente/lançada/cancelada
+- [x] Nova aba **Compras > Notas do Bling**: filtro por status, botão "Lançar entrada" (pendente) que abre o Cadastro pré-vinculado àquela nota — ao importar o XML e salvar, a compra fica marcada como lançada e some da lista de pendentes
+- [ ] **Pendência futura** (quando tiver conta Bling real conectada): confirmar o schema do detalhe da nota (`GET /notas-fiscais/{id}`) pra preencher os itens automaticamente, sem precisar do XML separado
+
+### Fase 10 — Diferenciais de site/sistema (wishlist aprovada pelo usuário, ainda não iniciada)
+Status: 🔲 a fazer — aguardando ordem de prioridade
+
+Lista de melhorias sugeridas numa conversa exploratória ("o que mais pode ter de diferencial"), todas aprovadas pelo usuário ("gostei"), mas nenhuma iniciada ainda — registrado aqui pra não perder.
+
+**Site (experiência do cliente)**
+- [ ] Avaliações/reviews de produto público (reaproveitar `TAB_FEEDBACK`)
+- [ ] Lista de desejos (favoritar produto sem comprar)
+- [ ] Busca com filtro avançado (categoria + faixa de preço + "só com desconto do clube")
+- [ ] Notificação automática de "voltou ao estoque" (cliente deixa e-mail, sistema avisa sozinho quando repor)
+- [ ] Programa de indicação (cupom por indicação de amigo)
+
+**Sistema (gestão)**
+- [ ] Previsão de reposição de estoque (velocidade de venda x estoque atual, "vai faltar em X dias")
+- [ ] Metas de vendas no dashboard (meta do mês x realizado)
+- [ ] Segmentação de clientes (quem compra mais, quem não compra há X meses) pra campanha de reativação
+- [ ] Multiusuário com permissão mais granular (hoje só admin/operador)
+
 ## Concluído fora da ordem das fases (pedidos pontuais do cliente)
 
 - [x] Logo configurável pelo admin (Configurações > Aparência), com upload via Cloudinary/disco local, fallback pro arquivo padrão
