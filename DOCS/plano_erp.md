@@ -4,6 +4,17 @@ Documento de acompanhamento da expansão do sistema em direção a um ERP comple
 
 Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a memória `projeto_coisas_brasileiras_erp.md`. Este documento é o "o quê" e "como está", não o "porquê".
 
+## Checklist de go-live (produção de verdade)
+
+Marcar conforme for resolvendo. Levantado em 2026-07-27.
+
+- [ ] **Banco de dados**: confirmar se a Vercel usa o Neon de produção (`DATABASE_URL` do projeto na Vercel) — nunca foi confirmado, ver seção "Infraestrutura" mais abaixo. Todas as migrations (`000` até a mais recente) aplicadas nesse banco.
+- [ ] **Bling**: trocar do app de teste pro app de produção no painel Bling (se for o caso). Reconectar em Configurações > Integrações > Bling com a conta real da loja (fluxo OAuth já pronto). `BLING_CLIENT_ID`/`BLING_CLIENT_SECRET` do app de produção como variável de ambiente na Vercel.
+- [ ] **Mercado Pago**: token de acesso e chave pública **de produção** (não `TEST-...`) em Configurações > Integrações > Mercado Pago. Cadastrar a URL do webhook (`https://seudominio.com/api/webhooks/mercadopago`) no painel do Mercado Pago e colocar a "assinatura secreta" gerada em `MERCADOPAGO_WEBHOOK_SECRET` (env var — ainda não foi movido pro banco).
+- [ ] **Frenet**: token real da conta em Integrações > Frenet. CEP de origem configurado em Configurações > Frete. `ShippingServiceCode` reais das transportadoras usadas, pra validação automática de rastreio funcionar (pendente).
+- [ ] **Email**: credenciais reais (Gmail com senha de app, ou outro provedor) em Integrações > Email.
+- [ ] **Infraestrutura**: `AUTH_SECRET` de produção gerado (valor aleatório longo). Domínio próprio apontado pra Vercel (`NEXT_PUBLIC_SITE_URL` correto). Cloudinary configurado (`CLOUDINARY_*`), já que Vercel é serverless e não tem disco persistente pra upload de imagem.
+
 ## Fronteiras decididas (não fazer)
 
 - **Fiscal** (NF-e, NFC-e, SPED Fiscal): sempre terceirizado ao **Bling**. Nunca implementar emissão/apuração fiscal própria.
