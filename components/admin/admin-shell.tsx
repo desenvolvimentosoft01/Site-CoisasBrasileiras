@@ -63,6 +63,7 @@ const menu: ItemMenu[] = [
       { href: "/admin/cupons", label: "Cupons" },
       { href: "/admin/banners", label: "Banners" },
       { href: "/admin/feedbacks", label: "Feedbacks" },
+      { href: "/admin/avaliacoes", label: "Avaliacoes" },
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },
     ],
   },

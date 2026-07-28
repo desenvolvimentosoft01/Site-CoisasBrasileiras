@@ -1,9 +1,10 @@
 import { cookies } from "next/headers"
 import { query } from "@/lib/db"
 import { notFound } from "next/navigation"
-import { Truck, Sparkles } from "lucide-react"
+import { Truck, Sparkles, Star } from "lucide-react"
 import { ProdutoGaleria } from "@/components/loja/produto-galeria"
 import { AdicionarCarrinhoButton } from "@/components/loja/adicionar-carrinho-button"
+import { AvaliacaoProduto } from "@/components/loja/avaliacao-produto"
 import { lerTokenSessaoCliente } from "@/lib/auth"
 import { clienteTemClubeAtivo } from "@/lib/clube"
 
@@ -30,6 +31,21 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   const clubeAtivo = sessaoCliente ? await clienteTemClubeAtivo(sessaoCliente.id) : false
   const precoClubeDisponivel = clubeAtivo && produto.preco_clube
 
+  const [resumoAvaliacoes] = await query(
+    `SELECT COUNT(*) AS total, COALESCE(AVG(nota), 0) AS media
+     FROM TAB_AVALIACAO_PRODUTO WHERE produto_id = $1 AND aprovado = true`,
+    [produto.id]
+  )
+  const avaliacoes = await query(
+    `SELECT a.nota, a.comentario, a.criado_em, c.nome AS cliente_nome
+     FROM TAB_AVALIACAO_PRODUTO a JOIN TAB_CLIENTE c ON c.id = a.cliente_id
+     WHERE a.produto_id = $1 AND a.aprovado = true
+     ORDER BY a.criado_em DESC`,
+    [produto.id]
+  )
+  const totalAvaliacoes = Number(resumoAvaliacoes.total)
+  const mediaAvaliacoes = Number(resumoAvaliacoes.media)
+
   const precoFinal = precoClubeDisponivel ? produto.preco_clube : (produto.preco_promocional ?? produto.preco)
 
   return (
@@ -42,6 +58,23 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
             <h1 className="font-heading text-3xl font-semibold text-emerald-950">
               {produto.nome}
             </h1>
+
+            {totalAvaliacoes > 0 && (
+              <div className="mt-1 flex items-center gap-1.5">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      size={14}
+                      className={n <= Math.round(mediaAvaliacoes) ? "fill-amber-400 text-amber-400" : "text-neutral-300"}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-neutral-500">
+                  {mediaAvaliacoes.toFixed(1)} ({totalAvaliacoes} avaliaç{totalAvaliacoes === 1 ? "ão" : "ões"})
+                </span>
+              </div>
+            )}
 
             <div className="mt-3">
               {precoClubeDisponivel ? (
@@ -102,6 +135,41 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
             estoque={produto.estoque}
           />
         </div>
+      </div>
+
+      <div className="mx-auto mt-16 max-w-2xl space-y-6">
+        <h2 className="font-heading text-2xl font-semibold text-emerald-950">Avaliações</h2>
+
+        <AvaliacaoProduto produtoId={produto.id} />
+
+        {avaliacoes.length === 0 ? (
+          <p className="text-sm text-neutral-500">Nenhuma avaliação ainda.</p>
+        ) : (
+          <div className="space-y-4">
+            {avaliacoes.map((avaliacao, indice) => (
+              <div key={indice} className="border-b border-black/5 pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        size={14}
+                        className={n <= avaliacao.nota ? "fill-amber-400 text-amber-400" : "text-neutral-300"}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium">{avaliacao.cliente_nome}</span>
+                  <span className="text-xs text-neutral-400">
+                    {new Date(avaliacao.criado_em).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+                {avaliacao.comentario && (
+                  <p className="mt-1 text-sm text-neutral-600">{avaliacao.comentario}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

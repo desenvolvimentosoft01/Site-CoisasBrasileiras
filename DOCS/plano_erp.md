@@ -208,7 +208,7 @@ Status: 🔲 a fazer — aguardando ordem de prioridade
 Lista de melhorias sugeridas numa conversa exploratória ("o que mais pode ter de diferencial"), todas aprovadas pelo usuário ("gostei"), mas nenhuma iniciada ainda — registrado aqui pra não perder.
 
 **Site (experiência do cliente)**
-- [ ] Avaliações/reviews de produto público (reaproveitar `TAB_FEEDBACK`)
+- [x] **Avaliações de produto** (2026-07-27) — implementada, ver detalhe abaixo
 - [ ] Lista de desejos (favoritar produto sem comprar)
 - [ ] Busca com filtro avançado (categoria + faixa de preço + "só com desconto do clube")
 - [ ] Notificação automática de "voltou ao estoque" (cliente deixa e-mail, sistema avisa sozinho quando repor)
@@ -219,6 +219,17 @@ Lista de melhorias sugeridas numa conversa exploratória ("o que mais pode ter d
 - [ ] Metas de vendas no dashboard (meta do mês x realizado)
 - [ ] Segmentação de clientes (quem compra mais, quem não compra há X meses) pra campanha de reativação
 - [ ] Multiusuário com permissão mais granular (hoje só admin/operador)
+
+### Fase 10.1 — Avaliações de produto (2026-07-27)
+Status: ✅ implementada
+
+Primeiro item da Fase 10 escolhido pelo usuário. **Diferente de `TAB_FEEDBACK`** (depoimentos curados pelo admin pra home) — aqui é o cliente avaliando um produto específico que comprou.
+
+- [x] Migration `026_avaliacoes_produto.sql`: `TAB_AVALIACAO_PRODUTO` (produto, cliente, nota 1-5, comentário, aprovado, `UNIQUE(produto_id, cliente_id)` — uma avaliação por cliente por produto)
+- [x] **Compra verificada**: só quem tem pedido `pago` com aquele produto pode avaliar (checado no servidor, não é so uma checagem de UI)
+- [x] **Moderação**: avaliação nasce `aprovado = false`, só aparece no site depois que o admin aprova — nova tela `/admin/avaliacoes` (Grade com filtro pendentes/aprovadas/todas, aprovar ou excluir)
+- [x] Página de produto: resumo de estrelas (média + contagem) perto do título, lista das avaliações aprovadas, formulário de envio (só aparece pra quem comprou e ainda não avaliou)
+- [x] Auditoria registrada nas ações de aprovar/excluir
 
 ## Concluído fora da ordem das fases (pedidos pontuais do cliente)
 
