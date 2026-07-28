@@ -23,7 +23,8 @@ export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
-  const { nome, telefone, cpf_cnpj, email } = await request.json()
+  const { nome, telefone, cpf_cnpj, email, cep, logradouro, numero, complemento, bairro, cidade, estado } =
+    await request.json()
 
   if (!nome || !nome.trim()) {
     return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
@@ -45,6 +46,15 @@ export async function POST(request: Request) {
        RETURNING id, nome, email, telefone, cpf_cnpj, criado_em`,
       [nome.trim(), email?.trim() || null, telefone || null, cpf_cnpj || null]
     )
+
+    if (cep && logradouro) {
+      await query(
+        `INSERT INTO TAB_ENDERECO (cliente_id, cep, logradouro, numero, complemento, bairro, cidade, estado, principal)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)`,
+        [cliente.id, cep, logradouro, numero || "", complemento || null, bairro || "", cidade || "", estado || ""]
+      )
+    }
+
     return NextResponse.json(cliente, { status: 201 })
   } catch (erro) {
     // 23505 = violacao de unique (ex: CPF/CNPJ ja cadastrado).

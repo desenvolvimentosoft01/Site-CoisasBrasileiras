@@ -4,6 +4,14 @@ Documento de acompanhamento da expansão do sistema em direção a um ERP comple
 
 Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a memória `projeto_coisas_brasileiras_erp.md`. Este documento é o "o quê" e "como está", não o "porquê".
 
+## Pendências pra retomar (sessão de 2026-07-28 parou aqui)
+
+- [ ] **Cadastro de Produtos**: cliente pediu formulário mais compacto/apertado (estilo ERP denso) — já apertei os espaçamentos (`space-y`/`gap` menores), mas **ainda não foi validado visualmente** com o cliente. Revisar com ele antes de considerar concluído.
+- [ ] **Reajuste de Preços em massa** (`/admin/precos`): pedido do cliente pra permitir editar preço direto na grade (linha a linha) — feito, mas nunca foi confirmado visualmente pelo cliente que ficou como ele imaginou.
+- [ ] Confirmar com o cliente se o CRUD de Clientes ficou como esperado (aba em vez de modal, endereço com CEP) — acabou de ser feito, sem validação visual ainda.
+- [ ] Continuar auditoria dos demais formulários do admin em busca do mesmo tipo de bug de alinhamento (label longo empurrando campo) — só foi conferido visualmente Produtos; os outros formulários (Fornecedores, Compras, Configurações etc.) têm o fix estrutural (`Label` com `min-h-9`) mas não foram todos abertos e olhados um por um.
+- [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
+
 ## Checklist de go-live (produção de verdade)
 
 Marcar conforme for resolvendo. Levantado em 2026-07-27.
@@ -290,6 +298,18 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] **Lógica de "status de exibição" centralizada** em `lib/status-pedido.ts` (`ROTULOS_STATUS` + `statusExibicao()`), extraída da Venda Balcão. Antes só a grade combinada de Venda Balcão mostrava o ícone de canal, forma de pagamento e o aviso "Provavelmente abandonado" (heurística de 24h sem pagamento); `/admin/pedidos` (lista separada) e o widget "Últimos pedidos" do Dashboard ficaram desatualizados e não mostravam nada disso. Agora as três telas usam a mesma função, então não há mais divergência.
 - [x] **Restrição de alteração manual de status do pedido**: não é mais possível setar "Pago" manualmente pela tela `/admin/pedidos/[id]` — esse status só é definido automaticamente pela confirmação de pagamento do Mercado Pago (webhook). Quando o pedido está "Aguardando pagamento", a tela não mostra mais um seletor de status livre; mostra um badge estático + botão "Cancelar pedido" (única ação segura nesse estado). Nos demais estados, o seletor permite só as transições operacionais (em separação → enviado → entregue, cancelar), nunca "Pago" nem voltar pra "Aguardando pagamento".
   - Reforçado também no servidor (`PUT /api/admin/pedidos/[id]`): a rota agora rejeita explicitamente `status: "pago"` vindo de qualquer chamada manual, já que o webhook do MP grava esse status direto no banco (não passa por essa rota) — proteção contra alguém liberar um pedido sem o pagamento ter de fato entrado, mesmo via chamada direta de API.
+
+## 2026-07-28 — Clientes: cadastro completo (endereço + CEP) e virou aba, não modal
+
+- [x] Tela de Clientes (`clientes-conteudo.tsx`) reescrita pra abrir o formulário numa aba própria (Lista/Formulário, igual Categorias, Cupons etc.), em vez de modal — pedido explícito do cliente.
+- [x] Cadastro/edição de cliente ganhou seção de endereço completo (CEP, logradouro, número, complemento, bairro, cidade, estado), gravado em `TAB_ENDERECO` com `principal = true` (mesma tabela que o checkout do site usa, cliente já podia ter endereço via lá — só o admin não tinha como editar).
+- [x] CEP com autopreenchimento via BrasilAPI (`https://brasilapi.com.br/api/cep/v1/{cep}`), mesmo padrão já usado no checkout público (`app/(loja)/checkout/page.tsx`).
+- [x] `GET /api/admin/clientes/[id]` criado (não existia) — traz cliente + endereço principal pro formulário de edição. `POST`/`PUT` de clientes agora fazem upsert do endereço principal quando `cep` + `logradouro` vêm preenchidos.
+
+## 2026-07-28 — Produtos: formulário mais compacto (menos espaçamento)
+
+- [x] Ajuste de densidade no `produto-form.tsx` a pedido do cliente ("ERP geralmente é mais apertado") — `space-y-6`→`space-y-4`, `gap-6`→`gap-4`, `gap-4`→`gap-3` nos grids, `CardHeader` com `pb-2`. Mudança só visual/espaçamento, sem alterar campos.
+- [ ] **Pendente**: cliente ainda não validou visualmente se ficou bom o suficiente — revisar com ele na próxima sessão antes de considerar fechado.
 
 ## 2026-07-28 — Botão "Limpar" nas telas de cadastro (padrão CRUD do InMenteGestao)
 

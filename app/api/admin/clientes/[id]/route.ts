@@ -2,6 +2,31 @@ import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
 
+// Traz o cliente + o endereco principal (se tiver) pra tela de edicao do
+// admin conseguir preencher o formulario completo.
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const sessaoOuErro = await exigirSessao()
+  if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
+
+  const { id } = await params
+
+  const [cliente] = await query(
+    `SELECT c.id, c.nome, c.email, c.telefone, c.cpf_cnpj, c.ativo, c.criado_em,
+       (c.senha_hash IS NOT NULL) AS veio_do_site,
+       e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
+     FROM TAB_CLIENTE c
+     LEFT JOIN TAB_ENDERECO e ON e.cliente_id = c.id AND e.principal = true
+     WHERE c.id = $1`,
+    [id]
+  )
+
+  if (!cliente) {
+    return NextResponse.json({ erro: "Cliente nao encontrado" }, { status: 404 })
+  }
+
+  return NextResponse.json(cliente)
+}
+
 // So permite editar dados cadastrais - email e senha sao credenciais de
 // login do cliente no site, o admin nao deve alterar por aqui.
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -9,7 +34,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const { id } = await params
-  const { nome, telefone, cpf_cnpj, ativo } = await request.json()
+  const { nome, telefone, cpf_cnpj, ativo, cep, logradouro, numero, complemento, bairro, cidade, estado } =
+    await request.json()
 
   if (!nome || !nome.trim()) {
     return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
@@ -24,6 +50,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   if (!cliente) {
     return NextResponse.json({ erro: "Cliente nao encontrado" }, { status: 404 })
+  }
+
+  // Endereco e opcional (nem todo cliente de balcao tem um) - so grava se
+  // vier pelo menos o CEP e o logradouro preenchidos.
+  if (cep && logradouro) {
+    const [existente] = await query(
+      "SELECT id FROM TAB_ENDERECO WHERE cliente_id = $1 AND principal = true",
+      [id]
+    )
+    if (existente) {
+      await query(
+        `UPDATE TAB_ENDERECO SET cep = $1, logradouro = $2, numero = $3, complemento = $4, bairro = $5, cidade = $6, estado = $7
+         WHERE id = $8`,
+        [cep, logradouro, numero || "", complemento || null, bairro || "", cidade || "", estado || "", existente.id]
+      )
+    } else {
+      await query(
+        `INSERT INTO TAB_ENDERECO (cliente_id, cep, logradouro, numero, complemento, bairro, cidade, estado, principal)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)`,
+        [id, cep, logradouro, numero || "", complemento || null, bairro || "", cidade || "", estado || ""]
+      )
+    }
   }
 
   return NextResponse.json(cliente)

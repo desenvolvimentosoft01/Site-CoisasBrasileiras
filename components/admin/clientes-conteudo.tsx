@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Pencil, Plus, Ban, RotateCcw, Trash2, X } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Pencil, Plus, Ban, RotateCcw, Trash2, List, X } from "lucide-react"
 import { toast } from "sonner"
 import { registrarAuditoria } from "@/lib/auditoria"
-import { mascaraTelefone, mascaraCpfCnpj } from "@/lib/mascaras"
+import { mascaraTelefone, mascaraCpfCnpj, mascaraCEP } from "@/lib/mascaras"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Cliente = {
@@ -23,22 +23,46 @@ export type Cliente = {
   veio_do_site: boolean
 }
 
+type ClienteDetalhado = Cliente & {
+  cep: string | null
+  logradouro: string | null
+  numero: string | null
+  complemento: string | null
+  bairro: string | null
+  cidade: string | null
+  estado: string | null
+}
+
+const FORM_VAZIO = {
+  nome: "",
+  email: "",
+  telefone: "",
+  cpfCnpj: "",
+  cep: "",
+  logradouro: "",
+  numero: "",
+  complemento: "",
+  bairro: "",
+  cidade: "",
+  estado: "",
+}
+
 export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Cliente[] }) {
   const confirmar = useConfirmar()
   const [clientes, setClientes] = useState<Cliente[]>(clientesIniciais)
   const [busca, setBusca] = useState("")
   const [filtroStatus, setFiltroStatus] = useState<"ativos" | "inativos" | "todos">("ativos")
-  // clienteEditando === null e modalAberto === false: modal fechado.
-  // clienteEditando === null e modalAberto === true: cadastrando um novo.
-  // clienteEditando preenchido: editando o cliente existente.
-  const [modalAberto, setModalAberto] = useState(false)
-  const [clienteEditando, setClienteEditando] = useState<Cliente | null>(null)
-  const [nome, setNome] = useState("")
-  const [email, setEmail] = useState("")
-  const [telefone, setTelefone] = useState("")
-  const [cpfCnpj, setCpfCnpj] = useState("")
+  const [aba, setAba] = useState("lista")
+  const [clienteEditando, setClienteEditando] = useState<ClienteDetalhado | null>(null)
+  const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
+  const [form, setForm] = useState(FORM_VAZIO)
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
+
+  function campo<K extends keyof typeof FORM_VAZIO>(chave: K, valor: string) {
+    setForm((atual) => ({ ...atual, [chave]: valor }))
+  }
 
   async function recarregar() {
     const resposta = await fetch("/api/admin/clientes")
@@ -47,42 +71,82 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
 
   function abrirNovo() {
     setClienteEditando(null)
-    setNome("")
-    setEmail("")
-    setTelefone("")
-    setCpfCnpj("")
+    setForm(FORM_VAZIO)
     setErro("")
-    setModalAberto(true)
+    setAba("formulario")
   }
 
-  function abrirEdicao(cliente: Cliente) {
-    setClienteEditando(cliente)
-    setNome(cliente.nome)
-    setEmail(cliente.email || "")
-    setTelefone(cliente.telefone ? mascaraTelefone(cliente.telefone) : "")
-    setCpfCnpj(cliente.cpf_cnpj ? mascaraCpfCnpj(cliente.cpf_cnpj) : "")
+  async function abrirEdicao(cliente: Cliente) {
+    setAba("formulario")
+    setCarregandoDetalhe(true)
+    const resposta = await fetch(`/api/admin/clientes/${cliente.id}`)
+    const detalhado: ClienteDetalhado = await resposta.json()
+    setClienteEditando(detalhado)
+    setForm({
+      nome: detalhado.nome,
+      email: detalhado.email || "",
+      telefone: detalhado.telefone ? mascaraTelefone(detalhado.telefone) : "",
+      cpfCnpj: detalhado.cpf_cnpj ? mascaraCpfCnpj(detalhado.cpf_cnpj) : "",
+      cep: detalhado.cep ? mascaraCEP(detalhado.cep) : "",
+      logradouro: detalhado.logradouro || "",
+      numero: detalhado.numero || "",
+      complemento: detalhado.complemento || "",
+      bairro: detalhado.bairro || "",
+      cidade: detalhado.cidade || "",
+      estado: detalhado.estado || "",
+    })
     setErro("")
-    setModalAberto(true)
-  }
-
-  function fechar() {
-    setModalAberto(false)
-    setClienteEditando(null)
+    setCarregandoDetalhe(false)
   }
 
   function limpar() {
     if (clienteEditando) {
-      setNome(clienteEditando.nome)
-      setEmail(clienteEditando.email || "")
-      setTelefone(clienteEditando.telefone ? mascaraTelefone(clienteEditando.telefone) : "")
-      setCpfCnpj(clienteEditando.cpf_cnpj ? mascaraCpfCnpj(clienteEditando.cpf_cnpj) : "")
+      setForm({
+        nome: clienteEditando.nome,
+        email: clienteEditando.email || "",
+        telefone: clienteEditando.telefone ? mascaraTelefone(clienteEditando.telefone) : "",
+        cpfCnpj: clienteEditando.cpf_cnpj ? mascaraCpfCnpj(clienteEditando.cpf_cnpj) : "",
+        cep: clienteEditando.cep ? mascaraCEP(clienteEditando.cep) : "",
+        logradouro: clienteEditando.logradouro || "",
+        numero: clienteEditando.numero || "",
+        complemento: clienteEditando.complemento || "",
+        bairro: clienteEditando.bairro || "",
+        cidade: clienteEditando.cidade || "",
+        estado: clienteEditando.estado || "",
+      })
     } else {
-      setNome("")
-      setEmail("")
-      setTelefone("")
-      setCpfCnpj("")
+      setForm(FORM_VAZIO)
     }
     setErro("")
+  }
+
+  // Autopreenche o endereco a partir do CEP (BrasilAPI, gratuita e sem
+  // necessidade de chave) - mesmo padrao ja usado no checkout do site.
+  async function handleCepChange(valor: string) {
+    const formatado = mascaraCEP(valor)
+    campo("cep", formatado)
+
+    const digitos = formatado.replace(/\D/g, "")
+    if (digitos.length !== 8) return
+
+    setBuscandoCep(true)
+    try {
+      const resposta = await fetch(`https://brasilapi.com.br/api/cep/v1/${digitos}`)
+      if (resposta.ok) {
+        const dados = await resposta.json()
+        setForm((atual) => ({
+          ...atual,
+          logradouro: dados.street || atual.logradouro,
+          bairro: dados.neighborhood || atual.bairro,
+          cidade: dados.city || atual.cidade,
+          estado: dados.state || atual.estado,
+        }))
+      }
+    } catch {
+      // Busca falhou - o usuario preenche o endereco na mao, nao trava o cadastro.
+    } finally {
+      setBuscandoCep(false)
+    }
   }
 
   async function salvar() {
@@ -93,11 +157,20 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     // cliente do site); criar aceita e-mail opcional pra contato de balcao.
     const url = clienteEditando ? `/api/admin/clientes/${clienteEditando.id}` : "/api/admin/clientes"
     const method = clienteEditando ? "PUT" : "POST"
-    const telefoneDigitos = telefone.replace(/\D/g, "") || null
-    const cpfCnpjDigitos = cpfCnpj.replace(/\D/g, "") || null
-    const corpo = clienteEditando
-      ? { nome, telefone: telefoneDigitos, cpf_cnpj: cpfCnpjDigitos, ativo: clienteEditando.ativo }
-      : { nome, email, telefone: telefoneDigitos, cpf_cnpj: cpfCnpjDigitos }
+    const corpo = {
+      nome: form.nome,
+      email: form.email,
+      telefone: form.telefone.replace(/\D/g, "") || null,
+      cpf_cnpj: form.cpfCnpj.replace(/\D/g, "") || null,
+      ativo: clienteEditando?.ativo ?? true,
+      cep: form.cep.replace(/\D/g, "") || null,
+      logradouro: form.logradouro || null,
+      numero: form.numero || null,
+      complemento: form.complemento || null,
+      bairro: form.bairro || null,
+      cidade: form.cidade || null,
+      estado: form.estado || null,
+    }
 
     const resposta = await fetch(url, {
       method,
@@ -126,10 +199,11 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
             cpf_cnpj: clienteEditando.cpf_cnpj,
           }
         : null,
-      depois: { nome, telefone, cpf_cnpj: cpfCnpj },
+      depois: { nome: form.nome, telefone: form.telefone, cpf_cnpj: form.cpfCnpj },
     })
 
-    fechar()
+    setAba("lista")
+    setClienteEditando(null)
     recarregar()
   }
 
@@ -204,179 +278,253 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Clientes</h1>
-        <Button onClick={abrirNovo}>
-          <Plus size={16} className="mr-2" />
-          Novo cliente
-        </Button>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          placeholder="Buscar por nome, email ou telefone..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          className="max-w-sm"
-        />
-        {(busca || filtroStatus !== "ativos") && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setBusca("")
-              setFiltroStatus("ativos")
-            }}
-          >
-            <X size={14} className="mr-1" />
-            Limpar filtros
+        {aba === "lista" && (
+          <Button onClick={abrirNovo}>
+            <Plus size={16} className="mr-2" />
+            Novo cliente
           </Button>
         )}
-        <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
-          <TabsList>
-            <TabsTrigger value="ativos">Ativos</TabsTrigger>
-            <TabsTrigger value="inativos">Inativos</TabsTrigger>
-            <TabsTrigger value="todos">Todos</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {clientesFiltrados.length === 0 ? (
-            <p className="p-6 text-sm text-slate-500">Nenhum cliente encontrado.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[780px] text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 text-left text-slate-500">
-                    <th className="p-4 font-medium">Nome</th>
-                    <th className="p-4 font-medium">Origem</th>
-                    <th className="p-4 font-medium">Email</th>
-                    <th className="p-4 font-medium">Telefone</th>
-                    <th className="p-4 font-medium">CPF/CNPJ</th>
-                    <th className="p-4 font-medium">Status</th>
-                    <th className="p-4 font-medium text-right">Acoes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clientesFiltrados.map((cliente) => (
-                    <tr key={cliente.id} className="border-b border-slate-200 last:border-0">
-                      <td className="p-4">{cliente.nome}</td>
-                      <td className="p-4">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs ${
-                            cliente.veio_do_site
-                              ? "bg-emerald-600/20 text-emerald-400"
-                              : "bg-amber-600/20 text-amber-400"
-                          }`}
-                        >
-                          {cliente.veio_do_site ? "Site" : "Balcao"}
-                        </span>
-                      </td>
-                      <td className="p-4 text-slate-500">{cliente.email || "-"}</td>
-                      <td className="p-4 text-slate-500">{cliente.telefone || "-"}</td>
-                      <td className="p-4 text-slate-500">{cliente.cpf_cnpj || "-"}</td>
-                      <td className="p-4">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs ${
-                            cliente.ativo
-                              ? "bg-emerald-600/20 text-emerald-400"
-                              : "bg-slate-200 text-slate-500"
-                          }`}
-                        >
-                          {cliente.ativo ? "Ativo" : "Inativo"}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right">
-                        <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(cliente)}>
-                          <Pencil size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-lg"
-                          onClick={() => alternarAtivo(cliente)}
-                          title={cliente.ativo ? "Inativar cliente" : "Reativar cliente"}
-                        >
-                          {cliente.ativo ? (
-                            <Ban size={16} className="text-red-500" />
-                          ) : (
-                            <RotateCcw size={16} className="text-emerald-500" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-lg"
-                          onClick={() => excluir(cliente)}
-                          title="Excluir cliente (so se nunca teve pedido)"
-                        >
-                          <Trash2 size={16} className="text-red-500" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <Tabs value={aba} onValueChange={setAba}>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Lista
+          </TabsTrigger>
+          {(aba === "formulario" || clienteEditando) && (
+            <TabsTrigger value="formulario">
+              <Pencil size={14} className="mr-1.5" />
+              {clienteEditando ? "Editando" : "Novo cliente"}
+            </TabsTrigger>
           )}
-        </CardContent>
-      </Card>
+        </TabsList>
 
-      {modalAberto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <Card className="w-full max-w-md">
-            <CardContent className="space-y-4 pt-6">
-              <h2 className="text-lg font-semibold">
-                {clienteEditando ? `Editando: ${clienteEditando.nome}` : "Novo cliente"}
-              </h2>
+        <TabsContent value="lista" className="mt-4 space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Input
+              placeholder="Buscar por nome, email ou telefone..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="max-w-sm"
+            />
+            {(busca || filtroStatus !== "ativos") && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setBusca("")
+                  setFiltroStatus("ativos")
+                }}
+              >
+                <X size={14} className="mr-1" />
+                Limpar filtros
+              </Button>
+            )}
+            <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
+              <TabsList>
+                <TabsTrigger value="ativos">Ativos</TabsTrigger>
+                <TabsTrigger value="inativos">Inativos</TabsTrigger>
+                <TabsTrigger value="todos">Todos</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-              <div className="space-y-2">
-                <Label>Nome</Label>
-                <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
-              </div>
-              {!clienteEditando && (
-                <div className="space-y-2">
-                  <Label>E-mail (opcional)</Label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="So se o cliente for usar o site"
-                  />
+          <Card>
+            <CardContent className="p-0">
+              {clientesFiltrados.length === 0 ? (
+                <p className="p-6 text-sm text-slate-500">Nenhum cliente encontrado.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[780px] text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="p-4 font-medium">Nome</th>
+                        <th className="p-4 font-medium">Origem</th>
+                        <th className="p-4 font-medium">Email</th>
+                        <th className="p-4 font-medium">Telefone</th>
+                        <th className="p-4 font-medium">CPF/CNPJ</th>
+                        <th className="p-4 font-medium">Status</th>
+                        <th className="p-4 font-medium text-right">Acoes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clientesFiltrados.map((cliente) => (
+                        <tr key={cliente.id} className="border-b border-slate-200 last:border-0">
+                          <td className="p-4">{cliente.nome}</td>
+                          <td className="p-4">
+                            <span
+                              className={`rounded-full px-2 py-1 text-xs ${
+                                cliente.veio_do_site
+                                  ? "bg-emerald-600/20 text-emerald-400"
+                                  : "bg-amber-600/20 text-amber-400"
+                              }`}
+                            >
+                              {cliente.veio_do_site ? "Site" : "Balcao"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-slate-500">{cliente.email || "-"}</td>
+                          <td className="p-4 text-slate-500">{cliente.telefone || "-"}</td>
+                          <td className="p-4 text-slate-500">{cliente.cpf_cnpj || "-"}</td>
+                          <td className="p-4">
+                            <span
+                              className={`rounded-full px-2 py-1 text-xs ${
+                                cliente.ativo
+                                  ? "bg-emerald-600/20 text-emerald-400"
+                                  : "bg-slate-200 text-slate-500"
+                              }`}
+                            >
+                              {cliente.ativo ? "Ativo" : "Inativo"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(cliente)}>
+                              <Pencil size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={() => alternarAtivo(cliente)}
+                              title={cliente.ativo ? "Inativar cliente" : "Reativar cliente"}
+                            >
+                              {cliente.ativo ? (
+                                <Ban size={16} className="text-red-500" />
+                              ) : (
+                                <RotateCcw size={16} className="text-emerald-500" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={() => excluir(cliente)}
+                              title="Excluir cliente (so se nunca teve pedido)"
+                            >
+                              <Trash2 size={16} className="text-red-500" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
-              <div className="space-y-2">
-                <Label>Telefone</Label>
-                <Input
-                  value={telefone}
-                  onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
-                  inputMode="tel"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>CPF/CNPJ</Label>
-                <Input
-                  value={cpfCnpj}
-                  onChange={(e) => setCpfCnpj(mascaraCpfCnpj(e.target.value))}
-                  inputMode="numeric"
-                />
-              </div>
-
-              {erro && <p className="text-sm text-red-500">{erro}</p>}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={fechar}>
-                  Cancelar
-                </Button>
-                <Button variant="outline" onClick={limpar}>
-                  Limpar
-                </Button>
-                <Button onClick={salvar} disabled={salvando || !nome.trim()}>
-                  {salvando ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        </TabsContent>
+
+        <TabsContent value="formulario" className="mt-4 space-y-4">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              {clienteEditando ? `Editando: ${clienteEditando.nome}` : "Novo cliente"}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setAba("lista")}>
+                Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
+              </Button>
+              <Button onClick={salvar} disabled={salvando || carregandoDetalhe || !form.nome.trim()}>
+                {salvando ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </div>
+
+          {erro && <p className="text-sm text-red-500">{erro}</p>}
+
+          {carregandoDetalhe ? (
+            <p className="text-sm text-slate-500">Carregando...</p>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card>
+                <CardContent className="space-y-4 pt-6">
+                  <p className="text-sm font-medium text-muted-foreground">Dados cadastrais</p>
+                  <div className="space-y-2">
+                    <Label>Nome</Label>
+                    <Input value={form.nome} onChange={(e) => campo("nome", e.target.value)} autoFocus />
+                  </div>
+                  {!clienteEditando && (
+                    <div className="space-y-2">
+                      <Label>E-mail (opcional)</Label>
+                      <Input
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => campo("email", e.target.value)}
+                        placeholder="So se o cliente for usar o site"
+                      />
+                    </div>
+                  )}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Telefone</Label>
+                      <Input
+                        value={form.telefone}
+                        onChange={(e) => campo("telefone", mascaraTelefone(e.target.value))}
+                        inputMode="tel"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CPF/CNPJ</Label>
+                      <Input
+                        value={form.cpfCnpj}
+                        onChange={(e) => campo("cpfCnpj", mascaraCpfCnpj(e.target.value))}
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="space-y-4 pt-6">
+                  <p className="text-sm font-medium text-muted-foreground">Endereco (opcional)</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>CEP</Label>
+                      <Input
+                        value={form.cep}
+                        onChange={(e) => handleCepChange(e.target.value)}
+                        inputMode="numeric"
+                        placeholder={buscandoCep ? "Buscando..." : "00000-000"}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Numero</Label>
+                      <Input value={form.numero} onChange={(e) => campo("numero", e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Logradouro</Label>
+                    <Input value={form.logradouro} onChange={(e) => campo("logradouro", e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Complemento</Label>
+                    <Input value={form.complemento} onChange={(e) => campo("complemento", e.target.value)} />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Bairro</Label>
+                      <Input value={form.bairro} onChange={(e) => campo("bairro", e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cidade</Label>
+                      <Input value={form.cidade} onChange={(e) => campo("cidade", e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Estado</Label>
+                      <Input
+                        value={form.estado}
+                        onChange={(e) => campo("estado", e.target.value.toUpperCase().slice(0, 2))}
+                        placeholder="UF"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

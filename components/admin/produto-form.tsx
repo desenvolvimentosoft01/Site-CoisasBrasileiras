@@ -224,7 +224,7 @@ export function ProdutoForm({
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4">
       {/* Barra de acoes no topo do formulario. Nao e sticky de proposito -
           rola junto com o conteudo, igual as demais telas de cadastro do admin
           (Categorias, Cupons etc). Uma barra grudada aqui cobria o rotulo do
@@ -248,13 +248,13 @@ export function ProdutoForm({
 
       {erro && <p className="text-sm text-red-500">{erro}</p>}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Dados do produto</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-5">
+          <CardContent className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-5">
               <div className="space-y-2 sm:col-span-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
