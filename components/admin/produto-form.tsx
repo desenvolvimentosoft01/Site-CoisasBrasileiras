@@ -254,7 +254,10 @@ export function ProdutoForm({
             <CardTitle className="text-sm text-muted-foreground">Dados do produto</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-5">
+            {/* items-end: se um rotulo quebrar em 2 linhas (coluna estreita),
+                a celula fica mais alta - alinhando pelo fim, os campos
+                continuam na mesma linha em vez de um descer sozinho. */}
+            <div className="grid items-end gap-3 sm:grid-cols-5">
               <div className="space-y-2 sm:col-span-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -314,7 +317,7 @@ export function ProdutoForm({
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-5">
+            <div className="grid items-end gap-4 sm:grid-cols-5">
               <div className="space-y-2">
                 <Label>Preco (R$)</Label>
                 <Input

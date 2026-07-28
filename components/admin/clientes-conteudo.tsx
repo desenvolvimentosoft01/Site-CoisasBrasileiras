@@ -454,7 +454,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                       />
                     </div>
                   )}
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid items-end gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Telefone</Label>
                       <Input
@@ -478,7 +478,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
               <Card>
                 <CardContent className="space-y-4 pt-6">
                   <p className="text-sm font-medium text-muted-foreground">Endereco (opcional)</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid items-end gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>CEP</Label>
                       <Input
@@ -501,7 +501,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                     <Label>Complemento</Label>
                     <Input value={form.complemento} onChange={(e) => campo("complemento", e.target.value)} />
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="grid items-end gap-4 sm:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Bairro</Label>
                       <Input value={form.bairro} onChange={(e) => campo("bairro", e.target.value)} />

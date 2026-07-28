@@ -588,7 +588,7 @@ export function ComprasConteudo({
           </Card>
 
           <Card>
-            <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
+            <CardContent className="grid items-end gap-4 pt-6 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Fornecedor</Label>
                 <select

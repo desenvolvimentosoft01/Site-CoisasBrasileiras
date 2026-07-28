@@ -291,7 +291,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
           </div>
 
           <Card>
-            <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
+            <CardContent className="grid items-end gap-4 pt-6 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Razao social</Label>
                 <Input value={form.razaoSocial} onChange={(e) => campo("razaoSocial", e.target.value)} autoFocus />
