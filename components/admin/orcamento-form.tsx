@@ -166,6 +166,25 @@ export function OrcamentoForm({
     onSalvo()
   }
 
+  function limpar() {
+    setTitulo(orcamento?.titulo || "")
+    setClienteId(orcamento?.cliente_id || null)
+    setClienteNome(orcamento?.cliente_nome || "")
+    setClienteTelefone(orcamento?.cliente_telefone ? mascaraTelefone(orcamento.cliente_telefone) : "")
+    setBuscaCliente("")
+    setCondicoes(orcamento?.condicoes || "")
+    setDesconto(orcamento?.desconto || "0")
+    setItens(
+      orcamento?.itens.map((i) => ({
+        produtoId: i.produto_id,
+        descricao: i.descricao,
+        quantidade: i.quantidade,
+        valorUnitario: i.valor_unitario,
+      })) || [{ produtoId: null, descricao: "", quantidade: "1", valorUnitario: "" }]
+    )
+    setErro("")
+  }
+
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
@@ -175,6 +194,9 @@ export function OrcamentoForm({
         <div className="flex gap-2">
           <Button variant="outline" onClick={onCancelar}>
             Cancelar
+          </Button>
+          <Button variant="outline" onClick={limpar}>
+            Limpar
           </Button>
           <Button onClick={salvar} disabled={salvando}>
             {salvando ? "Salvando..." : "Salvar"}

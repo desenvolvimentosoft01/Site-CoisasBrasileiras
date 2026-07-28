@@ -100,6 +100,32 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
     setAba("formulario")
   }
 
+  function limpar() {
+    if (editando) {
+      setForm({
+        razaoSocial: editando.razao_social,
+        nomeFantasia: editando.nome_fantasia ?? "",
+        cnpjCpf: editando.cnpj_cpf ? mascaraCpfCnpj(editando.cnpj_cpf) : "",
+        inscricaoEstadual: editando.inscricao_estadual ?? "",
+        telefone: editando.telefone ? mascaraTelefone(editando.telefone) : "",
+        email: editando.email ?? "",
+        cep: editando.cep ? mascaraCEP(editando.cep) : "",
+        logradouro: editando.logradouro ?? "",
+        numero: editando.numero ?? "",
+        complemento: editando.complemento ?? "",
+        bairro: editando.bairro ?? "",
+        cidade: editando.cidade ?? "",
+        estado: editando.estado ?? "",
+        observacao: editando.observacao ?? "",
+      })
+      setAtivo(editando.ativo)
+    } else {
+      setForm(VAZIO)
+      setAtivo(true)
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -254,6 +280,9 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
               </Button>
               <Button onClick={salvar} disabled={salvando || !form.razaoSocial.trim()}>
                 {salvando ? "Salvando..." : "Salvar"}

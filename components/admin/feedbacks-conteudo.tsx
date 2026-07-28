@@ -101,6 +101,25 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
     if (inputArquivoRef.current) inputArquivoRef.current.value = ""
   }
 
+  function limpar() {
+    if (editando) {
+      setNome(editando.nome)
+      setTexto(editando.texto)
+      setImagemUrl(editando.imagem_url ?? "")
+      setNota(editando.nota)
+      setOrdem(String(editando.ordem))
+      setAtivo(editando.ativo)
+    } else {
+      setNome("")
+      setTexto("")
+      setImagemUrl("")
+      setNota(5)
+      setOrdem(String(feedbacks.length))
+      setAtivo(true)
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -244,6 +263,9 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
               </Button>
               <Button onClick={salvar} disabled={salvando || !nome.trim() || !texto.trim()}>
                 {salvando ? "Salvando..." : "Salvar"}

@@ -74,6 +74,25 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
     setAba("formulario")
   }
 
+  function limpar() {
+    if (usuarioEditando) {
+      setNome(usuarioEditando.nome)
+      setEmail(usuarioEditando.email)
+      setUsuarioLogin(usuarioEditando.usuario || "")
+      setSenha("")
+      setPapel(usuarioEditando.papel)
+      setAtivo(usuarioEditando.ativo)
+    } else {
+      setNome("")
+      setEmail("")
+      setUsuarioLogin("")
+      setSenha("")
+      setPapel("operador")
+      setAtivo(true)
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -230,6 +249,9 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
               </Button>
               <Button
                 onClick={salvar}

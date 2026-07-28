@@ -80,6 +80,27 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
     setAba("formulario")
   }
 
+  function limpar() {
+    if (editando) {
+      setTitulo(editando.titulo)
+      setSubtitulo(editando.subtitulo ?? "")
+      setLink(editando.link ?? "")
+      setImagemUrl(editando.imagem_url ?? "")
+      setCorFundo(editando.cor_fundo)
+      setOrdem(String(editando.ordem))
+      setAtivo(editando.ativo)
+    } else {
+      setTitulo("")
+      setSubtitulo("")
+      setLink("")
+      setImagemUrl("")
+      setCorFundo(CORES[0].valor)
+      setOrdem(String(banners.length))
+      setAtivo(true)
+    }
+    setErro("")
+  }
+
   async function selecionarImagem(evento: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0]
     if (!arquivo) return
@@ -231,6 +252,9 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
               </Button>
               <Button onClick={salvar} disabled={salvando || !titulo.trim()}>
                 {salvando ? "Salvando..." : "Salvar"}

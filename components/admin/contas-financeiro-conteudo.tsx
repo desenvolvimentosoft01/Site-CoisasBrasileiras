@@ -79,6 +79,27 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
     setAba("formulario")
   }
 
+  function limpar() {
+    if (editando) {
+      setTipo(editando.tipo)
+      setDescricao(editando.descricao)
+      setValor(editando.valor)
+      setVencimento(editando.vencimento.slice(0, 10))
+      setCategoria(editando.categoria || "")
+      setObservacao(editando.observacao || "")
+      setPago(editando.pago)
+    } else {
+      setTipo("pagar")
+      setDescricao("")
+      setValor("")
+      setVencimento("")
+      setCategoria("")
+      setObservacao("")
+      setPago(false)
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -262,6 +283,9 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
               </Button>
               <Button onClick={salvar} disabled={salvando || !descricao.trim() || !valor || !vencimento}>
                 {salvando ? "Salvando..." : "Salvar"}

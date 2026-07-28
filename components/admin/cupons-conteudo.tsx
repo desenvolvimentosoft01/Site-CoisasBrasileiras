@@ -72,6 +72,27 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
     setAba("formulario")
   }
 
+  function limpar() {
+    if (editando) {
+      setCodigo(editando.codigo)
+      setTipo(editando.tipo)
+      setValor(editando.valor)
+      setValorMinimo(editando.valor_minimo)
+      setPrimeiraCompraApenas(editando.primeira_compra_apenas)
+      setUsoMaximo(editando.uso_maximo ? String(editando.uso_maximo) : "")
+      setAtivo(editando.ativo)
+    } else {
+      setCodigo("")
+      setTipo("percentual")
+      setValor("")
+      setValorMinimo("0")
+      setPrimeiraCompraApenas(false)
+      setUsoMaximo("")
+      setAtivo(true)
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -226,6 +247,9 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
               </Button>
               <Button onClick={salvar} disabled={salvando || !codigo.trim() || !valor}>
                 {salvando ? "Salvando..." : "Salvar"}

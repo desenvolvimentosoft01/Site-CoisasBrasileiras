@@ -53,6 +53,17 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
     setEditando(null)
   }
 
+  function limpar() {
+    if (editando) {
+      setNome(editando.nome)
+      setAtivo(editando.ativo)
+    } else {
+      setNome("")
+      setAtivo(true)
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -173,6 +184,9 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={fechar}>
                   Cancelar
+                </Button>
+                <Button variant="outline" onClick={limpar}>
+                  Limpar
                 </Button>
                 <Button onClick={salvar} disabled={salvando || !nome.trim()}>
                   {salvando ? "Salvando..." : "Salvar"}

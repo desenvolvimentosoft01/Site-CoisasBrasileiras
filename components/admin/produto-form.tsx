@@ -195,6 +195,34 @@ export function ProdutoForm({
     onSalvo()
   }
 
+  // Restaura os campos ao estado original (em branco pra um produto novo, ou
+  // aos valores salvos se estiver editando) sem fechar o formulario - util
+  // pra desfazer edicoes digitadas por engano.
+  function limpar() {
+    setNome(produto?.nome ?? "")
+    setDescricao(produto?.descricao ?? "")
+    setPreco(produto ? mascaraMoeda(String(Math.round(Number(produto.preco) * 100))) : "")
+    setPrecoPromocional(
+      produto?.preco_promocional
+        ? mascaraMoeda(String(Math.round(Number(produto.preco_promocional) * 100)))
+        : ""
+    )
+    setPrecoClube(produto?.preco_clube ? mascaraMoeda(String(Math.round(Number(produto.preco_clube) * 100))) : "")
+    setEstoque(String(produto?.estoque ?? 0))
+    setEstoqueMinimo(String(produto?.estoque_minimo ?? 0))
+    setAtivo(produto?.ativo ?? true)
+    setSku(produto?.sku ?? "")
+    setNcm(produto?.ncm ?? "")
+    setCodigoBarras(produto?.codigo_barras ?? "")
+    setPesoKg(produto?.peso_kg ?? "")
+    setAlturaCm(produto?.altura_cm ?? "")
+    setLarguraCm(produto?.largura_cm ?? "")
+    setComprimentoCm(produto?.comprimento_cm ?? "")
+    setCategoriaIds(produto?.categoriaIds ?? [])
+    setImagensUrls(produto?.imagens.map((i) => i.url) ?? [])
+    setErro("")
+  }
+
   return (
     <div className="w-full space-y-6">
       {/* Barra de acoes no topo do formulario. Nao e sticky de proposito -
@@ -208,6 +236,9 @@ export function ProdutoForm({
         <div className="flex gap-2">
           <Button variant="outline" onClick={onCancelar}>
             Cancelar
+          </Button>
+          <Button variant="outline" onClick={limpar}>
+            Limpar
           </Button>
           <Button onClick={salvar} disabled={salvando}>
             {salvando ? "Salvando..." : "Salvar"}

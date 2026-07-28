@@ -291,6 +291,10 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] **Restrição de alteração manual de status do pedido**: não é mais possível setar "Pago" manualmente pela tela `/admin/pedidos/[id]` — esse status só é definido automaticamente pela confirmação de pagamento do Mercado Pago (webhook). Quando o pedido está "Aguardando pagamento", a tela não mostra mais um seletor de status livre; mostra um badge estático + botão "Cancelar pedido" (única ação segura nesse estado). Nos demais estados, o seletor permite só as transições operacionais (em separação → enviado → entregue, cancelar), nunca "Pago" nem voltar pra "Aguardando pagamento".
   - Reforçado também no servidor (`PUT /api/admin/pedidos/[id]`): a rota agora rejeita explicitamente `status: "pago"` vindo de qualquer chamada manual, já que o webhook do MP grava esse status direto no banco (não passa por essa rota) — proteção contra alguém liberar um pedido sem o pagamento ter de fato entrado, mesmo via chamada direta de API.
 
+## 2026-07-28 — Botão "Limpar" nas telas de cadastro (padrão CRUD do InMenteGestao)
+
+- [x] Adicionado botão "Limpar" (entre Cancelar e Salvar) em todos os 11 formulários de cadastro do admin: Produtos, Orçamentos, Clientes, Categorias, Banners, Fornecedores, Cupons, Usuários, Contas (Financeiro), Tipos de Entrega, Feedbacks. Reseta os campos ao estado original — em branco se for um cadastro novo, ou de volta aos valores salvos se estiver editando — sem fechar o formulário.
+
 ## 2026-07-28 — Relatórios: estoque zerado, vendas de hoje, ordenar mais/menos vendidos
 
 - [x] Relatório de Estoque: novo filtro "Somente estoque zerado" + card "Zerados" no resumo (antes só tinha "abaixo do mínimo").

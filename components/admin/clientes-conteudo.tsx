@@ -70,6 +70,21 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     setClienteEditando(null)
   }
 
+  function limpar() {
+    if (clienteEditando) {
+      setNome(clienteEditando.nome)
+      setEmail(clienteEditando.email || "")
+      setTelefone(clienteEditando.telefone ? mascaraTelefone(clienteEditando.telefone) : "")
+      setCpfCnpj(clienteEditando.cpf_cnpj ? mascaraCpfCnpj(clienteEditando.cpf_cnpj) : "")
+    } else {
+      setNome("")
+      setEmail("")
+      setTelefone("")
+      setCpfCnpj("")
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -350,6 +365,9 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={fechar}>
                   Cancelar
+                </Button>
+                <Button variant="outline" onClick={limpar}>
+                  Limpar
                 </Button>
                 <Button onClick={salvar} disabled={salvando || !nome.trim()}>
                   {salvando ? "Salvando..." : "Salvar"}

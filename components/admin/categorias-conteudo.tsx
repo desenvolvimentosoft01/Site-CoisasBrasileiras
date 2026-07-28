@@ -89,6 +89,21 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     setAba("formulario")
   }
 
+  function limpar() {
+    if (categoriaEditando) {
+      setNome(categoriaEditando.nome)
+      setAtiva(categoriaEditando.ativa)
+      setCategoriaPaiId(categoriaEditando.categoria_pai_id)
+      setImagemUrl(categoriaEditando.imagem_url)
+    } else {
+      setNome("")
+      setAtiva(true)
+      setCategoriaPaiId(null)
+      setImagemUrl(null)
+    }
+    setErro("")
+  }
+
   async function salvar() {
     setErro("")
     setSalvando(true)
@@ -244,6 +259,9 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
+              </Button>
+              <Button variant="outline" onClick={limpar}>
+                Limpar
               </Button>
               <Button onClick={salvar} disabled={salvando || !nome.trim()}>
                 {salvando ? "Salvando..." : "Salvar"}
