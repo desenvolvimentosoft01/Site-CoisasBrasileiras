@@ -180,6 +180,21 @@ Usuário perguntou se o checkout mostrava várias opções de frete (não mostra
 
 **Pendência antes de operar com frete real via Frenet**: testar contra uma conta Frenet real (token de teste ou produção) pra confirmar que o payload/resposta batem com o que o código espera. Até lá, funciona normalmente através do fallback (tabela de faixas por região).
 
+### Fase 7.1 — Validação real de código de rastreio via Frenet (2026-07-27)
+Status: ✅ implementada, pendente de teste contra conta Frenet real
+
+Usuário perguntou se o código de rastreio era validado de verdade (só tinha validação de formato). Confirmado via busca que a Frenet tem endpoint de rastreamento (`POST /tracking/trackinginfo`, header `token`), mas ele **exige `ShippingServiceCode`** (código de serviço da transportadora, específico de cada conta Frenet) — não dá pra inferir/chutar esse código com segurança.
+
+- [x] `lib/frenet.ts` → `rastrearPedidoFrenet()`: consulta status real + histórico de eventos do rastreio
+- [x] `POST /api/admin/pedidos/[id]/validar-rastreio`
+- [x] UI na tela do pedido: campo opcional "Código do serviço Frenet" + botão "Validar" — **nunca bloqueia o salvamento do rastreio**, é uma ação manual à parte
+- [x] Validação de formato (client-side, não bloqueia): se a transportadora for "Correios" e o código não bater com o padrão (2 letras + 9 números + 2 letras), mostra aviso
+- [x] Botão "Salvar rastreio" renomeado pra "Salvar e notificar cliente" (mais claro sobre o que a ação faz)
+
+**Bug real corrigido nessa revisão**: a notificação por e-mail ao salvar rastreio/status usava `INNER JOIN` com `TAB_CLIENTE` — pedido sem `cliente_id` (venda avulsa) sumia da busca e o e-mail era pulado **silenciosamente**, sem log nem erro. Trocado pra `LEFT JOIN` + log de aviso quando não há e-mail pra notificar.
+
+**Pendência**: como a cotação de frete (Fase 7) já usa Frenet, o ideal seria guardar automaticamente o `ShippingServiceCode` escolhido no checkout dentro do próprio pedido, pra já vir preenchido aqui em vez do admin digitar de novo — não implementado ainda, o campo fica manual por enquanto.
+
 ### Fase 8 — Código de barras (GTIN/EAN) do produto (2026-07-27)
 Status: ✅ implementada
 

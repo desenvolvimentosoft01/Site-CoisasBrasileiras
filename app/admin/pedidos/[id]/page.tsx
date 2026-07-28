@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Truck, MessageCircle, FileText } from "lucide-react"
+import { Truck, MessageCircle, FileText, BadgeCheck } from "lucide-react"
 
 type Pedido = {
   id: string
@@ -71,6 +71,13 @@ export default function DetalhePedidoPage() {
   const [transportadora, setTransportadora] = useState("")
   const [salvandoRastreio, setSalvandoRastreio] = useState(false)
   const [rastreioSalvo, setRastreioSalvo] = useState(false)
+  const [codigoServicoFrenet, setCodigoServicoFrenet] = useState("")
+  const [validandoRastreio, setValidandoRastreio] = useState(false)
+  const [resultadoValidacao, setResultadoValidacao] = useState<{
+    status: string
+    eventos: { data: string | null; status: string; local: string | null }[]
+  } | null>(null)
+  const [erroValidacao, setErroValidacao] = useState("")
   const [emitindoNfe, setEmitindoNfe] = useState(false)
   const [erroNfe, setErroNfe] = useState("")
   const [justificativaCancelamento, setJustificativaCancelamento] = useState("")
@@ -102,6 +109,27 @@ export default function DetalhePedidoPage() {
     })
     setSalvandoStatus(false)
     carregar()
+  }
+
+  async function validarRastreio() {
+    setErroValidacao("")
+    setResultadoValidacao(null)
+    setValidandoRastreio(true)
+
+    const resposta = await fetch(`/api/admin/pedidos/${params.id}/validar-rastreio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigoRastreio, codigoServicoFrenet }),
+    })
+
+    setValidandoRastreio(false)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErroValidacao(dados.erro || "Erro ao validar")
+      return
+    }
+    setResultadoValidacao(await resposta.json())
   }
 
   async function salvarRastreio() {
@@ -316,6 +344,52 @@ export default function DetalhePedidoPage() {
                 )}
             </div>
           </div>
+
+          <div className="space-y-2 rounded-lg border border-dashed border-border p-3">
+            <Label className="flex items-center gap-1.5 text-xs">
+              <BadgeCheck size={14} />
+              Validar rastreio na Frenet (opcional)
+            </Label>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                value={codigoServicoFrenet}
+                onChange={(e) => setCodigoServicoFrenet(e.target.value)}
+                placeholder="Codigo do servico Frenet (painel da conta)"
+                className="max-w-56"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={validarRastreio}
+                disabled={validandoRastreio || !codigoRastreio || !codigoServicoFrenet}
+              >
+                {validandoRastreio ? "Validando..." : "Validar"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Confirma que o codigo existe de verdade na transportadora (consulta a Frenet) - nao e
+              obrigatorio pra salvar o rastreio.
+            </p>
+            {erroValidacao && <p className="text-sm text-red-500">{erroValidacao}</p>}
+            {resultadoValidacao && (
+              <div className="rounded-md bg-emerald-500/10 p-2 text-sm text-emerald-600">
+                <p className="font-medium">Status: {resultadoValidacao.status}</p>
+                {resultadoValidacao.eventos.length > 0 && (
+                  <ul className="mt-1 space-y-0.5 text-xs text-emerald-700">
+                    {resultadoValidacao.eventos.map((evento, indice) => (
+                      <li key={indice}>
+                        {evento.data && `${evento.data} - `}
+                        {evento.status}
+                        {evento.local && ` (${evento.local})`}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center gap-3">
             <Button size="sm" onClick={salvarRastreio} disabled={salvandoRastreio}>
               {salvandoRastreio ? "Salvando..." : "Salvar e notificar cliente"}

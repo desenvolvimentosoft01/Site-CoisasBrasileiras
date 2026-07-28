@@ -96,3 +96,44 @@ export async function cotarFreteFrenet(params: {
     }))
     .sort((a, b) => a.valor - b.valor)
 }
+
+export type EventoRastreio = { data: string | null; status: string; local: string | null }
+
+// Rastreamento real (confirma que o codigo existe e mostra o status atual) -
+// EXIGE o codigo de servico da transportadora (ShippingServiceCode), visivel
+// no painel da conta Frenet - nao tem como inferir esse codigo aqui, entao
+// so funciona quando o admin informa (nunca "chuta" um valor).
+export async function rastrearPedidoFrenet(params: {
+  trackingNumber: string
+  shippingServiceCode: string
+}): Promise<{ status: string; eventos: EventoRastreio[] }> {
+  if (!FRENET_TOKEN) {
+    throw new Error("FRENET_TOKEN nao configurado")
+  }
+
+  const resposta = await fetch(`${FRENET_API_URL}/tracking/trackinginfo`, {
+    method: "POST",
+    headers: { token: FRENET_TOKEN, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      TrackingNumber: params.trackingNumber,
+      ShippingServiceCode: params.shippingServiceCode,
+    }),
+  })
+
+  if (!resposta.ok) {
+    const corpo = await resposta.text().catch(() => "")
+    throw new Error(`Frenet respondeu ${resposta.status}: ${corpo}`)
+  }
+
+  const dados = await resposta.json()
+  const eventos: EventoRastreio[] = (dados?.TrackingEvents ?? []).map((e: any) => ({
+    data: e.Date ?? null,
+    status: e.Status ?? e.Description ?? "Evento sem descricao",
+    local: e.Location ?? null,
+  }))
+
+  return {
+    status: dados?.Status ?? (eventos[0]?.status || "Sem informacao"),
+    eventos,
+  }
+}
