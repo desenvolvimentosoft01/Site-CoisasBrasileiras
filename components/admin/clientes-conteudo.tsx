@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Pencil, Plus, Ban, RotateCcw, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { mascaraTelefone, mascaraCpfCnpj } from "@/lib/mascaras"
 
 export type Cliente = {
   id: string
@@ -55,8 +56,8 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     setClienteEditando(cliente)
     setNome(cliente.nome)
     setEmail(cliente.email || "")
-    setTelefone(cliente.telefone || "")
-    setCpfCnpj(cliente.cpf_cnpj || "")
+    setTelefone(cliente.telefone ? mascaraTelefone(cliente.telefone) : "")
+    setCpfCnpj(cliente.cpf_cnpj ? mascaraCpfCnpj(cliente.cpf_cnpj) : "")
     setErro("")
     setModalAberto(true)
   }
@@ -74,9 +75,11 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     // cliente do site); criar aceita e-mail opcional pra contato de balcao.
     const url = clienteEditando ? `/api/admin/clientes/${clienteEditando.id}` : "/api/admin/clientes"
     const method = clienteEditando ? "PUT" : "POST"
+    const telefoneDigitos = telefone.replace(/\D/g, "") || null
+    const cpfCnpjDigitos = cpfCnpj.replace(/\D/g, "") || null
     const corpo = clienteEditando
-      ? { nome, telefone, cpf_cnpj: cpfCnpj, ativo: clienteEditando.ativo }
-      : { nome, email, telefone, cpf_cnpj: cpfCnpj }
+      ? { nome, telefone: telefoneDigitos, cpf_cnpj: cpfCnpjDigitos, ativo: clienteEditando.ativo }
+      : { nome, email, telefone: telefoneDigitos, cpf_cnpj: cpfCnpjDigitos }
 
     const resposta = await fetch(url, {
       method,
@@ -291,11 +294,19 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
               )}
               <div className="space-y-2">
                 <Label>Telefone</Label>
-                <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+                <Input
+                  value={telefone}
+                  onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
+                  inputMode="tel"
+                />
               </div>
               <div className="space-y-2">
                 <Label>CPF/CNPJ</Label>
-                <Input value={cpfCnpj} onChange={(e) => setCpfCnpj(e.target.value)} />
+                <Input
+                  value={cpfCnpj}
+                  onChange={(e) => setCpfCnpj(mascaraCpfCnpj(e.target.value))}
+                  inputMode="numeric"
+                />
               </div>
 
               {erro && <p className="text-sm text-red-500">{erro}</p>}

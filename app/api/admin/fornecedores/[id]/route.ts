@@ -15,15 +15,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const [fornecedor] = await query(
     `UPDATE TAB_FORNECEDOR SET
-       razao_social = $1, nome_fantasia = $2, cnpj_cpf = $3, telefone = $4, email = $5,
-       cep = $6, logradouro = $7, numero = $8, complemento = $9, bairro = $10,
-       cidade = $11, estado = $12, observacao = $13, ativo = $14
-     WHERE id = $15
-     RETURNING id, razao_social, nome_fantasia, cnpj_cpf, telefone, email, cep, logradouro, numero, complemento, bairro, cidade, estado, observacao, ativo, criado_em`,
+       razao_social = $1, nome_fantasia = $2, cnpj_cpf = $3, inscricao_estadual = $4, telefone = $5, email = $6,
+       cep = $7, logradouro = $8, numero = $9, complemento = $10, bairro = $11,
+       cidade = $12, estado = $13, observacao = $14, ativo = $15
+     WHERE id = $16
+     RETURNING id, razao_social, nome_fantasia, cnpj_cpf, inscricao_estadual, telefone, email, cep, logradouro, numero, complemento, bairro, cidade, estado, observacao, ativo, criado_em`,
     [
       dados.razaoSocial.trim(),
       dados.nomeFantasia || null,
       dados.cnpjCpf || null,
+      dados.inscricaoEstadual || null,
       dados.telefone || null,
       dados.email || null,
       dados.cep || null,

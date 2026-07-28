@@ -16,6 +16,7 @@ export type Fornecedor = {
   razao_social: string
   nome_fantasia: string | null
   cnpj_cpf: string | null
+  inscricao_estadual: string | null
   telefone: string | null
   email: string | null
   cep: string | null
@@ -34,6 +35,7 @@ const VAZIO = {
   razaoSocial: "",
   nomeFantasia: "",
   cnpjCpf: "",
+  inscricaoEstadual: "",
   telefone: "",
   email: "",
   cep: "",
@@ -78,6 +80,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
       razaoSocial: fornecedor.razao_social,
       nomeFantasia: fornecedor.nome_fantasia ?? "",
       cnpjCpf: fornecedor.cnpj_cpf ? mascaraCpfCnpj(fornecedor.cnpj_cpf) : "",
+      inscricaoEstadual: fornecedor.inscricao_estadual ?? "",
       telefone: fornecedor.telefone ? mascaraTelefone(fornecedor.telefone) : "",
       email: fornecedor.email ?? "",
       cep: fornecedor.cep ? mascaraCEP(fornecedor.cep) : "",
@@ -271,6 +274,14 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                   value={form.cnpjCpf}
                   onChange={(e) => campo("cnpjCpf", mascaraCpfCnpj(e.target.value))}
                   inputMode="numeric"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Inscricao Estadual</Label>
+                <Input
+                  value={form.inscricaoEstadual}
+                  onChange={(e) => campo("inscricaoEstadual", e.target.value)}
+                  placeholder="Isento, se nao contribuinte"
                 />
               </div>
               <div className="space-y-2">

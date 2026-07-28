@@ -64,6 +64,9 @@ export async function POST(request: Request) {
   if (!codigoBarras || !String(codigoBarras).trim()) {
     return NextResponse.json({ erro: "Codigo de barras (GTIN/EAN) e obrigatorio" }, { status: 400 })
   }
+  if (!ncm || !String(ncm).trim()) {
+    return NextResponse.json({ erro: "NCM e obrigatorio" }, { status: 400 })
+  }
 
   const slug = gerarSlug(nome)
 

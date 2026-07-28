@@ -130,6 +130,10 @@ export function ProdutoForm({
       setErro("Codigo de barras (GTIN/EAN) e obrigatorio")
       return
     }
+    if (!ncm.trim()) {
+      setErro("NCM e obrigatorio")
+      return
+    }
 
     setSalvando(true)
 
@@ -239,11 +243,11 @@ export function ProdutoForm({
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>NCM (fiscal)</Label>
+                <Label>NCM (fiscal) *</Label>
                 <Input
                   value={ncm}
                   onChange={(e) => setNcm(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  placeholder="Opcional"
+                  placeholder="Obrigatorio"
                   inputMode="numeric"
                 />
                 <p className="text-xs text-muted-foreground">

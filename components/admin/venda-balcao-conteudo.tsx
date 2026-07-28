@@ -316,7 +316,7 @@ export function VendaBalcaoConteudo({
         canal,
         clienteId: clienteSelecionado?.id || null,
         clienteNomeAvulso: clienteSelecionado ? null : clienteNomeAvulso || null,
-        clienteTelefoneAvulso: clienteSelecionado ? null : clienteTelefoneAvulso || null,
+        clienteTelefoneAvulso: clienteSelecionado ? null : clienteTelefoneAvulso.replace(/\D/g, "") || null,
         tipoEntregaId: tipoEntregaId === "nenhum" ? null : tipoEntregaId,
       }),
     })
@@ -663,7 +663,8 @@ export function VendaBalcaoConteudo({
                         <Input
                           placeholder="Telefone"
                           value={clienteTelefoneAvulso}
-                          onChange={(e) => setClienteTelefoneAvulso(e.target.value)}
+                          onChange={(e) => setClienteTelefoneAvulso(mascaraTelefone(e.target.value))}
+                          inputMode="tel"
                         />
                       </>
                     )}

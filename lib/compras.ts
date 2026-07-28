@@ -9,7 +9,7 @@ import { notificarClientesEstoqueVoltou } from "@/lib/notificar-estoque"
 export async function receberCompra(compraId: string) {
   return transacao(async (q) => {
     const [compra] = await q(
-      "SELECT id, fornecedor_id, numero_nota, status, valor_frete, data_compra FROM TAB_COMPRA WHERE id = $1 FOR UPDATE",
+      "SELECT id, fornecedor_id, numero_nota, status, valor_frete, data_compra, data_vencimento FROM TAB_COMPRA WHERE id = $1 FOR UPDATE",
       [compraId]
     )
 
@@ -69,7 +69,10 @@ export async function receberCompra(compraId: string) {
       [
         `Compra${compra.numero_nota ? ` NF ${compra.numero_nota}` : ""} - ${fornecedor?.razao_social ?? "Fornecedor"}`,
         valorTotal,
-        compra.data_compra,
+        // Vencimento real do prazo de pagamento (se o admin preencheu na
+        // compra) - antes usava a propria data da compra, o que nao faz
+        // sentido pra fornecedor que da prazo (30/60 dias etc).
+        compra.data_vencimento || compra.data_compra,
         `Gerada automaticamente ao receber a compra ${compra.id}`,
       ]
     )

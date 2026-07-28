@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronDown, LayoutDashboard, Menu, Search, ShoppingCart, User, X } from "lucide-react"
+import { ChevronDown, Heart, LayoutDashboard, Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
 
 type Categoria = { id: string; nome: string; slug: string; categoria_pai_id: string | null }
@@ -107,6 +107,13 @@ export function Header({
             aria-label="Buscar produtos"
           >
             <Search size={22} />
+          </Link>
+          <Link
+            href={logado ? "/favoritos" : "/entrar"}
+            className="hidden rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary md:block"
+            aria-label="Lista de desejos"
+          >
+            <Heart size={22} />
           </Link>
           <Link
             href={logado ? "/minha-conta" : "/entrar"}

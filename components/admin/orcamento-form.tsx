@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, Plus, User, X } from "lucide-react"
-import { formatarMoeda } from "@/lib/mascaras"
+import { formatarMoeda, mascaraTelefone } from "@/lib/mascaras"
 
 type Cliente = { id: string; nome: string; email: string | null; telefone: string | null }
 type ProdutoDisponivel = { id: string; nome: string; preco: string; preco_promocional: string | null }
@@ -44,7 +44,9 @@ export function OrcamentoForm({
   const [titulo, setTitulo] = useState(orcamento?.titulo || "")
   const [clienteId, setClienteId] = useState<string | null>(orcamento?.cliente_id || null)
   const [clienteNome, setClienteNome] = useState(orcamento?.cliente_nome || "")
-  const [clienteTelefone, setClienteTelefone] = useState(orcamento?.cliente_telefone || "")
+  const [clienteTelefone, setClienteTelefone] = useState(
+    orcamento?.cliente_telefone ? mascaraTelefone(orcamento.cliente_telefone) : ""
+  )
   const [buscaCliente, setBuscaCliente] = useState("")
   const [condicoes, setCondicoes] = useState(orcamento?.condicoes || "")
   const [desconto, setDesconto] = useState(orcamento?.desconto || "0")
@@ -133,7 +135,7 @@ export function OrcamentoForm({
       titulo: titulo || null,
       clienteId,
       clienteNome,
-      clienteTelefone: clienteTelefone || null,
+      clienteTelefone: clienteTelefone.replace(/\D/g, "") || null,
       condicoes: condicoes || null,
       desconto: Number(desconto) || 0,
       itens: itensValidos.map((i) => ({
@@ -315,7 +317,8 @@ export function OrcamentoForm({
                   <Input
                     placeholder="Telefone"
                     value={clienteTelefone}
-                    onChange={(e) => setClienteTelefone(e.target.value)}
+                    onChange={(e) => setClienteTelefone(mascaraTelefone(e.target.value))}
+                    inputMode="tel"
                   />
                 </div>
               )}

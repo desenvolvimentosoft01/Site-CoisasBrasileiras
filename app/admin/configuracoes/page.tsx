@@ -22,6 +22,7 @@ const CHAVES = [
   "taxa_pagbank_percentual",
   "taxa_pagbank_fixo",
   "aliquota_imposto_percentual",
+  "regime_tributario",
   "clube_valor_mensalidade",
 ]
 
@@ -57,6 +58,7 @@ export default async function ConfiguracoesPage() {
         taxa_pagbank_percentual: configuracoes.taxa_pagbank_percentual || "",
         taxa_pagbank_fixo: configuracoes.taxa_pagbank_fixo || "",
         aliquota_imposto_percentual: configuracoes.aliquota_imposto_percentual || "",
+        regime_tributario: configuracoes.regime_tributario || "",
         clube_valor_mensalidade: configuracoes.clube_valor_mensalidade || "",
       }}
       blingStatus={blingStatus}

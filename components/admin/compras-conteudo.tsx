@@ -125,6 +125,7 @@ export function ComprasConteudo({
   const [fornecedorId, setFornecedorId] = useState("")
   const [numeroNota, setNumeroNota] = useState("")
   const [dataCompra, setDataCompra] = useState(() => new Date().toISOString().slice(0, 10))
+  const [dataVencimento, setDataVencimento] = useState("")
   const [valorFrete, setValorFrete] = useState("")
   const [observacao, setObservacao] = useState("")
   const [itens, setItens] = useState<ItemCarrinho[]>([])
@@ -178,6 +179,7 @@ export function ComprasConteudo({
     setFornecedorId("")
     setNumeroNota("")
     setDataCompra(new Date().toISOString().slice(0, 10))
+    setDataVencimento("")
     setValorFrete("")
     setObservacao("")
     setItens([])
@@ -345,6 +347,7 @@ export function ComprasConteudo({
         numeroNota: numeroNota || null,
         valorFrete: valorMoedaParaNumero(valorFrete || "0,00"),
         dataCompra,
+        dataVencimento: dataVencimento || null,
         observacao: observacao || null,
         itens: itens.map((i) => ({
           produtoId: i.produtoId,
@@ -604,6 +607,13 @@ export function ComprasConteudo({
               <div className="space-y-2">
                 <Label>Data da compra</Label>
                 <Input type="date" value={dataCompra} onChange={(e) => setDataCompra(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Vencimento (prazo de pagamento)</Label>
+                <Input type="date" value={dataVencimento} onChange={(e) => setDataVencimento(e.target.value)} />
+                <p className="text-xs text-muted-foreground">
+                  Se o fornecedor der prazo (30/60 dias etc). Vazio usa a data da compra.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Valor do frete (R$)</Label>

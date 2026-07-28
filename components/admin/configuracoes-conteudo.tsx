@@ -30,6 +30,7 @@ export type ConfiguracoesIniciais = {
   taxa_pagbank_percentual: string
   taxa_pagbank_fixo: string
   aliquota_imposto_percentual: string
+  regime_tributario: string
   clube_valor_mensalidade: string
 }
 
@@ -102,6 +103,7 @@ function ConfiguracoesFormulario({
       : ""
   )
   const [aliquotaImposto, setAliquotaImposto] = useState(configuracoesIniciais.aliquota_imposto_percentual)
+  const [regimeTributario, setRegimeTributario] = useState(configuracoesIniciais.regime_tributario || "simples_nacional")
   const [clubeMensalidade, setClubeMensalidade] = useState(
     configuracoesIniciais.clube_valor_mensalidade
       ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.clube_valor_mensalidade) * 100)))
@@ -154,6 +156,7 @@ function ConfiguracoesFormulario({
         taxa_pagbank_percentual: taxaPagbankPercentual,
         taxa_pagbank_fixo: String(valorMoedaParaNumero(taxaPagbankFixo || "0,00")),
         aliquota_imposto_percentual: aliquotaImposto,
+        regime_tributario: regimeTributario,
         clube_valor_mensalidade: String(valorMoedaParaNumero(clubeMensalidade || "0,00")),
       }),
     })
@@ -502,7 +505,23 @@ function ConfiguracoesFormulario({
               <CardHeader>
                 <CardTitle className="text-sm text-slate-500">Imposto</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Regime tributario</Label>
+                  <select
+                    value={regimeTributario}
+                    onChange={(e) => setRegimeTributario(e.target.value)}
+                    className="flex h-9 w-full max-w-64 rounded-md border border-input bg-transparent px-3 text-sm"
+                  >
+                    <option value="simples_nacional">Simples Nacional</option>
+                    <option value="lucro_presumido">Lucro Presumido</option>
+                    <option value="lucro_real">Lucro Real</option>
+                    <option value="mei">MEI</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    So informativo aqui - o calculo de imposto de verdade continua com o Bling/contador.
+                  </p>
+                </div>
                 <Label>Aliquota sobre faturamento (%)</Label>
                 <Input
                   type="number"
