@@ -280,6 +280,12 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] **Restrição de alteração manual de status do pedido**: não é mais possível setar "Pago" manualmente pela tela `/admin/pedidos/[id]` — esse status só é definido automaticamente pela confirmação de pagamento do Mercado Pago (webhook). Quando o pedido está "Aguardando pagamento", a tela não mostra mais um seletor de status livre; mostra um badge estático + botão "Cancelar pedido" (única ação segura nesse estado). Nos demais estados, o seletor permite só as transições operacionais (em separação → enviado → entregue, cancelar), nunca "Pago" nem voltar pra "Aguardando pagamento".
   - Reforçado também no servidor (`PUT /api/admin/pedidos/[id]`): a rota agora rejeita explicitamente `status: "pago"` vindo de qualquer chamada manual, já que o webhook do MP grava esse status direto no banco (não passa por essa rota) — proteção contra alguém liberar um pedido sem o pagamento ter de fato entrado, mesmo via chamada direta de API.
 
+## 2026-07-27 — Substituídos os `confirm()`/`alert()` nativos do navegador por modal e toast próprios
+
+- [x] `components/admin/confirm-provider.tsx`: `ConfirmProvider` + hook `useConfirmar()`, monta um `AlertDialog` (`components/ui/alert-dialog.tsx`, já existia mas não era usado em lugar nenhum) uma única vez no `AdminShell`. Qualquer tela chama `await confirmar("mensagem")` ou `await confirmar({ descricao, destrutivo: true })` em vez de `confirm(...)` — mesmo comportamento (bloqueia até o usuário decidir), mas com a cara do sistema em vez da caixa feia do navegador (que também alguns navegadores/extensões bloqueiam silenciosamente).
+- [x] `<Toaster />` do `sonner` (biblioteca já estava instalada, mas nunca tinha sido montada) adicionada no `AdminShell`; todo `alert(erro)` de mensagem de erro virou `toast.error(erro)`.
+- [x] Varridos e trocados todos os 17 arquivos de `components/admin/*-conteudo.tsx` que usavam `confirm`/`alert` nativos: Avaliações, Banners, Categorias, Clientes, Compras, Contas (Financeiro), Cupons, Estoque, Feedbacks, Fornecedores, Faixas de Frete, Orçamentos, Produtos, Tipos de Entrega, Usuários. Confirmado com grep que não sobrou nenhuma ocorrência.
+
 ## 2026-07-27 — CRUD completo em Clientes (excluir, respeitando histórico de venda)
 
 - [x] Auditoria de CRUD em todas as telas do admin: a única lacuna real era Clientes, que só tinha inativar (sem excluir). As demais exceções (Pedidos, Compras, Auditoria sem exclusão livre) são propositais — histórico de venda/fiscal não pode ser apagado.

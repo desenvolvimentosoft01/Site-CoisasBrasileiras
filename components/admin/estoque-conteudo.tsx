@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertTriangle, Search, X } from "lucide-react"
+import { toast } from "sonner"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 export type ProdutoEstoque = {
@@ -41,7 +42,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao ajustar estoque")
+      toast.error(dados.erro || "Erro ao ajustar estoque")
       return
     }
 

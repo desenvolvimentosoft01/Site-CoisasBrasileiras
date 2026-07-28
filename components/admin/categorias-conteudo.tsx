@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, List, ImagePlus, X, CornerDownRight } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Categoria = {
   id: string
@@ -25,6 +26,7 @@ export type Categoria = {
 // o fetch depois de uma mutacao (salvar/excluir), nunca na carga inicial da
 // tela, pra nao ter o flash de "Carregando..." toda vez que o admin navega ate aqui.
 export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais: Categoria[] }) {
+  const confirmar = useConfirmar()
   const [categorias, setCategorias] = useState<Categoria[]>(categoriasIniciais)
   const [aba, setAba] = useState("lista")
   const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
@@ -125,7 +127,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
   }
 
   async function excluir(categoria: Categoria) {
-    if (!confirm(`Excluir a categoria "${categoria.nome}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir a categoria "${categoria.nome}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/categorias/${categoria.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Categorias",

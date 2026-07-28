@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Star, Check, Trash2 } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Avaliacao = {
   id: string
@@ -27,6 +28,7 @@ function Estrelas({ nota }: { nota: number }) {
 }
 
 export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais: Avaliacao[] }) {
+  const confirmar = useConfirmar()
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>(avaliacoesIniciais)
   const [filtro, setFiltro] = useState<"pendentes" | "aprovadas" | "todas">("pendentes")
 
@@ -53,7 +55,7 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
   }
 
   async function excluir(avaliacao: Avaliacao) {
-    if (!confirm(`Excluir a avaliacao de "${avaliacao.cliente_nome}" pra "${avaliacao.produto_nome}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir a avaliacao de "${avaliacao.cliente_nome}" pra "${avaliacao.produto_nome}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/avaliacoes/${avaliacao.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Avaliacoes",

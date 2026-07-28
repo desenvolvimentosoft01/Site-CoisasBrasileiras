@@ -23,8 +23,10 @@ import {
   ArrowLeft,
   Truck,
 } from "lucide-react"
+import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
+import { ConfirmProvider } from "@/components/admin/confirm-provider"
 import type { SessaoAdmin } from "@/lib/auth"
 import type { LucideIcon } from "lucide-react"
 
@@ -181,10 +183,12 @@ export function AdminShell({
     // antes, com "min-h-screen"), a pagina inteira crescia e a sidebar (que
     // tem altura fixa de tela) "acabava" no meio da rolagem, bagunçando o
     // layout.
+    <ConfirmProvider>
     <div
       className="flex h-screen overflow-hidden bg-slate-100"
       style={{ "--primary": corPrimaria } as React.CSSProperties}
     >
+      <Toaster position="top-right" richColors />
       {sidebarAberta && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -329,5 +333,6 @@ export function AdminShell({
         <main className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">{children}</main>
       </div>
     </div>
+    </ConfirmProvider>
   )
 }

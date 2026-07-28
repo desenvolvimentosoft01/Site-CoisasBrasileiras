@@ -18,6 +18,7 @@ import {
 import { Trash2, Pencil, Plus, List, ArrowLeft } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Conta = {
   id: string
@@ -32,6 +33,7 @@ export type Conta = {
 }
 
 export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: Conta[] }) {
+  const confirmar = useConfirmar()
   const [contas, setContas] = useState<Conta[]>(contasIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Conta | null>(null)
@@ -125,7 +127,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
   }
 
   async function excluir(conta: Conta) {
-    if (!confirm(`Excluir a conta "${conta.descricao}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir a conta "${conta.descricao}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/financeiro/contas/${conta.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Financeiro - Contas",

@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, ImagePlus, List } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Banner = {
   id: string
@@ -31,6 +32,7 @@ const CORES = [
 ]
 
 export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[] }) {
+  const confirmar = useConfirmar()
   const [banners, setBanners] = useState<Banner[]>(bannersIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Banner | null>(null)
@@ -141,7 +143,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   }
 
   async function excluir(banner: Banner) {
-    if (!confirm(`Excluir o banner "${banner.titulo}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir o banner "${banner.titulo}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/banners/${banner.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Banners",

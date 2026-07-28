@@ -22,6 +22,8 @@ import { Label } from "@/components/ui/label"
 import { Plus, Pencil, Trash2, Check, X as XIcon, ArrowRightCircle } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { OrcamentoForm, type OrcamentoExistente } from "@/components/admin/orcamento-form"
+import { toast } from "sonner"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Orcamento = {
   id: string
@@ -59,6 +61,7 @@ const FORMAS_PAGAMENTO = [
 ]
 
 export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais: Orcamento[] }) {
+  const confirmar = useConfirmar()
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>(orcamentosIniciais)
   const [aba, setAba] = useState("todos")
   const [mostrandoFormulario, setMostrandoFormulario] = useState(false)
@@ -102,18 +105,18 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
     })
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao atualizar status")
+      toast.error(dados.erro || "Erro ao atualizar status")
       return
     }
     recarregar()
   }
 
   async function excluir(orcamento: Orcamento) {
-    if (!confirm(`Excluir o orcamento #${orcamento.numero}?`)) return
+    if (!(await confirmar({ descricao: `Excluir o orcamento #${orcamento.numero}?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/orcamentos/${orcamento.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao excluir")
+      toast.error(dados.erro || "Erro ao excluir")
       return
     }
     recarregar()

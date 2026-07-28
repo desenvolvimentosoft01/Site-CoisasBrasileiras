@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ArrowLeft, Trash2, Plus } from "lucide-react"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Faixa = {
   id: string
@@ -33,6 +34,7 @@ const ROTULOS_REGIAO: Record<Faixa["regiao"], string> = {
 }
 
 export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[] }) {
+  const confirmar = useConfirmar()
   const [faixas, setFaixas] = useState<Faixa[]>(faixasIniciais)
   const [edicoes, setEdicoes] = useState<Record<string, { valor: string; prazoDias: string }>>(() =>
     Object.fromEntries(faixasIniciais.map((f) => [f.id, { valor: f.valor, prazoDias: String(f.prazo_dias) }]))
@@ -68,7 +70,12 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
   }
 
   async function excluir(faixa: Faixa) {
-    if (!confirm(`Excluir a faixa ${ROTULOS_REGIAO[faixa.regiao]} (${faixa.peso_min_kg}-${faixa.peso_max_kg}kg)?`))
+    if (
+      !(await confirmar({
+        descricao: `Excluir a faixa ${ROTULOS_REGIAO[faixa.regiao]} (${faixa.peso_min_kg}-${faixa.peso_max_kg}kg)?`,
+        destrutivo: true,
+      }))
+    )
       return
     await fetch(`/api/admin/frete-faixas/${faixa.id}`, { method: "DELETE" })
     recarregar()

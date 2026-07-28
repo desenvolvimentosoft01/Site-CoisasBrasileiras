@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Plus, Pencil, Trash2, List, AlertTriangle } from "lucide-react"
+import { toast } from "sonner"
 import { ProdutoForm } from "@/components/admin/produto-form"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Produto = {
   id: string
@@ -49,6 +51,7 @@ function formatarPreco(valor: string) {
 }
 
 export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produto[] }) {
+  const confirmar = useConfirmar()
   const [produtos, setProdutos] = useState<Produto[]>(produtosIniciais)
   const [aba, setAba] = useState("lista")
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativos" | "inativos">("ativos")
@@ -86,11 +89,11 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
   }
 
   async function excluir(produto: Produto) {
-    if (!confirm(`Excluir o produto "${produto.nome}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir o produto "${produto.nome}"?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/produtos/${produto.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao excluir")
+      toast.error(dados.erro || "Erro ao excluir")
       return
     }
     registrarAuditoria({

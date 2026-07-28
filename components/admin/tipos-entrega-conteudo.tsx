@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Trash2, Pencil, Plus, ArrowLeft } from "lucide-react"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type TipoEntrega = {
   id: string
@@ -17,6 +18,7 @@ export type TipoEntrega = {
 }
 
 export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEntrega[] }) {
+  const confirmar = useConfirmar()
   const [tipos, setTipos] = useState<TipoEntrega[]>(tiposIniciais)
   const [editando, setEditando] = useState<TipoEntrega | null>(null)
   const [criando, setCriando] = useState(false)
@@ -77,7 +79,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
   }
 
   async function excluir(tipo: TipoEntrega) {
-    if (!confirm(`Excluir o tipo de entrega "${tipo.nome}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir o tipo de entrega "${tipo.nome}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/tipos-entrega/${tipo.id}`, { method: "DELETE" })
     recarregar()
   }

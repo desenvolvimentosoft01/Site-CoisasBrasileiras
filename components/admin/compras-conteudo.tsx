@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { List, Plus, Trash2, PackageCheck, Ban, FileUp, AlertTriangle, Radio, RefreshCw, Link2 } from "lucide-react"
+import { toast } from "sonner"
 import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null }
 export type ProdutoSelecionavel = {
@@ -111,6 +113,7 @@ export function ComprasConteudo({
   fornecedores: Fornecedor[]
   produtos: ProdutoSelecionavel[]
 }) {
+  const confirmar = useConfirmar()
   const [compras, setCompras] = useState<Compra[]>(comprasIniciais)
   const [fornecedoresDisponiveis, setFornecedoresDisponiveis] = useState<Fornecedor[]>(fornecedores)
   const [aba, setAba] = useState("lista")
@@ -380,7 +383,7 @@ export function ComprasConteudo({
   }
 
   async function receber(compra: Compra) {
-    if (!confirm(`Confirmar o recebimento da compra de "${compra.fornecedor_nome}"? Isso vai dar alta no estoque, atualizar o custo dos produtos e gerar uma conta a pagar.`)) return
+    if (!(await confirmar(`Confirmar o recebimento da compra de "${compra.fornecedor_nome}"? Isso vai dar alta no estoque, atualizar o custo dos produtos e gerar uma conta a pagar.`))) return
 
     setProcessandoId(compra.id)
     const resposta = await fetch(`/api/admin/compras/${compra.id}/receber`, { method: "POST" })
@@ -388,7 +391,7 @@ export function ComprasConteudo({
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao receber compra")
+      toast.error(dados.erro || "Erro ao receber compra")
       return
     }
 
@@ -404,7 +407,7 @@ export function ComprasConteudo({
   }
 
   async function cancelar(compra: Compra) {
-    if (!confirm(`Cancelar a compra de "${compra.fornecedor_nome}"?`)) return
+    if (!(await confirmar({ descricao: `Cancelar a compra de "${compra.fornecedor_nome}"?`, destrutivo: true }))) return
 
     setProcessandoId(compra.id)
     const resposta = await fetch(`/api/admin/compras/${compra.id}/cancelar`, { method: "POST" })
@@ -412,7 +415,7 @@ export function ComprasConteudo({
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao cancelar compra")
+      toast.error(dados.erro || "Erro ao cancelar compra")
       return
     }
 

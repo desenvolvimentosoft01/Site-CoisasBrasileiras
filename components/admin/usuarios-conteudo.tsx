@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select"
 import { Trash2, Pencil, Plus, List } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { toast } from "sonner"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Usuario = {
   id: string
@@ -29,6 +31,7 @@ export type Usuario = {
 }
 
 export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuario[] }) {
+  const confirmar = useConfirmar()
   const [usuarios, setUsuarios] = useState<Usuario[]>(usuariosIniciais)
   const [aba, setAba] = useState("lista")
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null)
@@ -118,11 +121,11 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
   }
 
   async function excluir(usuario: Usuario) {
-    if (!confirm(`Excluir o usuario "${usuario.nome}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir o usuario "${usuario.nome}"?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/usuarios/${usuario.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao excluir")
+      toast.error(dados.erro || "Erro ao excluir")
       return
     }
     registrarAuditoria({

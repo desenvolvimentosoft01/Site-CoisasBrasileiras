@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, ImagePlus, List, Star } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Feedback = {
   id: string
@@ -37,6 +38,7 @@ function SeletorNota({ valor, onChange }: { valor: number; onChange: (n: number)
 }
 
 export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Feedback[] }) {
+  const confirmar = useConfirmar()
   const [feedbacks, setFeedbacks] = useState<Feedback[]>(feedbacksIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Feedback | null>(null)
@@ -144,7 +146,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
   }
 
   async function excluir(feedback: Feedback) {
-    if (!confirm(`Excluir o depoimento de "${feedback.nome}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir o depoimento de "${feedback.nome}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/feedbacks/${feedback.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Feedbacks",

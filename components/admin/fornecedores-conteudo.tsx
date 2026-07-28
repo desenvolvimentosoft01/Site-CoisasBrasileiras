@@ -10,6 +10,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, List } from "lucide-react"
 import { mascaraCpfCnpj, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { toast } from "sonner"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Fornecedor = {
   id: string
@@ -49,6 +51,7 @@ const VAZIO = {
 }
 
 export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIniciais: Fornecedor[] }) {
+  const confirmar = useConfirmar()
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>(fornecedoresIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Fornecedor | null>(null)
@@ -141,11 +144,11 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
   }
 
   async function excluir(fornecedor: Fornecedor) {
-    if (!confirm(`Excluir o fornecedor "${fornecedor.razao_social}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir o fornecedor "${fornecedor.razao_social}"?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/fornecedores/${fornecedor.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()
-      alert(dados.erro || "Erro ao excluir")
+      toast.error(dados.erro || "Erro ao excluir")
       return
     }
     registrarAuditoria({

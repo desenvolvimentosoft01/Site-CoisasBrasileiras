@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, List } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Cupom = {
   id: string
@@ -25,6 +26,7 @@ export type Cupom = {
 }
 
 export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) {
+  const confirmar = useConfirmar()
   const [cupons, setCupons] = useState<Cupom[]>(cuponsIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Cupom | null>(null)
@@ -116,7 +118,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
   }
 
   async function excluir(cupom: Cupom) {
-    if (!confirm(`Excluir o cupom "${cupom.codigo}"?`)) return
+    if (!(await confirmar({ descricao: `Excluir o cupom "${cupom.codigo}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/cupons/${cupom.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Cupons",
