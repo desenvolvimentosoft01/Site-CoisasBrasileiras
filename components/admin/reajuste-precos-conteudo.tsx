@@ -227,56 +227,64 @@ export function ReajustePrecosConteudo({
       {sucesso && <p className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-600">{sucesso}</p>}
 
       <Card>
-        <CardContent className="flex flex-wrap items-end gap-4 pt-6">
-          <div className="space-y-2">
-            <Label>Tipo</Label>
-            <Select value={tipo} onValueChange={(v) => setTipo(v as "percentual" | "fixo")}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="percentual">Percentual (%)</SelectItem>
-                <SelectItem value="fixo">Valor fixo (R$)</SelectItem>
-              </SelectContent>
-            </Select>
+        <CardContent className="flex flex-col gap-4 pt-6">
+          {/* items-start: o Select tem uma caixa mais alta que o Input (base-ui
+              renderiza um elemento escondido pra acessibilidade/formulario) -
+              alinhando pelo topo, o rotulo "Valor" fica na mesma linha de
+              "Tipo"/"Direcao" independente disso. */}
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="space-y-2">
+              <Label>Tipo</Label>
+              <Select value={tipo} onValueChange={(v) => setTipo(v as "percentual" | "fixo")}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentual">Percentual (%)</SelectItem>
+                  <SelectItem value="fixo">Valor fixo (R$)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Direcao</Label>
+              <Select value={direcao} onValueChange={(v) => setDirecao(v as "aumento" | "reducao")}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="aumento">Aumento</SelectItem>
+                  <SelectItem value="reducao">Reducao</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Valor</Label>
+              <Input
+                value={valor}
+                onChange={(e) => setValor(e.target.value)}
+                placeholder={tipo === "percentual" ? "Ex: 10" : "Ex: 5,00"}
+                className="w-32"
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Direcao</Label>
-            <Select value={direcao} onValueChange={(v) => setDirecao(v as "aumento" | "reducao")}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="aumento">Aumento</SelectItem>
-                <SelectItem value="reducao">Reducao</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={aplicarNoPromocional}
+                onChange={(e) => setAplicarNoPromocional(e.target.checked)}
+                className="h-4 w-4 rounded border-input accent-primary"
+              />
+              Aplicar tambem no preco promocional
+            </label>
+
+            <Button onClick={aplicarReajuste} disabled={salvando || selecionados.size === 0} className="ml-auto">
+              {salvando ? "Aplicando..." : `Aplicar em ${selecionados.size} produto(s)`}
+            </Button>
           </div>
-
-          <div className="space-y-2">
-            <Label>Valor</Label>
-            <Input
-              value={valor}
-              onChange={(e) => setValor(e.target.value)}
-              placeholder={tipo === "percentual" ? "Ex: 10" : "Ex: 5,00"}
-              className="w-32"
-            />
-          </div>
-
-          <label className="flex items-center gap-2 pb-2 text-sm">
-            <input
-              type="checkbox"
-              checked={aplicarNoPromocional}
-              onChange={(e) => setAplicarNoPromocional(e.target.checked)}
-              className="h-4 w-4 rounded border-input accent-primary"
-            />
-            Aplicar tambem no preco promocional
-          </label>
-
-          <Button onClick={aplicarReajuste} disabled={salvando || selecionados.size === 0} className="ml-auto">
-            {salvando ? "Aplicando..." : `Aplicar em ${selecionados.size} produto(s)`}
-          </Button>
         </CardContent>
       </Card>
 
