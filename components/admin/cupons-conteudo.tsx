@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Pencil, Plus, List } from "lucide-react"
+import { CampoDica } from "@/components/ui/campo-dica"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
@@ -295,7 +296,10 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Valor minimo da compra (R$)</Label>
+                  <Label>
+                    Valor minimo (R$)
+                    <CampoDica>Valor minimo da compra pro cupom poder ser usado.</CampoDica>
+                  </Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -304,7 +308,10 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Limite de usos (opcional)</Label>
+                  <Label>
+                    Limite de usos
+                    <CampoDica>Opcional. Vazio = o cupom pode ser usado sem limite de vezes.</CampoDica>
+                  </Label>
                   <Input
                     type="number"
                     value={usoMaximo}

@@ -605,7 +605,10 @@ export function ComprasConteudo({
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Numero da nota (opcional)</Label>
+                <Label>
+                  Numero da nota
+                  <CampoDica>Opcional - numero da nota fiscal que o fornecedor emitiu.</CampoDica>
+                </Label>
                 <Input value={numeroNota} onChange={(e) => setNumeroNota(e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -614,8 +617,10 @@ export function ComprasConteudo({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Vencimento (prazo de pagamento)
-                  <CampoDica>Se o fornecedor der prazo (30/60 dias etc). Vazio usa a data da compra.</CampoDica>
+                  Vencimento
+                  <CampoDica>
+                    Prazo de pagamento, se o fornecedor der (30/60 dias etc). Vazio usa a data da compra.
+                  </CampoDica>
                 </Label>
                 <Input type="date" value={dataVencimento} onChange={(e) => setDataVencimento(e.target.value)} />
               </div>

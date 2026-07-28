@@ -6,10 +6,10 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 
 ## Pendências pra retomar (sessão de 2026-07-28 parou aqui)
 
-- [ ] **Cadastro de Produtos**: cliente pediu formulário mais compacto/apertado (estilo ERP denso) — já apertei os espaçamentos (`space-y`/`gap` menores), mas **ainda não foi validado visualmente** com o cliente. Revisar com ele antes de considerar concluído.
+- [x] **Cadastro de Produtos**: formulário compacto + rótulos encurtados. Validado visualmente com o cliente em 2026-07-28.
 - [ ] **Reajuste de Preços em massa** (`/admin/precos`): pedido do cliente pra permitir editar preço direto na grade (linha a linha) — feito, mas nunca foi confirmado visualmente pelo cliente que ficou como ele imaginou.
 - [ ] Confirmar com o cliente se o CRUD de Clientes ficou como esperado (aba em vez de modal, endereço com CEP) — acabou de ser feito, sem validação visual ainda.
-- [ ] Continuar auditoria dos demais formulários do admin em busca do mesmo tipo de bug de alinhamento (label longo empurrando campo) — só foi conferido visualmente Produtos; os outros formulários (Fornecedores, Compras, Configurações etc.) têm o fix estrutural (`Label` com `min-h-9`) mas não foram todos abertos e olhados um por um.
+- [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
 ## Checklist de go-live (produção de verdade)
@@ -305,6 +305,12 @@ Leva de correções pedida pelo usuário depois de olhar telas reais. Registrado
 - [x] Cadastro/edição de cliente ganhou seção de endereço completo (CEP, logradouro, número, complemento, bairro, cidade, estado), gravado em `TAB_ENDERECO` com `principal = true` (mesma tabela que o checkout do site usa, cliente já podia ter endereço via lá — só o admin não tinha como editar).
 - [x] CEP com autopreenchimento via BrasilAPI (`https://brasilapi.com.br/api/cep/v1/{cep}`), mesmo padrão já usado no checkout público (`app/(loja)/checkout/page.tsx`).
 - [x] `GET /api/admin/clientes/[id]` criado (não existia) — traz cliente + endereço principal pro formulário de edição. `POST`/`PUT` de clientes agora fazem upsert do endereço principal quando `cep` + `logradouro` vêm preenchidos.
+
+## 2026-07-28 — Convenção: rótulo curto + explicação no balão de dica
+
+Fechando o assunto do desalinhamento de grade, a regra do projeto passa a ser: **o rótulo (`<Label>`) precisa caber em 1 linha; todo texto explicativo vai no `<CampoDica>`** (ícone "?" ao lado). `components/ui/label.tsx` reserva `min-h-5` (1 linha) — rótulo que quebra linha fica mais alto que os vizinhos da mesma grade e desalinha os campos abaixo.
+
+Rótulos encurtados nesta rodada (explicação movida pro balão): Produtos ("Cod. de barras", "SKU", "Promocional (R$)", "Clube (R$)"), Configurações ("Taxa fixa (R$)"), Cupons ("Valor minimo (R$)", "Limite de usos"), Compras ("Numero da nota", "Vencimento").
 
 ## 2026-07-28 — Produtos: formulário mais compacto (menos espaçamento)
 

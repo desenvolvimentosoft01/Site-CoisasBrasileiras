@@ -508,7 +508,10 @@ function ConfiguracoesFormulario({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Taxa fixa por transacao (R$)</Label>
+                      <Label>
+                        Taxa fixa (R$)
+                        <CampoDica>Valor fixo cobrado pelo Mercado Pago por transacao.</CampoDica>
+                      </Label>
                       <Input
                         inputMode="numeric"
                         value={taxaMpFixo}
