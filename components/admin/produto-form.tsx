@@ -342,7 +342,7 @@ export function ProdutoForm({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Promocional (R$)
+                  Promo (R$)
                   <CampoDica>Preco promocional - quando preenchido, substitui o preco normal no site.</CampoDica>
                 </Label>
                 <Input
