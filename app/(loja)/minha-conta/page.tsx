@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 import { mascaraCpfCnpj, mascaraTelefone, formatarMoeda } from "@/lib/mascaras"
-import { MapPin, Package, LogOut, Sparkles } from "lucide-react"
+import { MapPin, Package, LogOut, Sparkles, Heart, X, ShoppingBag } from "lucide-react"
 
 type Endereco = {
   id: string
@@ -40,6 +41,16 @@ type Pedido = {
   bling_link_danfe: string | null
 }
 
+type ProdutoDesejado = {
+  id: string
+  nome: string
+  slug: string
+  preco: string
+  preco_promocional: string | null
+  estoque: number
+  imagem_url: string | null
+}
+
 const rotulosStatus: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
   pago: "Pago",
@@ -67,6 +78,7 @@ export default function MinhaContaPage() {
   const [carregando, setCarregando] = useState(true)
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [listaDesejos, setListaDesejos] = useState<ProdutoDesejado[]>([])
   const [assinatura, setAssinatura] = useState<Assinatura>(null)
   const [valorMensalidadeClube, setValorMensalidadeClube] = useState(0)
   const [processandoClube, setProcessandoClube] = useState(false)
@@ -93,6 +105,9 @@ export default function MinhaContaPage() {
 
       const respostaPedidos = await fetch("/api/cliente/pedidos")
       if (respostaPedidos.ok) setPedidos(await respostaPedidos.json())
+
+      const respostaDesejos = await fetch("/api/cliente/lista-desejos")
+      if (respostaDesejos.ok) setListaDesejos(await respostaDesejos.json())
 
       const respostaClube = await fetch("/api/cliente/clube")
       if (respostaClube.ok) {
@@ -156,6 +171,11 @@ export default function MinhaContaPage() {
       setSalvo(true)
       setTimeout(() => setSalvo(false), 2000)
     }
+  }
+
+  async function removerDaListaDesejos(produtoId: string) {
+    setListaDesejos((atual) => atual.filter((p) => p.id !== produtoId))
+    await fetch(`/api/cliente/lista-desejos/${produtoId}`, { method: "DELETE" })
   }
 
   async function sair() {
@@ -264,6 +284,51 @@ export default function MinhaContaPage() {
             </>
           )}
           {erroClube && <p className="text-sm text-red-500">{erroClube}</p>}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Heart size={18} />
+            Lista de desejos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {listaDesejos.length === 0 ? (
+            <p className="text-sm text-neutral-500">Nenhum produto favoritado ainda.</p>
+          ) : (
+            listaDesejos.map((produto) => (
+              <div
+                key={produto.id}
+                className="flex items-center gap-3 rounded-md border border-black/5 p-3 text-sm"
+              >
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-emerald-50">
+                  {produto.imagem_url ? (
+                    <Image src={produto.imagem_url} alt={produto.nome} fill className="object-cover" sizes="56px" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-emerald-300">
+                      <ShoppingBag size={20} />
+                    </div>
+                  )}
+                </div>
+                <Link href={`/produtos/${produto.slug}`} className="flex-1 hover:underline">
+                  <p className="font-medium">{produto.nome}</p>
+                  <p className="text-neutral-500">
+                    {formatarMoeda(produto.preco_promocional ?? produto.preco)}
+                    {produto.estoque <= 0 && <span className="ml-2 text-red-500">Esgotado</span>}
+                  </p>
+                </Link>
+                <button
+                  onClick={() => removerDaListaDesejos(produto.id)}
+                  className="rounded-full p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-500"
+                  aria-label="Remover da lista de desejos"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 

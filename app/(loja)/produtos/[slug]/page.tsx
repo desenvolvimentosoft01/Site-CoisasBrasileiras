@@ -6,6 +6,7 @@ import { ProdutoGaleria } from "@/components/loja/produto-galeria"
 import { AdicionarCarrinhoButton } from "@/components/loja/adicionar-carrinho-button"
 import { AvaliacaoProduto } from "@/components/loja/avaliacao-produto"
 import { NotificarEstoque } from "@/components/loja/notificar-estoque"
+import { BotaoFavoritar } from "@/components/loja/botao-favoritar"
 import { lerTokenSessaoCliente } from "@/lib/auth"
 import { clienteTemClubeAtivo } from "@/lib/clube"
 
@@ -46,6 +47,17 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   )
   const totalAvaliacoes = Number(resumoAvaliacoes.total)
   const mediaAvaliacoes = Number(resumoAvaliacoes.media)
+
+  const favoritado = sessaoCliente
+    ? Boolean(
+        (
+          await query(
+            "SELECT 1 FROM TAB_LISTA_DESEJOS WHERE cliente_id = $1 AND produto_id = $2",
+            [sessaoCliente.id, produto.id]
+          )
+        )[0]
+      )
+    : false
 
   const precoFinal = precoClubeDisponivel ? produto.preco_clube : (produto.preco_promocional ?? produto.preco)
 
@@ -126,6 +138,8 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
             <Truck size={18} />
             Envio para todo o Brasil
           </div>
+
+          <BotaoFavoritar produtoId={produto.id} logado={Boolean(sessaoCliente)} favoritadoInicial={favoritado} />
 
           <AdicionarCarrinhoButton
             produtoId={produto.id}
