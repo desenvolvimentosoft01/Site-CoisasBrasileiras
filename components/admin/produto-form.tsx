@@ -260,7 +260,10 @@ export function ProdutoForm({
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>SKU / codigo interno</Label>
+                <Label>
+                  SKU
+                  <CampoDica>Codigo interno do produto, opcional - usado so pra controle proprio.</CampoDica>
+                </Label>
                 <Input
                   value={sku}
                   onChange={(e) => setSku(e.target.value)}
@@ -269,8 +272,10 @@ export function ProdutoForm({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Codigo de barras (GTIN/EAN-13) *
-                  <CampoDica>Usado no leitor da Venda Balcao e na importacao de XML de compra.</CampoDica>
+                  Cod. de barras *
+                  <CampoDica>
+                    GTIN/EAN-13. Usado no leitor da Venda Balcao e na importacao de XML de compra.
+                  </CampoDica>
                 </Label>
                 <Input
                   value={codigoBarras}
@@ -320,7 +325,10 @@ export function ProdutoForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Preco promocional (R$)</Label>
+                <Label>
+                  Promocional (R$)
+                  <CampoDica>Preco promocional - quando preenchido, substitui o preco normal no site.</CampoDica>
+                </Label>
                 <Input
                   inputMode="numeric"
                   value={precoPromocional}
@@ -330,7 +338,7 @@ export function ProdutoForm({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Preco do Clube (R$)
+                  Clube (R$)
                   <CampoDica>So aparece pra clientes com assinatura do Clube ativa. Vazio = nao participa.</CampoDica>
                 </Label>
                 <Input
