@@ -256,7 +256,12 @@ export async function POST(request: Request) {
           ...(ehHttps ? { auto_return: "approved" as const } : {}),
         },
       })
-      checkoutUrl = preferencia.init_point
+      // Com credenciais de teste, o Mercado Pago devolve tambem um
+      // sandbox_init_point - e ele que aceita login com usuario de teste
+      // (TESTUSER...). O init_point normal so aceita conta real, por isso
+      // fica como fallback (preferencia com credenciais de producao nao
+      // costuma vir com sandbox_init_point preenchido).
+      checkoutUrl = preferencia.sandbox_init_point || preferencia.init_point
     } catch (erroGateway) {
       console.error("[checkout] Falha ao criar link de pagamento:", erroGateway)
       return NextResponse.json(
