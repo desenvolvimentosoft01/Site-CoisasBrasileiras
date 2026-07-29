@@ -12,6 +12,13 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Estorno de estoque ao cancelar NF-e
+
+- [x] `POST /api/admin/pedidos/[id]/cancelar-nfe` agora devolve ao estoque a quantidade de cada item do pedido, dentro da mesma transação do cancelamento no Bling — mesmo padrão de ERP (cancelar a nota de saída estorna a mercadoria). Antes, cancelar a nota não mexia em estoque nenhum, e não existia NENHUMA rotina de devolução automática no sistema (nem no cancelamento do pedido em si).
+- [x] Dispara `notificarClientesEstoqueVoltou()` pra cada produto do pedido depois do estorno, caso o produto tenha voltado de 0 pra positivo e existam clientes esperando aviso.
+- [x] Aviso visual adicionado no formulário de cancelamento (`/admin/pedidos/[id]`) avisando que o estoque será estornado, antes do admin confirmar.
+- **Ainda não cobre**: cancelamento do **pedido** (status → "cancelado") sem cancelar a nota separadamente não estorna estoque. Se isso também for necessário, avisar pra implementar.
+
 ## 2026-07-28 — Ações rápidas no card de produto (site: home + catálogo)
 
 - [x] `ProdutoCard` (usado na home e no `/produtos`) virou client component e ganhou: coração de favoritar (ícone, redireciona pro login se não estiver logado) e botão "Adicionar ao carrinho" — ambos direto no card da grade, sem precisar abrir o produto. Botão desabilita e mostra "Esgotado" quando `estoque <= 0`.

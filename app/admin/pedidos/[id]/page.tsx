@@ -314,6 +314,9 @@ export default function DetalhePedidoPage() {
                 </Button>
               ) : (
                 <div className="space-y-2 rounded-lg border border-red-500/30 bg-red-500/5 p-3">
+                  <p className="text-xs text-amber-600">
+                    O estoque dos itens deste pedido sera estornado automaticamente ao cancelar a nota.
+                  </p>
                   <Label className="text-xs">
                     Justificativa do cancelamento (minimo 15 caracteres, exigencia da Sefaz)
                   </Label>
