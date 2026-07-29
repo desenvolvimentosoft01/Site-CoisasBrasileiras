@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, List } from "lucide-react"
+import { Trash2, Pencil, Plus, ImagePlus, List, FilePlus, Save, Eraser, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Banner = {
   id: string
@@ -36,6 +37,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   const [banners, setBanners] = useState<Banner[]>(bannersIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Banner | null>(null)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
 
   const [titulo, setTitulo] = useState("")
   const [subtitulo, setSubtitulo] = useState("")
@@ -56,6 +58,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
 
   function abrirNovo() {
     setEditando(null)
+    setLinhaSelecionada(null)
     setTitulo("")
     setSubtitulo("")
     setLink("")
@@ -69,6 +72,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
 
   function abrirEdicao(banner: Banner) {
     setEditando(banner)
+    setLinhaSelecionada(banner.id)
     setTitulo(banner.titulo)
     setSubtitulo(banner.subtitulo ?? "")
     setLink(banner.link ?? "")
@@ -173,34 +177,50 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
       registroId: banner.id,
       antes: { titulo: banner.titulo },
     })
+    setLinhaSelecionada(null)
     recarregar()
   }
+
+  const bannerSelecionado = banners.find((b) => b.id === linhaSelecionada) ?? null
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Banners</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
-              Grade
-            </TabsTrigger>
-            <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
-              Cadastro
-            </TabsTrigger>
-          </TabsList>
-          {aba === "lista" && (
-            <Button onClick={abrirNovo}>
-              <Plus size={16} className="mr-2" />
-              Novo banner
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Grade
+          </TabsTrigger>
+          <TabsTrigger value="formulario">
+            <Plus size={14} className="mr-1.5" />
+            Cadastro
+          </TabsTrigger>
+        </TabsList>
 
-        <TabsContent value="lista" className="mt-4">
+        <TabsContent value="lista" className="mt-4 space-y-4">
+          <div className="overflow-hidden rounded-lg border border-slate-300">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => bannerSelecionado && abrirEdicao(bannerSelecionado),
+                  disabled: !bannerSelecionado,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => bannerSelecionado && excluir(bannerSelecionado),
+                  disabled: !bannerSelecionado,
+                  variante: "danger",
+                },
+              ]}
+            />
+          </div>
+
           {banners.length === 0 ? (
             <p className="text-sm text-slate-500">
               Nenhum banner cadastrado - a home esta usando os slides padrao.
@@ -208,7 +228,16 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {banners.map((banner) => (
-                <Card key={banner.id}>
+                <Card
+                  key={banner.id}
+                  onClick={() =>
+                    setLinhaSelecionada((atual) => (atual === banner.id ? null : banner.id))
+                  }
+                  onDoubleClick={() => abrirEdicao(banner)}
+                  className={`cursor-pointer transition-colors ${
+                    linhaSelecionada === banner.id ? "ring-2 ring-amber-400" : ""
+                  }`}
+                >
                   <CardContent className="space-y-3 pt-6">
                     <div
                       className={`relative flex h-28 items-center justify-center rounded-md bg-gradient-to-br px-4 text-center text-sm font-medium text-white ${banner.cor_fundo}`}
@@ -229,10 +258,24 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                         {banner.ativo ? "Ativo" : "Inativo"}
                       </span>
                       <div>
-                        <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(banner)}>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            abrirEdicao(banner)
+                          }}
+                        >
                           <Pencil size={16} />
                         </Button>
-                        <Button variant="ghost" size="icon-lg" onClick={() => excluir(banner)}>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            excluir(banner)
+                          }}
+                        >
                           <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </div>
@@ -245,21 +288,17 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {editando ? `Editando: ${editando.titulo}` : "Novo banner"}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setAba("lista")}>
-                Cancelar
-              </Button>
-              <Button variant="outline" onClick={limpar}>
-                Limpar
-              </Button>
-              <Button onClick={salvar} disabled={salvando || !titulo.trim()}>
-                {salvando ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
+          <p className="px-1 text-sm font-medium text-muted-foreground">
+            {editando ? `Editando: ${editando.titulo}` : "Novo banner"}
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <BarraFerramentas
+              botoes={[
+                { label: "Gravar", icon: Save, onClick: salvar, variante: "success", disabled: salvando || !titulo.trim() },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
+              ]}
+            />
           </div>
 
           <Card className="max-w-lg">

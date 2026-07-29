@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Pencil, Plus, Ban, RotateCcw, Trash2, List, X } from "lucide-react"
+import { Pencil, Ban, RotateCcw, Trash2, List, X, FilePlus, Save, Eraser } from "lucide-react"
 import { toast } from "sonner"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { mascaraTelefone, mascaraCpfCnpj, mascaraCEP } from "@/lib/mascaras"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Cliente = {
   id: string
@@ -54,6 +55,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
   const [filtroStatus, setFiltroStatus] = useState<"ativos" | "inativos" | "todos">("ativos")
   const [aba, setAba] = useState("lista")
   const [clienteEditando, setClienteEditando] = useState<ClienteDetalhado | null>(null)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
   const [form, setForm] = useState(FORM_VAZIO)
   const [buscandoCep, setBuscandoCep] = useState(false)
@@ -71,12 +73,14 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
 
   function abrirNovo() {
     setClienteEditando(null)
+    setLinhaSelecionada(null)
     setForm(FORM_VAZIO)
     setErro("")
     setAba("formulario")
   }
 
   async function abrirEdicao(cliente: Cliente) {
+    setLinhaSelecionada(cliente.id)
     setAba("formulario")
     setCarregandoDetalhe(true)
     const resposta = await fetch(`/api/admin/clientes/${cliente.id}`)
@@ -263,6 +267,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
       depois: null,
     })
 
+    setLinhaSelecionada(null)
     recarregar()
   }
 
@@ -274,17 +279,11 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
     })
     .filter((c) => `${c.nome} ${c.email || ""} ${c.telefone || ""}`.toLowerCase().includes(busca.toLowerCase()))
 
+  const clienteSelecionado = clientes.find((c) => c.id === linhaSelecionada) ?? null
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Clientes</h1>
-        {aba === "lista" && (
-          <Button onClick={abrirNovo}>
-            <Plus size={16} className="mr-2" />
-            Novo cliente
-          </Button>
-        )}
-      </div>
+      <h1 className="text-2xl font-semibold">Clientes</h1>
 
       <Tabs value={aba} onValueChange={setAba}>
         <TabsList>
@@ -330,7 +329,31 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
             </Tabs>
           </div>
 
-          <Card>
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => clienteSelecionado && abrirEdicao(clienteSelecionado),
+                  disabled: !clienteSelecionado,
+                },
+                {
+                  label: clienteSelecionado?.ativo === false ? "Reativar" : "Inativar",
+                  icon: clienteSelecionado?.ativo === false ? RotateCcw : Ban,
+                  onClick: () => clienteSelecionado && alternarAtivo(clienteSelecionado),
+                  disabled: !clienteSelecionado,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => clienteSelecionado && excluir(clienteSelecionado),
+                  disabled: !clienteSelecionado,
+                  variante: "danger",
+                },
+              ]}
+            />
             <CardContent className="p-0">
               {clientesFiltrados.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhum cliente encontrado.</p>
@@ -350,7 +373,16 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                     </thead>
                     <tbody>
                       {clientesFiltrados.map((cliente) => (
-                        <tr key={cliente.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={cliente.id}
+                          onClick={() =>
+                            setLinhaSelecionada((atual) => (atual === cliente.id ? null : cliente.id))
+                          }
+                          onDoubleClick={() => abrirEdicao(cliente)}
+                          className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                            linhaSelecionada === cliente.id ? "bg-amber-50" : "hover:bg-slate-50"
+                          }`}
+                        >
                           <td className="p-4">{cliente.nome}</td>
                           <td className="p-4">
                             <span
@@ -378,13 +410,23 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                             </span>
                           </td>
                           <td className="p-4 text-right">
-                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(cliente)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                abrirEdicao(cliente)
+                              }}
+                            >
                               <Pencil size={16} />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon-lg"
-                              onClick={() => alternarAtivo(cliente)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                alternarAtivo(cliente)
+                              }}
                               title={cliente.ativo ? "Inativar cliente" : "Reativar cliente"}
                             >
                               {cliente.ativo ? (
@@ -396,7 +438,10 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                             <Button
                               variant="ghost"
                               size="icon-lg"
-                              onClick={() => excluir(cliente)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                excluir(cliente)
+                              }}
                               title="Excluir cliente (so se nunca teve pedido)"
                             >
                               <Trash2 size={16} className="text-red-500" />
@@ -413,21 +458,23 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {clienteEditando ? `Editando: ${clienteEditando.nome}` : "Novo cliente"}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setAba("lista")}>
-                Cancelar
-              </Button>
-              <Button variant="outline" onClick={limpar}>
-                Limpar
-              </Button>
-              <Button onClick={salvar} disabled={salvando || carregandoDetalhe || !form.nome.trim()}>
-                {salvando ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
+          <p className="px-1 text-sm font-medium text-muted-foreground">
+            {clienteEditando ? `Editando: ${clienteEditando.nome}` : "Novo cliente"}
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <BarraFerramentas
+              botoes={[
+                {
+                  label: "Gravar",
+                  icon: Save,
+                  onClick: salvar,
+                  variante: "success",
+                  disabled: salvando || carregandoDetalhe || !form.nome.trim(),
+                },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
+              ]}
+            />
           </div>
 
           {erro && <p className="text-sm text-red-500">{erro}</p>}

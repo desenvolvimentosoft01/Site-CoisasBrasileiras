@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List } from "lucide-react"
+import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X } from "lucide-react"
 import { CampoDica } from "@/components/ui/campo-dica"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Cupom = {
   id: string
@@ -31,6 +32,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
   const [cupons, setCupons] = useState<Cupom[]>(cuponsIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Cupom | null>(null)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
 
   const [codigo, setCodigo] = useState("")
   const [tipo, setTipo] = useState<"percentual" | "fixo">("percentual")
@@ -49,6 +51,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
 
   function abrirNovo() {
     setEditando(null)
+    setLinhaSelecionada(null)
     setCodigo("")
     setTipo("percentual")
     setValor("")
@@ -62,6 +65,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
 
   function abrirEdicao(cupom: Cupom) {
     setEditando(cupom)
+    setLinhaSelecionada(cupom.id)
     setCodigo(cupom.codigo)
     setTipo(cupom.tipo)
     setValor(cupom.valor)
@@ -149,35 +153,48 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
       registroId: cupom.id,
       antes: { codigo: cupom.codigo, valor: cupom.valor },
     })
+    setLinhaSelecionada(null)
     recarregar()
   }
+
+  const cupomSelecionado = cupons.find((c) => c.id === linhaSelecionada) ?? null
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Cupons de desconto</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
-              Grade
-            </TabsTrigger>
-            <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
-              Cadastro
-            </TabsTrigger>
-          </TabsList>
-          {aba === "lista" && (
-            <Button onClick={abrirNovo}>
-              <Plus size={16} className="mr-2" />
-              Novo cupom
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Grade
+          </TabsTrigger>
+          <TabsTrigger value="formulario">
+            <Plus size={14} className="mr-1.5" />
+            Cadastro
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="lista" className="mt-4">
-          <Card>
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => cupomSelecionado && abrirEdicao(cupomSelecionado),
+                  disabled: !cupomSelecionado,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => cupomSelecionado && excluir(cupomSelecionado),
+                  disabled: !cupomSelecionado,
+                  variante: "danger",
+                },
+              ]}
+            />
             <CardContent className="p-0">
               {cupons.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhum cupom cadastrado ainda.</p>
@@ -195,7 +212,16 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                     </thead>
                     <tbody>
                       {cupons.map((cupom) => (
-                        <tr key={cupom.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={cupom.id}
+                          onClick={() =>
+                            setLinhaSelecionada((atual) => (atual === cupom.id ? null : cupom.id))
+                          }
+                          onDoubleClick={() => abrirEdicao(cupom)}
+                          className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                            linhaSelecionada === cupom.id ? "bg-amber-50" : "hover:bg-slate-50"
+                          }`}
+                        >
                           <td className="p-4 font-mono">{cupom.codigo}</td>
                           <td className="p-4">
                             {cupom.tipo === "percentual"
@@ -223,10 +249,24 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                             </span>
                           </td>
                           <td className="p-4 text-right">
-                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(cupom)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                abrirEdicao(cupom)
+                              }}
+                            >
                               <Pencil size={16} />
                             </Button>
-                            <Button variant="ghost" size="icon-lg" onClick={() => excluir(cupom)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                excluir(cupom)
+                              }}
+                            >
                               <Trash2 size={16} className="text-red-500" />
                             </Button>
                           </td>
@@ -241,21 +281,23 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {editando ? `Editando: ${editando.codigo}` : "Novo cupom"}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setAba("lista")}>
-                Cancelar
-              </Button>
-              <Button variant="outline" onClick={limpar}>
-                Limpar
-              </Button>
-              <Button onClick={salvar} disabled={salvando || !codigo.trim() || !valor}>
-                {salvando ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
+          <p className="px-1 text-sm font-medium text-muted-foreground">
+            {editando ? `Editando: ${editando.codigo}` : "Novo cupom"}
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <BarraFerramentas
+              botoes={[
+                {
+                  label: "Gravar",
+                  icon: Save,
+                  onClick: salvar,
+                  variante: "success",
+                  disabled: salvando || !codigo.trim() || !valor,
+                },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
+              ]}
+            />
           </div>
 
           <Card className="max-w-lg">
