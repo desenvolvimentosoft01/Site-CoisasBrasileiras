@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List, ImagePlus, X, CornerDownRight } from "lucide-react"
+import { Trash2, Pencil, Plus, List, ImagePlus, X, CornerDownRight, FilePlus, Save, Eraser } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Categoria = {
   id: string
@@ -30,6 +31,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
   const [categorias, setCategorias] = useState<Categoria[]>(categoriasIniciais)
   const [aba, setAba] = useState("lista")
   const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [nome, setNome] = useState("")
   const [ativa, setAtiva] = useState(true)
   const [categoriaPaiId, setCategoriaPaiId] = useState<string | null>(null)
@@ -71,6 +73,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
 
   function abrirNova() {
     setCategoriaEditando(null)
+    setLinhaSelecionada(null)
     setNome("")
     setAtiva(true)
     setCategoriaPaiId(null)
@@ -81,6 +84,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
 
   function abrirEdicao(categoria: Categoria) {
     setCategoriaEditando(categoria)
+    setLinhaSelecionada(categoria.id)
     setNome(categoria.nome)
     setAtiva(categoria.ativa)
     setCategoriaPaiId(categoria.categoria_pai_id)
@@ -151,8 +155,11 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
       registroId: categoria.id,
       antes: { nome: categoria.nome, ativa: categoria.ativa },
     })
+    setLinhaSelecionada(null)
     recarregar()
   }
+
+  const categoriaSelecionada = categorias.find((c) => c.id === linhaSelecionada) ?? null
 
   // Categorias principais primeiro, com as subcategorias logo abaixo do
   // respectivo pai (em vez de tudo em ordem alfabetica misturado).
@@ -167,27 +174,37 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
       <h1 className="text-2xl font-semibold">Categorias</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
-              Grade
-            </TabsTrigger>
-            <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
-              Cadastro
-            </TabsTrigger>
-          </TabsList>
-          {aba === "lista" && (
-            <Button onClick={abrirNova}>
-              <Plus size={16} className="mr-2" />
-              Nova categoria
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Grade
+          </TabsTrigger>
+          <TabsTrigger value="formulario">
+            <Plus size={14} className="mr-1.5" />
+            Cadastro
+          </TabsTrigger>
+        </TabsList>
 
-        <TabsContent value="lista" className="mt-4">
-          <Card>
+        <TabsContent value="lista" className="mt-4 space-y-0">
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNova, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => categoriaSelecionada && abrirEdicao(categoriaSelecionada),
+                  disabled: !categoriaSelecionada,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => categoriaSelecionada && excluir(categoriaSelecionada),
+                  disabled: !categoriaSelecionada,
+                  variante: "danger",
+                },
+              ]}
+            />
             <CardContent className="p-0">
               {categorias.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhuma categoria cadastrada ainda.</p>
@@ -205,7 +222,16 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                     </thead>
                     <tbody>
                       {categoriasOrdenadas.map((categoria) => (
-                        <tr key={categoria.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={categoria.id}
+                          onClick={() =>
+                            setLinhaSelecionada((atual) => (atual === categoria.id ? null : categoria.id))
+                          }
+                          onDoubleClick={() => abrirEdicao(categoria)}
+                          className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                            linhaSelecionada === categoria.id ? "bg-amber-50" : "hover:bg-slate-50"
+                          }`}
+                        >
                           <td className="p-4">
                             {categoria.imagem_url ? (
                               <div className="relative h-10 w-10 overflow-hidden rounded-md">
@@ -234,10 +260,24 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                             </span>
                           </td>
                           <td className="p-4 text-right">
-                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(categoria)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                abrirEdicao(categoria)
+                              }}
+                            >
                               <Pencil size={16} />
                             </Button>
-                            <Button variant="ghost" size="icon-lg" onClick={() => excluir(categoria)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                excluir(categoria)
+                              }}
+                            >
                               <Trash2 size={16} className="text-red-500" />
                             </Button>
                           </td>
@@ -251,26 +291,19 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
           </Card>
         </TabsContent>
 
-        <TabsContent value="formulario" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {categoriaEditando ? `Editando: ${categoriaEditando.nome}` : "Nova categoria"}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setAba("lista")}>
-                Cancelar
-              </Button>
-              <Button variant="outline" onClick={limpar}>
-                Limpar
-              </Button>
-              <Button onClick={salvar} disabled={salvando || !nome.trim()}>
-                {salvando ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
-          </div>
-
-          <Card>
-            <CardContent className="max-w-lg space-y-4 pt-6">
+        <TabsContent value="formulario" className="mt-4 space-y-0">
+          <p className="mb-2 px-1 text-sm font-medium text-muted-foreground">
+            {categoriaEditando ? `Editando: ${categoriaEditando.nome}` : "Nova categoria"}
+          </p>
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Gravar", icon: Save, onClick: salvar, variante: "success", disabled: salvando || !nome.trim() },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
+              ]}
+            />
+            <CardContent className="max-w-lg space-y-4 pt-4">
               <div className="space-y-2">
                 <Label>Nome</Label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />

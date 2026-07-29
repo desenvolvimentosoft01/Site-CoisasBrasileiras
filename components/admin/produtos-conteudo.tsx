@@ -4,11 +4,12 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Plus, Pencil, Trash2, List, AlertTriangle } from "lucide-react"
+import { Plus, Pencil, Trash2, List, AlertTriangle, FilePlus } from "lucide-react"
 import { toast } from "sonner"
 import { ProdutoForm } from "@/components/admin/produto-form"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Produto = {
   id: string
@@ -57,6 +58,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativos" | "inativos">("ativos")
   const [editando, setEditando] = useState<ProdutoDetalhado | undefined>(undefined)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
 
   const produtosFiltrados = produtos.filter((p) => {
     if (filtroStatus === "ativos") return p.ativo
@@ -71,10 +73,12 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
 
   function abrirNovo() {
     setEditando(undefined)
+    setLinhaSelecionada(null)
     setAba("formulario")
   }
 
   async function abrirEdicao(produto: Produto) {
+    setLinhaSelecionada(produto.id)
     setAba("formulario")
     setCarregandoDetalhe(true)
     const resposta = await fetch(`/api/admin/produtos/${produto.id}`)
@@ -103,32 +107,27 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
       registroId: produto.id,
       antes: { nome: produto.nome, preco: produto.preco, estoque: produto.estoque },
     })
+    setLinhaSelecionada(null)
     recarregar()
   }
+
+  const produtoSelecionado = produtos.find((p) => p.id === linhaSelecionada) ?? null
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Produtos</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
-              Grade
-            </TabsTrigger>
-            <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
-              Cadastro
-            </TabsTrigger>
-          </TabsList>
-          {aba === "lista" && (
-            <Button onClick={abrirNovo}>
-              <Plus size={16} className="mr-2" />
-              Novo produto
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Grade
+          </TabsTrigger>
+          <TabsTrigger value="formulario">
+            <Plus size={14} className="mr-1.5" />
+            Cadastro
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="lista" className="mt-4 space-y-4">
           <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
@@ -139,7 +138,25 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
             </TabsList>
           </Tabs>
 
-          <Card>
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => produtoSelecionado && abrirEdicao(produtoSelecionado),
+                  disabled: !produtoSelecionado,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => produtoSelecionado && excluir(produtoSelecionado),
+                  disabled: !produtoSelecionado,
+                  variante: "danger",
+                },
+              ]}
+            />
             <CardContent className="p-0">
               {produtosFiltrados.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">
@@ -161,7 +178,16 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                     </thead>
                     <tbody>
                       {produtosFiltrados.map((produto) => (
-                        <tr key={produto.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={produto.id}
+                          onClick={() =>
+                            setLinhaSelecionada((atual) => (atual === produto.id ? null : produto.id))
+                          }
+                          onDoubleClick={() => abrirEdicao(produto)}
+                          className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                            linhaSelecionada === produto.id ? "bg-amber-50" : "hover:bg-slate-50"
+                          }`}
+                        >
                           <td className="p-4">
                             <span className="flex items-center gap-1.5">
                               {produto.nome}
@@ -210,10 +236,24 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                             </span>
                           </td>
                           <td className="p-4 text-right">
-                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(produto)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                abrirEdicao(produto)
+                              }}
+                            >
                               <Pencil size={16} />
                             </Button>
-                            <Button variant="ghost" size="icon-lg" onClick={() => excluir(produto)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                excluir(produto)
+                              }}
+                            >
                               <Trash2 size={16} className="text-red-500" />
                             </Button>
                           </td>

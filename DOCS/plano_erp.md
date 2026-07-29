@@ -12,6 +12,15 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Padrão CRUD estilo InMenteGestao (barra de ferramentas + seleção de linha)
+
+Pedido explícito do cliente: replicar o padrão visual do InMenteGestao (`C:\InMenteGestao\in-mente-gestao-sistema`) — barra de ferramentas com ícones (Novo/Editar/Excluir na grade; Gravar/Limpar/Cancelar no cadastro) e linha de tabela selecionável (clique seleciona e destaca, duplo-clique abre pra editar), em vez de só botões de texto soltos e ícones por linha.
+
+- [x] `components/admin/barra-ferramentas.tsx` — porta do `BarraFerramentas.tsx` de lá, mesma estrutura de props (`botoes: {label, icon, onClick, variante, disabled}[]`) e cores por variante (primary/danger/success/warning/default).
+- [x] Aplicado em: Categorias, Produtos (+ `produto-form.tsx`).
+- [ ] Pendente aplicar no mesmo padrão: Clientes, Banners, Fornecedores, Cupons, Usuários, Contas Financeiro, Tipos de Entrega, Feedbacks, Orçamentos (+ `orcamento-form.tsx`).
+- **Fora de escopo por decisão do cliente**: Pedidos, Avaliações, Compras, Faixas de Frete, Reajuste de Preços, Estoque, Auditoria — não se encaixam no molde lista+formulário sem forçar a estrutura (moderação, formulário multi-etapa, edição inline, seleção múltipla própria, log só-leitura).
+
 ## 2026-07-28 — Badge de notas pendentes do Bling no menu do admin
 
 - [x] Migration `033_bling_notas_pendentes_count.sql`: `TAB_INTEGRACAO_BLING.notas_pendentes`, atualizado pelo cron a cada execução (total atual, não só as novas). Aplicada em local e Neon.

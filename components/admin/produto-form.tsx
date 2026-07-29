@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ImagePlus, X } from "lucide-react"
+import { ImagePlus, X, Save, Eraser } from "lucide-react"
 import { CampoDica } from "@/components/ui/campo-dica"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import {
   mascaraMoeda,
   valorMoedaParaNumero,
@@ -232,25 +232,20 @@ export function ProdutoForm({
 
   return (
     <div className="w-full space-y-4">
-      {/* Barra de acoes no topo do formulario. Nao e sticky de proposito -
-          rola junto com o conteudo, igual as demais telas de cadastro do admin
-          (Categorias, Cupons etc). Uma barra grudada aqui cobria o rotulo do
-          primeiro campo (Nome/SKU) ao rolar. */}
-      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-        <span className="text-sm font-medium text-muted-foreground">
-          {produto ? `Editando: ${produto.nome}` : "Novo produto"}
-        </span>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancelar}>
-            Cancelar
-          </Button>
-          <Button variant="outline" onClick={limpar}>
-            Limpar
-          </Button>
-          <Button onClick={salvar} disabled={salvando}>
-            {salvando ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
+      <p className="px-1 text-sm font-medium text-muted-foreground">
+        {produto ? `Editando: ${produto.nome}` : "Novo produto"}
+      </p>
+      {/* Nao e sticky de proposito - rola junto com o conteudo, igual as
+          demais telas de cadastro do admin (Categorias, Cupons etc). Uma
+          barra grudada aqui cobria o rotulo do primeiro campo (Nome/SKU) ao rolar. */}
+      <div className="overflow-hidden rounded-lg border border-border">
+        <BarraFerramentas
+          botoes={[
+            { label: "Gravar", icon: Save, onClick: salvar, variante: "success", disabled: salvando },
+            { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+            { label: "Cancelar", icon: X, onClick: onCancelar, variante: "danger" },
+          ]}
+        />
       </div>
 
       {erro && <p className="text-sm text-red-500">{erro}</p>}
