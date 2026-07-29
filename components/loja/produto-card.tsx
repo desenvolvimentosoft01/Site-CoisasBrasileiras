@@ -32,11 +32,15 @@ export function ProdutoCard({
 }) {
   const router = useRouter()
   const adicionar = useCarrinho((s) => s.adicionar)
+  const quantidadeNoCarrinho = useCarrinho(
+    (s) => s.itens.find((i) => i.produtoId === produto.id)?.quantidade ?? 0
+  )
   const [favoritado, setFavoritado] = useState(favoritadoInicial)
   const [favoritando, setFavoritando] = useState(false)
   const [adicionado, setAdicionado] = useState(false)
 
   const semEstoque = (produto.estoque ?? 1) <= 0
+  const atingiuLimite = produto.estoque !== undefined && quantidadeNoCarrinho >= produto.estoque
 
   async function alternarFavorito(evento: React.MouseEvent) {
     evento.preventDefault()
@@ -65,7 +69,7 @@ export function ProdutoCard({
   function handleAdicionar(evento: React.MouseEvent) {
     evento.preventDefault()
     evento.stopPropagation()
-    if (semEstoque) return
+    if (semEstoque || atingiuLimite) return
 
     adicionar(
       {
@@ -147,11 +151,13 @@ export function ProdutoCard({
       <div className="px-4 pb-4">
         <button
           onClick={handleAdicionar}
-          disabled={semEstoque}
+          disabled={semEstoque || atingiuLimite}
           className="flex w-full items-center justify-center gap-1.5 rounded-full border border-primary/30 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:text-neutral-400"
         >
           {semEstoque ? (
             "Esgotado"
+          ) : atingiuLimite ? (
+            "Maximo no carrinho"
           ) : adicionado ? (
             <>
               <Check size={14} />

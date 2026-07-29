@@ -38,18 +38,22 @@ export const useCarrinho = create<CarrinhoState>()(
       adicionar: (item, quantidade = 1) =>
         set((state) => {
           const existente = state.itens.find((i) => i.produtoId === item.produtoId)
+          // Limita ao estoque disponivel aqui, na store - centralizado, entao
+          // vale pra qualquer lugar que chame adicionar() (card da grade,
+          // botao da pagina de produto etc), nao so pros botoes +/- que
+          // controlam a propria quantidade antes de chamar isso.
+          const limite = item.estoque ?? Infinity
           if (existente) {
+            const novaQuantidade = Math.min(limite, existente.quantidade + quantidade)
             return {
               itens: state.itens.map((i) =>
-                i.produtoId === item.produtoId
-                  ? { ...i, estoque: item.estoque, quantidade: i.quantidade + quantidade }
-                  : i
+                i.produtoId === item.produtoId ? { ...i, estoque: item.estoque, quantidade: novaQuantidade } : i
               ),
               aberto: true,
             }
           }
           return {
-            itens: [...state.itens, { ...item, quantidade }],
+            itens: [...state.itens, { ...item, quantidade: Math.min(limite, quantidade) }],
             aberto: true,
           }
         }),

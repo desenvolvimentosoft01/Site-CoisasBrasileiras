@@ -12,6 +12,19 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Notificação de notas de fornecedor pendentes no Bling
+
+- [x] Migration `032_bling_nota_notificada.sql`: `TAB_BLING_NOTA_NOTIFICADA` marca quais notas já geraram aviso, pra não notificar a mesma nota todo dia. Aplicada em local e Neon.
+- [x] `app/api/cron/notas-bling-pendentes/route.ts`: verifica notas de entrada dos últimos 30 dias no Bling, cruza com o que já foi lançado (`TAB_COMPRA.bling_nota_id`) e com o que já foi notificado, e manda e-mail pro admin com as pendentes novas. Protegida por `CRON_SECRET` (env var opcional — sem ela, aceita qualquer chamada, então configurar em produção).
+- [x] `vercel.json`: cron diário às 12h UTC (09h BRT) chamando essa rota — respeita o limite do plano Hobby (1x/dia).
+
+## Correção: limite de estoque no carrinho não valia pro botão "Adicionar ao carrinho" da grade
+
+- **Bug relatado pelo cliente**: os botões +/- respeitavam o estoque, mas clicar repetidamente em "Adicionar ao carrinho" no card da grade/home ia empilhando quantidade sem limite nenhum.
+- **Causa raiz**: o limite só existia nos componentes de UI (`SeletorQuantidade`), nunca dentro da própria store (`adicionar()` em `lib/carrinho-store.ts`) — qualquer chamada que não passasse pelos botões +/- (como o clique direto no card) escapava do limite.
+- [x] Corrigido na store, centralizado: `adicionar()` agora sempre limita ao `estoque` do item, somando com o que já está no carrinho — vale pra qualquer ponto de entrada, não só os botões +/-.
+- [x] `ProdutoCard` também desabilita visualmente o botão ("Máximo no carrinho") quando a quantidade no carrinho já bate o estoque, em vez de deixar clicar sem efeito.
+
 ## 2026-07-28 — Site: seletor +/- de quantidade e exibição de estoque disponível
 
 - [x] `components/loja/seletor-quantidade.tsx`: componente compartilhado com botões +/- (em vez do spinner nativo `type="number"`, que no mobile é ruim de usar e varia de navegador pra navegador). Reaproveitado no carrinho (drawer e página `/carrinho`) e no botão de adicionar da página de detalhe do produto.

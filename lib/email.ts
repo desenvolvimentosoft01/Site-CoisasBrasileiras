@@ -140,6 +140,40 @@ export function templateNovoPedidoAdmin(params: {
   `)
 }
 
+export function templateNotasBlingPendentes(
+  notas: { numero: string; fornecedorNome: string | null; valorTotal: number }[]
+): string {
+  const linhas = notas
+    .map(
+      (n) => `
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:14px;color:#333;">${escapeHtml(n.numero)}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:14px;color:#333;">${escapeHtml(n.fornecedorNome ?? "-")}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:14px;color:#333;text-align:right;">
+            ${n.valorTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          </td>
+        </tr>`
+    )
+    .join("")
+
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Notas de fornecedor pendentes no Bling</h1>
+    <p style="margin:0 0 16px;font-size:14px;color:#555;">
+      ${notas.length} nota(s) nova(s) de entrada esperando ser lançada(s) em Compras.
+    </p>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:0 0 8px;font-size:12px;color:#999;">Número</th>
+          <th style="text-align:left;padding:0 0 8px;font-size:12px;color:#999;">Fornecedor</th>
+          <th style="text-align:right;padding:0 0 8px;font-size:12px;color:#999;">Valor</th>
+        </tr>
+      </thead>
+      <tbody>${linhas}</tbody>
+    </table>
+  `)
+}
+
 const ROTULOS_STATUS: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
   pago: "Pagamento confirmado",
