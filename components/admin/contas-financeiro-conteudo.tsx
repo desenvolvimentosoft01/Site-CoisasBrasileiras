@@ -15,10 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Plus, List, ArrowLeft } from "lucide-react"
+import { Trash2, Pencil, Plus, List, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Conta = {
   id: string
@@ -37,6 +38,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
   const [contas, setContas] = useState<Conta[]>(contasIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Conta | null>(null)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
 
   const [tipo, setTipo] = useState<"pagar" | "receber">("pagar")
   const [descricao, setDescricao] = useState("")
@@ -55,6 +57,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
 
   function abrirNova() {
     setEditando(null)
+    setLinhaSelecionada(null)
     setTipo("pagar")
     setDescricao("")
     setValor("")
@@ -68,6 +71,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
 
   function abrirEdicao(conta: Conta) {
     setEditando(conta)
+    setLinhaSelecionada(conta.id)
     setTipo(conta.tipo)
     setDescricao(conta.descricao)
     setValor(conta.valor)
@@ -157,6 +161,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
       registroId: conta.id,
       antes: { descricao: conta.descricao, valor: conta.valor },
     })
+    setLinhaSelecionada(null)
     recarregar()
   }
 
@@ -186,6 +191,8 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
     recarregar()
   }
 
+  const contaSelecionada = contas.find((c) => c.id === linhaSelecionada) ?? null
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -196,27 +203,37 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
       </div>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
-              Grade
-            </TabsTrigger>
-            <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
-              Cadastro
-            </TabsTrigger>
-          </TabsList>
-          {aba === "lista" && (
-            <Button onClick={abrirNova}>
-              <Plus size={16} className="mr-2" />
-              Nova conta
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Grade
+          </TabsTrigger>
+          <TabsTrigger value="formulario">
+            <Plus size={14} className="mr-1.5" />
+            Cadastro
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="lista" className="mt-4">
-          <Card>
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNova, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => contaSelecionada && abrirEdicao(contaSelecionada),
+                  disabled: !contaSelecionada,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => contaSelecionada && excluir(contaSelecionada),
+                  disabled: !contaSelecionada,
+                  variante: "danger",
+                },
+              ]}
+            />
             <CardContent className="p-0">
               {contas.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhuma conta cadastrada ainda.</p>
@@ -235,7 +252,16 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                     </thead>
                     <tbody>
                       {contas.map((conta) => (
-                        <tr key={conta.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={conta.id}
+                          onClick={() =>
+                            setLinhaSelecionada((atual) => (atual === conta.id ? null : conta.id))
+                          }
+                          onDoubleClick={() => abrirEdicao(conta)}
+                          className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                            linhaSelecionada === conta.id ? "bg-amber-50" : "hover:bg-slate-50"
+                          }`}
+                        >
                           <td className="p-4 capitalize">{conta.tipo}</td>
                           <td className="p-4">{conta.descricao}</td>
                           <td className="p-4 text-slate-500">
@@ -245,7 +271,12 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                             {formatarMoeda(conta.valor)}
                           </td>
                           <td className="p-4">
-                            <button onClick={() => alternarPago(conta)}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                alternarPago(conta)
+                              }}
+                            >
                               <span
                                 className={`rounded-full px-2 py-1 text-xs ${
                                   conta.pago
@@ -258,10 +289,24 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                             </button>
                           </td>
                           <td className="p-4 text-right">
-                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(conta)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                abrirEdicao(conta)
+                              }}
+                            >
                               <Pencil size={16} />
                             </Button>
-                            <Button variant="ghost" size="icon-lg" onClick={() => excluir(conta)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                excluir(conta)
+                              }}
+                            >
                               <Trash2 size={16} className="text-red-500" />
                             </Button>
                           </td>
@@ -276,21 +321,23 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {editando ? `Editando: ${editando.descricao}` : "Nova conta"}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setAba("lista")}>
-                Cancelar
-              </Button>
-              <Button variant="outline" onClick={limpar}>
-                Limpar
-              </Button>
-              <Button onClick={salvar} disabled={salvando || !descricao.trim() || !valor || !vencimento}>
-                {salvando ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
+          <p className="px-1 text-sm font-medium text-muted-foreground">
+            {editando ? `Editando: ${editando.descricao}` : "Nova conta"}
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <BarraFerramentas
+              botoes={[
+                {
+                  label: "Gravar",
+                  icon: Save,
+                  onClick: salvar,
+                  variante: "success",
+                  disabled: salvando || !descricao.trim() || !valor || !vencimento,
+                },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
+              ]}
+            />
           </div>
 
           <Card className="max-w-lg">

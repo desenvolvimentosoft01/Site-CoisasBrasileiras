@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { Trash2, Pencil, Plus, ArrowLeft } from "lucide-react"
+import { Trash2, Pencil, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type TipoEntrega = {
   id: string
@@ -22,6 +23,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
   const [tipos, setTipos] = useState<TipoEntrega[]>(tiposIniciais)
   const [editando, setEditando] = useState<TipoEntrega | null>(null)
   const [criando, setCriando] = useState(false)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [nome, setNome] = useState("")
   const [ativo, setAtivo] = useState(true)
   const [erro, setErro] = useState("")
@@ -34,6 +36,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
 
   function abrirNovo() {
     setEditando(null)
+    setLinhaSelecionada(null)
     setNome("")
     setAtivo(true)
     setErro("")
@@ -42,6 +45,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
 
   function abrirEdicao(tipo: TipoEntrega) {
     setEditando(tipo)
+    setLinhaSelecionada(tipo.id)
     setNome(tipo.nome)
     setAtivo(tipo.ativo)
     setErro("")
@@ -92,8 +96,11 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
   async function excluir(tipo: TipoEntrega) {
     if (!(await confirmar({ descricao: `Excluir o tipo de entrega "${tipo.nome}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/tipos-entrega/${tipo.id}`, { method: "DELETE" })
+    setLinhaSelecionada(null)
     recarregar()
   }
+
+  const tipoSelecionado = tipos.find((t) => t.id === linhaSelecionada) ?? null
 
   return (
     <div className="space-y-6">
@@ -107,13 +114,27 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
             Usado na venda balcao quando a venda tem alguma forma de entrega (retirada, motoboy etc).
           </p>
         </div>
-        <Button onClick={abrirNovo}>
-          <Plus size={16} className="mr-2" />
-          Novo tipo
-        </Button>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden py-0">
+        <BarraFerramentas
+          botoes={[
+            { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+            {
+              label: "Editar",
+              icon: Pencil,
+              onClick: () => tipoSelecionado && abrirEdicao(tipoSelecionado),
+              disabled: !tipoSelecionado,
+            },
+            {
+              label: "Excluir",
+              icon: Trash2,
+              onClick: () => tipoSelecionado && excluir(tipoSelecionado),
+              disabled: !tipoSelecionado,
+              variante: "danger",
+            },
+          ]}
+        />
         <CardContent className="p-0">
           {tipos.length === 0 ? (
             <p className="p-6 text-sm text-slate-500">Nenhum tipo de entrega cadastrado ainda.</p>
@@ -129,7 +150,14 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                 </thead>
                 <tbody>
                   {tipos.map((tipo) => (
-                    <tr key={tipo.id} className="border-b border-slate-200 last:border-0">
+                    <tr
+                      key={tipo.id}
+                      onClick={() => setLinhaSelecionada((atual) => (atual === tipo.id ? null : tipo.id))}
+                      onDoubleClick={() => abrirEdicao(tipo)}
+                      className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                        linhaSelecionada === tipo.id ? "bg-amber-50" : "hover:bg-slate-50"
+                      }`}
+                    >
                       <td className="p-4">{tipo.nome}</td>
                       <td className="p-4">
                         <span
@@ -143,10 +171,24 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                         </span>
                       </td>
                       <td className="p-4 text-right">
-                        <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(tipo)}>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            abrirEdicao(tipo)
+                          }}
+                        >
                           <Pencil size={16} />
                         </Button>
-                        <Button variant="ghost" size="icon-lg" onClick={() => excluir(tipo)}>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            excluir(tipo)
+                          }}
+                        >
                           <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </td>
@@ -161,9 +203,23 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
 
       {criando && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <Card className="w-full max-w-md">
-            <CardContent className="space-y-4 pt-6">
-              <h2 className="text-lg font-semibold">
+          <Card className="w-full max-w-md overflow-hidden py-0">
+            <BarraFerramentas
+              titulo={editando ? "Editando" : "Novo"}
+              botoes={[
+                {
+                  label: "Gravar",
+                  icon: Save,
+                  onClick: salvar,
+                  variante: "success",
+                  disabled: salvando || !nome.trim(),
+                },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: fechar, variante: "danger" },
+              ]}
+            />
+            <CardContent className="space-y-4 pt-4 pb-6">
+              <h2 className="text-sm font-medium text-muted-foreground">
                 {editando ? `Editando: ${editando.nome}` : "Novo tipo de entrega"}
               </h2>
 
@@ -180,18 +236,6 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
               )}
 
               {erro && <p className="text-sm text-red-500">{erro}</p>}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={fechar}>
-                  Cancelar
-                </Button>
-                <Button variant="outline" onClick={limpar}>
-                  Limpar
-                </Button>
-                <Button onClick={salvar} disabled={salvando || !nome.trim()}>
-                  {salvando ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>

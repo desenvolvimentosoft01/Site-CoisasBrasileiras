@@ -14,10 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Plus, List } from "lucide-react"
+import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Usuario = {
   id: string
@@ -35,6 +36,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
   const [usuarios, setUsuarios] = useState<Usuario[]>(usuariosIniciais)
   const [aba, setAba] = useState("lista")
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
   const [usuarioLogin, setUsuarioLogin] = useState("")
@@ -52,6 +54,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
 
   function abrirNovo() {
     setUsuarioEditando(null)
+    setLinhaSelecionada(null)
     setNome("")
     setEmail("")
     setUsuarioLogin("")
@@ -64,6 +67,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
 
   function abrirEdicao(usuario: Usuario) {
     setUsuarioEditando(usuario)
+    setLinhaSelecionada(usuario.id)
     setNome(usuario.nome)
     setEmail(usuario.email)
     setUsuarioLogin(usuario.usuario || "")
@@ -154,35 +158,48 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
       registroId: usuario.id,
       antes: { nome: usuario.nome, papel: usuario.papel },
     })
+    setLinhaSelecionada(null)
     recarregar()
   }
+
+  const usuarioSelecionado = usuarios.find((u) => u.id === linhaSelecionada) ?? null
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Usuarios</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
-              Grade
-            </TabsTrigger>
-            <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
-              Cadastro
-            </TabsTrigger>
-          </TabsList>
-          {aba === "lista" && (
-            <Button onClick={abrirNovo}>
-              <Plus size={16} className="mr-2" />
-              Novo usuario
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Grade
+          </TabsTrigger>
+          <TabsTrigger value="formulario">
+            <Plus size={14} className="mr-1.5" />
+            Cadastro
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="lista" className="mt-4">
-          <Card>
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => usuarioSelecionado && abrirEdicao(usuarioSelecionado),
+                  disabled: !usuarioSelecionado,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => usuarioSelecionado && excluir(usuarioSelecionado),
+                  disabled: !usuarioSelecionado,
+                  variante: "danger",
+                },
+              ]}
+            />
             <CardContent className="p-0">
               {usuarios.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhum usuario cadastrado ainda.</p>
@@ -202,7 +219,16 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                     </thead>
                     <tbody>
                       {usuarios.map((usuario) => (
-                        <tr key={usuario.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={usuario.id}
+                          onClick={() =>
+                            setLinhaSelecionada((atual) => (atual === usuario.id ? null : usuario.id))
+                          }
+                          onDoubleClick={() => abrirEdicao(usuario)}
+                          className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                            linhaSelecionada === usuario.id ? "bg-amber-50" : "hover:bg-slate-50"
+                          }`}
+                        >
                           <td className="p-4">{usuario.nome}</td>
                           <td className="p-4 font-mono text-xs text-slate-500">{usuario.usuario || "-"}</td>
                           <td className="p-4 text-slate-500">{usuario.email}</td>
@@ -224,10 +250,24 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                               : "Nunca acessou"}
                           </td>
                           <td className="p-4 text-right">
-                            <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(usuario)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                abrirEdicao(usuario)
+                              }}
+                            >
                               <Pencil size={16} />
                             </Button>
-                            <Button variant="ghost" size="icon-lg" onClick={() => excluir(usuario)}>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                excluir(usuario)
+                              }}
+                            >
                               <Trash2 size={16} className="text-red-500" />
                             </Button>
                           </td>
@@ -242,28 +282,23 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {usuarioEditando ? `Editando: ${usuarioEditando.nome}` : "Novo usuario"}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setAba("lista")}>
-                Cancelar
-              </Button>
-              <Button variant="outline" onClick={limpar}>
-                Limpar
-              </Button>
-              <Button
-                onClick={salvar}
-                disabled={
-                  salvando ||
-                  !nome.trim() ||
-                  (!usuarioEditando && (!email.trim() || !senha))
-                }
-              >
-                {salvando ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
+          <p className="px-1 text-sm font-medium text-muted-foreground">
+            {usuarioEditando ? `Editando: ${usuarioEditando.nome}` : "Novo usuario"}
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <BarraFerramentas
+              botoes={[
+                {
+                  label: "Gravar",
+                  icon: Save,
+                  onClick: salvar,
+                  variante: "success",
+                  disabled: salvando || !nome.trim() || (!usuarioEditando && (!email.trim() || !senha)),
+                },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
+              ]}
+            />
           </div>
 
           <Card>

@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, List, Star } from "lucide-react"
+import { Trash2, Pencil, Plus, ImagePlus, List, Star, FilePlus, Save, Eraser, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Feedback = {
   id: string
@@ -42,6 +43,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
   const [feedbacks, setFeedbacks] = useState<Feedback[]>(feedbacksIniciais)
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Feedback | null>(null)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
 
   const [nome, setNome] = useState("")
   const [texto, setTexto] = useState("")
@@ -61,6 +63,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
 
   function abrirNovo() {
     setEditando(null)
+    setLinhaSelecionada(null)
     setNome("")
     setTexto("")
     setImagemUrl("")
@@ -73,6 +76,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
 
   function abrirEdicao(feedback: Feedback) {
     setEditando(feedback)
+    setLinhaSelecionada(feedback.id)
     setNome(feedback.nome)
     setTexto(feedback.texto)
     setImagemUrl(feedback.imagem_url ?? "")
@@ -174,40 +178,65 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
       registroId: feedback.id,
       antes: { nome: feedback.nome },
     })
+    setLinhaSelecionada(null)
     recarregar()
   }
+
+  const feedbackSelecionado = feedbacks.find((f) => f.id === linhaSelecionada) ?? null
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Feedbacks</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
-              Grade
-            </TabsTrigger>
-            <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
-              Cadastro
-            </TabsTrigger>
-          </TabsList>
-          {aba === "lista" && (
-            <Button onClick={abrirNovo}>
-              <Plus size={16} className="mr-2" />
-              Novo feedback
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista">
+            <List size={14} className="mr-1.5" />
+            Grade
+          </TabsTrigger>
+          <TabsTrigger value="formulario">
+            <Plus size={14} className="mr-1.5" />
+            Cadastro
+          </TabsTrigger>
+        </TabsList>
 
-        <TabsContent value="lista" className="mt-4">
+        <TabsContent value="lista" className="mt-4 space-y-4">
+          <div className="overflow-hidden rounded-lg border border-slate-300">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => feedbackSelecionado && abrirEdicao(feedbackSelecionado),
+                  disabled: !feedbackSelecionado,
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => feedbackSelecionado && excluir(feedbackSelecionado),
+                  disabled: !feedbackSelecionado,
+                  variante: "danger",
+                },
+              ]}
+            />
+          </div>
+
           {feedbacks.length === 0 ? (
             <p className="text-sm text-slate-500">Nenhum feedback cadastrado ainda.</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {feedbacks.map((feedback) => (
-                <Card key={feedback.id}>
+                <Card
+                  key={feedback.id}
+                  onClick={() =>
+                    setLinhaSelecionada((atual) => (atual === feedback.id ? null : feedback.id))
+                  }
+                  onDoubleClick={() => abrirEdicao(feedback)}
+                  className={`cursor-pointer transition-colors ${
+                    linhaSelecionada === feedback.id ? "ring-2 ring-amber-400" : ""
+                  }`}
+                >
                   <CardContent className="space-y-3 pt-6">
                     <div className="flex items-center gap-3">
                       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-100">
@@ -240,10 +269,24 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                         {feedback.ativo ? "Ativo" : "Inativo"}
                       </span>
                       <div>
-                        <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(feedback)}>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            abrirEdicao(feedback)
+                          }}
+                        >
                           <Pencil size={16} />
                         </Button>
-                        <Button variant="ghost" size="icon-lg" onClick={() => excluir(feedback)}>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            excluir(feedback)
+                          }}
+                        >
                           <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </div>
@@ -256,21 +299,23 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {editando ? `Editando: ${editando.nome}` : "Novo feedback"}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setAba("lista")}>
-                Cancelar
-              </Button>
-              <Button variant="outline" onClick={limpar}>
-                Limpar
-              </Button>
-              <Button onClick={salvar} disabled={salvando || !nome.trim() || !texto.trim()}>
-                {salvando ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
+          <p className="px-1 text-sm font-medium text-muted-foreground">
+            {editando ? `Editando: ${editando.nome}` : "Novo feedback"}
+          </p>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <BarraFerramentas
+              botoes={[
+                {
+                  label: "Gravar",
+                  icon: Save,
+                  onClick: salvar,
+                  variante: "success",
+                  disabled: salvando || !nome.trim() || !texto.trim(),
+                },
+                { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+                { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
+              ]}
+            />
           </div>
 
           <Card className="max-w-lg">
