@@ -96,6 +96,20 @@ export function Header({
           >
             Destaques
           </Link>
+
+          <Link
+            href="/sobre"
+            className="text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
+          >
+            Sobre nós
+          </Link>
+
+          <Link
+            href="/contato"
+            className="text-sm font-medium text-neutral-700 transition-colors hover:text-primary"
+          >
+            Contato
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -186,6 +200,20 @@ export function Header({
             className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
           >
             Destaques
+          </Link>
+          <Link
+            href="/sobre"
+            onClick={() => setMenuAberto(false)}
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+          >
+            Sobre nós
+          </Link>
+          <Link
+            href="/contato"
+            onClick={() => setMenuAberto(false)}
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+          >
+            Contato
           </Link>
           <Link
             href="/admin/entrar"

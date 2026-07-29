@@ -31,6 +31,12 @@ export async function Footer() {
         </div>
 
         <div className="space-y-3 text-sm text-emerald-200">
+          <Link href="/sobre" className="block hover:text-white">
+            Sobre nós
+          </Link>
+          <Link href="/contato" className="block hover:text-white">
+            Contato
+          </Link>
           <div className="flex items-center gap-2">
             <Truck size={18} />
             Envio para todo o Brasil

@@ -11,13 +11,14 @@ import { CampoDica } from "@/components/ui/campo-dica"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
-import { Phone, Truck, Megaphone, Palette, Plug, Percent, KeyRound, Check } from "lucide-react"
+import { Phone, Truck, Megaphone, Palette, Plug, Percent, KeyRound, Check, FileText } from "lucide-react"
 
 export type ConfiguracoesIniciais = {
   whatsapp: string
   whatsapp_mensagem: string
   instagram: string
   email_contato: string
+  endereco_contato: string
   cep_origem: string
   frete_valor_base: string
   frete_gratis_acima_de: string
@@ -31,6 +32,7 @@ export type ConfiguracoesIniciais = {
   aliquota_imposto_percentual: string
   regime_tributario: string
   clube_valor_mensalidade: string
+  texto_sobre_nos: string
 }
 
 export type BlingStatus =
@@ -68,6 +70,8 @@ function ConfiguracoesFormulario({
   const [whatsappMensagem, setWhatsappMensagem] = useState(configuracoesIniciais.whatsapp_mensagem)
   const [instagram, setInstagram] = useState(configuracoesIniciais.instagram)
   const [emailContato, setEmailContato] = useState(configuracoesIniciais.email_contato)
+  const [enderecoContato, setEnderecoContato] = useState(configuracoesIniciais.endereco_contato)
+  const [textoSobreNos, setTextoSobreNos] = useState(configuracoesIniciais.texto_sobre_nos)
   const [cepOrigem, setCepOrigem] = useState(
     configuracoesIniciais.cep_origem ? mascaraCEP(configuracoesIniciais.cep_origem) : ""
   )
@@ -195,6 +199,8 @@ function ConfiguracoesFormulario({
         whatsapp_mensagem: whatsappMensagem,
         instagram,
         email_contato: emailContato,
+        endereco_contato: enderecoContato,
+        texto_sobre_nos: textoSobreNos,
         cep_origem: cepOrigem.replace(/\D/g, ""),
         frete_valor_base: String(valorMoedaParaNumero(freteValorBase)),
         frete_gratis_acima_de: String(valorMoedaParaNumero(freteGratisAcimaDe)),
@@ -226,6 +232,10 @@ function ConfiguracoesFormulario({
             <TabsTrigger value="contato">
               <Phone size={14} className="mr-1.5" />
               Contato
+            </TabsTrigger>
+            <TabsTrigger value="paginas">
+              <FileText size={14} className="mr-1.5" />
+              Paginas
             </TabsTrigger>
             <TabsTrigger value="frete">
               <Truck size={14} className="mr-1.5" />
@@ -291,6 +301,36 @@ function ConfiguracoesFormulario({
                     onChange={(e) => setEmailContato(e.target.value)}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Endereco</Label>
+                  <Input
+                    value={enderecoContato}
+                    onChange={(e) => setEnderecoContato(e.target.value)}
+                    placeholder="Rua Exemplo, 123 - Bairro, Cidade - UF"
+                  />
+                  <p className="text-xs text-slate-400">Mostrado na pagina de Contato do site.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="paginas" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm text-slate-500">Pagina "Sobre Nos"</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label>Texto da pagina</Label>
+                <textarea
+                  value={textoSobreNos}
+                  onChange={(e) => setTextoSobreNos(e.target.value)}
+                  rows={10}
+                  placeholder="Conte a historia da loja, missao, valores etc."
+                  className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+                />
+                <p className="text-xs text-slate-400">
+                  Mostrado na pagina /sobre do site. Use linhas em branco pra separar paragrafos.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -311,7 +351,7 @@ function ConfiguracoesFormulario({
                     className="max-w-40"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Necessario so se for usar cotacao real de frete (Melhor Envio). Preenchido +
+                    Necessario so se for usar cotacao real de frete (Frenet). Preenchido +
                     token configurado no ambiente, o frete passa a ser calculado automaticamente
                     pela transportadora real em vez da tabela abaixo.
                   </p>
