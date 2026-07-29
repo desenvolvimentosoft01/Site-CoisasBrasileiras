@@ -123,9 +123,33 @@ async function obterTokenValido(): Promise<string> {
   return dados.access_token
 }
 
-export async function statusConexaoBling(): Promise<{ conectado: boolean; expiraEm: string | null }> {
-  const [conexao] = await query("SELECT expira_em FROM TAB_INTEGRACAO_BLING LIMIT 1")
-  return { conectado: !!conexao, expiraEm: conexao?.expira_em ?? null }
+export async function statusConexaoBling(): Promise<{
+  conectado: boolean
+  expiraEm: string | null
+  ultimoErro: string | null
+  ultimoErroEm: string | null
+}> {
+  const [conexao] = await query("SELECT expira_em, ultimo_erro, ultimo_erro_em FROM TAB_INTEGRACAO_BLING LIMIT 1")
+  return {
+    conectado: !!conexao,
+    expiraEm: conexao?.expira_em ?? null,
+    ultimoErro: conexao?.ultimo_erro ?? null,
+    ultimoErroEm: conexao?.ultimo_erro_em ?? null,
+  }
+}
+
+// Guarda a mensagem do ultimo erro de emissao/cancelamento, pra aparecer no
+// painel de "pendencias fiscais" em Configuracoes - sem bloquear o fluxo
+// principal se essa gravacao falhar (nunca deve derrubar a emissao em si).
+async function registrarErroBling(mensagem: string): Promise<void> {
+  await query(
+    "UPDATE TAB_INTEGRACAO_BLING SET ultimo_erro = $1, ultimo_erro_em = NOW()",
+    [mensagem]
+  ).catch(() => {})
+}
+
+async function limparErroBling(): Promise<void> {
+  await query("UPDATE TAB_INTEGRACAO_BLING SET ultimo_erro = NULL, ultimo_erro_em = NULL").catch(() => {})
 }
 
 async function chamarBling(caminho: string, opcoes: RequestInit = {}) {
@@ -142,7 +166,9 @@ async function chamarBling(caminho: string, opcoes: RequestInit = {}) {
 
   if (!resposta.ok) {
     const corpo = await resposta.text().catch(() => "")
-    throw new Error(`Bling respondeu ${resposta.status}: ${corpo}`)
+    const mensagem = `Bling respondeu ${resposta.status}: ${corpo}`
+    await registrarErroBling(mensagem)
+    throw new Error(mensagem)
   }
 
   return resposta.json()
@@ -226,6 +252,8 @@ export async function emitirNotaFiscalBling(params: {
   const notaAtualizada = await chamarBling(`/notas-fiscais/${blingNotaId}`).catch(() => null)
   const dadosNota = notaAtualizada?.data ?? notaAtualizada
 
+  await limparErroBling()
+
   return {
     blingNotaId,
     linkDanfe: dadosNota?.linkDanfe ?? null,
@@ -244,6 +272,8 @@ export async function cancelarNotaFiscalBling(blingNotaId: string, justificativa
     method: "POST",
     body: JSON.stringify({ justificativa: justificativa.trim() }),
   })
+
+  await limparErroBling()
 }
 
 export type NotaEntradaBlingResumo = {

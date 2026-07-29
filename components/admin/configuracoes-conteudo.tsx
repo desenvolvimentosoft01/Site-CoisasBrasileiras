@@ -33,7 +33,9 @@ export type ConfiguracoesIniciais = {
   clube_valor_mensalidade: string
 }
 
-export type BlingStatus = { conectado: boolean; expiraEm: string | null } | null
+export type BlingStatus =
+  | { conectado: boolean; expiraEm: string | null; ultimoErro: string | null; ultimoErroEm: string | null }
+  | null
 
 export function ConfiguracoesConteudo({
   configuracoesIniciais,
@@ -623,6 +625,23 @@ function ConfiguracoesFormulario({
                         Integracao com o Bling ainda nao configurada neste ambiente
                         (BLING_CLIENT_ID/BLING_CLIENT_SECRET faltando nas variaveis de ambiente).
                       </p>
+                    )}
+
+                    {/* Pendencias fiscais: mostra o ultimo erro de emissao/cancelamento
+                        (ex: certificado digital nao configurado no Bling) direto aqui,
+                        sem o contador precisar entrar no site do Bling so pra descobrir
+                        que uma nota falhou. Some sozinho na proxima emissao/cancelamento
+                        bem-sucedido. */}
+                    {blingStatus?.ultimoErro && (
+                      <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+                        <p className="text-sm font-medium text-amber-600">Pendencia fiscal</p>
+                        <p className="mt-1 text-xs text-amber-700">{blingStatus.ultimoErro}</p>
+                        {blingStatus.ultimoErroEm && (
+                          <p className="mt-1 text-xs text-amber-600/70">
+                            {new Date(blingStatus.ultimoErroEm).toLocaleString("pt-BR")}
+                          </p>
+                        )}
+                      </div>
                     )}
 
                     {blingStatus === null ? (

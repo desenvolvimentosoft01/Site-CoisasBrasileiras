@@ -12,6 +12,12 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Painel de pendências fiscais em Configurações > Bling
+
+- [x] Migration `031_bling_ultimo_erro.sql`: `TAB_INTEGRACAO_BLING` ganha `ultimo_erro`/`ultimo_erro_em`. Aplicada em local e Neon.
+- [x] `lib/bling.ts`: qualquer chamada que falhar (`chamarBling`) grava a mensagem de erro na integração; emissão e cancelamento bem-sucedidos limpam esse campo. Objetivo: o contador/admin não precisa entrar no site do Bling só pra descobrir que uma emissão falhou (ex: certificado digital não configurado, exatamente o caso real que motivou isso).
+- [x] `Configurações > Integrações > Bling` mostra um card de "Pendência fiscal" com a última mensagem de erro e o horário, se houver. Some sozinho na próxima emissão/cancelamento com sucesso.
+
 ## 2026-07-28 — Estorno de estoque ao cancelar NF-e
 
 - [x] `POST /api/admin/pedidos/[id]/cancelar-nfe` agora devolve ao estoque a quantidade de cada item do pedido, dentro da mesma transação do cancelamento no Bling — mesmo padrão de ERP (cancelar a nota de saída estorna a mercadoria). Antes, cancelar a nota não mexia em estoque nenhum, e não existia NENHUMA rotina de devolução automática no sistema (nem no cancelamento do pedido em si).
