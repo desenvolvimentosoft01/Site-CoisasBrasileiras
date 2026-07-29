@@ -45,21 +45,36 @@ export async function POST(request: Request) {
 
   try {
     const pedido = await transacao(async (q) => {
-      const [enderecoSalvo] = await q(
-        `INSERT INTO TAB_ENDERECO (cliente_id, cep, logradouro, numero, complemento, bairro, cidade, estado)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING id`,
-        [
-          cliente.id,
-          endereco.cep,
-          endereco.logradouro,
-          endereco.numero,
-          endereco.complemento || null,
-          endereco.bairro,
-          endereco.cidade,
-          endereco.estado,
-        ]
+      // Reaproveita um endereco ja salvo se for identico (mesmo CEP, numero e
+      // complemento) - evita duplicar a cada checkout com o mesmo endereco,
+      // que so poluia "Enderecos salvos" em Minha Conta sem nenhum ganho.
+      const [enderecoExistente] = await q(
+        `SELECT id FROM TAB_ENDERECO
+         WHERE cliente_id = $1 AND cep = $2 AND numero = $3
+           AND COALESCE(complemento, '') = COALESCE($4, '')
+         LIMIT 1`,
+        [cliente.id, endereco.cep, endereco.numero, endereco.complemento || null]
       )
+
+      const enderecoSalvo =
+        enderecoExistente ??
+        (
+          await q(
+            `INSERT INTO TAB_ENDERECO (cliente_id, cep, logradouro, numero, complemento, bairro, cidade, estado)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             RETURNING id`,
+            [
+              cliente.id,
+              endereco.cep,
+              endereco.logradouro,
+              endereco.numero,
+              endereco.complemento || null,
+              endereco.bairro,
+              endereco.cidade,
+              endereco.estado,
+            ]
+          )
+        )[0]
 
       let subtotal = 0
       let pesoKg = 0
