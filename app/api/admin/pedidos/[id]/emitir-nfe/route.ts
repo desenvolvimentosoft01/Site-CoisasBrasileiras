@@ -1,6 +1,7 @@
 import { transacao } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { emitirNotaFiscalBling } from "@/lib/bling"
+import { enviarEmail, templateNotaFiscalEmitida } from "@/lib/email"
 import { NextResponse } from "next/server"
 
 // Gatilho manual (botao na tela do pedido) - nunca automatico. Erro do Bling
@@ -77,10 +78,25 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
          RETURNING bling_nota_id, bling_link_danfe, bling_link_pdf, bling_nota_cancelada_em`,
         [resultado.blingNotaId, resultado.linkDanfe, resultado.linkPdf, id]
       )
-      return atualizado
+      return { atualizado, clienteNome: pedido.cliente_nome, clienteEmail: pedido.cliente_email }
     })
 
-    return NextResponse.json(pedidoAtualizado)
+    // Fora da transacao, de proposito - falha no envio de email nunca deve
+    // desfazer a emissao, que ja aconteceu de verdade no Bling.
+    if (pedidoAtualizado.clienteEmail) {
+      enviarEmail({
+        to: pedidoAtualizado.clienteEmail,
+        subject: "Nota fiscal emitida",
+        html: templateNotaFiscalEmitida({
+          nomeCliente: pedidoAtualizado.clienteNome,
+          pedidoId: id,
+          linkDanfe: pedidoAtualizado.atualizado.bling_link_danfe,
+          linkPdf: pedidoAtualizado.atualizado.bling_link_pdf,
+        }),
+      })
+    }
+
+    return NextResponse.json(pedidoAtualizado.atualizado)
   } catch (erro) {
     if (erro instanceof Error && erro.message === "NOT_FOUND") {
       return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })

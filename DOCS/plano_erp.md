@@ -12,6 +12,11 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — E-mail automático ao emitir NF-e
+
+- [x] `templateNotaFiscalEmitida` em `lib/email.ts`, disparado por `POST /api/admin/pedidos/[id]/emitir-nfe` depois que a emissão no Bling é confirmada (fora da transação — falha no envio nunca desfaz a emissão, que já aconteceu de verdade). Cliente recebe o link do DANFE por e-mail automaticamente, sem o admin precisar mandar manualmente.
+- O link também continua disponível manualmente na tela do pedido ("Ver DANFE"/"Ver PDF"), pro admin mandar por WhatsApp se quiser — os dois convivem, não é um ou outro.
+
 ## 2026-07-28 — Painel de pendências fiscais em Configurações > Bling
 
 - [x] Migration `031_bling_ultimo_erro.sql`: `TAB_INTEGRACAO_BLING` ganha `ultimo_erro`/`ultimo_erro_em`. Aplicada em local e Neon.

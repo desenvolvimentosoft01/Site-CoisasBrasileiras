@@ -179,6 +179,32 @@ export function templateStatusAtualizado(params: {
   `)
 }
 
+export function templateNotaFiscalEmitida(params: {
+  nomeCliente: string
+  pedidoId: string
+  linkDanfe: string | null
+  linkPdf: string | null
+}): string {
+  const numeroPedido = params.pedidoId.slice(0, 8).toUpperCase()
+  const link = params.linkDanfe ?? params.linkPdf
+
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Nota fiscal emitida</h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#555;">
+      Ola ${escapeHtml(params.nomeCliente)}, a nota fiscal do seu pedido #${numeroPedido} foi emitida.
+    </p>
+    ${
+      link
+        ? `<p style="margin:0;">
+            <a href="${link}" style="display:inline-block;background:#065f46;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
+              Ver nota fiscal (DANFE)
+            </a>
+          </p>`
+        : ""
+    }
+  `)
+}
+
 export function templateVoltouEstoque(params: { nomeProduto: string; linkProduto: string }): string {
   return envelope(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Voltou ao estoque!</h1>
