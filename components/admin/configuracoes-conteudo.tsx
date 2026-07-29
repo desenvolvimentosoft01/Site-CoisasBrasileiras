@@ -108,6 +108,7 @@ function ConfiguracoesFormulario({
   const [segredosStatus, setSegredosStatus] = useState<Record<string, boolean>>({})
   const [frenetToken, setFrenetToken] = useState("")
   const [mpAccessToken, setMpAccessToken] = useState("")
+  const [mpWebhookSecret, setMpWebhookSecret] = useState("")
   const [emailUser, setEmailUser] = useState("")
   const [emailPass, setEmailPass] = useState("")
   const [emailNotificacoesAdmin, setEmailNotificacoesAdmin] = useState("")
@@ -137,6 +138,7 @@ function ConfiguracoesFormulario({
       body: JSON.stringify({
         frenet_token: frenetToken,
         mercadopago_access_token: mpAccessToken,
+        mercadopago_webhook_secret: mpWebhookSecret,
         email_user: emailUser,
         email_pass: emailPass,
         email_notificacoes_admin: emailNotificacoesAdmin,
@@ -147,6 +149,7 @@ function ConfiguracoesFormulario({
     setSegredosSalvos(true)
     setFrenetToken("")
     setMpAccessToken("")
+    setMpWebhookSecret("")
     setEmailPass("")
     setTimeout(() => setSegredosSalvos(false), 2500)
 
@@ -702,6 +705,31 @@ function ConfiguracoesFormulario({
                           segredosStatus.mercadopago_access_token
                             ? "•••••••• (deixe em branco pra manter)"
                             : "Colar access token"
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        Assinatura secreta do webhook
+                        {segredosStatus.mercadopago_webhook_secret && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-500">
+                            <Check size={12} /> configurado
+                          </span>
+                        )}
+                        <CampoDica>
+                          Painel do Mercado Pago &gt; sua aplicacao &gt; Webhooks &gt; "Assinatura secreta" (so
+                          existe depois de configurar a URL do webhook la). Sem isso, o webhook ainda funciona,
+                          mas sem validar se a notificacao realmente veio do Mercado Pago.
+                        </CampoDica>
+                      </Label>
+                      <Input
+                        type="password"
+                        value={mpWebhookSecret}
+                        onChange={(e) => setMpWebhookSecret(e.target.value)}
+                        placeholder={
+                          segredosStatus.mercadopago_webhook_secret
+                            ? "•••••••• (deixe em branco pra manter)"
+                            : "Colar assinatura secreta"
                         }
                       />
                     </div>

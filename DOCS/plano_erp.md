@@ -12,6 +12,12 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Assinatura secreta do webhook do Mercado Pago vira configurável pelo admin
+
+- [x] `MERCADOPAGO_WEBHOOK_SECRET` deixou de ser só variável de ambiente — agora é `mercadopago_webhook_secret` em `TAB_INTEGRACAO_SEGREDO`, mesmo padrão dos outros segredos. Campo novo na aba Mercado Pago de Configurações > Integrações. `getSegredo()` cai pro env var (`MERCADOPAGO_WEBHOOK_SECRET`) se não houver nada configurado no banco, então nada quebra em deploys que ainda não migraram.
+- [x] `app/api/webhooks/mercadopago/route.ts`: `assinaturaValida()` virou assíncrona pra usar `getSegredo()`.
+- Com isso, os três segredos configuráveis (Mercado Pago, Frenet, Email) + a assinatura do webhook estão completos na tela — não falta mais nenhum campo pra essas integrações funcionarem via admin.
+
 ## 2026-07-28 — E-mail automático ao emitir NF-e
 
 - [x] `templateNotaFiscalEmitida` em `lib/email.ts`, disparado por `POST /api/admin/pedidos/[id]/emitir-nfe` depois que a emissão no Bling é confirmada (fora da transação — falha no envio nunca desfaz a emissão, que já aconteceu de verdade). Cliente recebe o link do DANFE por e-mail automaticamente, sem o admin precisar mandar manualmente.

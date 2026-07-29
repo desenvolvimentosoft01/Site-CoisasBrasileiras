@@ -5,6 +5,7 @@ import { NextResponse } from "next/server"
 const CHAVES = [
   "frenet_token",
   "mercadopago_access_token",
+  "mercadopago_webhook_secret",
   "email_user",
   "email_pass",
   "email_notificacoes_admin",

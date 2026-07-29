@@ -16,8 +16,8 @@ const STATUS_MP_PARA_PEDIDO: Record<string, string> = {
 // notificacao realmente veio do MP (nao apenas um POST forjado por terceiros).
 // O segredo vem do painel do MP > sua aplicacao > Webhooks > "Assinatura secreta".
 // Se ainda nao foi configurado (ex: em dev local), pula a validacao.
-function assinaturaValida(request: Request, dataId: string): boolean {
-  const segredo = process.env.MERCADOPAGO_WEBHOOK_SECRET
+async function assinaturaValida(request: Request, dataId: string): Promise<boolean> {
+  const segredo = await getSegredo("mercadopago_webhook_secret")
   if (!segredo) return true
 
   const signatureHeader = request.headers.get("x-signature")
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   // Notificacao de assinatura do Clube (cobranca recorrente) - fluxo
   // separado do pagamento avulso de pedido, so atualiza TAB_ASSINATURA_CLUBE.
   if (body?.type === "subscription_preapproval" && dataId) {
-    if (!assinaturaValida(request, String(dataId))) {
+    if (!(await assinaturaValida(request, String(dataId)))) {
       return NextResponse.json({ erro: "Assinatura invalida" }, { status: 401 })
     }
     try {
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ recebido: true })
   }
 
-  if (!assinaturaValida(request, String(paymentId))) {
+  if (!(await assinaturaValida(request, String(paymentId)))) {
     return NextResponse.json({ erro: "Assinatura invalida" }, { status: 401 })
   }
 
