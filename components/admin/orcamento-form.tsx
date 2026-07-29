@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trash2, Plus, User, X } from "lucide-react"
+import { Trash2, Plus, User, X, Save, Eraser } from "lucide-react"
 import { formatarMoeda, mascaraTelefone } from "@/lib/mascaras"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 type Cliente = { id: string; nome: string; email: string | null; telefone: string | null }
 type ProdutoDisponivel = { id: string; nome: string; preco: string; preco_promocional: string | null }
@@ -187,21 +188,17 @@ export function OrcamentoForm({
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-        <span className="text-sm font-medium text-muted-foreground">
-          {orcamento ? `Editando orcamento #${orcamento.id.slice(0, 8)}` : "Novo orcamento"}
-        </span>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancelar}>
-            Cancelar
-          </Button>
-          <Button variant="outline" onClick={limpar}>
-            Limpar
-          </Button>
-          <Button onClick={salvar} disabled={salvando}>
-            {salvando ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
+      <p className="px-1 text-sm font-medium text-muted-foreground">
+        {orcamento ? `Editando orcamento #${orcamento.id.slice(0, 8)}` : "Novo orcamento"}
+      </p>
+      <div className="overflow-hidden rounded-lg border border-border">
+        <BarraFerramentas
+          botoes={[
+            { label: "Gravar", icon: Save, onClick: salvar, variante: "success", disabled: salvando },
+            { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+            { label: "Cancelar", icon: X, onClick: onCancelar, variante: "danger" },
+          ]}
+        />
       </div>
 
       {erro && <p className="text-sm text-red-500">{erro}</p>}

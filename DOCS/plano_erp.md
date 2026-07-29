@@ -17,8 +17,9 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 Pedido explícito do cliente: replicar o padrão visual do InMenteGestao (`C:\InMenteGestao\in-mente-gestao-sistema`) — barra de ferramentas com ícones (Novo/Editar/Excluir na grade; Gravar/Limpar/Cancelar no cadastro) e linha de tabela selecionável (clique seleciona e destaca, duplo-clique abre pra editar), em vez de só botões de texto soltos e ícones por linha.
 
 - [x] `components/admin/barra-ferramentas.tsx` — porta do `BarraFerramentas.tsx` de lá, mesma estrutura de props (`botoes: {label, icon, onClick, variante, disabled}[]`) e cores por variante (primary/danger/success/warning/default).
-- [x] Aplicado em: Categorias, Produtos (+ `produto-form.tsx`).
-- [ ] Pendente aplicar no mesmo padrão: Clientes, Banners, Fornecedores, Cupons, Usuários, Contas Financeiro, Tipos de Entrega, Feedbacks, Orçamentos (+ `orcamento-form.tsx`).
+- [x] Aplicado nas 11 telas do escopo: Categorias, Produtos (+ `produto-form.tsx`), Clientes, Banners, Fornecedores, Cupons, Usuários, Contas Financeiro, Tipos de Entrega, Feedbacks, Orçamentos (+ `orcamento-form.tsx`).
+- Telas com grid de cards (Banners, Feedbacks) usam `ring-2 ring-amber-400` pra destacar seleção, em vez de fundo de linha (não têm tabela).
+- Orçamentos manteve os ícones de ação específicos por status (Aprovar/Recusar/Converter) fora da barra — são transições de estado do domínio, não CRUD padrão; a barra cobre só Novo/Editar (desabilitado fora de "aberto")/Excluir (desabilitado se "convertido").
 - **Fora de escopo por decisão do cliente**: Pedidos, Avaliações, Compras, Faixas de Frete, Reajuste de Preços, Estoque, Auditoria — não se encaixam no molde lista+formulário sem forçar a estrutura (moderação, formulário multi-etapa, edição inline, seleção múltipla própria, log só-leitura).
 
 ## 2026-07-28 — Badge de notas pendentes do Bling no menu do admin

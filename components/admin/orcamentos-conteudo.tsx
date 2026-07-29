@@ -19,11 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Plus, Pencil, Trash2, Check, X as XIcon, ArrowRightCircle } from "lucide-react"
+import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { OrcamentoForm, type OrcamentoExistente } from "@/components/admin/orcamento-form"
 import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Orcamento = {
   id: string
@@ -66,6 +67,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   const [aba, setAba] = useState("todos")
   const [mostrandoFormulario, setMostrandoFormulario] = useState(false)
   const [editando, setEditando] = useState<OrcamentoExistente | undefined>(undefined)
+  const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
 
   const [orcamentoConvertendo, setOrcamentoConvertendo] = useState<Orcamento | null>(null)
@@ -80,10 +82,12 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
 
   function abrirNovo() {
     setEditando(undefined)
+    setLinhaSelecionada(null)
     setMostrandoFormulario(true)
   }
 
   async function abrirEdicao(orcamento: Orcamento) {
+    setLinhaSelecionada(orcamento.id)
     setMostrandoFormulario(true)
     setCarregandoDetalhe(true)
     const resposta = await fetch(`/api/admin/orcamentos/${orcamento.id}`)
@@ -119,6 +123,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
       toast.error(dados.erro || "Erro ao excluir")
       return
     }
+    setLinhaSelecionada(null)
     recarregar()
   }
 
@@ -146,6 +151,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   }
 
   const orcamentosFiltrados = aba === "todos" ? orcamentos : orcamentos.filter((o) => o.status === aba)
+  const orcamentoSelecionado = orcamentos.find((o) => o.id === linhaSelecionada) ?? null
 
   if (mostrandoFormulario) {
     return carregandoDetalhe ? (
@@ -162,13 +168,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Orcamentos</h1>
-        <Button onClick={abrirNovo}>
-          <Plus size={16} className="mr-2" />
-          Novo orcamento
-        </Button>
-      </div>
+      <h1 className="text-2xl font-semibold">Orcamentos</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">
@@ -189,7 +189,25 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
         </TabsList>
 
         <TabsContent value={aba} className="mt-4">
-          <Card>
+          <Card className="overflow-hidden py-0">
+            <BarraFerramentas
+              botoes={[
+                { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: "Editar",
+                  icon: Pencil,
+                  onClick: () => orcamentoSelecionado && abrirEdicao(orcamentoSelecionado),
+                  disabled: !orcamentoSelecionado || orcamentoSelecionado.status !== "aberto",
+                },
+                {
+                  label: "Excluir",
+                  icon: Trash2,
+                  onClick: () => orcamentoSelecionado && excluir(orcamentoSelecionado),
+                  disabled: !orcamentoSelecionado || orcamentoSelecionado.status === "convertido",
+                  variante: "danger",
+                },
+              ]}
+            />
             <CardContent className="p-0">
               {orcamentosFiltrados.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhum orcamento encontrado.</p>
@@ -208,7 +226,16 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                     </thead>
                     <tbody>
                       {orcamentosFiltrados.map((orcamento) => (
-                        <tr key={orcamento.id} className="border-b border-slate-200 last:border-0">
+                        <tr
+                          key={orcamento.id}
+                          onClick={() =>
+                            setLinhaSelecionada((atual) => (atual === orcamento.id ? null : orcamento.id))
+                          }
+                          onDoubleClick={() => orcamento.status === "aberto" && abrirEdicao(orcamento)}
+                          className={`cursor-pointer border-b border-slate-200 last:border-0 ${
+                            linhaSelecionada === orcamento.id ? "bg-amber-50" : "hover:bg-slate-50"
+                          }`}
+                        >
                           <td className="p-4 font-mono">OR.{String(orcamento.numero).padStart(4, "0")}</td>
                           <td className="p-4">
                             {orcamento.titulo && (
@@ -228,13 +255,23 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                           <td className="p-4 text-right">
                             {orcamento.status === "aberto" && (
                               <>
-                                <Button variant="ghost" size="icon-lg" onClick={() => abrirEdicao(orcamento)}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-lg"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    abrirEdicao(orcamento)
+                                  }}
+                                >
                                   <Pencil size={16} />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon-lg"
-                                  onClick={() => alterarStatus(orcamento, "aprovado")}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    alterarStatus(orcamento, "aprovado")
+                                  }}
                                   title="Marcar como aprovado"
                                 >
                                   <Check size={16} className="text-emerald-500" />
@@ -242,7 +279,10 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                 <Button
                                   variant="ghost"
                                   size="icon-lg"
-                                  onClick={() => alterarStatus(orcamento, "recusado")}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    alterarStatus(orcamento, "recusado")
+                                  }}
                                   title="Marcar como recusado"
                                 >
                                   <XIcon size={16} className="text-red-500" />
@@ -253,14 +293,24 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                               <Button
                                 variant="ghost"
                                 size="icon-lg"
-                                onClick={() => setOrcamentoConvertendo(orcamento)}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setOrcamentoConvertendo(orcamento)
+                                }}
                                 title="Converter em venda"
                               >
                                 <ArrowRightCircle size={16} className="text-primary" />
                               </Button>
                             )}
                             {orcamento.status !== "convertido" && (
-                              <Button variant="ghost" size="icon-lg" onClick={() => excluir(orcamento)}>
+                              <Button
+                                variant="ghost"
+                                size="icon-lg"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  excluir(orcamento)
+                                }}
+                              >
                                 <Trash2 size={16} className="text-red-500" />
                               </Button>
                             )}
