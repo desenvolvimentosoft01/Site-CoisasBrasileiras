@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -136,6 +136,17 @@ export function AdminShell({
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarAberta, setSidebarAberta] = useState(false)
+  const [notasPendentesBling, setNotasPendentesBling] = useState(0)
+
+  // Le do banco (atualizado pelo cron diario) - nao chama o Bling direto,
+  // so pra mostrar um badge no menu "Compras" quando tem nota esperando.
+  useEffect(() => {
+    if (sessao.papel !== "admin") return
+    fetch("/api/admin/bling/notas-pendentes-count")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((dados) => dados && setNotasPendentesBling(dados.notasPendentes))
+      .catch(() => {})
+  }, [sessao.papel])
 
   const planoDeMenu = itensVisiveis(sessao.papel)
 
@@ -249,6 +260,11 @@ export function AdminShell({
                 >
                   <Icone size={15} />
                   <span className="flex-1 text-left">{item.label}</span>
+                  {item.label === "Compras" && notasPendentesBling > 0 && (
+                    <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {notasPendentesBling}
+                    </span>
+                  )}
                   <ChevronDown size={12} className={`text-slate-500 transition-transform ${aberto ? "rotate-180" : ""}`} />
                 </button>
 

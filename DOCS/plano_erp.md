@@ -12,6 +12,12 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Badge de notas pendentes do Bling no menu do admin
+
+- [x] Migration `033_bling_notas_pendentes_count.sql`: `TAB_INTEGRACAO_BLING.notas_pendentes`, atualizado pelo cron a cada execução (total atual, não só as novas). Aplicada em local e Neon.
+- [x] `GET /api/admin/bling/notas-pendentes-count`: só lê do banco, nunca chama o Bling direto — o badge não pode bater na API deles toda vez que alguém abre o admin.
+- [x] Badge amarelo no item "Compras" do menu lateral, mostrando a quantidade de notas pendentes quando > 0. Só admin.
+
 ## 2026-07-28 — Notificação de notas de fornecedor pendentes no Bling
 
 - [x] Migration `032_bling_nota_notificada.sql`: `TAB_BLING_NOTA_NOTIFICADA` marca quais notas já geraram aviso, pra não notificar a mesma nota todo dia. Aplicada em local e Neon.

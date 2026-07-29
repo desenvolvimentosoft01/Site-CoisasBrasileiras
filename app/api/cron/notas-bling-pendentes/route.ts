@@ -44,6 +44,13 @@ export async function GET(request: Request) {
     )
     const idsNotificados = new Set(jaNotificadas.map((n) => n.bling_nota_id))
 
+    // Total pendente agora (pra badge no menu) - diferente de "novas", que so
+    // conta as que ainda nunca geraram e-mail.
+    const totalPendentes = notas.filter(
+      (nota) => !idsLancados.has(nota.id) && !SITUACOES_SEM_LANCAMENTO.includes(nota.situacao)
+    ).length
+    await query("UPDATE TAB_INTEGRACAO_BLING SET notas_pendentes = $1", [totalPendentes])
+
     const pendentesNovas = notas.filter(
       (nota) =>
         !idsLancados.has(nota.id) &&
@@ -52,7 +59,7 @@ export async function GET(request: Request) {
     )
 
     if (pendentesNovas.length === 0) {
-      return NextResponse.json({ verificado: true, novas: 0 })
+      return NextResponse.json({ verificado: true, novas: 0, totalPendentes })
     }
 
     const emailAdmin = (await getSegredo("email_notificacoes_admin")) || (await getSegredo("email_user"))
@@ -71,7 +78,7 @@ export async function GET(request: Request) {
       )
     }
 
-    return NextResponse.json({ verificado: true, novas: pendentesNovas.length })
+    return NextResponse.json({ verificado: true, novas: pendentesNovas.length, totalPendentes })
   } catch (erro) {
     return NextResponse.json(
       { erro: erro instanceof Error ? erro.message : "Erro ao verificar notas no Bling" },
