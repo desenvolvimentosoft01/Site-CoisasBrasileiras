@@ -8,6 +8,7 @@ import { useCarrinho, totalCarrinho } from "@/lib/carrinho-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { AplicarCupom } from "@/components/loja/aplicar-cupom"
+import { SeletorQuantidade } from "@/components/loja/seletor-quantidade"
 
 function formatarPreco(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -93,14 +94,11 @@ export default function CarrinhoPage() {
                     {formatarPreco(item.preco)}
                   </span>
 
-                  <input
-                    type="number"
-                    min={1}
-                    value={item.quantidade}
-                    onChange={(e) =>
-                      alterarQuantidade(item.produtoId, Math.max(1, Number(e.target.value) || 1))
-                    }
-                    className="h-9 w-16 rounded-md border border-neutral-200 px-2 text-center text-sm outline-none focus-visible:border-primary"
+                  <SeletorQuantidade
+                    quantidade={item.quantidade}
+                    onChange={(nova) => alterarQuantidade(item.produtoId, nova)}
+                    max={item.estoque}
+                    tamanho="sm"
                   />
 
                   <span className="text-right text-sm font-semibold text-primary sm:col-start-4">

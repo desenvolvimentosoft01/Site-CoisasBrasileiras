@@ -8,6 +8,9 @@ export type ItemCarrinho = {
   preco: number
   imagemCapa: string | null
   quantidade: number
+  // Opcional pra nao quebrar carrinhos salvos antes desse campo existir
+  // (localStorage persistido) - sem valor, trata como sem limite conhecido.
+  estoque?: number
 }
 
 export type CupomAplicado = { codigo: string; desconto: number }
@@ -39,7 +42,7 @@ export const useCarrinho = create<CarrinhoState>()(
             return {
               itens: state.itens.map((i) =>
                 i.produtoId === item.produtoId
-                  ? { ...i, quantidade: i.quantidade + quantidade }
+                  ? { ...i, estoque: item.estoque, quantidade: i.quantidade + quantidade }
                   : i
               ),
               aberto: true,

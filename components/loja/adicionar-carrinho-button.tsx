@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Minus, Plus, ShoppingBag, Check } from "lucide-react"
+import { ShoppingBag, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCarrinho } from "@/lib/carrinho-store"
+import { SeletorQuantidade } from "@/components/loja/seletor-quantidade"
 
 type Props = {
   produtoId: string
@@ -31,13 +32,13 @@ export function AdicionarCarrinhoButton({
   const semEstoque = estoque <= 0
 
   function handleAdicionar() {
-    adicionar({ produtoId, nome, slug, preco, imagemCapa }, quantidade)
+    adicionar({ produtoId, nome, slug, preco, imagemCapa, estoque }, quantidade)
     setAdicionado(true)
     setTimeout(() => setAdicionado(false), 1500)
   }
 
   function handleComprarAgora() {
-    adicionar({ produtoId, nome, slug, preco, imagemCapa }, quantidade)
+    adicionar({ produtoId, nome, slug, preco, imagemCapa, estoque }, quantidade)
     router.push("/checkout")
   }
 
@@ -50,47 +51,40 @@ export function AdicionarCarrinhoButton({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center rounded-full border border-neutral-200 bg-white shadow-sm">
-        <button
-          onClick={() => setQuantidade((q) => Math.max(1, q - 1))}
-          className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-primary"
-          aria-label="Diminuir quantidade"
-        >
-          <Minus size={16} />
-        </button>
-        <span className="w-8 text-center text-sm font-medium">{quantidade}</span>
-        <button
-          onClick={() => setQuantidade((q) => Math.min(estoque, q + 1))}
-          className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-primary"
-          aria-label="Aumentar quantidade"
-        >
-          <Plus size={16} />
-        </button>
-      </div>
-
-      <Button
-        size="lg"
-        variant="outline"
-        onClick={handleAdicionar}
-        className="flex-1 shadow-sm sm:flex-none"
-      >
-        {adicionado ? (
-          <>
-            <Check size={18} className="mr-2" />
-            Adicionado
-          </>
+    <div className="space-y-2">
+      <p className="text-xs text-neutral-500">
+        {estoque <= 5 ? (
+          <span className="font-medium text-amber-600">Ultimas {estoque} unidades em estoque</span>
         ) : (
-          <>
-            <ShoppingBag size={18} className="mr-2" />
-            Adicionar ao carrinho
-          </>
+          `${estoque} em estoque`
         )}
-      </Button>
+      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <SeletorQuantidade quantidade={quantidade} onChange={setQuantidade} max={estoque} />
 
-      <Button size="lg" onClick={handleComprarAgora} className="flex-1 shadow-sm sm:flex-none">
-        Comprar agora
-      </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={handleAdicionar}
+          className="flex-1 shadow-sm sm:flex-none"
+        >
+          {adicionado ? (
+            <>
+              <Check size={18} className="mr-2" />
+              Adicionado
+            </>
+          ) : (
+            <>
+              <ShoppingBag size={18} className="mr-2" />
+              Adicionar ao carrinho
+            </>
+          )}
+        </Button>
+
+        <Button size="lg" onClick={handleComprarAgora} className="flex-1 shadow-sm sm:flex-none">
+          Comprar agora
+        </Button>
+      </div>
     </div>
   )
 }

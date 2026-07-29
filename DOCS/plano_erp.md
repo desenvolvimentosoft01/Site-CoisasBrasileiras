@@ -12,6 +12,12 @@ Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a mem
 - [x] Auditoria dos demais formulários do admin atrás do bug de alinhamento — feita por varredura de rótulos longos dentro de grades multi-coluna. Corrigidos: Configurações ("Taxa fixa por transacao (R$)"), Cupons ("Valor minimo da compra (R$)", "Limite de usos (opcional)"), Compras ("Numero da nota (opcional)", "Vencimento (prazo de pagamento)"). Fornecedores, Usuários, Contas e Feedbacks conferidos e sem risco (rótulos curtos ou formulário de coluna única).
 - [ ] Perguntar se falta mais algum campo no cadastro completo de Cliente (hoje: dados cadastrais + 1 endereço principal — não suporta múltiplos endereços por cliente no admin, só o site tem isso).
 
+## 2026-07-28 — Site: seletor +/- de quantidade e exibição de estoque disponível
+
+- [x] `components/loja/seletor-quantidade.tsx`: componente compartilhado com botões +/- (em vez do spinner nativo `type="number"`, que no mobile é ruim de usar e varia de navegador pra navegador). Reaproveitado no carrinho (drawer e página `/carrinho`) e no botão de adicionar da página de detalhe do produto.
+- [x] `TAB_PRODUTO.estoque` agora acompanha o item no carrinho (`ItemCarrinho.estoque`, opcional pra não quebrar carrinho já salvo no localStorage de quem já tinha itens antes dessa mudança) — o "+" para de aumentar quando bate no estoque disponível, em vez de deixar pedir mais do que existe.
+- [x] Quantidade disponível em estoque exibida tanto no card da grade (home + `/produtos`) quanto na página de detalhe do produto — texto normal se tiver bastante, aviso em âmbar se `estoque <= 5` ("Últimas X unidades"), vermelho se esgotado.
+
 ## 2026-07-28 — Assinatura secreta do webhook do Mercado Pago vira configurável pelo admin
 
 - [x] `MERCADOPAGO_WEBHOOK_SECRET` deixou de ser só variável de ambiente — agora é `mercadopago_webhook_secret` em `TAB_INTEGRACAO_SEGREDO`, mesmo padrão dos outros segredos. Campo novo na aba Mercado Pago de Configurações > Integrações. `getSegredo()` cai pro env var (`MERCADOPAGO_WEBHOOK_SECRET`) se não houver nada configurado no banco, então nada quebra em deploys que ainda não migraram.

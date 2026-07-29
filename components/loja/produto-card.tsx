@@ -74,6 +74,7 @@ export function ProdutoCard({
         slug: produto.slug,
         preco: Number(produto.preco_promocional ?? produto.preco),
         imagemCapa: produto.imagem_capa,
+        estoque: produto.estoque,
       },
       1
     )
@@ -129,6 +130,17 @@ export function ProdutoCard({
               </span>
             )}
           </div>
+          {produto.estoque !== undefined && (
+            <p className="text-xs text-neutral-400">
+              {semEstoque ? (
+                <span className="text-red-500">Esgotado</span>
+              ) : produto.estoque <= 5 ? (
+                <span className="text-amber-600">Ultimas {produto.estoque} unidades</span>
+              ) : (
+                `${produto.estoque} em estoque`
+              )}
+            </p>
+          )}
         </div>
       </Link>
 
