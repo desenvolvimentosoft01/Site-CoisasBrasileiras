@@ -66,10 +66,11 @@ Marcar conforme for resolvendo. Levantado em 2026-07-27.
 
 - [ ] **Banco de dados**: confirmar se a Vercel usa o Neon de produção (`DATABASE_URL` do projeto na Vercel) — nunca foi confirmado, ver seção "Infraestrutura" mais abaixo. Todas as migrations (`000` até a mais recente) aplicadas nesse banco.
 - [ ] **Bling**: trocar do app de teste pro app de produção no painel Bling (se for o caso). Reconectar em Configurações > Integrações > Bling com a conta real da loja (fluxo OAuth já pronto). `BLING_CLIENT_ID`/`BLING_CLIENT_SECRET` do app de produção como variável de ambiente na Vercel.
-- [ ] **Mercado Pago**: token de acesso e chave pública **de produção** (não `TEST-...`) em Configurações > Integrações > Mercado Pago. Cadastrar a URL do webhook (`https://seudominio.com/api/webhooks/mercadopago`) no painel do Mercado Pago e colocar a "assinatura secreta" gerada em `MERCADOPAGO_WEBHOOK_SECRET` (env var — ainda não foi movido pro banco).
+- [ ] **Mercado Pago**: token de acesso e chave pública **de produção** (não `TEST-...`) em Configurações > Integrações > Mercado Pago. Cadastrar a URL do webhook (`https://seudominio.com/api/webhooks/mercadopago`) no painel do Mercado Pago e colocar a "assinatura secreta" gerada em Configurações > Integrações > Mercado Pago (já é configurável pelo admin desde 2026-07-28, não precisa mais mexer em variável de ambiente).
 - [ ] **Frenet**: token real da conta em Integrações > Frenet. CEP de origem configurado em Configurações > Frete. `ShippingServiceCode` reais das transportadoras usadas, pra validação automática de rastreio funcionar (pendente).
 - [ ] **Email**: credenciais reais (Gmail com senha de app, ou outro provedor) em Integrações > Email.
-- [ ] **Infraestrutura**: `AUTH_SECRET` de produção gerado (valor aleatório longo). Domínio próprio apontado pra Vercel (`NEXT_PUBLIC_SITE_URL` correto). Cloudinary configurado (`CLOUDINARY_*`), já que Vercel é serverless e não tem disco persistente pra upload de imagem.
+- [ ] **Infraestrutura**: `AUTH_SECRET` de produção gerado (valor aleatório longo). Domínio próprio apontado pro host escolhido (`NEXT_PUBLIC_SITE_URL` correto). Cloudinary configurado (`CLOUDINARY_*`) — só necessário se o host final for serverless (Vercel); em VPS com disco persistente (Hostinger) não é obrigatório.
+- [ ] **Cron das notas do Bling** (`app/api/cron/notas-bling-pendentes`): hoje disparado via `vercel.json` (Vercel Cron, só funciona hospedado na Vercel). **Ao migrar pra Hostinger (VPS), trocar o mecanismo de disparo** — crontab do próprio servidor chamando a rota via `curl` (com o header `Authorization: Bearer $CRON_SECRET`) é o caminho mais direto, já que a rota em si não muda.
 
 ## Fronteiras decididas (não fazer)
 
