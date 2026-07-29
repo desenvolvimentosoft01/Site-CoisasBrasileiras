@@ -65,6 +65,7 @@ const menu: ItemMenu[] = [
     filhos: [
       { href: "/admin/cupons", label: "Cupons" },
       { href: "/admin/banners", label: "Banners" },
+      { href: "/admin/sobre-nos", label: "Sobre Nos" },
       { href: "/admin/feedbacks", label: "Feedbacks" },
       { href: "/admin/avaliacoes", label: "Avaliacoes" },
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },

@@ -1,13 +1,15 @@
 import { exigirSessao } from "@/lib/auth-servidor"
-import { cloudinaryConfigurado, uploadImagemCloudinary } from "@/lib/cloudinary"
+import { cloudinaryConfigurado, uploadArquivoCloudinary } from "@/lib/cloudinary"
 import { NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { randomUUID } from "crypto"
 
-const EXTENSOES_PERMITIDAS = ["jpg", "jpeg", "png", "webp", "gif"]
-const TAMANHO_MAXIMO = 5 * 1024 * 1024 // 5MB
-const PASTAS_PERMITIDAS = ["produtos", "categorias", "feedbacks", "loja"]
+const EXTENSOES_IMAGEM = ["jpg", "jpeg", "png", "webp", "gif"]
+const EXTENSOES_VIDEO = ["mp4", "webm", "mov"]
+const TAMANHO_MAXIMO_IMAGEM = 5 * 1024 * 1024 // 5MB
+const TAMANHO_MAXIMO_VIDEO = 50 * 1024 * 1024 // 50MB
+const PASTAS_PERMITIDAS = ["produtos", "categorias", "feedbacks", "loja", "sobre"]
 
 export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
@@ -22,13 +24,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "Nenhum arquivo enviado" }, { status: 400 })
   }
 
-  if (arquivo.size > TAMANHO_MAXIMO) {
-    return NextResponse.json({ erro: "Arquivo maior que 5MB" }, { status: 400 })
+  const extensao = (arquivo.name.split(".").pop() || "").toLowerCase()
+  const ehVideo = EXTENSOES_VIDEO.includes(extensao)
+
+  if (!ehVideo && !EXTENSOES_IMAGEM.includes(extensao)) {
+    return NextResponse.json({ erro: "Formato de arquivo nao suportado" }, { status: 400 })
   }
 
-  const extensao = (arquivo.name.split(".").pop() || "").toLowerCase()
-  if (!EXTENSOES_PERMITIDAS.includes(extensao)) {
-    return NextResponse.json({ erro: "Formato de imagem nao suportado" }, { status: 400 })
+  const tamanhoMaximo = ehVideo ? TAMANHO_MAXIMO_VIDEO : TAMANHO_MAXIMO_IMAGEM
+  if (arquivo.size > tamanhoMaximo) {
+    return NextResponse.json(
+      { erro: `Arquivo maior que ${tamanhoMaximo / (1024 * 1024)}MB` },
+      { status: 400 }
+    )
   }
 
   const bytes = Buffer.from(await arquivo.arrayBuffer())
@@ -38,11 +46,11 @@ export async function POST(request: Request) {
   // disco local mesmo, pra nao exigir conta no Cloudinary so pra testar.
   if (cloudinaryConfigurado()) {
     try {
-      const url = await uploadImagemCloudinary(bytes, `coisas-brasileiras/${pasta}`)
+      const url = await uploadArquivoCloudinary(bytes, `coisas-brasileiras/${pasta}`, ehVideo ? "video" : "image")
       return NextResponse.json({ url })
     } catch (erro) {
       console.error("[upload] Falha no Cloudinary:", erro)
-      return NextResponse.json({ erro: "Erro ao enviar imagem" }, { status: 502 })
+      return NextResponse.json({ erro: "Erro ao enviar arquivo" }, { status: 502 })
     }
   }
 

@@ -26,7 +26,11 @@ function assinarParametros(parametros: Record<string, string>): string {
   return createHash("sha1").update(`${stringOrdenada}${API_SECRET}`).digest("hex")
 }
 
-export async function uploadImagemCloudinary(bytes: Buffer, pasta: string): Promise<string> {
+export async function uploadArquivoCloudinary(
+  bytes: Buffer,
+  pasta: string,
+  tipoRecurso: "image" | "video" = "image"
+): Promise<string> {
   if (!cloudinaryConfigurado()) {
     throw new Error("Cloudinary nao configurado")
   }
@@ -41,7 +45,7 @@ export async function uploadImagemCloudinary(bytes: Buffer, pasta: string): Prom
   formData.append("folder", pasta)
   formData.append("signature", assinatura)
 
-  const resposta = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+  const resposta = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${tipoRecurso}/upload`, {
     method: "POST",
     body: formData,
   })
