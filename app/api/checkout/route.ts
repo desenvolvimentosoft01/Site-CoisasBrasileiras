@@ -21,8 +21,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "Conta desativada. Entre em contato com a loja." }, { status: 403 })
   }
 
+  type EnderecoRequisicao = {
+    cep: string
+    logradouro: string
+    numero: string
+    complemento?: string
+    bairro: string
+    cidade: string
+    estado: string
+  }
+
   const { endereco, itens, cupomCodigo, freteEscolhido } = await request.json() as {
-    endereco: any
+    endereco: EnderecoRequisicao
     itens: ItemRequisicao[]
     cupomCodigo?: string
     freteEscolhido?: OpcaoFreteEscolhida

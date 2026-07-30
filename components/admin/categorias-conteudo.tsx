@@ -326,7 +326,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                     ))}
                 </select>
                 <p className="text-xs text-muted-foreground">
-                  Escolha uma categoria pai para criar uma subcategoria (ex: "Bowls" dentro de "Casa"). Deixe em branco para uma categoria principal, exibida no menu do site.
+                  Escolha uma categoria pai para criar uma subcategoria (ex: &quot;Bowls&quot; dentro de &quot;Casa&quot;). Deixe em branco para uma categoria principal, exibida no menu do site.
                 </p>
               </div>
 

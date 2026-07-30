@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,7 +18,6 @@ function formatarPreco(valor: number) {
 type OpcaoFrete = { transportadora: string; servico: string; valor: number; prazoDias: number | null }
 
 export default function CheckoutPage() {
-  const router = useRouter()
   const { itens, limpar, cupom } = useCarrinho()
   const [logado, setLogado] = useState<boolean | null>(null)
 
@@ -53,6 +51,7 @@ export default function CheckoutPage() {
     // disso o back-end nao tem regiao pra achar a faixa de frete.
     if (!estado) return
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- liga o indicador de loading antes do fetch de frete
     setCarregandoFrete(true)
     fetch("/api/frete", {
       method: "POST",

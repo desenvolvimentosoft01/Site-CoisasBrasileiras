@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -96,7 +96,7 @@ export default function DetalhePedidoPage() {
   const [erroCancelamento, setErroCancelamento] = useState("")
   const [mostrarFormCancelar, setMostrarFormCancelar] = useState(false)
 
-  async function carregar() {
+  const carregar = useCallback(async () => {
     const resposta = await fetch(`/api/admin/pedidos/${params.id}`)
     if (resposta.ok) {
       const dados: Pedido = await resposta.json()
@@ -104,11 +104,12 @@ export default function DetalhePedidoPage() {
       setCodigoRastreio(dados.codigo_rastreio ?? "")
       setTransportadora(dados.transportadora ?? "")
     }
-  }
+  }, [params.id])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carrega os dados do pedido ao montar/trocar de id
     carregar()
-  }, [params.id])
+  }, [carregar])
 
   async function alterarStatus(novoStatus: string) {
     if (!pedido) return
@@ -235,7 +236,7 @@ export default function DetalhePedidoPage() {
                 Aguardando pagamento (automatico via Mercado Pago)
               </span>
               <p className="text-xs text-muted-foreground">
-                So vira "Pago" quando o Mercado Pago confirmar - nao da pra marcar manualmente
+                So vira &quot;Pago&quot; quando o Mercado Pago confirmar - nao da pra marcar manualmente
                 (evita liberar pedido sem o pagamento ter entrado de verdade). So resta cancelar.
               </p>
               <Button
@@ -419,7 +420,7 @@ export default function DetalhePedidoPage() {
             </div>
             <p className="text-xs text-muted-foreground">
               Se preencher o codigo de servico, o rastreio e validado automaticamente ao clicar em
-              "Salvar e notificar cliente" - se o codigo nao existir de verdade na transportadora,
+              &quot;Salvar e notificar cliente&quot; - se o codigo nao existir de verdade na transportadora,
               o salvamento e a notificacao sao bloqueados. Sem o codigo de servico preenchido, nao
               da pra validar (fica so o aviso de formato) e o salvamento funciona normal.
             </p>

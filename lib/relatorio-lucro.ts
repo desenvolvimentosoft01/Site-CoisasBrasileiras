@@ -99,8 +99,12 @@ export async function calcularDRE(inicioTs: string, fimTs: string, inicioData: s
     getConfiguracoes(["taxa_mercadopago_percentual", "taxa_mercadopago_fixo", "aliquota_imposto_percentual"]),
   ])
 
+  type ProdutoLinha = { produto_id: string; nome: string; quantidade: number; faturamento: number; custo_total: number }
+  type PedidoLinha = { total: number }
+  type CategoriaLinha = { categoria: string; faturamento: number; custo_total: number }
+
   const faturamento = Number(totais.faturamento)
-  const cmv = produtos.reduce((soma: number, p: any) => soma + Number(p.custo_total), 0)
+  const cmv = produtos.reduce((soma: number, p: ProdutoLinha) => soma + Number(p.custo_total), 0)
   const margemBruta = faturamento - cmv
 
   const taxaMpPercentual = Number(config.taxa_mercadopago_percentual) || 0
@@ -109,7 +113,7 @@ export async function calcularDRE(inicioTs: string, fimTs: string, inicioData: s
 
   // Unico gateway em uso (Mercado Pago) - venda balcao (sem gateway
   // registrado) tambem cai aqui, ja que a taxa e so estimativa gerencial.
-  const taxasPagamento = pedidosPagos.reduce((soma: number, pedido: any) => {
+  const taxasPagamento = pedidosPagos.reduce((soma: number, pedido: PedidoLinha) => {
     const total = Number(pedido.total)
     return soma + (total * taxaMpPercentual) / 100 + taxaMpFixo
   }, 0)
@@ -118,7 +122,7 @@ export async function calcularDRE(inicioTs: string, fimTs: string, inicioData: s
   const despesasFixas = Number(despesas.total)
   const lucroLiquido = margemBruta - taxasPagamento - imposto - despesasFixas
 
-  const produtosComMargem: MargemProduto[] = produtos.map((p: any) => {
+  const produtosComMargem: MargemProduto[] = produtos.map((p: ProdutoLinha) => {
     const fat = Number(p.faturamento)
     const custo = Number(p.custo_total)
     const margem = fat - custo
@@ -133,7 +137,7 @@ export async function calcularDRE(inicioTs: string, fimTs: string, inicioData: s
     }
   })
 
-  const categoriasComMargem: MargemCategoria[] = categoriasBrutas.map((c: any) => {
+  const categoriasComMargem: MargemCategoria[] = categoriasBrutas.map((c: CategoriaLinha) => {
     const fat = Number(c.faturamento)
     const custo = Number(c.custo_total)
     const margem = fat - custo

@@ -84,6 +84,7 @@ export function ReajustePrecosConteudo({
       if (novo.has(id)) {
         novo.delete(id)
         setPrecosManuais((manuais) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure so pra remover a chave do objeto
           const { [id]: _removido, ...resto } = manuais
           return resto
         })
@@ -210,6 +211,7 @@ export function ReajustePrecosConteudo({
 
     setProdutos((atual) => atual.map((p) => (p.id === produto.id ? { ...p, preco: String(precoNovo) } : p)))
     setPrecosManuais((atual) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure so pra remover a chave do objeto
       const { [produto.id]: _removido, ...resto } = atual
       return resto
     })

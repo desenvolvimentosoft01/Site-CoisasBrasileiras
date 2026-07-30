@@ -31,6 +31,7 @@ export function Header({
   // Evita mismatch de hidratacao: o total vindo do localStorage (persist do
   // zustand) so existe no client, entao so mostramos o contador apos montar.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flag de hidratacao, precisa rodar so no client
     setMontado(true)
     fetch("/api/cliente/me").then((r) => setLogado(r.ok))
   }, [])

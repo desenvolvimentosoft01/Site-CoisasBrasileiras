@@ -16,6 +16,7 @@ export async function query(sql: string, params?: unknown[]) {
 // itens + baixar estoque). O callback recebe um client dedicado com a mesma
 // assinatura de `query`, ja dentro de uma transacao.
 export async function transacao<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wrapper generico sobre pg, linhas tem forma variavel por chamador
   callback: (queryCliente: (sql: string, params?: unknown[]) => Promise<any[]>) => Promise<T>
 ): Promise<T> {
   const client: PoolClient = await pool.connect()

@@ -69,6 +69,7 @@ function paraArray<T>(valor: T | T[] | undefined): T[] {
 export function parseNfeXml(xmlTexto: string): DadosNfeXml {
   const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota
   let doc: any
   try {
     doc = parser.parse(xmlTexto)
@@ -95,6 +96,7 @@ export function parseNfeXml(xmlTexto: string): DadosNfeXml {
     throw new Error("XML nao tem nenhum item de produto (tag det)")
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota
   const itens: ItemNfeXml[] = detalhes.map((det: any) => {
     const prod = det.prod ?? {}
     // cEAN vem como "SEM GTIN" quando o produto nao tem codigo de barras -

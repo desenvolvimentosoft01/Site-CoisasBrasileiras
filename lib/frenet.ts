@@ -130,7 +130,8 @@ export async function rastrearPedidoFrenet(params: {
   }
 
   const dados = await resposta.json()
-  const eventos: EventoRastreio[] = (dados?.TrackingEvents ?? []).map((e: any) => ({
+  type EventoTrackingBruto = { Date?: string; Status?: string; Description?: string; Location?: string }
+  const eventos: EventoRastreio[] = (dados?.TrackingEvents ?? []).map((e: EventoTrackingBruto) => ({
     data: e.Date ?? null,
     status: e.Status ?? e.Description ?? "Evento sem descricao",
     local: e.Location ?? null,

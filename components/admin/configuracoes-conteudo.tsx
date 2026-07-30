@@ -127,7 +127,9 @@ function ConfiguracoesFormulario({
       .then((dados) => {
         if (!dados) return
         setSegredosStatus(
-          Object.fromEntries(Object.entries(dados).map(([chave, info]: [string, any]) => [chave, info.configurado]))
+          Object.fromEntries(
+            Object.entries(dados).map(([chave, info]) => [chave, (info as { configurado: boolean }).configurado])
+          )
         )
         setEmailUser(dados.email_user?.valor || "")
         setEmailNotificacoesAdmin(dados.email_notificacoes_admin?.valor || "")
@@ -167,7 +169,9 @@ function ConfiguracoesFormulario({
     if (resposta.ok) {
       const dados = await resposta.json()
       setSegredosStatus(
-        Object.fromEntries(Object.entries(dados).map(([chave, info]: [string, any]) => [chave, info.configurado]))
+        Object.fromEntries(
+          Object.entries(dados).map(([chave, info]) => [chave, (info as { configurado: boolean }).configurado])
+        )
       )
     }
   }
@@ -323,7 +327,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="paginas" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Pagina "Sobre Nos"</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Pagina &quot;Sobre Nos&quot;</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Label>Texto da pagina</Label>
@@ -628,7 +632,7 @@ function ConfiguracoesFormulario({
                 />
                 <p className="text-xs text-muted-foreground">
                   Cobrada automaticamente todo mes via Mercado Pago enquanto a assinatura
-                  estiver ativa. Produtos com "Preco do Clube" preenchido (no cadastro de
+                  estiver ativa. Produtos com &quot;Preco do Clube&quot; preenchido (no cadastro de
                   produto) mostram esse preco so pra quem tem assinatura ativa.
                 </p>
               </CardContent>
@@ -774,7 +778,7 @@ function ConfiguracoesFormulario({
                   <CardContent className="space-y-4">
                     <p className="text-xs text-muted-foreground">
                       Token guardado de forma isolada, nunca aparece em nenhuma tela ou resposta
-                      de API - so mostramos se ja esta "configurado". Deixe em branco pra nao
+                      de API - so mostramos se ja esta &quot;configurado&quot;. Deixe em branco pra nao
                       mexer no que ja esta salvo.
                     </p>
                     <div className="space-y-2">
@@ -806,7 +810,7 @@ function ConfiguracoesFormulario({
                           </span>
                         )}
                         <CampoDica>
-                          Painel do Mercado Pago &gt; sua aplicacao &gt; Webhooks &gt; "Assinatura secreta" (so
+                          Painel do Mercado Pago &gt; sua aplicacao &gt; Webhooks &gt; &quot;Assinatura secreta&quot; (so
                           existe depois de configurar a URL do webhook la). Sem isso, o webhook ainda funciona,
                           mas sem validar se a notificacao realmente veio do Mercado Pago.
                         </CampoDica>

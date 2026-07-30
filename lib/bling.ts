@@ -310,7 +310,18 @@ export async function listarNotasEntradaBling(params: {
   const resposta = await chamarBling(`/notas-fiscais?${query.toString()}`)
   const lista = resposta?.data ?? []
 
-  return lista.map((nota: any) => ({
+  type NotaBlingBruta = {
+    id: number | string
+    numero?: number | string
+    serie?: number | string
+    dataEmissao?: string
+    situacao: number | string
+    valorTotal?: number | string
+    contato?: { nome?: string }
+    emitente?: { nome?: string }
+  }
+
+  return lista.map((nota: NotaBlingBruta) => ({
     id: String(nota.id),
     numero: String(nota.numero ?? ""),
     serie: String(nota.serie ?? ""),

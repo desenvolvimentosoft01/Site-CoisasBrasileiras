@@ -546,7 +546,7 @@ export function ComprasConteudo({
                 <Link2 size={16} className="text-primary" />
                 Lançando a entrada da nota Bling #{blingNotaVinculada.numero}. Importe o XML dessa
                 nota abaixo pra preencher os itens - ao salvar, a compra fica vinculada e some da
-                lista de pendentes em "Notas do Bling".
+                lista de pendentes em &quot;Notas do Bling&quot;.
               </CardContent>
             </Card>
           )}
@@ -647,7 +647,7 @@ export function ComprasConteudo({
                   Itens do XML pendentes de mapeamento ({itensXmlPendentes.length})
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Associe cada item da nota a um produto do catalogo e clique em "Adicionar" -
+                  Associe cada item da nota a um produto do catalogo e clique em &quot;Adicionar&quot; -
                   itens nao mapeados nao entram na compra.
                 </p>
                 <div className="space-y-2">
@@ -780,7 +780,7 @@ export function ComprasConteudo({
               <p className="text-xs text-muted-foreground">
                 Acompanha as notas de entrada ja registradas no Bling (fornecedor emitiu, Sefaz
                 autorizou). O lancamento no nosso sistema (dar entrada no estoque/custo) continua
-                sendo feito importando o XML dessa nota em "Cadastro".
+                sendo feito importando o XML dessa nota em &quot;Cadastro&quot;.
               </p>
 
               <div className="flex flex-wrap items-center gap-2">
