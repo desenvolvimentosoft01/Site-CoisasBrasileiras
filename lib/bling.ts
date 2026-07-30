@@ -1,4 +1,5 @@
 import { query } from "@/lib/db"
+import { getSegredo } from "@/lib/segredos"
 
 // Integracao com o Bling - SOMENTE emissao de NF-e a partir de um pedido ja
 // pago. Nao sincroniza estoque nem financeiro com o Bling (esse controle
@@ -9,25 +10,31 @@ import { query } from "@/lib/db"
 // partir dai os tokens ficam guardados em TAB_INTEGRACAO_BLING - nunca no
 // client, nunca em log, nunca junto de TAB_CONFIGURACAO (que e devolvida
 // inteira pela tela de Configuracoes).
+//
+// client_id/client_secret seguem o mesmo padrao de Frenet/Mercado Pago/Email
+// (lib/segredos.ts): configuraveis pelo admin em Configuracoes > Integracoes,
+// guardados em TAB_INTEGRACAO_SEGREDO, com fallback pra variavel de ambiente.
 
 const BLING_API_URL = "https://api.bling.com.br/Api/v3"
 const BLING_AUTH_URL = "https://www.bling.com.br/Api/v3/oauth/authorize"
 const BLING_TOKEN_URL = "https://www.bling.com.br/Api/v3/oauth/token"
 
-const CLIENT_ID = process.env.BLING_CLIENT_ID
-const CLIENT_SECRET = process.env.BLING_CLIENT_SECRET
-
-function exigirCredenciais() {
-  if (!CLIENT_ID || !CLIENT_SECRET) {
-    throw new Error("BLING_CLIENT_ID/BLING_CLIENT_SECRET nao configurados")
+async function obterCredenciais(): Promise<{ clientId: string; clientSecret: string }> {
+  const [clientId, clientSecret] = await Promise.all([
+    getSegredo("bling_client_id"),
+    getSegredo("bling_client_secret"),
+  ])
+  if (!clientId || !clientSecret) {
+    throw new Error("Credenciais do Bling nao configuradas")
   }
+  return { clientId, clientSecret }
 }
 
-export function montarUrlAutorizacaoBling(redirectUri: string, state: string): string {
-  exigirCredenciais()
+export async function montarUrlAutorizacaoBling(redirectUri: string, state: string): Promise<string> {
+  const { clientId } = await obterCredenciais()
   const params = new URLSearchParams({
     response_type: "code",
-    client_id: CLIENT_ID!,
+    client_id: clientId,
     state,
     redirect_uri: redirectUri,
   })
@@ -58,9 +65,9 @@ async function salvarTokens(dados: { access_token: string; refresh_token: string
 // salva no banco. Chamado uma unica vez, quando o dono da loja conecta a
 // conta do Bling pela primeira vez.
 export async function trocarCodigoPorTokenBling(code: string, redirectUri: string) {
-  exigirCredenciais()
+  const { clientId, clientSecret } = await obterCredenciais()
 
-  const basicAuth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64")
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
   const resposta = await fetch(BLING_TOKEN_URL, {
     method: "POST",
     headers: {
@@ -86,7 +93,7 @@ export async function trocarCodigoPorTokenBling(code: string, redirectUri: strin
 // Devolve um access_token valido, renovando via refresh_token automaticamente
 // se estiver perto de expirar. Lanca erro se a loja nunca conectou o Bling.
 async function obterTokenValido(): Promise<string> {
-  exigirCredenciais()
+  const { clientId, clientSecret } = await obterCredenciais()
 
   const [conexao] = await query(
     "SELECT access_token, refresh_token, expira_em FROM TAB_INTEGRACAO_BLING LIMIT 1"
@@ -100,7 +107,7 @@ async function obterTokenValido(): Promise<string> {
     return conexao.access_token
   }
 
-  const basicAuth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64")
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
   const resposta = await fetch(BLING_TOKEN_URL, {
     method: "POST",
     headers: {

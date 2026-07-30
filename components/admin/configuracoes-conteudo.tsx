@@ -111,6 +111,8 @@ function ConfiguracoesFormulario({
   // no ConfiguracoesIniciais (evita misturar dado sensivel com config geral).
   const [segredosStatus, setSegredosStatus] = useState<Record<string, boolean>>({})
   const [frenetToken, setFrenetToken] = useState("")
+  const [blingClientId, setBlingClientId] = useState("")
+  const [blingClientSecret, setBlingClientSecret] = useState("")
   const [mpAccessToken, setMpAccessToken] = useState("")
   const [mpWebhookSecret, setMpWebhookSecret] = useState("")
   const [emailUser, setEmailUser] = useState("")
@@ -146,6 +148,8 @@ function ConfiguracoesFormulario({
         email_user: emailUser,
         email_pass: emailPass,
         email_notificacoes_admin: emailNotificacoesAdmin,
+        bling_client_id: blingClientId,
+        bling_client_secret: blingClientSecret,
       }),
     })
 
@@ -155,6 +159,8 @@ function ConfiguracoesFormulario({
     setMpAccessToken("")
     setMpWebhookSecret("")
     setEmailPass("")
+    setBlingClientId("")
+    setBlingClientSecret("")
     setTimeout(() => setSegredosSalvos(false), 2500)
 
     const resposta = await fetch("/api/admin/segredos")
@@ -659,16 +665,59 @@ function ConfiguracoesFormulario({
                     )}
                     {mensagemBling === "erro_token" && (
                       <p className="text-sm text-red-500">
-                        O Bling recusou a conexao. Confira as credenciais (BLING_CLIENT_ID/SECRET) e
-                        tente novamente.
+                        O Bling recusou a conexao. Confira o Client ID/Secret abaixo e tente
+                        novamente.
                       </p>
                     )}
                     {mensagemBling === "erro_nao_configurado" && (
                       <p className="text-sm text-red-500">
-                        Integracao com o Bling ainda nao configurada neste ambiente
-                        (BLING_CLIENT_ID/BLING_CLIENT_SECRET faltando nas variaveis de ambiente).
+                        Integracao com o Bling ainda nao configurada. Preencha o Client ID e o
+                        Client Secret abaixo (gerados ao registrar o app em developer.bling.com.br).
                       </p>
                     )}
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        Client ID
+                        {segredosStatus.bling_client_id && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-500">
+                            <Check size={12} /> configurado
+                          </span>
+                        )}
+                      </Label>
+                      <Input
+                        type="password"
+                        value={blingClientId}
+                        onChange={(e) => setBlingClientId(e.target.value)}
+                        placeholder={
+                          segredosStatus.bling_client_id ? "•••••••• (deixe em branco pra manter)" : "Client ID do app Bling"
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        Client Secret
+                        {segredosStatus.bling_client_secret && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-500">
+                            <Check size={12} /> configurado
+                          </span>
+                        )}
+                      </Label>
+                      <Input
+                        type="password"
+                        value={blingClientSecret}
+                        onChange={(e) => setBlingClientSecret(e.target.value)}
+                        placeholder={
+                          segredosStatus.bling_client_secret ? "•••••••• (deixe em branco pra manter)" : "Client Secret do app Bling"
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button type="button" onClick={salvarSegredos} disabled={salvandoSegredos}>
+                        {salvandoSegredos ? "Salvando..." : "Salvar credenciais"}
+                      </Button>
+                      {segredosSalvos && <span className="text-sm text-emerald-500">Salvo!</span>}
+                    </div>
 
                     {/* Pendencias fiscais: mostra o ultimo erro de emissao/cancelamento
                         (ex: certificado digital nao configurado no Bling) direto aqui,

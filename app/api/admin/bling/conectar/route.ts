@@ -18,10 +18,11 @@ export async function GET() {
 
   let url: string
   try {
-    url = montarUrlAutorizacaoBling(redirectUri, state)
+    url = await montarUrlAutorizacaoBling(redirectUri, state)
   } catch {
-    // BLING_CLIENT_ID/SECRET nao configurados no ambiente - volta pra
-    // Configuracoes com uma mensagem amigavel em vez de estourar erro 500.
+    // Credenciais do Bling ainda nao configuradas (banco ou variavel de
+    // ambiente) - volta pra Configuracoes com mensagem amigavel em vez de
+    // estourar erro 500.
     return NextResponse.redirect(`${siteUrl}/admin/configuracoes?bling=erro_nao_configurado`)
   }
 

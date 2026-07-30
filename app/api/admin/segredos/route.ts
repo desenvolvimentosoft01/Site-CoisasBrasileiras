@@ -9,6 +9,8 @@ const CHAVES = [
   "email_user",
   "email_pass",
   "email_notificacoes_admin",
+  "bling_client_id",
+  "bling_client_secret",
 ] as const
 
 // So admin - nunca devolve o valor real dos segredos sensiveis (token/senha),
