@@ -15,6 +15,7 @@ export type Produto = {
   id: string
   nome: string
   sku: string | null
+  ncm: string | null
   codigo_barras: string | null
   preco: string
   preco_promocional: string | null
@@ -31,10 +32,12 @@ type ProdutoDetalhado = {
   preco: string
   preco_promocional: string | null
   preco_clube: string | null
+  custo: string
   estoque: number
   estoque_minimo: number
   ativo: boolean
   sku: string | null
+  ncm: string | null
   codigo_barras: string | null
   peso_kg: string | null
   altura_cm: string | null
@@ -188,14 +191,14 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                           <td className="p-4">
                             <span className="flex items-center gap-1.5">
                               {produto.nome}
-                              {!produto.codigo_barras && (
+                              {(!produto.ncm || !produto.codigo_barras) && (
                                 <AlertTriangle
                                   size={14}
                                   className="text-amber-500"
                                   aria-label="Cadastro incompleto"
                                   role="img"
                                 >
-                                  <title>Cadastro incompleto - falta codigo de barras</title>
+                                  <title>Cadastro incompleto - falta NCM e/ou codigo de barras</title>
                                 </AlertTriangle>
                               )}
                             </span>

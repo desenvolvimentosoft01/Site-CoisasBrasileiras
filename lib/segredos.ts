@@ -2,8 +2,8 @@ import { query } from "@/lib/db"
 
 // Segredos de integracao (Frenet, Mercado Pago, Email) configuraveis pelo
 // admin em Configuracoes > Integracoes, guardados em TAB_INTEGRACAO_SEGREDO
-// (isolada de TAB_CONFIGURACAO de proposito - nunca pode vazar num endpoint
-// que devolve config geral). Cai pra variavel de
+// (isolada de TAB_CONFIGURACAO de proposito, mesmo motivo do Bling - nunca
+// pode vazar num endpoint que devolve config geral). Cai pra variavel de
 // ambiente se nao houver nada configurado no banco - no deploy atual, nada
 // quebra so por essa tabela estar vazia.
 //

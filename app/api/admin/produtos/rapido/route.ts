@@ -14,8 +14,9 @@ function gerarSlug(nome: string) {
 
 // Cadastro rapido de produto, usado quando o leitor de codigo de barras da
 // Venda Balcao nao acha o produto no catalogo - cria so com o minimo pra
-// vender na hora (nome, preco, codigo de barras). O admin pode completar
-// depois em Produtos (categoria, fotos, dimensoes).
+// vender na hora (nome, preco, codigo de barras). Fica DE PROPOSITO sem NCM
+// (obrigatorio no cadastro completo) - o admin precisa completar depois em
+// Produtos, o "incompleto" fica marcado (ncm nulo) pra aparecer na grade.
 export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro

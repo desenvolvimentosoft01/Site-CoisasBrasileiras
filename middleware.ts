@@ -26,6 +26,10 @@ export async function middleware(request: NextRequest) {
     const somenteAdmin =
       pathname.startsWith("/admin/usuarios") ||
       pathname.startsWith("/admin/auditoria") ||
+      pathname.startsWith("/admin/financeiro") ||
+      pathname.startsWith("/admin/relatorios/lucro") ||
+      pathname.startsWith("/admin/compras") ||
+      pathname.startsWith("/admin/fornecedores") ||
       pathname.startsWith("/admin/clube")
     if (somenteAdmin && sessao.papel !== "admin") {
       const url = request.nextUrl.clone()
