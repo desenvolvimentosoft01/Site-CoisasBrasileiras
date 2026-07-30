@@ -1,7 +1,7 @@
 import { query } from "@/lib/db"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { CheckCircle2, Truck, Check, FileText } from "lucide-react"
+import { CheckCircle2, Truck, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 function formatarPreco(valor: string) {
@@ -29,7 +29,7 @@ export default async function ConfirmacaoPedidoPage({
   const { id } = await params
 
   const [pedido] = await query(
-    "SELECT id, status, total, criado_em, codigo_rastreio, transportadora, bling_link_danfe FROM TAB_PEDIDO WHERE id = $1",
+    "SELECT id, status, total, criado_em, codigo_rastreio, transportadora FROM TAB_PEDIDO WHERE id = $1",
     [id]
   )
   if (!pedido) notFound()
@@ -113,18 +113,6 @@ export default async function ConfirmacaoPedidoPage({
           <span className="text-emerald-700">{formatarPreco(pedido.total)}</span>
         </div>
       </div>
-
-      {pedido.bling_link_danfe && (
-        <a
-          href={pedido.bling_link_danfe}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-4 flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
-        >
-          <FileText size={16} />
-          Baixar nota fiscal (DANFE)
-        </a>
-      )}
 
       <Button nativeButton={false} render={<Link href="/produtos" />}>Continuar comprando</Button>
     </div>

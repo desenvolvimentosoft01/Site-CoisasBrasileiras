@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -15,13 +15,11 @@ import {
   Percent,
   Users,
   Store,
-  Wallet,
   ChevronDown,
   ChevronRight,
   Home,
   FileText,
   ArrowLeft,
-  Truck,
 } from "lucide-react"
 import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -71,23 +69,12 @@ const menu: ItemMenu[] = [
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },
     ],
   },
-  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: Wallet, somenteAdmin: true },
-  {
-    tipo: "grupo",
-    label: "Compras",
-    icone: Truck,
-    filhos: [
-      { href: "/admin/compras", label: "Compras", somenteAdmin: true },
-      { href: "/admin/fornecedores", label: "Fornecedores", somenteAdmin: true },
-    ],
-  },
   {
     tipo: "grupo",
     label: "Relatorios",
     icone: BarChart3,
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
-      { href: "/admin/relatorios/lucro", label: "Lucro / DRE", somenteAdmin: true },
       { href: "/admin/relatorios/estoque", label: "Estoque" },
       { href: "/admin/auditoria", label: "Auditoria", somenteAdmin: true },
     ],
@@ -137,17 +124,6 @@ export function AdminShell({
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarAberta, setSidebarAberta] = useState(false)
-  const [notasPendentesBling, setNotasPendentesBling] = useState(0)
-
-  // Le do banco (atualizado pelo cron diario) - nao chama o Bling direto,
-  // so pra mostrar um badge no menu "Compras" quando tem nota esperando.
-  useEffect(() => {
-    if (sessao.papel !== "admin") return
-    fetch("/api/admin/bling/notas-pendentes-count")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((dados) => dados && setNotasPendentesBling(dados.notasPendentes))
-      .catch(() => {})
-  }, [sessao.papel])
 
   const planoDeMenu = itensVisiveis(sessao.papel)
 
@@ -261,11 +237,6 @@ export function AdminShell({
                 >
                   <Icone size={15} />
                   <span className="flex-1 text-left">{item.label}</span>
-                  {item.label === "Compras" && notasPendentesBling > 0 && (
-                    <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                      {notasPendentesBling}
-                    </span>
-                  )}
                   <ChevronDown size={12} className={`text-slate-500 transition-transform ${aberto ? "rotate-180" : ""}`} />
                 </button>
 

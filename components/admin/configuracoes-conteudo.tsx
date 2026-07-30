@@ -1,7 +1,6 @@
 "use client"
 
 import { Suspense, useEffect, useRef, useState } from "react"
-import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,40 +26,27 @@ export type ConfiguracoesIniciais = {
   cor_primaria: string
   texto_rodape: string
   logo_url: string
-  taxa_mercadopago_percentual: string
-  taxa_mercadopago_fixo: string
-  aliquota_imposto_percentual: string
-  regime_tributario: string
   clube_valor_mensalidade: string
   texto_sobre_nos: string
 }
 
-export type BlingStatus =
-  | { conectado: boolean; expiraEm: string | null; ultimoErro: string | null; ultimoErroEm: string | null }
-  | null
-
 export function ConfiguracoesConteudo({
   configuracoesIniciais,
-  blingStatus,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
-  blingStatus: BlingStatus
 }) {
   return (
     <Suspense fallback={<p className="text-sm text-slate-500">Carregando...</p>}>
-      <ConfiguracoesFormulario configuracoesIniciais={configuracoesIniciais} blingStatus={blingStatus} />
+      <ConfiguracoesFormulario configuracoesIniciais={configuracoesIniciais} />
     </Suspense>
   )
 }
 
 function ConfiguracoesFormulario({
   configuracoesIniciais,
-  blingStatus,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
-  blingStatus: BlingStatus
 }) {
-  const searchParams = useSearchParams()
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
 
@@ -93,14 +79,6 @@ function ConfiguracoesFormulario({
   const [enviandoLogo, setEnviandoLogo] = useState(false)
   const inputLogoRef = useRef<HTMLInputElement>(null)
 
-  const [taxaMpPercentual, setTaxaMpPercentual] = useState(configuracoesIniciais.taxa_mercadopago_percentual)
-  const [taxaMpFixo, setTaxaMpFixo] = useState(
-    configuracoesIniciais.taxa_mercadopago_fixo
-      ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.taxa_mercadopago_fixo) * 100)))
-      : ""
-  )
-  const [aliquotaImposto, setAliquotaImposto] = useState(configuracoesIniciais.aliquota_imposto_percentual)
-  const [regimeTributario, setRegimeTributario] = useState(configuracoesIniciais.regime_tributario || "simples_nacional")
   const [clubeMensalidade, setClubeMensalidade] = useState(
     configuracoesIniciais.clube_valor_mensalidade
       ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.clube_valor_mensalidade) * 100)))
@@ -166,8 +144,6 @@ function ConfiguracoesFormulario({
     }
   }
 
-  const mensagemBling = searchParams.get("bling")
-
   async function selecionarLogo(evento: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0]
     if (!arquivo) return
@@ -209,10 +185,6 @@ function ConfiguracoesFormulario({
         cor_primaria: corPrimaria,
         texto_rodape: textoRodape,
         logo_url: logoUrl,
-        taxa_mercadopago_percentual: taxaMpPercentual,
-        taxa_mercadopago_fixo: String(valorMoedaParaNumero(taxaMpFixo || "0,00")),
-        aliquota_imposto_percentual: aliquotaImposto,
-        regime_tributario: regimeTributario,
         clube_valor_mensalidade: String(valorMoedaParaNumero(clubeMensalidade || "0,00")),
       }),
     })
@@ -251,7 +223,7 @@ function ConfiguracoesFormulario({
             </TabsTrigger>
             <TabsTrigger value="custos">
               <Percent size={14} className="mr-1.5" />
-              Custos
+              Clube
             </TabsTrigger>
             <TabsTrigger value="integracoes">
               <Plug size={14} className="mr-1.5" />
@@ -530,85 +502,6 @@ function ConfiguracoesFormulario({
           <TabsContent value="custos" className="mt-4 space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Taxas de pagamento</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-xs text-muted-foreground">
-                  Usadas so pro calculo do relatorio de lucro (nao afetam o valor cobrado do
-                  cliente no checkout). Confira a taxa real no painel do gateway - varia por
-                  forma de pagamento e volume negociado. Deixe em branco ate a implantacao.
-                </p>
-                <div>
-                  <p className="mb-2 text-xs font-semibold uppercase text-slate-400">Mercado Pago</p>
-                  <div className="grid items-start gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Taxa percentual (%)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={taxaMpPercentual}
-                        onChange={(e) => setTaxaMpPercentual(e.target.value)}
-                        placeholder="4,99"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>
-                        Taxa fixa (R$)
-                        <CampoDica>Valor fixo cobrado pelo Mercado Pago por transacao.</CampoDica>
-                      </Label>
-                      <Input
-                        inputMode="numeric"
-                        value={taxaMpFixo}
-                        onChange={(e) => setTaxaMpFixo(mascaraMoeda(e.target.value))}
-                        placeholder="0,00"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Imposto</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Regime tributario</Label>
-                  <select
-                    value={regimeTributario}
-                    onChange={(e) => setRegimeTributario(e.target.value)}
-                    className="flex h-9 w-full max-w-64 rounded-md border border-input bg-transparent px-3 text-sm"
-                  >
-                    <option value="simples_nacional">Simples Nacional</option>
-                    <option value="lucro_presumido">Lucro Presumido</option>
-                    <option value="lucro_real">Lucro Real</option>
-                    <option value="mei">MEI</option>
-                  </select>
-                  <p className="text-xs text-muted-foreground">
-                    So informativo aqui - o calculo de imposto de verdade continua com o Bling/contador.
-                  </p>
-                </div>
-                <Label>Aliquota sobre faturamento (%)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={aliquotaImposto}
-                  onChange={(e) => setAliquotaImposto(e.target.value)}
-                  placeholder="Ex: 6 (Simples Nacional)"
-                  className="max-w-48"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Percentual estimado usado so no relatorio de lucro liquido - confirme a
-                  aliquota real com o contador da loja antes de configurar aqui.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <CardTitle className="text-sm text-slate-500">Clube (assinatura mensal)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -630,89 +523,12 @@ function ConfiguracoesFormulario({
           </TabsContent>
 
           <TabsContent value="integracoes" className="mt-4">
-            <Tabs defaultValue="bling">
+            <Tabs defaultValue="mercadopago">
               <TabsList>
-                <TabsTrigger value="bling">Bling</TabsTrigger>
                 <TabsTrigger value="mercadopago">Mercado Pago</TabsTrigger>
                 <TabsTrigger value="frenet">Frenet</TabsTrigger>
                 <TabsTrigger value="email">Email</TabsTrigger>
               </TabsList>
-
-              <TabsContent value="bling" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm text-slate-500">Bling (emissao de NF-e)</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-xs text-muted-foreground">
-                      So emite nota fiscal a partir do pedido pago - nao sincroniza estoque nem
-                      financeiro com o Bling.
-                    </p>
-
-                    {mensagemBling === "conectado" && (
-                      <p className="text-sm text-emerald-500">Bling conectado com sucesso!</p>
-                    )}
-                    {mensagemBling === "erro_state" && (
-                      <p className="text-sm text-red-500">
-                        Nao foi possivel confirmar a conexao (state invalido). Tente novamente.
-                      </p>
-                    )}
-                    {mensagemBling === "erro_token" && (
-                      <p className="text-sm text-red-500">
-                        O Bling recusou a conexao. Confira as credenciais (BLING_CLIENT_ID/SECRET) e
-                        tente novamente.
-                      </p>
-                    )}
-                    {mensagemBling === "erro_nao_configurado" && (
-                      <p className="text-sm text-red-500">
-                        Integracao com o Bling ainda nao configurada neste ambiente
-                        (BLING_CLIENT_ID/BLING_CLIENT_SECRET faltando nas variaveis de ambiente).
-                      </p>
-                    )}
-
-                    {/* Pendencias fiscais: mostra o ultimo erro de emissao/cancelamento
-                        (ex: certificado digital nao configurado no Bling) direto aqui,
-                        sem o contador precisar entrar no site do Bling so pra descobrir
-                        que uma nota falhou. Some sozinho na proxima emissao/cancelamento
-                        bem-sucedido. */}
-                    {blingStatus?.ultimoErro && (
-                      <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-                        <p className="text-sm font-medium text-amber-600">Pendencia fiscal</p>
-                        <p className="mt-1 text-xs text-amber-700">{blingStatus.ultimoErro}</p>
-                        {blingStatus.ultimoErroEm && (
-                          <p className="mt-1 text-xs text-amber-600/70">
-                            {new Date(blingStatus.ultimoErroEm).toLocaleString("pt-BR")}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {blingStatus === null ? (
-                      <p className="text-sm text-slate-500">
-                        Apenas administradores podem conectar o Bling.
-                      </p>
-                    ) : blingStatus.conectado ? (
-                      <div className="flex items-center justify-between">
-                        <span className="rounded-full bg-emerald-600/20 px-2 py-1 text-xs text-emerald-400">
-                          Conectado
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          nativeButton={false}
-                          render={<a href="/api/admin/bling/conectar" />}
-                        >
-                          Reconectar
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button size="sm" nativeButton={false} render={<a href="/api/admin/bling/conectar" />}>
-                        Conectar com o Bling
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
               <TabsContent value="mercadopago" className="mt-4">
                 <Card>

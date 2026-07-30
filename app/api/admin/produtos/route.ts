@@ -20,7 +20,7 @@ export async function GET() {
 
   const produtos = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.sku, p.ncm, p.codigo_barras, p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
+      p.id, p.nome, p.slug, p.sku, p.codigo_barras, p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
       p.ativo, p.criado_em,
       COALESCE(
         json_agg(DISTINCT c.nome) FILTER (WHERE c.id IS NOT NULL),
@@ -52,7 +52,6 @@ export async function POST(request: Request) {
     alturaCm,
     larguraCm,
     comprimentoCm,
-    ncm,
     codigoBarras,
     precoClube,
     categoriaIds,
@@ -68,10 +67,6 @@ export async function POST(request: Request) {
   if (!validarCodigoBarras(String(codigoBarras))) {
     return NextResponse.json({ erro: "Codigo de barras invalido (precisa ser EAN-13/EAN-8 com digito verificador correto)" }, { status: 400 })
   }
-  if (!ncm || !String(ncm).trim()) {
-    return NextResponse.json({ erro: "NCM e obrigatorio" }, { status: 400 })
-  }
-
   const slug = gerarSlug(nome)
 
   if (sku) {
@@ -83,8 +78,8 @@ export async function POST(request: Request) {
 
   const [produto] = await query(
     `INSERT INTO TAB_PRODUTO
-       (nome, slug, descricao, preco, preco_promocional, preco_clube, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+       (nome, slug, descricao, preco, preco_promocional, preco_clube, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, codigo_barras)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, criado_em`,
     [
       nome.trim(),
@@ -100,7 +95,6 @@ export async function POST(request: Request) {
       alturaCm || null,
       larguraCm || null,
       comprimentoCm || null,
-      ncm || null,
       codigoBarras || null,
     ]
   )

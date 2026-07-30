@@ -897,7 +897,7 @@ export function VendaBalcaoConteudo({
             </div>
             <p className="rounded-md bg-amber-500/10 p-2 text-xs text-amber-600">
               Esse e um cadastro rapido, so com o essencial pra vender agora. Depois va em Produtos e
-              complete o cadastro (NCM, categoria, fotos, dimensoes) antes de emitir nota fiscal desse item.
+              complete o cadastro (categoria, fotos, dimensoes).
             </p>
             {erroCadastroRapido && <p className="text-sm text-red-500">{erroCadastroRapido}</p>}
           </div>

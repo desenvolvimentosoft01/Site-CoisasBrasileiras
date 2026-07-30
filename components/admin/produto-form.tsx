@@ -12,7 +12,6 @@ import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import {
   mascaraMoeda,
   valorMoedaParaNumero,
-  mascaraNCM,
   somenteDigitos,
   mascaraDecimal,
   decimalParaNumero,
@@ -29,12 +28,10 @@ type ProdutoExistente = {
   preco: string
   preco_promocional: string | null
   preco_clube: string | null
-  custo: string
   estoque: number
   estoque_minimo: number
   ativo: boolean
   sku: string | null
-  ncm: string | null
   codigo_barras: string | null
   peso_kg: string | null
   altura_cm: string | null
@@ -70,7 +67,6 @@ export function ProdutoForm({
   const [estoqueMinimo, setEstoqueMinimo] = useState(String(produto?.estoque_minimo ?? 0))
   const [ativo, setAtivo] = useState(produto?.ativo ?? true)
   const [sku, setSku] = useState(produto?.sku ?? "")
-  const [ncm, setNcm] = useState(produto?.ncm ?? "")
   const [codigoBarras, setCodigoBarras] = useState(produto?.codigo_barras ?? "")
   const [pesoKg, setPesoKg] = useState((produto?.peso_kg ?? "").replace(".", ","))
   const [alturaCm, setAlturaCm] = useState((produto?.altura_cm ?? "").replace(".", ","))
@@ -143,11 +139,6 @@ export function ProdutoForm({
       setErro("Codigo de barras invalido - precisa ter 13 digitos (EAN-13) com digito verificador correto")
       return
     }
-    if (!ncm.trim()) {
-      setErro("NCM e obrigatorio")
-      return
-    }
-
     setSalvando(true)
 
     const corpo = {
@@ -160,7 +151,6 @@ export function ProdutoForm({
       estoqueMinimo: Number(estoqueMinimo) || 0,
       ativo,
       sku: sku || null,
-      ncm: ncm || null,
       codigoBarras: codigoBarras || null,
       pesoKg: pesoKg ? decimalParaNumero(pesoKg) : null,
       alturaCm: alturaCm ? decimalParaNumero(alturaCm) : null,
@@ -219,7 +209,6 @@ export function ProdutoForm({
     setEstoqueMinimo(String(produto?.estoque_minimo ?? 0))
     setAtivo(produto?.ativo ?? true)
     setSku(produto?.sku ?? "")
-    setNcm(produto?.ncm ?? "")
     setCodigoBarras(produto?.codigo_barras ?? "")
     setPesoKg((produto?.peso_kg ?? "").replace(".", ","))
     setAlturaCm((produto?.altura_cm ?? "").replace(".", ","))
@@ -300,19 +289,6 @@ export function ProdutoForm({
                   <p className="text-xs text-emerald-500">Codigo valido</p>
                 ) : null}
               </div>
-              <div className="space-y-2">
-                <Label>
-                  NCM (fiscal) *
-                  <CampoDica>Enviado na nota fiscal quando emitida pelo Bling.</CampoDica>
-                </Label>
-                <Input
-                  value={mascaraNCM(ncm)}
-                  onChange={(e) => setNcm(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  placeholder="0000.00.00"
-                  inputMode="numeric"
-                  className="max-w-36"
-                />
-              </div>
             </div>
 
             <div className="space-y-2">
@@ -380,32 +356,6 @@ export function ProdutoForm({
                 />
               </div>
             </div>
-
-            {produto && Number(produto.custo) > 0 && (
-              <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
-                <span className="text-muted-foreground">
-                  Custo medio atual:{" "}
-                  <span className="font-medium text-foreground">
-                    {Number(produto.custo).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </span>
-                </span>
-                {valorMoedaParaNumero(preco) > 0 && (
-                  <span className="text-muted-foreground">
-                    Margem:{" "}
-                    <span className="font-medium text-foreground">
-                      {(
-                        ((valorMoedaParaNumero(preco) - Number(produto.custo)) / valorMoedaParaNumero(preco)) *
-                        100
-                      ).toFixed(1)}
-                      %
-                    </span>
-                  </span>
-                )}
-                <span className="text-xs text-muted-foreground">
-                  (atualizado automaticamente ao receber uma compra em Compras &gt; Fornecedores)
-                </span>
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label className="text-muted-foreground">

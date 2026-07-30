@@ -38,14 +38,6 @@ export function mascaraCEP(texto: string): string {
   return d.replace(/(\d{5})(\d)/, "$1-$2")
 }
 
-// NCM tem 8 digitos, exibidos no padrao da Receita: 0000.00.00
-export function mascaraNCM(texto: string): string {
-  const d = texto.replace(/\D/g, "").slice(0, 8)
-  if (d.length <= 4) return d
-  if (d.length <= 6) return d.replace(/(\d{4})(\d+)/, "$1.$2")
-  return d.replace(/(\d{4})(\d{2})(\d+)/, "$1.$2.$3")
-}
-
 // Campos que so aceitam numero inteiro (estoque, quantidade) - descarta
 // qualquer letra/simbolo digitado ou colado, em vez de deixar o campo aceitar
 // e so quebrar na hora de salvar.

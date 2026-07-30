@@ -4,6 +4,24 @@ Documento de acompanhamento da expansão do sistema em direção a um ERP comple
 
 Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a memória `projeto_coisas_brasileiras_erp.md`. Este documento é o "o quê" e "como está", não o "porquê".
 
+## 2026-07-29 — FRONTEIRA DEFINITIVA: ERP/fiscal saiu deste site, foi para o InMenteGestao
+
+**Este documento passa a ser histórico a partir daqui.** Tudo que as fases abaixo descrevem sobre Bling/NF-e, Compras/Fornecedores e Financeiro/DRE **foi removido deste projeto** e reconstruído do zero, de forma independente, no projeto separado **InMenteGestao** (`C:\InMenteGestao\in-mente-gestao-sistema`). Este site (`Site-CoisasBrasileiras`) volta a ser só **loja + painel admin do site**: produtos, categorias, pedidos, estoque, clientes, cupons, frete, conteúdo do site (banners, sobre nós, contato, clube de assinatura).
+
+O que foi removido do código (histórico das Fases 1, 2, 3, 4, 4.1, 4.2 e 9 abaixo):
+- `app/api/admin/bling/*`, `app/api/admin/pedidos/[id]/emitir-nfe`, `app/api/admin/pedidos/[id]/cancelar-nfe`, `app/api/cron/notas-bling-pendentes`, `lib/bling.ts`, `lib/nfe-xml.ts` — Bling/NF-e
+- `app/api/admin/compras/*`, `app/api/admin/fornecedores/*`, `lib/compras.ts`, `app/admin/compras/`, `app/admin/fornecedores/`, `components/admin/compras-conteudo.tsx`, `components/admin/fornecedores-conteudo.tsx` — Compras/Fornecedores
+- `app/api/admin/financeiro/*`, `app/admin/financeiro/`, `app/admin/relatorios/lucro/`, `lib/relatorio-lucro.ts`, `components/admin/contas-financeiro-conteudo.tsx`, `components/admin/relatorio-lucro-conteudo.tsx` — Financeiro/DRE
+- Campo `TAB_PRODUTO.ncm` (só existia pra emissão de NF-e no Bling) — removido do formulário/tipo/API de produto
+- Campos de configuração usados só pelo DRE (`taxa_mercadopago_percentual/fixo`, `aliquota_imposto_percentual`, `regime_tributario`) — removidos de Configurações (não eram usados em checkout nem em nenhum outro cálculo do site, só no relatório de lucro que saiu)
+- Migration de limpeza: `migrations/036_remove_erp_fiscal.sql` (destrutiva, **não executada** — só roda a mão depois de confirmar que histórico relevante foi preservado)
+
+**Decisão sobre `TAB_PRODUTO.custo`**: a COLUNA continua no banco (pode ter valor histórico, não vale dropar dado por causa de uma reorganização de escopo). Mas o **campo/exibição no formulário de produto** (`produto-form.tsx`) foi removido — ele mostrava "custo médio atual" e margem calculada, explicitamente descrito na tela como "atualizado automaticamente ao receber uma compra em Compras", fonte que não existe mais neste site. Manter a exibição sem ninguém atualizando o valor criaria um número cada vez mais desatualizado passado como se fosse atual. `TAB_PRODUTO.estoque` continua normalmente (é dado de operação do site, gerenciado por Estoque/Venda Balcão/pedidos, nada a ver com o ERP que saiu).
+
+Frete (Frenet), Mercado Pago/checkout e `TAB_INTEGRACAO_SEGREDO` **não são fiscais** e continuam no site normalmente, sem mudança.
+
+As seções abaixo (Fases 1-4.2, 9, e menções a Bling/Compras/Financeiro/DRE espalhadas no restante do documento) **descrevem funcionalidade que não existe mais neste projeto** — mantidas só como registro histórico de decisões já tomadas, não como estado atual.
+
 ## Pendências pra retomar (sessão de 2026-07-28 parou aqui)
 
 - [x] **Cadastro de Produtos**: formulário compacto + rótulos encurtados. Validado visualmente com o cliente em 2026-07-28.
