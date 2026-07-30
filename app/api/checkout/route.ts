@@ -56,12 +56,19 @@ export async function POST(request: Request) {
         [cliente.id, endereco.cep, endereco.numero, endereco.complemento || null]
       )
 
+      // ON CONFLICT DO NOTHING cobre o caso de duas requisicoes de checkout
+      // concorrentes (duplo clique, aba duplicada) passarem pelo SELECT
+      // acima ao mesmo tempo sem ver o endereco uma da outra - o indice
+      // unico idx_endereco_dedup garante que so uma insercao vinga; se a
+      // insercao nao retornar nada, o endereco ja existe e e buscado de novo.
       const enderecoSalvo =
         enderecoExistente ??
         (
           await q(
             `INSERT INTO TAB_ENDERECO (cliente_id, cep, logradouro, numero, complemento, bairro, cidade, estado)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             ON CONFLICT (cliente_id, cep, numero, COALESCE(complemento, ''))
+             DO NOTHING
              RETURNING id`,
             [
               cliente.id,
@@ -73,6 +80,15 @@ export async function POST(request: Request) {
               endereco.cidade,
               endereco.estado,
             ]
+          )
+        )[0] ??
+        (
+          await q(
+            `SELECT id FROM TAB_ENDERECO
+             WHERE cliente_id = $1 AND cep = $2 AND numero = $3
+               AND COALESCE(complemento, '') = COALESCE($4, '')
+             LIMIT 1`,
+            [cliente.id, endereco.cep, endereco.numero, endereco.complemento || null]
           )
         )[0]
 
@@ -193,18 +209,36 @@ export async function POST(request: Request) {
 
       const total = subtotal + valorFrete - valorDesconto
 
-      const [pedidoCriado] = await q(
-        `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status, gateway_pagamento, canal)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento', $8, 'site')
-         RETURNING id`,
-        [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total, "mercadopago"]
+      // Se o cliente reenviar o mesmo checkout (duplo clique, reload apos
+      // falha no gateway, aba duplicada) enquanto o pedido anterior ainda
+      // esta aguardando pagamento com o mesmo endereco/total, reaproveita
+      // esse pedido em vez de criar outro identico - so gera um link novo
+      // de pagamento pra ele la embaixo.
+      const [pedidoPendenteExistente] = await q(
+        `SELECT id FROM TAB_PEDIDO
+         WHERE cliente_id = $1 AND endereco_id = $2 AND status = 'aguardando_pagamento'
+           AND total = $3 AND criado_em > NOW() - INTERVAL '30 minutes'
+         ORDER BY criado_em DESC
+         LIMIT 1`,
+        [cliente.id, enderecoSalvo.id, total]
       )
 
-      for (const item of itensParaInserir) {
-        await q(
-          "INSERT INTO TAB_PEDIDO_ITEM (pedido_id, produto_id, quantidade, preco_unitario) VALUES ($1, $2, $3, $4)",
-          [pedidoCriado.id, item.produtoId, item.quantidade, item.precoUnitario]
+      let pedidoCriado = pedidoPendenteExistente
+
+      if (!pedidoCriado) {
+        ;[pedidoCriado] = await q(
+          `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status, gateway_pagamento, canal)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento', $8, 'site')
+           RETURNING id`,
+          [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total, "mercadopago"]
         )
+
+        for (const item of itensParaInserir) {
+          await q(
+            "INSERT INTO TAB_PEDIDO_ITEM (pedido_id, produto_id, quantidade, preco_unitario) VALUES ($1, $2, $3, $4)",
+            [pedidoCriado.id, item.produtoId, item.quantidade, item.precoUnitario]
+          )
+        }
       }
 
       return { ...pedidoCriado, itensParaInserir, subtotal, valorFrete, valorDesconto }
