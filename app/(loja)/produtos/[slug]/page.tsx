@@ -9,7 +9,8 @@ import { AvaliacaoProduto } from "@/components/loja/avaliacao-produto"
 import { NotificarEstoque } from "@/components/loja/notificar-estoque"
 import { BotaoFavoritar } from "@/components/loja/botao-favoritar"
 import { lerTokenSessaoCliente } from "@/lib/auth"
-import { clienteTemClubeAtivo, calcularPrecoClube } from "@/lib/clube"
+import { clienteTemClubeAtivo } from "@/lib/clube"
+import { calcularPrecoClube } from "@/lib/preco-clube"
 
 function formatarPreco(valor: string | number) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })

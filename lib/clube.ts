@@ -18,25 +18,6 @@ const STATUS_MP_PARA_ASSINATURA: Record<string, string> = {
   pending: "pendente",
 }
 
-// Preco do Clube por produto pode ser cadastrado em R$ (fixo) ou em % de
-// desconto sobre o preco normal - calcula sempre os dois lados (valor final
-// em R$ e o percentual equivalente) pra exibir ambos em qualquer lugar do
-// site que mostre preco de produto (card de listagem, pagina individual etc),
-// nao importa qual tipo o lojista escolheu no cadastro.
-export function calcularPrecoClube(
-  precoNormal: string | number,
-  precoClube: string | number,
-  tipo: "fixo" | "percentual"
-): { valorFinal: number; percentual: number } {
-  const normal = Number(precoNormal)
-  const clube = Number(precoClube)
-
-  const valorFinal = tipo === "percentual" ? Math.round(normal * (1 - clube / 100) * 100) / 100 : clube
-  const percentual = tipo === "percentual" ? clube : Math.round((1 - clube / normal) * 100)
-
-  return { valorFinal, percentual }
-}
-
 export async function valorMensalidadeClube(): Promise<number> {
   const config = await getConfiguracoes(["clube_valor_mensalidade"])
   return Number(config.clube_valor_mensalidade) || 0

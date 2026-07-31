@@ -6,7 +6,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { ShoppingBag, Heart, Check, Sparkles } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
-import { calcularPrecoClube } from "@/lib/clube"
+import { calcularPrecoClube } from "@/lib/preco-clube"
 
 type Produto = {
   id: string
