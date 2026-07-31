@@ -26,6 +26,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       p.id, p.status, p.total, p.forma_pagamento, p.nota_fiscal_url, p.criado_em, p.origem, p.canal,
       p.codigo_rastreio, p.transportadora,
       p.bling_nota_id, p.bling_link_danfe, p.bling_link_pdf, p.bling_nota_cancelada_em, p.bling_pedido_id,
+      p.bling_nota_email_enviada_em, p.nota_fiscal_whatsapp_enviada_em,
       COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome,
       c.email AS cliente_email,
       COALESCE(c.telefone, p.cliente_telefone_avulso) AS cliente_telefone,

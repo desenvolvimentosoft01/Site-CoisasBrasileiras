@@ -1,4 +1,4 @@
-import { transacao } from "@/lib/db"
+import { query, transacao } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { emitirNotaFiscalBling } from "@/lib/bling"
 import { enviarEmail, templateNotaFiscalEmitida } from "@/lib/email"
@@ -82,21 +82,34 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     })
 
     // Fora da transacao, de proposito - falha no envio de email nunca deve
-    // desfazer a emissao, que ja aconteceu de verdade no Bling.
+    // desfazer a emissao, que ja aconteceu de verdade no Bling. So grava
+    // bling_nota_email_enviada_em quando o envio realmente da certo, pra
+    // esse status aparecer certo na tela do pedido (nao e "atire e esqueca").
+    let emailEnviadoEm: string | null = null
     if (pedidoAtualizado.clienteEmail) {
-      enviarEmail({
-        to: pedidoAtualizado.clienteEmail,
-        subject: "Nota fiscal emitida",
-        html: templateNotaFiscalEmitida({
-          nomeCliente: pedidoAtualizado.clienteNome,
-          pedidoId: id,
-          linkDanfe: pedidoAtualizado.atualizado.bling_link_danfe,
-          linkPdf: pedidoAtualizado.atualizado.bling_link_pdf,
-        }),
-      })
+      try {
+        await enviarEmail({
+          to: pedidoAtualizado.clienteEmail,
+          subject: "Nota fiscal emitida",
+          html: templateNotaFiscalEmitida({
+            nomeCliente: pedidoAtualizado.clienteNome,
+            pedidoId: id,
+            linkDanfe: pedidoAtualizado.atualizado.bling_link_danfe,
+            linkPdf: pedidoAtualizado.atualizado.bling_link_pdf,
+          }),
+        })
+        const [linha] = await query(
+          "UPDATE TAB_PEDIDO SET bling_nota_email_enviada_em = NOW() WHERE id = $1 RETURNING bling_nota_email_enviada_em",
+          [id]
+        )
+        emailEnviadoEm = linha.bling_nota_email_enviada_em
+      } catch {
+        // Emissao ja aconteceu de verdade - so o e-mail falhou. Fica sem
+        // bling_nota_email_enviada_em, o admin ve na tela que nao foi enviado.
+      }
     }
 
-    return NextResponse.json(pedidoAtualizado.atualizado)
+    return NextResponse.json({ ...pedidoAtualizado.atualizado, bling_nota_email_enviada_em: emailEnviadoEm })
   } catch (erro) {
     if (erro instanceof Error && erro.message === "NOT_FOUND") {
       return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })

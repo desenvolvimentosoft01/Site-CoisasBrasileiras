@@ -23,6 +23,8 @@ type Pedido = {
   bling_link_pdf: string | null
   bling_nota_cancelada_em: string | null
   bling_pedido_id: string | null
+  bling_nota_email_enviada_em: string | null
+  nota_fiscal_whatsapp_enviada_em: string | null
   origem: "site" | "balcao"
   canal: CanalPedido | null
   criado_em: string
@@ -188,6 +190,12 @@ export default function DetalhePedidoPage() {
     carregar()
   }
 
+  async function marcarWhatsappEnviado() {
+    if (!pedido) return
+    await fetch(`/api/admin/pedidos/${pedido.id}/marcar-whatsapp-nfe`, { method: "POST" })
+    carregar()
+  }
+
   async function cancelarNfe() {
     if (!pedido) return
     setErroCancelamento("")
@@ -322,6 +330,17 @@ export default function DetalhePedidoPage() {
           {pedido.bling_nota_id && !pedido.bling_nota_cancelada_em ? (
             <div className="space-y-3 text-sm">
               <p className="text-slate-500">NF-e emitida (Bling #{pedido.bling_nota_id}).</p>
+              {pedido.cliente_email && (
+                <p className="text-xs text-slate-500">
+                  {pedido.bling_nota_email_enviada_em ? (
+                    <span className="text-emerald-600">
+                      Enviada por e-mail em {new Date(pedido.bling_nota_email_enviada_em).toLocaleString("pt-BR")}
+                    </span>
+                  ) : (
+                    <span className="text-amber-600">Ainda nao enviada por e-mail (falha no envio)</span>
+                  )}
+                </p>
+              )}
               <div className="flex gap-3">
                 {pedido.bling_link_danfe && (
                   <a
@@ -500,21 +519,30 @@ export default function DetalhePedidoPage() {
               {pedido.cliente_telefone && <p className="text-slate-500">{pedido.cliente_telefone}</p>}
             </div>
             {pedido.cliente_telefone && (
-              <Button
-                size="sm"
-                variant="outline"
-                nativeButton={false}
-                render={
-                  <a
-                    href={`https://wa.me/55${pedido.cliente_telefone.replace(/\D/g, "")}?text=${encodeURIComponent(montarMensagemWhatsapp(pedido))}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  />
-                }
-              >
-                <MessageCircle size={14} className="mr-2 text-[#25D366]" />
-                Enviar status por WhatsApp
-              </Button>
+              <div className="space-y-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  nativeButton={false}
+                  render={
+                    <a
+                      href={`https://wa.me/55${pedido.cliente_telefone.replace(/\D/g, "")}?text=${encodeURIComponent(montarMensagemWhatsapp(pedido))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={marcarWhatsappEnviado}
+                    />
+                  }
+                >
+                  <MessageCircle size={14} className="mr-2 text-[#25D366]" />
+                  Enviar status por WhatsApp
+                </Button>
+                {pedido.nota_fiscal_whatsapp_enviada_em && (
+                  <p className="text-xs text-emerald-600">
+                    Marcado como enviado em{" "}
+                    {new Date(pedido.nota_fiscal_whatsapp_enviada_em).toLocaleString("pt-BR")}
+                  </p>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
