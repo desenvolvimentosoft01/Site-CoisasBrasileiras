@@ -4,13 +4,13 @@ import { getSegredo, segredoConfigurado } from "@/lib/segredos"
 // cotacao de frete real por CEP, com varias opcoes (transportadora/servico)
 // pro cliente escolher no checkout - nao emite etiqueta, so cotacao.
 //
-// IMPORTANTE: o formato do payload/resposta abaixo segue a documentacao
-// publica conhecida da API do Frenet (POST /shipping/quote, header "token"),
-// mas nao foi validado contra uma conta real (a doc oficial e renderizada em
-// JS e nao pode ser lida automaticamente). Se o formato do payload estiver
-// errado, a chamada simplesmente falha e cai no fallback da tabela de faixas
-// (nunca trava o checkout) - mas isso PRECISA ser testado contra uma conta
-// Frenet real antes de operar com pedido de verdade.
+// O formato do payload/resposta (POST /shipping/quote, header "token",
+// campos SellerCEP/RecipientCEP/ShipmentInvoiceValue/ShippingItemArray e a
+// resposta ShippingSevicesArray, com esse nome mesmo) segue a API publica da
+// Frenet. Ainda assim, so testar contra uma conta real confirma que o token
+// do cliente tem o servico de cotacao habilitado e que as transportadoras
+// atendem os CEPs de origem/destino usados no teste. Se a chamada falhar por
+// qualquer motivo, cai no fallback da tabela de faixas (nunca trava o checkout).
 //
 // O token e configuravel em Configuracoes > Integracoes (TAB_INTEGRACAO_SEGREDO,
 // chave "frenet_token") - cai pra variavel de ambiente FRENET_TOKEN se nao
