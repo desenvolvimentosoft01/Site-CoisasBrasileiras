@@ -4,6 +4,7 @@ import { query } from "@/lib/db"
 import { ProdutoCard } from "@/components/loja/produto-card"
 import { BuscaCatalogo } from "@/components/loja/busca-catalogo"
 import { lerTokenSessaoCliente } from "@/lib/auth"
+import { clienteTemClubeAtivo } from "@/lib/clube"
 
 export default async function CatalogoPage({
   searchParams,
@@ -33,7 +34,7 @@ export default async function CatalogoPage({
   const produtos = await query(
     `
     SELECT
-      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.estoque,
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.preco_clube, p.preco_clube_tipo, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa
     FROM TAB_PRODUTO p
     ${categoria ? "JOIN TAB_PRODUTO_CATEGORIA pc ON pc.produto_id = p.id JOIN TAB_CATEGORIA c ON c.id = pc.categoria_id" : ""}
@@ -46,6 +47,7 @@ export default async function CatalogoPage({
 
   const cookieStore = await cookies()
   const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
+  const clubeAtivo = sessaoCliente ? await clienteTemClubeAtivo(sessaoCliente.id) : false
   const favoritosIds = sessaoCliente
     ? new Set(
         (
@@ -76,6 +78,7 @@ export default async function CatalogoPage({
               produto={produto}
               logado={Boolean(sessaoCliente)}
               favoritadoInicial={favoritosIds.has(produto.id)}
+              clubeAtivo={clubeAtivo}
             />
           ))}
         </div>

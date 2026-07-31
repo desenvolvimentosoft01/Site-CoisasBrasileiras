@@ -4,8 +4,9 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ShoppingBag, Heart, Check } from "lucide-react"
+import { ShoppingBag, Heart, Check, Sparkles } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
+import { calcularPrecoClube } from "@/lib/clube"
 
 type Produto = {
   id: string
@@ -13,11 +14,13 @@ type Produto = {
   slug: string
   preco: string
   preco_promocional: string | null
+  preco_clube?: string | null
+  preco_clube_tipo?: "fixo" | "percentual"
   imagem_capa: string | null
   estoque?: number
 }
 
-function formatarPreco(valor: string) {
+function formatarPreco(valor: string | number) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
@@ -25,10 +28,12 @@ export function ProdutoCard({
   produto,
   favoritadoInicial = false,
   logado = false,
+  clubeAtivo = false,
 }: {
   produto: Produto
   favoritadoInicial?: boolean
   logado?: boolean
+  clubeAtivo?: boolean
 }) {
   const router = useRouter()
   const adicionar = useCarrinho((s) => s.adicionar)
@@ -41,6 +46,12 @@ export function ProdutoCard({
 
   const semEstoque = (produto.estoque ?? 1) <= 0
   const atingiuLimite = produto.estoque !== undefined && quantidadeNoCarrinho >= produto.estoque
+
+  const clube =
+    produto.preco_clube && produto.preco_clube_tipo
+      ? calcularPrecoClube(produto.preco, produto.preco_clube, produto.preco_clube_tipo)
+      : null
+  const precoClubeDisponivel = clubeAtivo && clube
 
   async function alternarFavorito(evento: React.MouseEvent) {
     evento.preventDefault()
@@ -71,12 +82,16 @@ export function ProdutoCard({
     evento.stopPropagation()
     if (semEstoque || atingiuLimite) return
 
+    const precoParaCarrinho = precoClubeDisponivel
+      ? clube!.valorFinal
+      : Number(produto.preco_promocional ?? produto.preco)
+
     adicionar(
       {
         produtoId: produto.id,
         nome: produto.nome,
         slug: produto.slug,
-        preco: Number(produto.preco_promocional ?? produto.preco),
+        preco: precoParaCarrinho,
         imagemCapa: produto.imagem_capa,
         estoque: produto.estoque,
       },
@@ -119,7 +134,25 @@ export function ProdutoCard({
             {produto.nome}
           </h3>
           <div className="mt-auto pt-2">
-            {produto.preco_promocional ? (
+            {precoClubeDisponivel ? (
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600">
+                  <Sparkles size={11} />
+                  Preço Clube
+                </div>
+                <div className="flex flex-wrap items-baseline gap-1.5">
+                  <span className="text-xs text-neutral-400 line-through">
+                    {formatarPreco(produto.preco_promocional ?? produto.preco)}
+                  </span>
+                  <span className="text-lg font-bold text-emerald-700">
+                    {formatarPreco(clube!.valorFinal)}
+                  </span>
+                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                    {clube!.percentual}% OFF
+                  </span>
+                </div>
+              </div>
+            ) : produto.preco_promocional ? (
               <div className="flex items-baseline gap-2">
                 <span className="text-sm text-neutral-400 line-through">
                   {formatarPreco(produto.preco)}
@@ -132,6 +165,12 @@ export function ProdutoCard({
               <span className="font-semibold text-primary">
                 {formatarPreco(produto.preco)}
               </span>
+            )}
+            {!clubeAtivo && clube && (
+              <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-600">
+                <Sparkles size={10} />
+                Clube: {formatarPreco(clube.valorFinal)} ({clube.percentual}% OFF)
+              </p>
             )}
           </div>
           {produto.estoque !== undefined && (

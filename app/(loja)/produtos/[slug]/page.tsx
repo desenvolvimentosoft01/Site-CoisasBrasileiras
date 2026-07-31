@@ -9,24 +9,10 @@ import { AvaliacaoProduto } from "@/components/loja/avaliacao-produto"
 import { NotificarEstoque } from "@/components/loja/notificar-estoque"
 import { BotaoFavoritar } from "@/components/loja/botao-favoritar"
 import { lerTokenSessaoCliente } from "@/lib/auth"
-import { clienteTemClubeAtivo } from "@/lib/clube"
+import { clienteTemClubeAtivo, calcularPrecoClube } from "@/lib/clube"
 
 function formatarPreco(valor: string | number) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
-
-// Preco do Clube pode ser cadastrado em R$ (fixo) ou em % de desconto sobre
-// o preco normal - aqui sempre calculamos os dois lados (valor final em R$ e
-// o percentual equivalente) pra mostrar ambos no site, seja qual for o tipo
-// escolhido pelo lojista.
-function calcularClube(precoNormal: string, precoClube: string, tipo: "fixo" | "percentual") {
-  const normal = Number(precoNormal)
-  const clube = Number(precoClube)
-
-  const valorFinal = tipo === "percentual" ? Math.round(normal * (1 - clube / 100) * 100) / 100 : clube
-  const percentual = tipo === "percentual" ? clube : Math.round((1 - clube / normal) * 100)
-
-  return { valorFinal, percentual }
 }
 
 export default async function ProdutoPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -48,7 +34,7 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   const clubeAtivo = sessaoCliente ? await clienteTemClubeAtivo(sessaoCliente.id) : false
   const precoClubeDisponivel = clubeAtivo && produto.preco_clube
   const clube = produto.preco_clube
-    ? calcularClube(produto.preco, produto.preco_clube, produto.preco_clube_tipo)
+    ? calcularPrecoClube(produto.preco, produto.preco_clube, produto.preco_clube_tipo)
     : null
 
   const [resumoAvaliacoes] = await query(
@@ -117,16 +103,22 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
 
             <div className="mt-3">
               {precoClubeDisponivel ? (
-                <div className="flex items-baseline gap-3">
-                  <span className="text-lg text-neutral-400 line-through">
-                    {formatarPreco(produto.preco_promocional ?? produto.preco)}
-                  </span>
-                  <span className="text-3xl font-semibold text-emerald-700">
-                    {formatarPreco(clube!.valorFinal)}
-                  </span>
-                  <span className="text-sm font-medium text-emerald-700">
-                    {clube!.percentual}% off
-                  </span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-600">
+                    <Sparkles size={14} />
+                    Preço Clube
+                  </div>
+                  <div className="flex flex-wrap items-baseline gap-3">
+                    <span className="text-lg text-neutral-400 line-through">
+                      {formatarPreco(produto.preco_promocional ?? produto.preco)}
+                    </span>
+                    <span className="text-4xl font-bold text-emerald-700">
+                      {formatarPreco(clube!.valorFinal)}
+                    </span>
+                    <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                      {clube!.percentual}% OFF
+                    </span>
+                  </div>
                 </div>
               ) : produto.preco_promocional ? (
                 <div className="flex items-baseline gap-3">
@@ -142,17 +134,15 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
                   {formatarPreco(produto.preco)}
                 </span>
               )}
-              {precoClubeDisponivel && (
-                <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-amber-600">
-                  <Sparkles size={14} />
-                  Oferta exclusiva para membros do Clube
-                </p>
-              )}
               {!clubeAtivo && clube && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Membros do Clube pagam {formatarPreco(clube.valorFinal)} ({clube.percentual}% off) neste
-                  produto.{" "}
-                  <a href="/minha-conta" className="underline hover:text-emerald-700">
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Sparkles size={13} className="text-amber-500" />
+                  Membros do Clube pagam{" "}
+                  <span className="font-semibold text-amber-700">
+                    {formatarPreco(clube.valorFinal)} ({clube.percentual}% OFF)
+                  </span>{" "}
+                  neste produto.{" "}
+                  <a href="/minha-conta" className="font-medium underline hover:text-emerald-700">
                     Saiba mais
                   </a>
                 </p>

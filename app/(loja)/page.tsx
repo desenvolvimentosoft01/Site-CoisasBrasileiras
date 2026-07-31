@@ -5,10 +5,12 @@ import { CategoriaGrid } from "@/components/loja/categoria-grid"
 import { ProdutoCard } from "@/components/loja/produto-card"
 import { FeedbacksSecao } from "@/components/loja/feedbacks-secao"
 import { lerTokenSessaoCliente } from "@/lib/auth"
+import { clienteTemClubeAtivo } from "@/lib/clube"
 
 export default async function HomePage() {
   const cookieStore = await cookies()
   const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
+  const clubeAtivo = sessaoCliente ? await clienteTemClubeAtivo(sessaoCliente.id) : false
   const favoritosIds = sessaoCliente
     ? new Set(
         (
@@ -26,7 +28,7 @@ export default async function HomePage() {
 
   const destaques = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.estoque,
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.preco_clube, p.preco_clube_tipo, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa
     FROM TAB_PRODUTO p
     WHERE p.ativo = true
@@ -44,7 +46,7 @@ export default async function HomePage() {
 
   const maisVendidos = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.estoque,
+      p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.preco_clube, p.preco_clube_tipo, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa,
       SUM(pi.quantidade) AS total_vendido
     FROM TAB_PEDIDO_ITEM pi
@@ -74,6 +76,7 @@ export default async function HomePage() {
                 produto={produto}
                 logado={Boolean(sessaoCliente)}
                 favoritadoInicial={favoritosIds.has(produto.id)}
+                clubeAtivo={clubeAtivo}
               />
             ))}
           </div>
@@ -97,6 +100,7 @@ export default async function HomePage() {
                 produto={produto}
                 logado={Boolean(sessaoCliente)}
                 favoritadoInicial={favoritosIds.has(produto.id)}
+                clubeAtivo={clubeAtivo}
               />
             ))}
           </div>
