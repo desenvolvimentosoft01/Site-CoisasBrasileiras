@@ -1,5 +1,6 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { validarCodigoBarras } from "@/lib/codigo-barras"
 import { NextResponse } from "next/server"
 
 function gerarSlug(nome: string) {
@@ -28,6 +29,9 @@ export async function POST(request: Request) {
   }
   if (!codigoBarras) {
     return NextResponse.json({ erro: "Codigo de barras e obrigatorio" }, { status: 400 })
+  }
+  if (!validarCodigoBarras(String(codigoBarras))) {
+    return NextResponse.json({ erro: "Codigo de barras invalido (confira o digito verificador)" }, { status: 400 })
   }
 
   const existente = await query("SELECT id FROM TAB_PRODUTO WHERE codigo_barras = $1", [codigoBarras])
