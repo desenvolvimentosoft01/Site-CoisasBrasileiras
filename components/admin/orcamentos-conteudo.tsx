@@ -19,12 +19,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus } from "lucide-react"
+import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus, Eye } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { OrcamentoForm, type OrcamentoExistente } from "@/components/admin/orcamento-form"
 import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Orcamento = {
   id: string
@@ -69,6 +70,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   const [editando, setEditando] = useState<OrcamentoExistente | undefined>(undefined)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
+  const [detalhe, setDetalhe] = useState<Orcamento | null>(null)
 
   const [orcamentoConvertendo, setOrcamentoConvertendo] = useState<Orcamento | null>(null)
   const [formaPagamento, setFormaPagamento] = useState("dinheiro")
@@ -253,6 +255,16 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                             {new Date(orcamento.criado_em).toLocaleDateString("pt-BR")}
                           </td>
                           <td className="p-4 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setDetalhe(orcamento)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
                             {orcamento.status === "aberto" && (
                               <>
                                 <Button
@@ -377,6 +389,25 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe ? `OR.${String(detalhe.numero).padStart(4, "0")}` : ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Titulo", valor: detalhe.titulo },
+                { label: "Cliente", valor: detalhe.cliente_nome },
+                { label: "Status", valor: detalhe.status },
+                { label: "Subtotal", valor: formatarMoeda(detalhe.subtotal) },
+                { label: "Desconto", valor: formatarMoeda(detalhe.desconto) },
+                { label: "Total", valor: formatarMoeda(detalhe.total) },
+                { label: "Data", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

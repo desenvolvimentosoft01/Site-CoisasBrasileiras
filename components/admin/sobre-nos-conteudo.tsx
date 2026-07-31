@@ -2,14 +2,16 @@
 
 import { useRef, useState } from "react"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, List, FilePlus, Save, Eraser, X, Video, Link2, PlayCircle } from "lucide-react"
+import { Trash2, Pencil, Plus, ImagePlus, List, FilePlus, Save, Eraser, X, Video, Link2, PlayCircle, Eye } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type SobreNosMidia = {
   id: string
@@ -31,6 +33,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<SobreNosMidia | null>(null)
   const [selecionada, setSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<SobreNosMidia | null>(null)
 
   const [tipo, setTipo] = useState<SobreNosMidia["tipo"]>("imagem")
   const [url, setUrl] = useState("")
@@ -229,9 +232,21 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
                         <PlayCircle size={32} className="text-slate-400" />
                       )}
                     </div>
-                    <p className="truncate text-sm font-medium">
-                      {midia.legenda || TIPOS.find((t) => t.valor === midia.tipo)?.rotulo}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-medium">
+                        {midia.legenda || TIPOS.find((t) => t.valor === midia.tipo)?.rotulo}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="icon-lg"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDetalhe(midia)
+                        }}
+                      >
+                        <Eye size={16} />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -357,6 +372,20 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.legenda || (detalhe ? TIPOS.find((t) => t.valor === detalhe.tipo)?.rotulo : "") || ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Tipo", valor: TIPOS.find((t) => t.valor === detalhe.tipo)?.rotulo },
+                { label: "Ordem", valor: detalhe.ordem },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

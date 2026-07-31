@@ -14,11 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Usuario = {
   id: string
@@ -37,6 +38,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
   const [aba, setAba] = useState("lista")
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Usuario | null>(null)
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
   const [usuarioLogin, setUsuarioLogin] = useState("")
@@ -255,6 +257,16 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                setDetalhe(usuario)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 abrirEdicao(usuario)
                               }}
                             >
@@ -357,6 +369,27 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.nome ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Usuario", valor: detalhe.usuario },
+                { label: "Email", valor: detalhe.email },
+                { label: "Papel", valor: detalhe.papel },
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+                {
+                  label: "Ultimo acesso",
+                  valor: detalhe.ultimo_login ? new Date(detalhe.ultimo_login).toLocaleString("pt-BR") : "Nunca acessou",
+                },
+                { label: "Criado em", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

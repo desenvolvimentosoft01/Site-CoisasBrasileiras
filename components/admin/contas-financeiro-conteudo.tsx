@@ -15,11 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Plus, List, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, Plus, List, ArrowLeft, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Conta = {
   id: string
@@ -39,6 +40,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Conta | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Conta | null>(null)
 
   const [tipo, setTipo] = useState<"pagar" | "receber">("pagar")
   const [descricao, setDescricao] = useState("")
@@ -294,6 +296,16 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                setDetalhe(conta)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 abrirEdicao(conta)
                               }}
                             >
@@ -401,6 +413,29 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.descricao ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Tipo", valor: detalhe.tipo === "pagar" ? "A pagar" : "A receber" },
+                { label: "Valor", valor: formatarMoeda(detalhe.valor) },
+                { label: "Vencimento", valor: new Date(detalhe.vencimento).toLocaleDateString("pt-BR") },
+                { label: "Categoria", valor: detalhe.categoria },
+                {
+                  label: "Status",
+                  valor: detalhe.pago
+                    ? `Pago${detalhe.pago_em ? " em " + new Date(detalhe.pago_em).toLocaleDateString("pt-BR") : ""}`
+                    : "Em aberto",
+                },
+                { label: "Observacao", valor: detalhe.observacao },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
 import { mascaraCpfCnpj, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Fornecedor = {
   id: string
@@ -57,6 +58,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Fornecedor | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Fornecedor | null>(null)
   const [form, setForm] = useState(VAZIO)
   const [ativo, setAtivo] = useState(true)
   const [erro, setErro] = useState("")
@@ -286,6 +288,16 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                setDetalhe(fornecedor)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 abrirEdicao(fornecedor)
                               }}
                             >
@@ -424,6 +436,31 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.razao_social ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Nome fantasia", valor: detalhe.nome_fantasia },
+                { label: "CNPJ/CPF", valor: detalhe.cnpj_cpf ? mascaraCpfCnpj(detalhe.cnpj_cpf) : null },
+                { label: "Inscricao Estadual", valor: detalhe.inscricao_estadual },
+                { label: "Telefone", valor: detalhe.telefone ? mascaraTelefone(detalhe.telefone) : null },
+                { label: "E-mail", valor: detalhe.email },
+                {
+                  label: "Endereco",
+                  valor: [detalhe.logradouro, detalhe.numero, detalhe.bairro, detalhe.cidade, detalhe.estado]
+                    .filter(Boolean)
+                    .join(", ") || null,
+                },
+                { label: "Observacao", valor: detalhe.observacao },
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

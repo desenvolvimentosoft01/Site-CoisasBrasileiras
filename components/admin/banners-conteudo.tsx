@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, List, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, Plus, ImagePlus, List, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Banner = {
   id: string
@@ -38,6 +39,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Banner | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Banner | null>(null)
 
   const [titulo, setTitulo] = useState("")
   const [subtitulo, setSubtitulo] = useState("")
@@ -263,6 +265,16 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                           size="icon-lg"
                           onClick={(e) => {
                             e.stopPropagation()
+                            setDetalhe(banner)
+                          }}
+                        >
+                          <Eye size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
                             abrirEdicao(banner)
                           }}
                         >
@@ -386,6 +398,22 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.titulo ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Subtitulo", valor: detalhe.subtitulo },
+                { label: "Link", valor: detalhe.link },
+                { label: "Ordem", valor: detalhe.ordem },
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, List, Star, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, Plus, ImagePlus, List, Star, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Feedback = {
   id: string
@@ -44,6 +45,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Feedback | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Feedback | null>(null)
 
   const [nome, setNome] = useState("")
   const [texto, setTexto] = useState("")
@@ -274,6 +276,16 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                           size="icon-lg"
                           onClick={(e) => {
                             e.stopPropagation()
+                            setDetalhe(feedback)
+                          }}
+                        >
+                          <Eye size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
                             abrirEdicao(feedback)
                           }}
                         >
@@ -388,6 +400,22 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.nome ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Depoimento", valor: detalhe.texto },
+                { label: "Nota", valor: `${detalhe.nota} / 5` },
+                { label: "Ordem", valor: detalhe.ordem },
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

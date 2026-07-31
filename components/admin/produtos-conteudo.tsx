@@ -4,12 +4,13 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Plus, Pencil, Trash2, List, AlertTriangle, FilePlus } from "lucide-react"
+import { Plus, Pencil, Trash2, List, AlertTriangle, FilePlus, Eye } from "lucide-react"
 import { toast } from "sonner"
 import { ProdutoForm } from "@/components/admin/produto-form"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Produto = {
   id: string
@@ -59,6 +60,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
   const [editando, setEditando] = useState<ProdutoDetalhado | undefined>(undefined)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Produto | null>(null)
 
   const produtosFiltrados = produtos.filter((p) => {
     if (filtroStatus === "ativos") return p.ativo
@@ -241,6 +243,16 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                setDetalhe(produto)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 abrirEdicao(produto)
                               }}
                             >
@@ -280,6 +292,27 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
           )}
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.nome ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "SKU", valor: detalhe.sku },
+                { label: "NCM", valor: detalhe.ncm },
+                { label: "Codigo de barras", valor: detalhe.codigo_barras },
+                { label: "Categorias", valor: detalhe.categorias.join(", ") },
+                { label: "Preco", valor: formatarPreco(detalhe.preco) },
+                { label: "Preco promocional", valor: detalhe.preco_promocional ? formatarPreco(detalhe.preco_promocional) : null },
+                { label: "Estoque", valor: detalhe.estoque },
+                { label: "Estoque minimo", valor: detalhe.estoque_minimo },
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

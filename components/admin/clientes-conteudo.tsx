@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Pencil, Ban, RotateCcw, Trash2, List, X, FilePlus, Save, Eraser } from "lucide-react"
+import { Pencil, Ban, RotateCcw, Trash2, List, X, FilePlus, Save, Eraser, Eye } from "lucide-react"
 import { toast } from "sonner"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { mascaraTelefone, mascaraCpfCnpj, mascaraCEP } from "@/lib/mascaras"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Cliente = {
   id: string
@@ -57,6 +58,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
   const [clienteEditando, setClienteEditando] = useState<ClienteDetalhado | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
+  const [detalhe, setDetalhe] = useState<Cliente | null>(null)
   const [form, setForm] = useState(FORM_VAZIO)
   const [buscandoCep, setBuscandoCep] = useState(false)
   const [erro, setErro] = useState("")
@@ -415,6 +417,16 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                setDetalhe(cliente)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 abrirEdicao(cliente)
                               }}
                             >
@@ -572,6 +584,24 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
           )}
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.nome ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Origem", valor: detalhe.veio_do_site ? "Site" : "Balcao" },
+                { label: "Email", valor: detalhe.email },
+                { label: "Telefone", valor: detalhe.telefone ? mascaraTelefone(detalhe.telefone) : null },
+                { label: "CPF/CNPJ", valor: detalhe.cpf_cnpj ? mascaraCpfCnpj(detalhe.cpf_cnpj) : null },
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+                { label: "Cliente desde", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

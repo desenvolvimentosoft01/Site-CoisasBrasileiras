@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
 import { CampoDica } from "@/components/ui/campo-dica"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Cupom = {
   id: string
@@ -33,6 +34,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
   const [aba, setAba] = useState("lista")
   const [editando, setEditando] = useState<Cupom | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Cupom | null>(null)
 
   const [codigo, setCodigo] = useState("")
   const [tipo, setTipo] = useState<"percentual" | "fixo">("percentual")
@@ -254,6 +256,16 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                setDetalhe(cupom)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 abrirEdicao(cupom)
                               }}
                             >
@@ -380,6 +392,29 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.codigo ?? ""}
+        campos={
+          detalhe
+            ? [
+                {
+                  label: "Desconto",
+                  valor: detalhe.tipo === "percentual" ? `${Number(detalhe.valor)}%` : formatarMoeda(detalhe.valor),
+                },
+                { label: "Valor minimo", valor: formatarMoeda(detalhe.valor_minimo) },
+                { label: "Apenas 1a compra", valor: detalhe.primeira_compra_apenas ? "Sim" : "Nao" },
+                {
+                  label: "Usos",
+                  valor: `${detalhe.usos_atuais}${detalhe.uso_maximo ? ` / ${detalhe.uso_maximo}` : " (ilimitado)"}`,
+                },
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

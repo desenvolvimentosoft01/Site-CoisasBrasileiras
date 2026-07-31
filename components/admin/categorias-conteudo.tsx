@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List, ImagePlus, X, CornerDownRight, FilePlus, Save, Eraser } from "lucide-react"
+import { Trash2, Pencil, Plus, List, ImagePlus, X, CornerDownRight, FilePlus, Save, Eraser, Eye } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Categoria = {
   id: string
@@ -32,6 +33,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
   const [aba, setAba] = useState("lista")
   const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<Categoria | null>(null)
   const [nome, setNome] = useState("")
   const [ativa, setAtiva] = useState(true)
   const [categoriaPaiId, setCategoriaPaiId] = useState<string | null>(null)
@@ -265,6 +267,16 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                setDetalhe(categoria)
+                              }}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 abrirEdicao(categoria)
                               }}
                             >
@@ -376,6 +388,26 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.nome ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Slug", valor: detalhe.slug },
+                {
+                  label: "Categoria pai",
+                  valor: detalhe.categoria_pai_id
+                    ? categorias.find((c) => c.id === detalhe.categoria_pai_id)?.nome
+                    : "Nenhuma (categoria principal)",
+                },
+                { label: "Status", valor: detalhe.ativa ? "Ativa" : "Inativa" },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

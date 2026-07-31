@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { Trash2, Pencil, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, ArrowLeft, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type TipoEntrega = {
   id: string
@@ -24,6 +25,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
   const [editando, setEditando] = useState<TipoEntrega | null>(null)
   const [criando, setCriando] = useState(false)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
+  const [detalhe, setDetalhe] = useState<TipoEntrega | null>(null)
   const [nome, setNome] = useState("")
   const [ativo, setAtivo] = useState(true)
   const [erro, setErro] = useState("")
@@ -176,6 +178,16 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                           size="icon-lg"
                           onClick={(e) => {
                             e.stopPropagation()
+                            setDetalhe(tipo)
+                          }}
+                        >
+                          <Eye size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
                             abrirEdicao(tipo)
                           }}
                         >
@@ -240,6 +252,20 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
           </Card>
         </div>
       )}
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe?.nome ?? ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+                { label: "Criado em", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }
