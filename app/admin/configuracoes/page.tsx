@@ -24,6 +24,8 @@ const CHAVES = [
   "aliquota_imposto_percentual",
   "regime_tributario",
   "clube_valor_mensalidade",
+  "bling_loja_mercadolivre",
+  "bling_loja_shopee",
 ]
 
 export default async function ConfiguracoesPage() {
@@ -60,6 +62,8 @@ export default async function ConfiguracoesPage() {
         aliquota_imposto_percentual: configuracoes.aliquota_imposto_percentual || "",
         regime_tributario: configuracoes.regime_tributario || "",
         clube_valor_mensalidade: configuracoes.clube_valor_mensalidade || "",
+        bling_loja_mercadolivre: configuracoes.bling_loja_mercadolivre || "",
+        bling_loja_shopee: configuracoes.bling_loja_shopee || "",
       }}
       blingStatus={blingStatus}
     />

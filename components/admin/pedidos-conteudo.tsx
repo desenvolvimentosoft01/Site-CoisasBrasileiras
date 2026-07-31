@@ -1,12 +1,16 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { type CanalPedido } from "@/lib/canal-pedido"
 import { statusExibicao } from "@/lib/status-pedido"
+import { RefreshCw, X } from "lucide-react"
+import { toast } from "sonner"
 
 export type Pedido = {
   id: string
@@ -17,6 +21,14 @@ export type Pedido = {
   forma_pagamento: string | null
   criado_em: string
   cliente_nome: string
+}
+
+type PedidoPendenteMarketplace = {
+  id: string
+  blingPedidoId: string
+  canal: string
+  motivo: string
+  detectadoEm: string
 }
 
 const ABAS_STATUS = [
@@ -30,8 +42,45 @@ const ABAS_STATUS = [
 ]
 
 export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[] }) {
+  const router = useRouter()
   const [aba, setAba] = useState("todos")
   const pedidos = pedidosIniciais
+
+  const [pendentes, setPendentes] = useState<PedidoPendenteMarketplace[]>([])
+  const [importando, setImportando] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/admin/bling/pedidos-pendentes")
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setPendentes)
+  }, [])
+
+  async function importarDoMarketplace() {
+    setImportando(true)
+    const resposta = await fetch("/api/admin/bling/importar-pedidos", { method: "POST" })
+    const dados = await resposta.json()
+    setImportando(false)
+
+    if (!resposta.ok) {
+      toast.error(dados.erro || "Erro ao importar pedidos do Bling")
+      return
+    }
+
+    toast.success(`${dados.importados} pedido(s) importado(s), ${dados.pendentes} pendencia(s)`)
+    fetch("/api/admin/bling/pedidos-pendentes")
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setPendentes)
+    router.refresh()
+  }
+
+  async function descartarPendencia(id: string) {
+    setPendentes((atual) => atual.filter((p) => p.id !== id))
+    await fetch("/api/admin/bling/pedidos-pendentes", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    })
+  }
 
   const pedidosFiltrados = useMemo(
     () => (aba === "todos" ? pedidos : pedidos.filter((p) => p.status === aba)),
@@ -40,7 +89,40 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Pedidos</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Pedidos</h1>
+        <Button variant="outline" size="sm" onClick={importarDoMarketplace} disabled={importando}>
+          <RefreshCw size={14} className={importando ? "animate-spin" : undefined} />
+          {importando ? "Importando..." : "Importar do Mercado Livre / Shopee"}
+        </Button>
+      </div>
+
+      {pendentes.length > 0 && (
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="space-y-2 p-4">
+            <p className="text-sm font-medium text-amber-600">
+              {pendentes.length} pedido(s) de marketplace nao importado(s)
+            </p>
+            <ul className="space-y-1.5">
+              {pendentes.map((pendente) => (
+                <li key={pendente.id} className="flex items-start justify-between gap-3 text-xs text-amber-700">
+                  <span>
+                    <strong>{pendente.canal}</strong> · pedido {pendente.blingPedidoId}: {pendente.motivo}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => descartarPendencia(pendente.id)}
+                    className="shrink-0 text-amber-500 hover:text-amber-700"
+                    title="Descartar (o proximo import vai tentar de novo)"
+                  >
+                    <X size={14} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">

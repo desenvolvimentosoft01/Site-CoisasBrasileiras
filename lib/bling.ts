@@ -331,3 +331,128 @@ export async function listarNotasEntradaBling(params: {
     fornecedorNome: nota.contato?.nome ?? nota.emitente?.nome ?? null,
   }))
 }
+
+export type PedidoVendaBlingResumo = {
+  id: string
+  numero: string
+  dataVenda: string | null
+  situacao: number
+}
+
+// Lista pedidos de venda de uma loja (canal) especifica do Bling - usado pra
+// importar pedidos de Mercado Livre/Shopee (ver lib/bling-marketplace.ts). So
+// o resumo (id/numero/data/situacao); o detalhe completo (itens, contato,
+// endereco) e buscado por pedido em obterPedidoVendaBling.
+//
+// AVISO: nomes de campo abaixo ("idLoja", "dataInicial") ainda nao foram
+// confirmados contra uma conta real do Bling com Mercado Livre/Shopee
+// conectados - a doc publica nao detalha o schema completo desse endpoint.
+// Confirmar e ajustar antes de rodar em producao (mesma ressalva ja existente
+// pra listarNotasEntradaBling).
+export async function listarPedidosVendaMarketplace(params: {
+  idLoja: string
+  dataInicial: string
+}): Promise<PedidoVendaBlingResumo[]> {
+  const query = new URLSearchParams({
+    idLoja: params.idLoja,
+    dataInicial: `${params.dataInicial} 00:00:00`,
+  })
+
+  const resposta = await chamarBling(`/pedidos/vendas?${query.toString()}`)
+  const lista = resposta?.data ?? []
+
+  type PedidoVendaBruto = {
+    id: number | string
+    numero?: number | string
+    data?: string
+    situacao?: { id?: number } | number
+  }
+
+  return lista.map((pedido: PedidoVendaBruto) => ({
+    id: String(pedido.id),
+    numero: String(pedido.numero ?? ""),
+    dataVenda: pedido.data ?? null,
+    situacao: Number(typeof pedido.situacao === "object" ? pedido.situacao?.id : pedido.situacao) || 0,
+  }))
+}
+
+export type ItemPedidoVendaBling = {
+  sku: string | null
+  codigoBarras: string | null
+  descricao: string
+  quantidade: number
+  valorUnitario: number
+}
+
+export type PedidoVendaBlingDetalhe = {
+  id: string
+  itens: ItemPedidoVendaBling[]
+  contato: {
+    nome: string
+    documento: string | null
+    email: string | null
+    telefone: string | null
+  }
+  endereco: {
+    cep: string
+    logradouro: string
+    numero: string
+    complemento: string | null
+    bairro: string
+    cidade: string
+    estado: string
+  } | null
+  blingNotaId: string | null
+  linkDanfe: string | null
+  linkPdf: string | null
+}
+
+// Detalhe completo de um pedido de venda - itens (com SKU/GTIN pra casar com
+// TAB_PRODUTO), contato e endereco do comprador, e nota fiscal se o Bling ja
+// tiver emitido (marketplace normalmente exige isso na hora da venda).
+export async function obterPedidoVendaBling(id: string): Promise<PedidoVendaBlingDetalhe> {
+  const resposta = await chamarBling(`/pedidos/vendas/${id}`)
+  const dados = resposta?.data ?? resposta
+
+  type ItemBruto = {
+    codigo?: string
+    descricao?: string
+    quantidade?: number
+    valor?: number
+    produto?: { sku?: string; gtin?: string }
+  }
+
+  const contato = dados?.contato ?? {}
+  const enderecoBruto = dados?.transporte?.etiqueta ?? dados?.contato?.endereco ?? null
+
+  return {
+    id: String(dados?.id ?? id),
+    itens: (dados?.itens ?? []).map((item: ItemBruto) => ({
+      sku: item.produto?.sku ?? item.codigo ?? null,
+      codigoBarras: item.produto?.gtin ?? null,
+      descricao: item.descricao ?? "",
+      quantidade: Number(item.quantidade) || 0,
+      valorUnitario: Number(item.valor) || 0,
+    })),
+    contato: {
+      nome: contato.nome ?? "Cliente marketplace",
+      documento: contato.numeroDocumento ?? null,
+      email: contato.email ?? null,
+      telefone: contato.telefone ?? contato.celular ?? null,
+    },
+    endereco: enderecoBruto
+      ? {
+          cep: String(enderecoBruto.cep ?? "").replace(/\D/g, ""),
+          logradouro: enderecoBruto.endereco ?? "",
+          numero: enderecoBruto.numero ?? "",
+          complemento: enderecoBruto.complemento ?? null,
+          bairro: enderecoBruto.bairro ?? "",
+          cidade: enderecoBruto.municipio ?? "",
+          estado: enderecoBruto.uf ?? "",
+        }
+      : null,
+    blingNotaId: dados?.notaFiscal?.id ? String(dados.notaFiscal.id) : null,
+    linkDanfe: dados?.notaFiscal?.linkDanfe ?? null,
+    linkPdf: dados?.notaFiscal?.linkPDF ?? dados?.notaFiscal?.linkPdf ?? null,
+  }
+}

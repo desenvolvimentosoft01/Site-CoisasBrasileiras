@@ -33,6 +33,8 @@ export type ConfiguracoesIniciais = {
   regime_tributario: string
   clube_valor_mensalidade: string
   texto_sobre_nos: string
+  bling_loja_mercadolivre: string
+  bling_loja_shopee: string
 }
 
 export type BlingStatus =
@@ -101,6 +103,8 @@ function ConfiguracoesFormulario({
   )
   const [aliquotaImposto, setAliquotaImposto] = useState(configuracoesIniciais.aliquota_imposto_percentual)
   const [regimeTributario, setRegimeTributario] = useState(configuracoesIniciais.regime_tributario || "simples_nacional")
+  const [blingLojaMercadoLivre, setBlingLojaMercadoLivre] = useState(configuracoesIniciais.bling_loja_mercadolivre)
+  const [blingLojaShopee, setBlingLojaShopee] = useState(configuracoesIniciais.bling_loja_shopee)
   const [clubeMensalidade, setClubeMensalidade] = useState(
     configuracoesIniciais.clube_valor_mensalidade
       ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.clube_valor_mensalidade) * 100)))
@@ -224,6 +228,8 @@ function ConfiguracoesFormulario({
         aliquota_imposto_percentual: aliquotaImposto,
         regime_tributario: regimeTributario,
         clube_valor_mensalidade: String(valorMoedaParaNumero(clubeMensalidade || "0,00")),
+        bling_loja_mercadolivre: blingLojaMercadoLivre,
+        bling_loja_shopee: blingLojaShopee,
       }),
     })
 
@@ -763,6 +769,38 @@ function ConfiguracoesFormulario({
                         Conectar com o Bling
                       </Button>
                     )}
+                  </CardContent>
+                </Card>
+
+                <Card className="mt-4">
+                  <CardHeader>
+                    <CardTitle className="text-sm text-slate-500">Pedidos de Mercado Livre e Shopee</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-xs text-muted-foreground">
+                      Conecte Mercado Livre e Shopee direto no painel do Bling. Preencha aqui
+                      o codigo da &quot;loja&quot; de cada canal (Bling &gt; Configuracoes &gt; Lojas) pra esse
+                      sistema importar automaticamente os pedidos como pedidos de verdade,
+                      com baixa de estoque. Canal sem codigo preenchido nao e importado.
+                    </p>
+                    <div className="space-y-2">
+                      <Label>Codigo da loja Bling - Mercado Livre</Label>
+                      <Input
+                        value={blingLojaMercadoLivre}
+                        onChange={(e) => setBlingLojaMercadoLivre(e.target.value)}
+                        placeholder="Ex: 204050607"
+                        className="max-w-48"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Codigo da loja Bling - Shopee</Label>
+                      <Input
+                        value={blingLojaShopee}
+                        onChange={(e) => setBlingLojaShopee(e.target.value)}
+                        placeholder="Ex: 204050608"
+                        className="max-w-48"
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>

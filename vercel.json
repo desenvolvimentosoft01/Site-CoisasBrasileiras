@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/notas-bling-pendentes",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/importar-pedidos-marketplace",
+      "schedule": "0 */3 * * *"
     }
   ]
 }
