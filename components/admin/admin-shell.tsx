@@ -42,7 +42,7 @@ type ItemMenu = ItemLink | ItemGrupo
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
 const menu: ItemMenu[] = [
-  { tipo: "link", href: "/admin/dashboard", label: "Dashboard", icone: LayoutDashboard },
+  { tipo: "link", href: "/admin/dashboard", label: "Visao Geral", icone: LayoutDashboard },
   { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcao", icone: Store },
   { tipo: "link", href: "/admin/pedidos", label: "Pedidos", icone: ShoppingCart },
   { tipo: "link", href: "/admin/orcamentos", label: "Orcamentos", icone: FileText },

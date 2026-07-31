@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware"
 
 export type AbaAdmin = { path: string; titulo: string }
 
-const ABA_INICIAL: AbaAdmin = { path: "/admin/dashboard", titulo: "Dashboard" }
+const ABA_INICIAL: AbaAdmin = { path: "/admin/dashboard", titulo: "Visao Geral" }
 
 type AbasAdminState = {
   abas: AbaAdmin[]
