@@ -11,8 +11,22 @@ import { BotaoFavoritar } from "@/components/loja/botao-favoritar"
 import { lerTokenSessaoCliente } from "@/lib/auth"
 import { clienteTemClubeAtivo } from "@/lib/clube"
 
-function formatarPreco(valor: string) {
+function formatarPreco(valor: string | number) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+}
+
+// Preco do Clube pode ser cadastrado em R$ (fixo) ou em % de desconto sobre
+// o preco normal - aqui sempre calculamos os dois lados (valor final em R$ e
+// o percentual equivalente) pra mostrar ambos no site, seja qual for o tipo
+// escolhido pelo lojista.
+function calcularClube(precoNormal: string, precoClube: string, tipo: "fixo" | "percentual") {
+  const normal = Number(precoNormal)
+  const clube = Number(precoClube)
+
+  const valorFinal = tipo === "percentual" ? Math.round(normal * (1 - clube / 100) * 100) / 100 : clube
+  const percentual = tipo === "percentual" ? clube : Math.round((1 - clube / normal) * 100)
+
+  return { valorFinal, percentual }
 }
 
 export default async function ProdutoPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -33,6 +47,9 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
   const clubeAtivo = sessaoCliente ? await clienteTemClubeAtivo(sessaoCliente.id) : false
   const precoClubeDisponivel = clubeAtivo && produto.preco_clube
+  const clube = produto.preco_clube
+    ? calcularClube(produto.preco, produto.preco_clube, produto.preco_clube_tipo)
+    : null
 
   const [resumoAvaliacoes] = await query(
     `SELECT COUNT(*) AS total, COALESCE(AVG(nota), 0) AS media
@@ -60,7 +77,7 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
       )
     : false
 
-  const precoFinal = precoClubeDisponivel ? produto.preco_clube : (produto.preco_promocional ?? produto.preco)
+  const precoFinal = precoClubeDisponivel ? clube!.valorFinal : (produto.preco_promocional ?? produto.preco)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
@@ -105,7 +122,10 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
                     {formatarPreco(produto.preco_promocional ?? produto.preco)}
                   </span>
                   <span className="text-3xl font-semibold text-emerald-700">
-                    {formatarPreco(produto.preco_clube)}
+                    {formatarPreco(clube!.valorFinal)}
+                  </span>
+                  <span className="text-sm font-medium text-emerald-700">
+                    {clube!.percentual}% off
                   </span>
                 </div>
               ) : produto.preco_promocional ? (
@@ -128,9 +148,10 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
                   Oferta exclusiva para membros do Clube
                 </p>
               )}
-              {!clubeAtivo && produto.preco_clube && (
+              {!clubeAtivo && clube && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Membros do Clube pagam {formatarPreco(produto.preco_clube)} neste produto.{" "}
+                  Membros do Clube pagam {formatarPreco(clube.valorFinal)} ({clube.percentual}% off) neste
+                  produto.{" "}
                   <a href="/minha-conta" className="underline hover:text-emerald-700">
                     Saiba mais
                   </a>

@@ -29,6 +29,7 @@ type ProdutoExistente = {
   preco: string
   preco_promocional: string | null
   preco_clube: string | null
+  preco_clube_tipo: "fixo" | "percentual"
   custo: string
   estoque: number
   estoque_minimo: number
@@ -42,6 +43,14 @@ type ProdutoExistente = {
   comprimento_cm: string | null
   categoriaIds: string[]
   imagens: { url: string }[]
+}
+
+// Preco fixo usa mascara de moeda (centavos); percentual usa decimal comum
+// (0-100), entao a formatacao inicial de "preco_clube" depende do tipo salvo.
+function valorClubeInicial(produto?: ProdutoExistente): string {
+  if (!produto?.preco_clube) return ""
+  if (produto.preco_clube_tipo === "percentual") return produto.preco_clube.replace(".", ",")
+  return mascaraMoeda(String(Math.round(Number(produto.preco_clube) * 100)))
 }
 
 export function ProdutoForm({
@@ -63,9 +72,10 @@ export function ProdutoForm({
       ? mascaraMoeda(String(Math.round(Number(produto.preco_promocional) * 100)))
       : ""
   )
-  const [precoClube, setPrecoClube] = useState(
-    produto?.preco_clube ? mascaraMoeda(String(Math.round(Number(produto.preco_clube) * 100))) : ""
+  const [precoClubeTipo, setPrecoClubeTipo] = useState<"fixo" | "percentual">(
+    produto?.preco_clube_tipo ?? "fixo"
   )
+  const [precoClube, setPrecoClube] = useState(() => valorClubeInicial(produto))
   const [estoque, setEstoque] = useState(String(produto?.estoque ?? 0))
   const [estoqueMinimo, setEstoqueMinimo] = useState(String(produto?.estoque_minimo ?? 0))
   const [ativo, setAtivo] = useState(produto?.ativo ?? true)
@@ -147,6 +157,13 @@ export function ProdutoForm({
       setErro("NCM e obrigatorio")
       return
     }
+    if (precoClube && precoClubeTipo === "percentual") {
+      const percentual = decimalParaNumero(precoClube)
+      if (percentual <= 0 || percentual > 100) {
+        setErro("Percentual do Clube deve ser entre 0 e 100")
+        return
+      }
+    }
 
     setSalvando(true)
 
@@ -155,7 +172,12 @@ export function ProdutoForm({
       descricao: descricao || null,
       preco: valorMoedaParaNumero(preco),
       precoPromocional: precoPromocional ? valorMoedaParaNumero(precoPromocional) : null,
-      precoClube: precoClube ? valorMoedaParaNumero(precoClube) : null,
+      precoClube: precoClube
+        ? precoClubeTipo === "percentual"
+          ? decimalParaNumero(precoClube)
+          : valorMoedaParaNumero(precoClube)
+        : null,
+      precoClubeTipo,
       estoque: Number(estoque) || 0,
       estoqueMinimo: Number(estoqueMinimo) || 0,
       ativo,
@@ -214,7 +236,8 @@ export function ProdutoForm({
         ? mascaraMoeda(String(Math.round(Number(produto.preco_promocional) * 100)))
         : ""
     )
-    setPrecoClube(produto?.preco_clube ? mascaraMoeda(String(Math.round(Number(produto.preco_clube) * 100))) : "")
+    setPrecoClubeTipo(produto?.preco_clube_tipo ?? "fixo")
+    setPrecoClube(valorClubeInicial(produto))
     setEstoque(String(produto?.estoque ?? 0))
     setEstoqueMinimo(String(produto?.estoque_minimo ?? 0))
     setAtivo(produto?.ativo ?? true)
@@ -350,16 +373,35 @@ export function ProdutoForm({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Clube (R$)
+                  Clube
                   <CampoDica>So aparece pra clientes com assinatura do Clube ativa. Vazio = nao participa.</CampoDica>
                 </Label>
-                <Input
-                  inputMode="numeric"
-                  value={precoClube}
-                  onChange={(e) => setPrecoClube(mascaraMoeda(e.target.value))}
-                  placeholder="0,00"
-                  className="max-w-32"
-                />
+                <div className="flex gap-1">
+                  <select
+                    value={precoClubeTipo}
+                    onChange={(e) => {
+                      setPrecoClubeTipo(e.target.value as "fixo" | "percentual")
+                      setPrecoClube("")
+                    }}
+                    className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
+                  >
+                    <option value="fixo">R$</option>
+                    <option value="percentual">%</option>
+                  </select>
+                  <Input
+                    inputMode={precoClubeTipo === "percentual" ? "decimal" : "numeric"}
+                    value={precoClube}
+                    onChange={(e) =>
+                      setPrecoClube(
+                        precoClubeTipo === "percentual"
+                          ? mascaraDecimal(e.target.value)
+                          : mascaraMoeda(e.target.value)
+                      )
+                    }
+                    placeholder={precoClubeTipo === "percentual" ? "Ex: 20" : "0,00"}
+                    className="max-w-28"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Estoque</Label>

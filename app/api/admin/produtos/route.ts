@@ -55,12 +55,16 @@ export async function POST(request: Request) {
     ncm,
     codigoBarras,
     precoClube,
+    precoClubeTipo,
     categoriaIds,
     imagensUrls,
   } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
     return NextResponse.json({ erro: "Nome e preco sao obrigatorios" }, { status: 400 })
+  }
+  if (precoClubeTipo && precoClubeTipo !== "fixo" && precoClubeTipo !== "percentual") {
+    return NextResponse.json({ erro: "Tipo do preco do Clube invalido" }, { status: 400 })
   }
   if (!codigoBarras || !String(codigoBarras).trim()) {
     return NextResponse.json({ erro: "Codigo de barras (GTIN/EAN) e obrigatorio" }, { status: 400 })
@@ -83,8 +87,8 @@ export async function POST(request: Request) {
 
   const [produto] = await query(
     `INSERT INTO TAB_PRODUTO
-       (nome, slug, descricao, preco, preco_promocional, preco_clube, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+       (nome, slug, descricao, preco, preco_promocional, preco_clube, preco_clube_tipo, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
      RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, criado_em`,
     [
       nome.trim(),
@@ -93,6 +97,7 @@ export async function POST(request: Request) {
       preco,
       precoPromocional || null,
       precoClube || null,
+      precoClubeTipo || "fixo",
       estoque || 0,
       estoqueMinimo || 0,
       sku || null,

@@ -33,6 +33,7 @@ type ProdutoDetalhado = {
   preco: string
   preco_promocional: string | null
   preco_clube: string | null
+  preco_clube_tipo: "fixo" | "percentual"
   custo: string
   estoque: number
   estoque_minimo: number
