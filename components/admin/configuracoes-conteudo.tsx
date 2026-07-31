@@ -122,9 +122,6 @@ function ConfiguracoesFormulario({
   const [emailUser, setEmailUser] = useState("")
   const [emailPass, setEmailPass] = useState("")
   const [emailNotificacoesAdmin, setEmailNotificacoesAdmin] = useState("")
-  const [cloudinaryCloudName, setCloudinaryCloudName] = useState("")
-  const [cloudinaryApiKey, setCloudinaryApiKey] = useState("")
-  const [cloudinaryApiSecret, setCloudinaryApiSecret] = useState("")
   const [salvandoSegredos, setSalvandoSegredos] = useState(false)
   const [segredosSalvos, setSegredosSalvos] = useState(false)
 
@@ -140,7 +137,6 @@ function ConfiguracoesFormulario({
         )
         setEmailUser(dados.email_user?.valor || "")
         setEmailNotificacoesAdmin(dados.email_notificacoes_admin?.valor || "")
-        setCloudinaryCloudName(dados.cloudinary_cloud_name?.valor || "")
       })
   }, [])
 
@@ -160,9 +156,6 @@ function ConfiguracoesFormulario({
         email_notificacoes_admin: emailNotificacoesAdmin,
         bling_client_id: blingClientId,
         bling_client_secret: blingClientSecret,
-        cloudinary_cloud_name: cloudinaryCloudName,
-        cloudinary_api_key: cloudinaryApiKey,
-        cloudinary_api_secret: cloudinaryApiSecret,
       }),
     })
 
@@ -174,8 +167,6 @@ function ConfiguracoesFormulario({
     setEmailPass("")
     setBlingClientId("")
     setBlingClientSecret("")
-    setCloudinaryApiKey("")
-    setCloudinaryApiSecret("")
     setTimeout(() => setSegredosSalvos(false), 2500)
 
     const resposta = await fetch("/api/admin/segredos")
@@ -661,7 +652,6 @@ function ConfiguracoesFormulario({
                 <TabsTrigger value="mercadopago">Mercado Pago</TabsTrigger>
                 <TabsTrigger value="frenet">Frenet</TabsTrigger>
                 <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="cloudinary">Cloudinary</TabsTrigger>
               </TabsList>
 
               <TabsContent value="bling" className="mt-4">
@@ -969,75 +959,6 @@ function ConfiguracoesFormulario({
                           value={emailNotificacoesAdmin}
                           onChange={(e) => setEmailNotificacoesAdmin(e.target.value)}
                           placeholder="Vazio usa o proprio e-mail remetente acima"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Button type="button" onClick={salvarSegredos} disabled={salvandoSegredos}>
-                        {salvandoSegredos ? "Salvando..." : "Salvar"}
-                      </Button>
-                      {segredosSalvos && <span className="text-sm text-emerald-500">Salvo!</span>}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="cloudinary" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
-                      <KeyRound size={16} />
-                      Cloudinary (upload de imagens/videos)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-xs text-muted-foreground">
-                      So necessario em hospedagem sem disco persistente (ex: Vercel). Sem isso
-                      configurado, o upload cai pro disco local do servidor.
-                    </p>
-                    <div className="space-y-2">
-                      <Label>Cloud name</Label>
-                      <Input
-                        value={cloudinaryCloudName}
-                        onChange={(e) => setCloudinaryCloudName(e.target.value)}
-                        placeholder="Ex: coisas-brasileiras"
-                      />
-                    </div>
-                    <div className="grid items-start gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-1.5">
-                          API Key
-                          {segredosStatus.cloudinary_api_key && (
-                            <span className="flex items-center gap-1 text-xs text-emerald-500">
-                              <Check size={12} /> configurado
-                            </span>
-                          )}
-                        </Label>
-                        <Input
-                          type="password"
-                          value={cloudinaryApiKey}
-                          onChange={(e) => setCloudinaryApiKey(e.target.value)}
-                          placeholder={
-                            segredosStatus.cloudinary_api_key ? "•••••••• (deixe em branco pra manter)" : "Colar API key"
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-1.5">
-                          API Secret
-                          {segredosStatus.cloudinary_api_secret && (
-                            <span className="flex items-center gap-1 text-xs text-emerald-500">
-                              <Check size={12} /> configurado
-                            </span>
-                          )}
-                        </Label>
-                        <Input
-                          type="password"
-                          value={cloudinaryApiSecret}
-                          onChange={(e) => setCloudinaryApiSecret(e.target.value)}
-                          placeholder={
-                            segredosStatus.cloudinary_api_secret ? "•••••••• (deixe em branco pra manter)" : "Colar API secret"
-                          }
                         />
                       </div>
                     </div>

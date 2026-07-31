@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   // Em producao (Vercel) nao ha disco persistente - o Cloudinary e
   // obrigatorio la. Em dev local sem as credenciais configuradas, cai pro
   // disco local mesmo, pra nao exigir conta no Cloudinary so pra testar.
-  if (await cloudinaryConfigurado()) {
+  if (cloudinaryConfigurado()) {
     try {
       const url = await uploadArquivoCloudinary(bytes, `coisas-brasileiras/${pasta}`, ehVideo ? "video" : "image")
       return NextResponse.json({ url })

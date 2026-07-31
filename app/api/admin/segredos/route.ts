@@ -11,9 +11,6 @@ const CHAVES = [
   "email_notificacoes_admin",
   "bling_client_id",
   "bling_client_secret",
-  "cloudinary_cloud_name",
-  "cloudinary_api_key",
-  "cloudinary_api_secret",
 ] as const
 
 // So admin - nunca devolve o valor real dos segredos sensiveis (token/senha),
@@ -29,8 +26,7 @@ export async function GET() {
 
   CHAVES.forEach((chave, indice) => {
     const valor = valores[indice]
-    const ehTextoVisivel =
-      chave === "email_user" || chave === "email_notificacoes_admin" || chave === "cloudinary_cloud_name"
+    const ehTextoVisivel = chave === "email_user" || chave === "email_notificacoes_admin"
     mapa[chave] = ehTextoVisivel ? { configurado: Boolean(valor), valor: valor || "" } : { configurado: Boolean(valor) }
   })
 
