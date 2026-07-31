@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Truck, MessageCircle, FileText, BadgeCheck } from "lucide-react"
+import { Truck, MessageCircle, FileText, BadgeCheck, ArrowLeft, ShoppingBag } from "lucide-react"
+import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
 
 type Pedido = {
   id: string
@@ -20,7 +22,9 @@ type Pedido = {
   bling_link_danfe: string | null
   bling_link_pdf: string | null
   bling_nota_cancelada_em: string | null
+  bling_pedido_id: string | null
   origem: "site" | "balcao"
+  canal: CanalPedido | null
   criado_em: string
   cliente_nome: string
   cliente_email: string | null
@@ -211,6 +215,19 @@ export default function DetalhePedidoPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
+      <div className="flex gap-1 border-b border-slate-200">
+        <Link
+          href="/admin/pedidos"
+          className="flex items-center gap-1.5 border-b-2 border-transparent px-3 py-2 text-sm text-slate-500 hover:text-slate-700"
+        >
+          <ArrowLeft size={14} />
+          Lista de pedidos
+        </Link>
+        <span className="border-b-2 border-primary px-3 py-2 text-sm font-medium text-primary">
+          Detalhe do pedido
+        </span>
+      </div>
+
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-semibold">
           Pedido
@@ -224,6 +241,25 @@ export default function DetalhePedidoPage() {
           Feito em {new Date(pedido.criado_em).toLocaleString("pt-BR")}
         </p>
       </div>
+
+      {(pedido.canal === "mercadolivre" || pedido.canal === "shopee") && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
+              <ShoppingBag size={16} />
+              Origem: {CANAL_LABEL[pedido.canal]}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-500">
+              Importado automaticamente do Bling.
+              {pedido.bling_pedido_id && (
+                <> Pedido {CANAL_LABEL[pedido.canal]} #{pedido.bling_pedido_id} (via Bling).</>
+              )}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
