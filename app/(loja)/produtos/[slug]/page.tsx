@@ -143,7 +143,7 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
                     {formatarPreco(clube.valorFinal)} ({clube.percentual}% OFF)
                   </span>{" "}
                   neste produto.{" "}
-                  <a href="/minha-conta" className="font-medium underline hover:text-emerald-700">
+                  <a href="/minha-conta?assinar=1" className="font-medium underline hover:text-emerald-700">
                     Saiba mais
                   </a>
                 </p>

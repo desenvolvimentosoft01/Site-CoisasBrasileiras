@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useEffect, useRef, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -74,7 +74,19 @@ const rotulosAssinatura: Record<string, string> = {
 }
 
 export default function MinhaContaPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-4xl px-4 py-16 text-center text-neutral-500">Carregando...</div>}>
+      <MinhaContaConteudo />
+    </Suspense>
+  )
+}
+
+function MinhaContaConteudo() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const clubeRef = useRef<HTMLDivElement>(null)
+  const assinarAutomaticamente = searchParams.get("assinar") === "1"
+  const jaTentouAutoAssinar = useRef(false)
   const [carregando, setCarregando] = useState(true)
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
@@ -94,7 +106,11 @@ export default function MinhaContaPage() {
     async function carregar() {
       const respostaPerfil = await fetch("/api/cliente/perfil")
       if (!respostaPerfil.ok) {
-        router.push("/entrar?voltar=/minha-conta")
+        // Preserva "?assinar=1" (link de "Saiba mais" do preco do Clube) pra
+        // voltar direto pro fluxo de assinatura depois do login, em vez de
+        // cair na conta e ter que procurar o botao de novo.
+        const destino = assinarAutomaticamente ? "/minha-conta?assinar=1" : "/minha-conta"
+        router.push(`/entrar?voltar=${encodeURIComponent(destino)}`)
         return
       }
       const dadosPerfil: Perfil = await respostaPerfil.json()
@@ -110,15 +126,34 @@ export default function MinhaContaPage() {
       if (respostaDesejos.ok) setListaDesejos(await respostaDesejos.json())
 
       const respostaClube = await fetch("/api/cliente/clube")
+      let assinaturaAtual: Assinatura = null
+      let valorAtual = 0
       if (respostaClube.ok) {
         const dadosClube = await respostaClube.json()
-        setAssinatura(dadosClube.assinatura)
-        setValorMensalidadeClube(dadosClube.valorMensalidade)
+        assinaturaAtual = dadosClube.assinatura
+        valorAtual = dadosClube.valorMensalidade
+        setAssinatura(assinaturaAtual)
+        setValorMensalidadeClube(valorAtual)
       }
 
       setCarregando(false)
+
+      // Veio do "Saiba mais" do preco do Clube (produto): se ainda nao e
+      // assinante, dispara o fluxo de pagamento direto, sem precisar descer
+      // a tela e clicar em "Assinar o Clube" de novo. Se ja e assinante, so
+      // rola ate a secao pra mostrar o status.
+      const semAssinaturaAtiva = !assinaturaAtual || assinaturaAtual.status === "cancelada"
+      if (assinarAutomaticamente && !jaTentouAutoAssinar.current) {
+        jaTentouAutoAssinar.current = true
+        if (semAssinaturaAtiva && valorAtual > 0) {
+          assinarClube()
+        } else {
+          clubeRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+      }
     }
     carregar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   async function assinarClube() {
@@ -238,6 +273,7 @@ export default function MinhaContaPage() {
         </CardContent>
       </Card>
 
+      <div id="clube" ref={clubeRef}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -286,6 +322,7 @@ export default function MinhaContaPage() {
           {erroClube && <p className="text-sm text-red-500">{erroClube}</p>}
         </CardContent>
       </Card>
+      </div>
 
       <Card>
         <CardHeader>
