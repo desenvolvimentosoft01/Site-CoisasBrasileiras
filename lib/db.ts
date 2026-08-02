@@ -1,10 +1,14 @@
 import { Pool, type PoolClient } from "pg"
 
+const ehLocalhost = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL ?? "")
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 10,
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
+  // Supabase (e Neon) exigem SSL; banco local nao tem certificado, entao so liga fora de localhost.
+  ssl: ehLocalhost ? undefined : { rejectUnauthorized: false },
 })
 
 export async function query(sql: string, params?: unknown[]) {
