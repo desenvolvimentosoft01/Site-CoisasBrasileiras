@@ -53,6 +53,20 @@ const ROTULOS_TIPO_PAGAMENTO_MP: Record<string, string> = {
   debit_card: "Cartao de debito",
 }
 
+// O SDK do Mercado Pago faz "throw await response.json()" em erros da API
+// (nao lanca um Error de verdade), entao "erro instanceof Error" nunca bate
+// e o motivo real fica escondido. Essa funcao extrai a mensagem do corpo cru
+// que o MP devolve pra poder mostrar algo util em vez de um erro generico.
+export function mensagemErroMercadoPago(erro: unknown, mensagemPadrao: string): string {
+  if (erro instanceof Error) return erro.message
+  if (erro && typeof erro === "object") {
+    const corpo = erro as { message?: string; cause?: Array<{ description?: string }> }
+    if (corpo.cause?.[0]?.description) return corpo.cause[0].description
+    if (corpo.message) return corpo.message
+  }
+  return mensagemPadrao
+}
+
 export function rotuloFormaPagamentoMP(paymentTypeId?: string | null, paymentMethodId?: string | null): string {
   if (paymentMethodId && ROTULOS_METODO_PAGAMENTO_MP[paymentMethodId]) {
     return ROTULOS_METODO_PAGAMENTO_MP[paymentMethodId]

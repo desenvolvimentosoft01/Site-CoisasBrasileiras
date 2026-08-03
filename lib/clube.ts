@@ -1,7 +1,7 @@
 import { PreApproval } from "mercadopago"
 import { query } from "@/lib/db"
 import { getConfiguracoes } from "@/lib/configuracoes"
-import { getMercadoPagoConfig } from "@/lib/mercadopago"
+import { getMercadoPagoConfig, mensagemErroMercadoPago } from "@/lib/mercadopago"
 
 // Assinatura recorrente do "Clube" via Mercado Pago PreApproval - mesma
 // conta/credencial ja usada pro checkout, recurso diferente (cobranca
@@ -58,19 +58,24 @@ export async function criarAssinaturaClube(params: {
     throw new Error("O valor da mensalidade do Clube ainda nao foi configurado pela loja")
   }
 
-  const preapproval = await (await getPreApprovalMP()).create({
-    body: {
-      reason: "Clube - assinatura mensal",
-      payer_email: params.email,
-      back_url: `${params.siteUrl}/minha-conta`,
-      auto_recurring: {
-        frequency: 1,
-        frequency_type: "months",
-        transaction_amount: valor,
-        currency_id: "BRL",
+  let preapproval
+  try {
+    preapproval = await (await getPreApprovalMP()).create({
+      body: {
+        reason: "Clube - assinatura mensal",
+        payer_email: params.email,
+        back_url: `${params.siteUrl}/minha-conta`,
+        auto_recurring: {
+          frequency: 1,
+          frequency_type: "months",
+          transaction_amount: valor,
+          currency_id: "BRL",
+        },
       },
-    },
-  })
+    })
+  } catch (erro) {
+    throw new Error(mensagemErroMercadoPago(erro, "Erro ao criar assinatura no Mercado Pago"))
+  }
 
   if (!preapproval.id || !preapproval.init_point) {
     throw new Error("Mercado Pago nao devolveu os dados esperados da assinatura")
@@ -91,7 +96,11 @@ export async function cancelarAssinaturaClube(clienteId: string): Promise<void> 
     throw new Error("Nenhuma assinatura ativa encontrada pra cancelar")
   }
 
-  await (await getPreApprovalMP()).update({ id: assinatura.mp_preapproval_id, body: { status: "cancelled" } })
+  try {
+    await (await getPreApprovalMP()).update({ id: assinatura.mp_preapproval_id, body: { status: "cancelled" } })
+  } catch (erro) {
+    throw new Error(mensagemErroMercadoPago(erro, "Erro ao cancelar assinatura no Mercado Pago"))
+  }
 
   await query("UPDATE TAB_ASSINATURA_CLUBE SET status = 'cancelada', atualizado_em = NOW() WHERE id = $1", [
     assinatura.id,
