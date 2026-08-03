@@ -171,7 +171,12 @@ function MinhaContaConteudo() {
   }
 
   async function cancelarClube() {
-    if (!confirm("Cancelar sua assinatura do Clube? Voce perde acesso aos precos exclusivos.")) return
+    if (
+      !confirm(
+        "Tem certeza que deseja cancelar sua assinatura do Clube?\n\nVoce deixara de ter acesso aos precos exclusivos de assinante imediatamente.",
+      )
+    )
+      return
 
     setErroClube("")
     setProcessandoClube(true)
