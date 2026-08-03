@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { InputSenha } from "@/components/ui/input-senha"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { mascaraTelefone } from "@/lib/mascaras"
@@ -71,7 +72,7 @@ export default function CadastroPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="senha">Senha</Label>
-              <Input id="senha" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
+              <InputSenha id="senha" value={senha} onChange={(e) => setSenha(e.target.value)} required />
             </div>
             {erro && <p className="text-sm text-red-500">{erro}</p>}
             <Button type="submit" className="w-full" disabled={carregando}>

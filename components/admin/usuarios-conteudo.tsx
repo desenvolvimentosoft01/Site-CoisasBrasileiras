@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { InputSenha } from "@/components/ui/input-senha"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -341,7 +342,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
 
               <div className="space-y-2">
                 <Label>{usuarioEditando ? "Nova senha (deixe em branco para manter)" : "Senha"}</Label>
-                <Input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} />
+                <InputSenha value={senha} onChange={(e) => setSenha(e.target.value)} />
               </div>
 
               <div className="space-y-2">

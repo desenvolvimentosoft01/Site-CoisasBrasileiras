@@ -6,6 +6,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { InputSenha } from "@/components/ui/input-senha"
 import { Label } from "@/components/ui/label"
 import { CampoDica } from "@/components/ui/campo-dica"
 import { Button } from "@/components/ui/button"
@@ -695,8 +696,7 @@ function ConfiguracoesFormulario({
                           </span>
                         )}
                       </Label>
-                      <Input
-                        type="password"
+                      <InputSenha
                         value={blingClientId}
                         onChange={(e) => setBlingClientId(e.target.value)}
                         placeholder={
@@ -713,8 +713,7 @@ function ConfiguracoesFormulario({
                           </span>
                         )}
                       </Label>
-                      <Input
-                        type="password"
+                      <InputSenha
                         value={blingClientSecret}
                         onChange={(e) => setBlingClientSecret(e.target.value)}
                         placeholder={
@@ -828,8 +827,7 @@ function ConfiguracoesFormulario({
                           </span>
                         )}
                       </Label>
-                      <Input
-                        type="password"
+                      <InputSenha
                         value={mpAccessToken}
                         onChange={(e) => setMpAccessToken(e.target.value)}
                         placeholder={
@@ -853,8 +851,7 @@ function ConfiguracoesFormulario({
                           mas sem validar se a notificacao realmente veio do Mercado Pago.
                         </CampoDica>
                       </Label>
-                      <Input
-                        type="password"
+                      <InputSenha
                         value={mpWebhookSecret}
                         onChange={(e) => setMpWebhookSecret(e.target.value)}
                         placeholder={
@@ -896,8 +893,7 @@ function ConfiguracoesFormulario({
                           </span>
                         )}
                       </Label>
-                      <Input
-                        type="password"
+                      <InputSenha
                         value={frenetToken}
                         onChange={(e) => setFrenetToken(e.target.value)}
                         placeholder={
@@ -943,8 +939,7 @@ function ConfiguracoesFormulario({
                             </span>
                           )}
                         </Label>
-                        <Input
-                          type="password"
+                        <InputSenha
                           value={emailPass}
                           onChange={(e) => setEmailPass(e.target.value)}
                           placeholder={
