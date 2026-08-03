@@ -7,6 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import Image from "next/image"
 import { mascaraCpfCnpj, mascaraTelefone, formatarMoeda } from "@/lib/mascaras"
 import { MapPin, Package, LogOut, Sparkles, Heart, X, ShoppingBag } from "lucide-react"
@@ -95,6 +105,7 @@ function MinhaContaConteudo() {
   const [valorMensalidadeClube, setValorMensalidadeClube] = useState(0)
   const [processandoClube, setProcessandoClube] = useState(false)
   const [erroClube, setErroClube] = useState("")
+  const [modalCancelarClubeAberto, setModalCancelarClubeAberto] = useState(false)
 
   const [nome, setNome] = useState("")
   const [telefone, setTelefone] = useState("")
@@ -171,13 +182,6 @@ function MinhaContaConteudo() {
   }
 
   async function cancelarClube() {
-    if (
-      !confirm(
-        "Tem certeza que deseja cancelar sua assinatura do Clube?\n\nVoce deixara de ter acesso aos precos exclusivos de assinante imediatamente.",
-      )
-    )
-      return
-
     setErroClube("")
     setProcessandoClube(true)
     const resposta = await fetch("/api/cliente/clube/cancelar", { method: "POST" })
@@ -318,7 +322,12 @@ function MinhaContaConteudo() {
                   ` · Proxima cobranca: ${new Date(assinatura.proximo_vencimento).toLocaleDateString("pt-BR")}`}
               </p>
               {assinatura.status === "autorizada" && (
-                <Button variant="outline" size="sm" onClick={cancelarClube} disabled={processandoClube}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setModalCancelarClubeAberto(true)}
+                  disabled={processandoClube}
+                >
                   {processandoClube ? "Cancelando..." : "Cancelar assinatura"}
                 </Button>
               )}
@@ -327,6 +336,30 @@ function MinhaContaConteudo() {
           {erroClube && <p className="text-sm text-red-500">{erroClube}</p>}
         </CardContent>
       </Card>
+
+      <AlertDialog open={modalCancelarClubeAberto} onOpenChange={setModalCancelarClubeAberto}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar assinatura do Clube?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Voce vai deixar de ter acesso aos precos exclusivos de assinante imediatamente. Voce pode assinar
+              novamente quando quiser.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Manter assinatura</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                setModalCancelarClubeAberto(false)
+                cancelarClube()
+              }}
+            >
+              Cancelar assinatura
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
 
       <Card>
