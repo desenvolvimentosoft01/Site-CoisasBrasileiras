@@ -178,7 +178,7 @@ function MinhaContaConteudo() {
       setErroClube(dados.erro || "Erro ao criar assinatura")
       return
     }
-    window.location.href = dados.initPoint
+    window.open(dados.initPoint, "_blank")
   }
 
   async function cancelarClube() {
@@ -298,7 +298,7 @@ function MinhaContaConteudo() {
                 exclusivo em produtos selecionados.
               </p>
               <Button onClick={assinarClube} disabled={processandoClube || valorMensalidadeClube <= 0}>
-                {processandoClube ? "Redirecionando..." : "Assinar o Clube"}
+                {processandoClube ? "Abrindo..." : "Assinar o Clube"}
               </Button>
               {valorMensalidadeClube <= 0 && (
                 <p className="text-xs text-neutral-400">Assinatura ainda nao disponivel.</p>
