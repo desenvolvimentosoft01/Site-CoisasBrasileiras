@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus, Eye, Mail, MessageCircle } from "lucide-react"
+import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus, Eye, Mail, MessageCircle, RefreshCw } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { OrcamentoForm, type OrcamentoExistente } from "@/components/admin/orcamento-form"
 import { toast } from "sonner"
@@ -88,10 +88,17 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   const [convertendo, setConvertendo] = useState(false)
   const [erroConversao, setErroConversao] = useState("")
   const [enviandoEmailId, setEnviandoEmailId] = useState<string | null>(null)
+  const [atualizando, setAtualizando] = useState(false)
 
   async function recarregar() {
     const resposta = await fetch("/api/admin/orcamentos")
     setOrcamentos(await resposta.json())
+  }
+
+  async function atualizarStatusLista() {
+    setAtualizando(true)
+    await recarregar()
+    setAtualizando(false)
   }
 
   function abrirNovo() {
@@ -238,6 +245,12 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
             <BarraFerramentas
               botoes={[
                 { label: "Novo", icon: FilePlus, onClick: abrirNovo, variante: "primary" },
+                {
+                  label: atualizando ? "Atualizando..." : "Atualizar",
+                  icon: RefreshCw,
+                  onClick: atualizarStatusLista,
+                  disabled: atualizando,
+                },
                 {
                   label: "Editar",
                   icon: Pencil,
