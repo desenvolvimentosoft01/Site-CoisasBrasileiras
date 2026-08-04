@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus, Eye } from "lucide-react"
+import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus, Eye, Mail, MessageCircle } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { OrcamentoForm, type OrcamentoExistente } from "@/components/admin/orcamento-form"
 import { toast } from "sonner"
@@ -32,12 +32,23 @@ export type Orcamento = {
   numero: number
   titulo: string | null
   cliente_nome: string
+  cliente_telefone: string | null
+  cliente_email: string | null
   status: "aberto" | "aprovado" | "recusado" | "convertido"
   subtotal: string
   desconto: string
   total: string
   pedido_id: string | null
+  token_aprovacao: string
+  canal_resposta: "email" | "whatsapp" | null
+  observacao_cliente: string | null
+  enviado_email_em: string | null
+  respondido_em: string | null
   criado_em: string
+}
+
+function numeroFormatado(n: number) {
+  return `OR.${String(n).padStart(4, "0")}`
 }
 
 const ABAS_STATUS = [
@@ -76,6 +87,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   const [formaPagamento, setFormaPagamento] = useState("dinheiro")
   const [convertendo, setConvertendo] = useState(false)
   const [erroConversao, setErroConversao] = useState("")
+  const [enviandoEmailId, setEnviandoEmailId] = useState<string | null>(null)
 
   async function recarregar() {
     const resposta = await fetch("/api/admin/orcamentos")
@@ -114,6 +126,37 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
       toast.error(dados.erro || "Erro ao atualizar status")
       return
     }
+    recarregar()
+  }
+
+  function enviarPorWhatsapp(orcamento: Orcamento) {
+    const numero = orcamento.cliente_telefone?.replace(/\D/g, "")
+    if (!numero) {
+      toast.error("Esse orcamento nao tem telefone do cliente cadastrado")
+      return
+    }
+    const numeroComDdi = numero.startsWith("55") ? numero : `55${numero}`
+    const link = `${window.location.origin}/orcamento/aprovar/${orcamento.token_aprovacao}?canal=whatsapp`
+    const mensagem = `Ola, ${orcamento.cliente_nome}! Segue o orcamento ${numeroFormatado(orcamento.numero)}${
+      orcamento.titulo ? ` "${orcamento.titulo}"` : ""
+    }.\n\nAcesse o link para ver os detalhes e aprovar ou recusar: ${link}`
+    window.open(`https://wa.me/${numeroComDdi}?text=${encodeURIComponent(mensagem)}`, "_blank")
+  }
+
+  async function enviarPorEmail(orcamento: Orcamento) {
+    if (!orcamento.cliente_email) {
+      toast.error("Esse orcamento nao tem e-mail do cliente cadastrado")
+      return
+    }
+    setEnviandoEmailId(orcamento.id)
+    const resposta = await fetch(`/api/admin/orcamentos/${orcamento.id}/enviar-email`, { method: "POST" })
+    setEnviandoEmailId(null)
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      toast.error(dados.erro || "Erro ao enviar o e-mail")
+      return
+    }
+    toast.success(`Orcamento enviado para ${orcamento.cliente_email}!`)
     recarregar()
   }
 
@@ -272,6 +315,29 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                   size="icon-lg"
                                   onClick={(e) => {
                                     e.stopPropagation()
+                                    enviarPorWhatsapp(orcamento)
+                                  }}
+                                  title="Enviar por WhatsApp"
+                                >
+                                  <MessageCircle size={16} className="text-emerald-500" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-lg"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    enviarPorEmail(orcamento)
+                                  }}
+                                  disabled={enviandoEmailId === orcamento.id}
+                                  title="Enviar por e-mail"
+                                >
+                                  <Mail size={16} className="text-blue-500" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-lg"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
                                     abrirEdicao(orcamento)
                                   }}
                                 >
@@ -404,6 +470,22 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                 { label: "Desconto", valor: formatarMoeda(detalhe.desconto) },
                 { label: "Total", valor: formatarMoeda(detalhe.total) },
                 { label: "Data", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },
+                ...(detalhe.enviado_email_em
+                  ? [{ label: "E-mail enviado em", valor: new Date(detalhe.enviado_email_em).toLocaleString("pt-BR") }]
+                  : []),
+                ...(detalhe.respondido_em
+                  ? [
+                      {
+                        label: "Resposta do cliente",
+                        valor: `${detalhe.status === "aprovado" ? "Aprovado" : "Recusado"} via ${
+                          detalhe.canal_resposta === "whatsapp" ? "WhatsApp" : "e-mail"
+                        } em ${new Date(detalhe.respondido_em).toLocaleString("pt-BR")}`,
+                      },
+                      ...(detalhe.observacao_cliente
+                        ? [{ label: "Observacao do cliente", valor: detalhe.observacao_cliente }]
+                        : []),
+                    ]
+                  : []),
               ]
             : []
         }

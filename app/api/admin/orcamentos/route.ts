@@ -14,8 +14,9 @@ export async function GET() {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const orcamentos = await query(
-    `SELECT id, numero, titulo, cliente_id, cliente_nome, cliente_telefone,
-       status, subtotal, desconto, total, pedido_id, criado_em
+    `SELECT id, numero, titulo, cliente_id, cliente_nome, cliente_telefone, cliente_email,
+       status, subtotal, desconto, total, pedido_id, token_aprovacao, canal_resposta,
+       observacao_cliente, enviado_email_em, respondido_em, criado_em
      FROM TAB_ORCAMENTO
      ORDER BY criado_em DESC`
   )
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
     clienteId,
     clienteNome,
     clienteTelefone,
+    clienteEmail,
     condicoes,
     desconto,
     itens,
@@ -39,6 +41,7 @@ export async function POST(request: Request) {
     clienteId?: string | null
     clienteNome: string
     clienteTelefone?: string | null
+    clienteEmail?: string | null
     condicoes?: string | null
     desconto?: number
     itens: ItemOrcamento[]
@@ -58,14 +61,15 @@ export async function POST(request: Request) {
   const orcamento = await transacao(async (executar) => {
     const [criado] = await executar(
       `INSERT INTO TAB_ORCAMENTO
-         (titulo, cliente_id, cliente_nome, cliente_telefone, condicoes, subtotal, desconto, total)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         (titulo, cliente_id, cliente_nome, cliente_telefone, cliente_email, condicoes, subtotal, desconto, total)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id, numero, titulo, status, subtotal, desconto, total, criado_em`,
       [
         titulo || null,
         clienteId || null,
         clienteNome.trim(),
         clienteTelefone || null,
+        clienteEmail || null,
         condicoes || null,
         subtotal,
         valorDesconto,

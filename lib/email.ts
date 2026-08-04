@@ -239,6 +239,76 @@ export function templateNotaFiscalEmitida(params: {
   `)
 }
 
+export function templateOrcamentoEnviado(params: {
+  nomeCliente: string
+  numero: number
+  titulo: string | null
+  itens: ItemEmail[]
+  subtotal: number
+  desconto: number
+  total: number
+  link: string
+}): string {
+  const numeroFormatado = `OR.${String(params.numero).padStart(4, "0")}`
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Orcamento ${numeroFormatado}</h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#555;">
+      Ola ${escapeHtml(params.nomeCliente)}, segue o orcamento${params.titulo ? ` "${escapeHtml(params.titulo)}"` : ""} para sua avaliacao.
+    </p>
+    ${tabelaItens(params.itens)}
+    ${
+      params.desconto > 0
+        ? `<p style="margin:16px 0 0;font-size:14px;color:#555;text-align:right;">
+            Subtotal: ${params.subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}<br>
+            Desconto: -${params.desconto.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          </p>`
+        : ""
+    }
+    <p style="margin:8px 0 20px;font-size:18px;font-weight:700;color:#065f46;text-align:right;">
+      Total: ${params.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+    </p>
+    <p style="margin:0;text-align:center;">
+      <a href="${params.link}" style="display:inline-block;background:#065f46;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
+        Ver orcamento e responder
+      </a>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:#999;text-align:center;">
+      Clique no botao acima para ver os detalhes e aprovar ou recusar.
+    </p>
+  `)
+}
+
+export function templateOrcamentoRespondido(params: {
+  numero: number
+  titulo: string | null
+  clienteNome: string
+  aprovado: boolean
+  canal: "email" | "whatsapp"
+  observacao: string | null
+}): string {
+  const numeroFormatado = `OR.${String(params.numero).padStart(4, "0")}`
+  const cor = params.aprovado ? "#065f46" : "#dc2626"
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:${cor};">
+      Orcamento ${params.aprovado ? "aprovado" : "recusado"} pelo cliente
+    </h1>
+    <p style="margin:0 0 4px;font-size:14px;color:#555;">
+      ${numeroFormatado}${params.titulo ? ` - ${escapeHtml(params.titulo)}` : ""}
+    </p>
+    <p style="margin:0 0 4px;font-size:14px;color:#555;">Cliente: ${escapeHtml(params.clienteNome)}</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#555;">
+      Canal: ${params.canal === "whatsapp" ? "WhatsApp" : "E-mail"}
+    </p>
+    ${
+      params.observacao
+        ? `<p style="margin:0;font-size:14px;color:#555;">
+            <strong>Observacao do cliente:</strong><br>${escapeHtml(params.observacao)}
+          </p>`
+        : ""
+    }
+  `)
+}
+
 export function templateVoltouEstoque(params: { nomeProduto: string; linkProduto: string }): string {
   return envelope(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Voltou ao estoque!</h1>

@@ -25,6 +25,7 @@ export type OrcamentoExistente = {
   cliente_id: string | null
   cliente_nome: string
   cliente_telefone: string | null
+  cliente_email: string | null
   condicoes: string | null
   desconto: string
   itens: { produto_id: string | null; descricao: string; quantidade: string; valor_unitario: string }[]
@@ -48,6 +49,7 @@ export function OrcamentoForm({
   const [clienteTelefone, setClienteTelefone] = useState(
     orcamento?.cliente_telefone ? mascaraTelefone(orcamento.cliente_telefone) : ""
   )
+  const [clienteEmail, setClienteEmail] = useState(orcamento?.cliente_email || "")
   const [buscaCliente, setBuscaCliente] = useState("")
   const [condicoes, setCondicoes] = useState(orcamento?.condicoes || "")
   const [desconto, setDesconto] = useState(orcamento?.desconto || "0")
@@ -79,6 +81,7 @@ export function OrcamentoForm({
     setClienteId(cliente.id)
     setClienteNome(cliente.nome)
     setClienteTelefone(cliente.telefone || "")
+    setClienteEmail(cliente.email || "")
     setBuscaCliente("")
   }
 
@@ -137,6 +140,7 @@ export function OrcamentoForm({
       clienteId,
       clienteNome,
       clienteTelefone: clienteTelefone.replace(/\D/g, "") || null,
+      clienteEmail: clienteEmail.trim() || null,
       condicoes: condicoes || null,
       desconto: Number(desconto) || 0,
       itens: itensValidos.map((i) => ({
@@ -172,6 +176,7 @@ export function OrcamentoForm({
     setClienteId(orcamento?.cliente_id || null)
     setClienteNome(orcamento?.cliente_nome || "")
     setClienteTelefone(orcamento?.cliente_telefone ? mascaraTelefone(orcamento.cliente_telefone) : "")
+    setClienteEmail(orcamento?.cliente_email || "")
     setBuscaCliente("")
     setCondicoes(orcamento?.condicoes || "")
     setDesconto(orcamento?.desconto || "0")
@@ -292,17 +297,26 @@ export function OrcamentoForm({
               </div>
 
               {clienteId ? (
-                <div className="flex items-center justify-between rounded-md border border-input px-3 py-2 text-sm">
-                  <span>{clienteNome}</span>
-                  <button
-                    onClick={() => {
-                      setClienteId(null)
-                      setClienteNome("")
-                      setClienteTelefone("")
-                    }}
-                  >
-                    <X size={14} className="text-slate-500" />
-                  </button>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between rounded-md border border-input px-3 py-2 text-sm">
+                    <span>{clienteNome}</span>
+                    <button
+                      onClick={() => {
+                        setClienteId(null)
+                        setClienteNome("")
+                        setClienteTelefone("")
+                        setClienteEmail("")
+                      }}
+                    >
+                      <X size={14} className="text-slate-500" />
+                    </button>
+                  </div>
+                  <Input
+                    placeholder="E-mail (pra enviar o orcamento)"
+                    type="email"
+                    value={clienteEmail}
+                    onChange={(e) => setClienteEmail(e.target.value)}
+                  />
                 </div>
               ) : (
                 <div className="space-y-2">

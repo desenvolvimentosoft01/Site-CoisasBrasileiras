@@ -16,8 +16,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { id } = await params
 
   const [orcamento] = await query(
-    `SELECT id, numero, titulo, cliente_id, cliente_nome, cliente_telefone, condicoes,
-       status, subtotal, desconto, total, pedido_id, criado_em
+    `SELECT id, numero, titulo, cliente_id, cliente_nome, cliente_telefone, cliente_email, condicoes,
+       status, subtotal, desconto, total, pedido_id, token_aprovacao, canal_resposta,
+       observacao_cliente, enviado_email_em, respondido_em, criado_em
      FROM TAB_ORCAMENTO WHERE id = $1`,
     [id]
   )
@@ -47,6 +48,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     clienteId,
     clienteNome,
     clienteTelefone,
+    clienteEmail,
     condicoes,
     desconto,
     itens,
@@ -55,6 +57,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     clienteId?: string | null
     clienteNome: string
     clienteTelefone?: string | null
+    clienteEmail?: string | null
     condicoes?: string | null
     desconto?: number
     itens: ItemOrcamento[]
@@ -82,15 +85,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const orcamento = await transacao(async (executar) => {
     const [atualizado] = await executar(
       `UPDATE TAB_ORCAMENTO
-       SET titulo = $1, cliente_id = $2, cliente_nome = $3, cliente_telefone = $4,
-           condicoes = $5, subtotal = $6, desconto = $7, total = $8, atualizado_em = NOW()
-       WHERE id = $9
+       SET titulo = $1, cliente_id = $2, cliente_nome = $3, cliente_telefone = $4, cliente_email = $5,
+           condicoes = $6, subtotal = $7, desconto = $8, total = $9, atualizado_em = NOW()
+       WHERE id = $10
        RETURNING id, numero, titulo, status, subtotal, desconto, total, criado_em`,
       [
         titulo || null,
         clienteId || null,
         clienteNome.trim(),
         clienteTelefone || null,
+        clienteEmail || null,
         condicoes || null,
         subtotal,
         valorDesconto,
