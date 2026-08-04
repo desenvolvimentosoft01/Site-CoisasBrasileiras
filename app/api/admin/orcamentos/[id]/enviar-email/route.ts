@@ -1,6 +1,8 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { enviarEmail, templateOrcamentoEnviado } from "@/lib/email"
+import { gerarPdfOrcamento } from "@/lib/pdf-orcamento"
+import { getConfiguracoes } from "@/lib/configuracoes"
 import { NextResponse } from "next/server"
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -10,7 +12,8 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { id } = await params
 
   const [orcamento] = await query(
-    `SELECT id, numero, titulo, cliente_nome, cliente_email, subtotal, desconto, total, token_aprovacao
+    `SELECT id, numero, titulo, cliente_nome, cliente_email, condicoes, subtotal, desconto, total,
+       token_aprovacao, criado_em
      FROM TAB_ORCAMENTO WHERE id = $1`,
     [id]
   )
@@ -21,17 +24,41 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ erro: "Cliente sem e-mail cadastrado nesse orcamento" }, { status: 400 })
   }
 
-  const itens = await query(
-    `SELECT descricao, quantidade, valor_unitario FROM TAB_ORCAMENTO_ITEM WHERE orcamento_id = $1 ORDER BY id`,
-    [id]
-  )
+  const [itens, config] = await Promise.all([
+    query(
+      `SELECT id, descricao, quantidade, valor_unitario, subtotal
+       FROM TAB_ORCAMENTO_ITEM WHERE orcamento_id = $1 ORDER BY id`,
+      [id]
+    ),
+    getConfiguracoes(["nome_loja"]),
+  ])
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
   const link = `${siteUrl}/orcamento/aprovar/${orcamento.token_aprovacao}?canal=email`
+  const numeroFormatado = `OR.${String(orcamento.numero).padStart(4, "0")}`
+
+  const pdf = await gerarPdfOrcamento({
+    nomeLoja: config.nome_loja || "Coisas Brasileiras",
+    numero: orcamento.numero,
+    titulo: orcamento.titulo,
+    clienteNome: orcamento.cliente_nome,
+    criadoEm: new Date(orcamento.criado_em),
+    itens: itens.map((i) => ({
+      id: i.id,
+      descricao: i.descricao,
+      quantidade: Number(i.quantidade),
+      valor_unitario: Number(i.valor_unitario),
+      subtotal: Number(i.subtotal),
+    })),
+    subtotal: Number(orcamento.subtotal),
+    desconto: Number(orcamento.desconto),
+    total: Number(orcamento.total),
+    condicoes: orcamento.condicoes,
+  })
 
   await enviarEmail({
     to: orcamento.cliente_email,
-    subject: `Orcamento OR.${String(orcamento.numero).padStart(4, "0")} - Coisas Brasileiras`,
+    subject: `Orcamento ${numeroFormatado} - Coisas Brasileiras`,
     html: templateOrcamentoEnviado({
       nomeCliente: orcamento.cliente_nome,
       numero: orcamento.numero,
@@ -42,6 +69,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       total: Number(orcamento.total),
       link,
     }),
+    attachments: [{ filename: `${numeroFormatado}.pdf`, content: pdf, contentType: "application/pdf" }],
   })
 
   await query("UPDATE TAB_ORCAMENTO SET enviado_email_em = NOW() WHERE id = $1", [id])

@@ -6,7 +6,12 @@ import { getSegredo } from "@/lib/segredos"
 // EMAIL_USER/EMAIL_PASS se nao houver nada configurado no banco. O
 // transporter e criado por envio (nao cacheado como antes) pra uma troca de
 // credencial pelo admin refletir sem precisar reiniciar o processo.
-export async function enviarEmail(opcoes: { to: string; subject: string; html: string }) {
+export async function enviarEmail(opcoes: {
+  to: string
+  subject: string
+  html: string
+  attachments?: { filename: string; content: Buffer; contentType?: string }[]
+}) {
   const [user, pass] = await Promise.all([getSegredo("email_user"), getSegredo("email_pass")])
 
   if (!user || !pass) {

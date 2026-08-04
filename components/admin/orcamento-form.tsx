@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trash2, Plus, User, X, Save, Eraser } from "lucide-react"
+import { Trash2, Plus, User, X, Save, Eraser, RefreshCw } from "lucide-react"
 import { formatarMoeda, mascaraTelefone } from "@/lib/mascaras"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
@@ -21,6 +21,7 @@ type ItemForm = {
 
 export type OrcamentoExistente = {
   id: string
+  numero: number
   titulo: string | null
   cliente_id: string | null
   cliente_nome: string
@@ -28,7 +29,26 @@ export type OrcamentoExistente = {
   cliente_email: string | null
   condicoes: string | null
   desconto: string
+  status: "aberto" | "aprovado" | "recusado" | "convertido"
+  enviado_email_em: string | null
+  respondido_em: string | null
+  canal_resposta: "email" | "whatsapp" | null
+  observacao_cliente: string | null
   itens: { produto_id: string | null; descricao: string; quantidade: string; valor_unitario: string }[]
+}
+
+const STATUS_ROTULO: Record<OrcamentoExistente["status"], string> = {
+  aberto: "Aguardando resposta do cliente",
+  aprovado: "Aprovado pelo cliente",
+  recusado: "Recusado pelo cliente",
+  convertido: "Convertido em venda",
+}
+
+const STATUS_COR: Record<OrcamentoExistente["status"], string> = {
+  aberto: "bg-blue-600/10 text-blue-600",
+  aprovado: "bg-emerald-600/10 text-emerald-600",
+  recusado: "bg-red-600/10 text-red-600",
+  convertido: "bg-slate-500/10 text-slate-500",
 }
 
 export function OrcamentoForm({
@@ -63,6 +83,8 @@ export function OrcamentoForm({
   )
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
+  const [statusAtual, setStatusAtual] = useState(orcamento)
+  const [atualizandoStatus, setAtualizandoStatus] = useState(false)
 
   useEffect(() => {
     fetch("/api/admin/clientes")
@@ -171,6 +193,15 @@ export function OrcamentoForm({
     onSalvo()
   }
 
+  async function atualizarStatus() {
+    if (!orcamento) return
+    setAtualizandoStatus(true)
+    const resposta = await fetch(`/api/admin/orcamentos/${orcamento.id}`)
+    setAtualizandoStatus(false)
+    if (!resposta.ok) return
+    setStatusAtual(await resposta.json())
+  }
+
   function limpar() {
     setTitulo(orcamento?.titulo || "")
     setClienteId(orcamento?.cliente_id || null)
@@ -201,10 +232,40 @@ export function OrcamentoForm({
           botoes={[
             { label: "Gravar", icon: Save, onClick: salvar, variante: "success", disabled: salvando },
             { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
+            ...(orcamento
+              ? [
+                  {
+                    label: atualizandoStatus ? "Atualizando..." : "Atualizar status",
+                    icon: RefreshCw,
+                    onClick: atualizarStatus,
+                    disabled: atualizandoStatus,
+                  },
+                ]
+              : []),
             { label: "Cancelar", icon: X, onClick: onCancelar, variante: "danger" },
           ]}
         />
       </div>
+
+      {statusAtual && (
+        <div className={`flex flex-wrap items-center gap-2 rounded-md px-3 py-2 text-sm ${STATUS_COR[statusAtual.status]}`}>
+          <span className="font-medium">{STATUS_ROTULO[statusAtual.status]}</span>
+          {statusAtual.enviado_email_em && (
+            <span className="text-xs opacity-80">
+              · E-mail enviado em {new Date(statusAtual.enviado_email_em).toLocaleString("pt-BR")}
+            </span>
+          )}
+          {statusAtual.respondido_em && (
+            <span className="text-xs opacity-80">
+              · Respondido via {statusAtual.canal_resposta === "whatsapp" ? "WhatsApp" : "e-mail"} em{" "}
+              {new Date(statusAtual.respondido_em).toLocaleString("pt-BR")}
+            </span>
+          )}
+          {statusAtual.observacao_cliente && (
+            <span className="w-full text-xs opacity-80">Observacao do cliente: "{statusAtual.observacao_cliente}"</span>
+          )}
+        </div>
+      )}
 
       {erro && <p className="text-sm text-red-500">{erro}</p>}
 

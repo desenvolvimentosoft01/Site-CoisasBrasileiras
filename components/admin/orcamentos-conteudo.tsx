@@ -245,6 +245,27 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                   disabled: !orcamentoSelecionado || orcamentoSelecionado.status !== "aberto",
                 },
                 {
+                  label: "Converter em venda",
+                  icon: ArrowRightCircle,
+                  onClick: () => orcamentoSelecionado && setOrcamentoConvertendo(orcamentoSelecionado),
+                  disabled: !orcamentoSelecionado || orcamentoSelecionado.status !== "aprovado",
+                },
+                {
+                  label: "Enviar e-mail",
+                  icon: Mail,
+                  onClick: () => orcamentoSelecionado && enviarPorEmail(orcamentoSelecionado),
+                  disabled:
+                    !orcamentoSelecionado ||
+                    orcamentoSelecionado.status !== "aberto" ||
+                    enviandoEmailId === orcamentoSelecionado?.id,
+                },
+                {
+                  label: "Enviar WhatsApp",
+                  icon: MessageCircle,
+                  onClick: () => orcamentoSelecionado && enviarPorWhatsapp(orcamentoSelecionado),
+                  disabled: !orcamentoSelecionado || orcamentoSelecionado.status !== "aberto",
+                },
+                {
                   label: "Excluir",
                   icon: Trash2,
                   onClick: () => orcamentoSelecionado && excluir(orcamentoSelecionado),

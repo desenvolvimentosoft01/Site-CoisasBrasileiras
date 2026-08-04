@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   const emailAdmin = (await getSegredo("email_notificacoes_admin")) || (await getSegredo("email_user"))
   if (emailAdmin) {
-    enviarEmail({
+    await enviarEmail({
       to: emailAdmin,
       subject: `Orcamento OR.${String(orcamento.numero).padStart(4, "0")} ${decisao === "aprovado" ? "aprovado" : "recusado"} - ${orcamento.cliente_nome}`,
       html: templateOrcamentoRespondido({
