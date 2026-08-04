@@ -1,0 +1,40 @@
+#!/bin/sh
+# Bloqueia commit se detectar arquivo .env real ou padroes de segredo no diff staged.
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+FOUND=0
+
+# 1) bloqueia qualquer .env real (permite .env.example)
+for f in $STAGED_FILES; do
+  case "$f" in
+    *.env|*.env.local|*.env.production|*.env.development|.env)
+      echo "BLOQUEADO: arquivo de ambiente real sendo commitado: $f"
+      FOUND=1
+      ;;
+  esac
+done
+
+# 2) escaneia o diff staged atras de padroes de segredo
+PATTERN='(sk_live_[A-Za-z0-9]+|APP_USR-[A-Za-z0-9-]+|AUTH_SECRET *= *[A-Za-z0-9]{10,}|EMAIL_PASS *= *[A-Za-z0-9]{10,}|BLING_CLIENT_SECRET *= *[A-Za-z0-9]{10,}|FRENET_TOKEN *= *[A-Za-z0-9]{10,}|-----BEGIN (RSA |EC )?PRIVATE KEY-----|password *[:=] *["'"'"'][^"'"'"' ]{6,}["'"'"'])'
+
+MATCHES=$(git diff --cached -U0 -- . ':(exclude).env.example' | grep -inE "$PATTERN" || true)
+
+if [ -n "$MATCHES" ]; then
+  echo "BLOQUEADO: possivel segredo/credencial no commit:"
+  echo "$MATCHES"
+  FOUND=1
+fi
+
+if [ "$FOUND" = "1" ]; then
+  echo ""
+  echo "Commit cancelado. Remova o dado sensivel (ou use variavel de ambiente / .env.local fora do git) antes de commitar."
+  echo "Se for um falso positivo, ajuste o padrao em .husky/pre-commit."
+  exit 1
+fi
+
+exit 0
