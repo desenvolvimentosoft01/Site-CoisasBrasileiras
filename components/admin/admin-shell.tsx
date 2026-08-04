@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
 import { ConfirmProvider } from "@/components/admin/confirm-provider"
 import type { SessaoAdmin } from "@/lib/auth"
+import { rotaAtiva } from "@/lib/rota-ativa"
 import type { LucideIcon } from "lucide-react"
 
 type ItemLink = { tipo: "link"; href: string; label: string; icone: LucideIcon; somenteAdmin?: boolean }
@@ -41,14 +42,6 @@ type ItemMenu = ItemLink | ItemGrupo
 
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
-// pathname.startsWith(href) sozinho da falso positivo quando um href e
-// prefixo textual de outro (ex: "/admin/pedidos" e prefixo de
-// "/admin/pedidos-compra") - exige que o pathname termine exatamente no href
-// ou continue com "/" (uma subrota de verdade, tipo "/admin/pedidos/123").
-function rotaAtiva(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
 const menu: ItemMenu[] = [
   { tipo: "link", href: "/admin/dashboard", label: "Visao Geral", icone: LayoutDashboard },
   { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcao", icone: Store },

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAbasAdmin } from "@/lib/abas-admin-store"
+import { rotaAtiva } from "@/lib/rota-ativa"
 import type { LucideIcon } from "lucide-react"
 
 type ItemMenu = { href: string; label: string; icone: LucideIcon }
@@ -21,7 +22,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   // menu lateral), registra a aba mesmo assim - a barra sempre reflete onde
   // o usuario esta.
   useEffect(() => {
-    const item = itensMenu.find((i) => pathname.startsWith(i.href))
+    const item = itensMenu.find((i) => rotaAtiva(pathname, i.href))
     if (item) {
       abrirAba({ path: item.href, titulo: item.label })
     }
@@ -63,7 +64,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   function handleFechar(evento: React.MouseEvent, path: string) {
     evento.stopPropagation()
     const proximoPath = fecharAba(path)
-    if (proximoPath && pathname.startsWith(path)) {
+    if (proximoPath && rotaAtiva(pathname, path)) {
       router.push(proximoPath)
     }
   }
@@ -90,7 +91,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
       >
       <div ref={conteudoRef} className="flex w-max items-end gap-0">
       {abas.map((aba) => {
-        const ativa = pathname.startsWith(aba.path)
+        const ativa = rotaAtiva(pathname, aba.path)
         const Icone = iconeDaAba(aba.path)
         const fechavel = aba.path !== "/admin/dashboard"
 
