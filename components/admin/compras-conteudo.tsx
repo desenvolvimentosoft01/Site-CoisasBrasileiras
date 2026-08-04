@@ -278,7 +278,7 @@ export function ComprasConteudo({
         setFornecedoresDisponiveis((atual) => [...atual, novoFornecedor])
         setFornecedorId(novoFornecedor.id)
         registrarAuditoria({
-          tela: "Compras (importacao XML)",
+          tela: "Entrada de NF (importacao XML)",
           acao: "cadastro",
           tabela: "TAB_FORNECEDOR",
           registroId: novoFornecedor.id,
@@ -372,7 +372,7 @@ export function ComprasConteudo({
 
     const salva = await resposta.json()
     registrarAuditoria({
-      tela: "Compras",
+      tela: "Entrada de NF",
       acao: "cadastro",
       tabela: "TAB_COMPRA",
       registroId: salva.id,
@@ -397,7 +397,7 @@ export function ComprasConteudo({
     }
 
     registrarAuditoria({
-      tela: "Compras",
+      tela: "Entrada de NF",
       acao: "edicao",
       tabela: "TAB_COMPRA",
       registroId: compra.id,
@@ -421,7 +421,7 @@ export function ComprasConteudo({
     }
 
     registrarAuditoria({
-      tela: "Compras",
+      tela: "Entrada de NF",
       acao: "edicao",
       tabela: "TAB_COMPRA",
       registroId: compra.id,
@@ -433,7 +433,7 @@ export function ComprasConteudo({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Compras</h1>
+      <h1 className="text-2xl font-semibold">Entrada de NF</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <div className="flex items-center justify-between">
