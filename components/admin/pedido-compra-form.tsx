@@ -175,7 +175,7 @@ export function PedidoCompraForm({
                     onChange={(e) => e.target.value && selecionarProdutoNoItem(indice, e.target.value)}
                     className="mb-1 w-full rounded-md border border-slate-300 bg-slate-100 p-2 text-sm"
                   >
-                    <option value=""></option>
+                    <option value="">Selecione um produto...</option>
                     {produtosDisponiveis.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nome} {p.sku ? `(${p.sku})` : ""}
