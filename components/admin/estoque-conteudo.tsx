@@ -125,7 +125,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
                   <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Produto</th>
                     <th className="p-4 font-medium">SKU</th>
-                    <th className="p-4 font-medium">Minimo</th>
+                    <th className="p-4 font-medium">Mínimo</th>
                     <th className="p-4 font-medium">Estoque atual</th>
                     <th className="p-4 font-medium text-right">Ajustar</th>
                   </tr>

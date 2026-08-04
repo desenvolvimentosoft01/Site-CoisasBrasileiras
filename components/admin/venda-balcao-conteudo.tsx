@@ -90,8 +90,8 @@ const FORMAS_PAGAMENTO = [
   { valor: "dinheiro", rotulo: "Dinheiro" },
   { valor: "pix", rotulo: "Pix" },
   { valor: "boleto", rotulo: "Boleto" },
-  { valor: "cartao_credito", rotulo: "Cartao de credito" },
-  { valor: "cartao_debito", rotulo: "Cartao de debito" },
+  { valor: "cartao_credito", rotulo: "Cartão de crédito" },
+  { valor: "cartao_debito", rotulo: "Cartão de débito" },
 ]
 
 function precoEfetivo(produto: Produto) {
@@ -254,7 +254,7 @@ export function VendaBalcaoConteudo({
       // Codigo invalido (leitura falha, digitacao errada) - nao oferece
       // cadastro rapido pra nao criar produto com codigo de barras furado.
       if (!validarCodigoBarras(codigo)) {
-        setErroCodigoBarras("Codigo de barras invalido (digito verificador nao confere) - leia de novo")
+        setErroCodigoBarras("Código de barras inválido (dígito verificador não confere) - leia de novo")
         return
       }
       // Produto nao cadastrado - oferece cadastro rapido em vez de so travar
@@ -275,7 +275,7 @@ export function VendaBalcaoConteudo({
     setErroCadastroRapido("")
 
     if (!novoProdutoNome.trim() || !valorMoedaParaNumero(novoProdutoPreco)) {
-      setErroCadastroRapido("Nome e preco sao obrigatorios")
+      setErroCadastroRapido("Nome e preço são obrigatórios")
       return
     }
 
@@ -310,7 +310,7 @@ export function VendaBalcaoConteudo({
     }
     setProdutos((atual) => [...atual, produtoCompleto])
     registrarAuditoria({
-      tela: "Venda Balcao (cadastro rapido)",
+      tela: "Venda Balcão (cadastro rápido)",
       acao: "cadastro",
       tabela: "TAB_PRODUTO",
       registroId: produtoCriado.id,
@@ -398,7 +398,7 @@ export function VendaBalcaoConteudo({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Venda Balcao</h1>
+        <h1 className="text-2xl font-semibold">Venda Balcão</h1>
         <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
           <TabsList>
             <TabsTrigger value="produtos">
@@ -419,7 +419,7 @@ export function VendaBalcaoConteudo({
             <TabsList>
               <TabsTrigger value="todas">Todas</TabsTrigger>
               <TabsTrigger value="site">Site</TabsTrigger>
-              <TabsTrigger value="balcao">Balcao</TabsTrigger>
+              <TabsTrigger value="balcao">Balcão</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -497,7 +497,7 @@ export function VendaBalcaoConteudo({
               <div className="relative max-w-56 flex-1">
                 <Barcode size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <Input
-                  placeholder="Ler codigo de barras..."
+                  placeholder="Ler código de barras..."
                   value={codigoBarrasLido}
                   onChange={(e) => {
                     setCodigoBarrasLido(e.target.value)
@@ -704,7 +704,7 @@ export function VendaBalcaoConteudo({
                         >
                           + Cadastrar novo cliente (completo)
                         </button>
-                        <p className="text-xs text-slate-400">Ou cadastro rapido, sem conta no site:</p>
+                        <p className="text-xs text-slate-400">Ou cadastro rápido, sem conta no site:</p>
                         <Input
                           placeholder="Nome"
                           value={clienteNomeAvulso}
@@ -791,7 +791,7 @@ export function VendaBalcaoConteudo({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nenhum">Sem entrega (venda direta no balcao)</SelectItem>
+                    <SelectItem value="nenhum">Sem entrega (venda direta no balcão)</SelectItem>
                     {tiposEntrega.map((tipo) => (
                       <SelectItem key={tipo.id} value={tipo.id}>
                         {tipo.nome}
@@ -885,22 +885,22 @@ export function VendaBalcaoConteudo({
       <Dialog open={!!modalCadastroRapido} onOpenChange={(aberto) => !aberto && setModalCadastroRapido(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Produto nao cadastrado</DialogTitle>
+            <DialogTitle>Produto não cadastrado</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-slate-500">
-              Nenhum produto com o codigo <strong>{modalCadastroRapido?.codigoBarras}</strong>. Deseja
+              Nenhum produto com o código <strong>{modalCadastroRapido?.codigoBarras}</strong>. Deseja
               cadastrar agora pra continuar a venda?
             </p>
             {modalCadastroRapido && validarCodigoBarras(modalCadastroRapido.codigoBarras) && (
-              <p className="text-xs text-emerald-500">Codigo de barras valido</p>
+              <p className="text-xs text-emerald-500">Código de barras válido</p>
             )}
             <div className="space-y-2">
               <Label>Nome do produto</Label>
               <Input value={novoProdutoNome} onChange={(e) => setNovoProdutoNome(e.target.value)} autoFocus />
             </div>
             <div className="space-y-2">
-              <Label>Preco (R$)</Label>
+              <Label>Preço (R$)</Label>
               <Input
                 inputMode="numeric"
                 value={novoProdutoPreco}
@@ -909,8 +909,8 @@ export function VendaBalcaoConteudo({
               />
             </div>
             <p className="rounded-md bg-amber-500/10 p-2 text-xs text-amber-600">
-              Esse e um cadastro rapido, so com o essencial pra vender agora. Depois va em Produtos e
-              complete o cadastro (NCM, categoria, fotos, dimensoes) antes de emitir nota fiscal desse item.
+              Esse é um cadastro rápido, só com o essencial pra vender agora. Depois vá em Produtos e
+              complete o cadastro (NCM, categoria, fotos, dimensões) antes de emitir nota fiscal desse item.
             </p>
             {erroCadastroRapido && <p className="text-sm text-red-500">{erroCadastroRapido}</p>}
           </div>

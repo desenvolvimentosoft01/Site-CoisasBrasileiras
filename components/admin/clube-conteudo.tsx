@@ -48,7 +48,7 @@ export function ClubeConteudo({ assinaturas }: { assinaturas: Assinatura[] }) {
                   <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Cliente</th>
                     <th className="p-4 font-medium">Mensalidade</th>
-                    <th className="p-4 font-medium">Proxima cobranca</th>
+                    <th className="p-4 font-medium">Próxima cobrança</th>
                     <th className="p-4 font-medium">Status</th>
                   </tr>
                 </thead>

@@ -31,7 +31,7 @@ export function AplicarCupom({ subtotal }: { subtotal: number }) {
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErro(dados.erro || "Cupom invalido")
+      setErro(dados.erro || "Cupom inválido")
       return
     }
 
@@ -65,7 +65,7 @@ export function AplicarCupom({ subtotal }: { subtotal: number }) {
         <Input
           value={codigo}
           onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-          placeholder="Codigo do cupom"
+          placeholder="Código do cupom"
           className="flex-1"
         />
         <Button type="button" variant="outline" onClick={aplicar} disabled={validando || !codigo.trim()}>

@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   )
 
   if (!cliente) {
-    return NextResponse.json({ erro: "Cliente nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Cliente não encontrado" }, { status: 404 })
   }
 
   return NextResponse.json(cliente)
@@ -38,7 +38,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     await request.json()
 
   if (!nome || !nome.trim()) {
-    return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome é obrigatório" }, { status: 400 })
   }
 
   // Tudo numa transacao com FOR UPDATE no endereco: sem isso, dois cliques
@@ -81,7 +81,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   })
 
   if (!cliente) {
-    return NextResponse.json({ erro: "Cliente nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Cliente não encontrado" }, { status: 404 })
   }
 
   return NextResponse.json(cliente)
@@ -102,7 +102,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   } catch (erro) {
     if (erro instanceof Error && "code" in erro && erro.code === "23503") {
       return NextResponse.json(
-        { erro: "Este cliente ja tem pedidos vinculados e nao pode ser excluido. Inative-o em vez disso." },
+        { erro: "Este cliente já tem pedidos vinculados e não pode ser excluído. Inative-o em vez disso." },
         { status: 409 }
       )
     }

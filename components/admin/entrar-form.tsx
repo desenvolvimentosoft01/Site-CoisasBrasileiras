@@ -38,7 +38,7 @@ export function EntrarForm({
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErro(dados.erro || "Nao foi possivel entrar")
+      setErro(dados.erro || "Não foi possível entrar")
       return
     }
 

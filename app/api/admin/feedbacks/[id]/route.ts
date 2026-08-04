@@ -11,7 +11,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { nome, texto, imagemUrl, nota, ordem, ativo } = await request.json()
 
   if (!nome || !nome.trim() || !texto || !texto.trim()) {
-    return NextResponse.json({ erro: "Nome e texto sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome e texto são obrigatórios" }, { status: 400 })
   }
 
   const [feedback] = await query(
@@ -23,7 +23,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!feedback) {
-    return NextResponse.json({ erro: "Feedback nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Feedback não encontrado" }, { status: 404 })
   }
 
   revalidatePath("/", "layout")

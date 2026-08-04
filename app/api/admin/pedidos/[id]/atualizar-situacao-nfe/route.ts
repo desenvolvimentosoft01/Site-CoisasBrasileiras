@@ -11,10 +11,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   const [pedido] = await query("SELECT bling_nota_id FROM TAB_PEDIDO WHERE id = $1", [id])
   if (!pedido) {
-    return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido não encontrado" }, { status: 404 })
   }
   if (!pedido.bling_nota_id) {
-    return NextResponse.json({ erro: "Esse pedido nao tem nota fiscal emitida no Bling" }, { status: 400 })
+    return NextResponse.json({ erro: "Esse pedido não tem nota fiscal emitida no Bling" }, { status: 400 })
   }
 
   let situacao: number
@@ -22,7 +22,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     situacao = await consultarSituacaoNotaFiscalBling(pedido.bling_nota_id)
   } catch (erro) {
     return NextResponse.json(
-      { erro: erro instanceof Error ? erro.message : "Erro ao consultar situacao no Bling" },
+      { erro: erro instanceof Error ? erro.message : "Erro ao consultar situação no Bling" },
       { status: 400 }
     )
   }

@@ -251,7 +251,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
   // historico de venda vinculado, a API recusa (23503) e pede pra inativar
   // em vez de excluir, pra nao perder o vinculo do pedido com o cliente.
   async function excluir(cliente: Cliente) {
-    if (!(await confirmar({ descricao: `Excluir o cliente "${cliente.nome}"? So funciona se ele nunca tiver feito nenhum pedido.`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o cliente "${cliente.nome}"? Só funciona se ele nunca tiver feito nenhum pedido.`, destrutivo: true }))) return
 
     const resposta = await fetch(`/api/admin/clientes/${cliente.id}`, { method: "DELETE" })
     if (!resposta.ok) {
@@ -370,7 +370,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                         <th className="p-4 font-medium">Telefone</th>
                         <th className="p-4 font-medium">CPF/CNPJ</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -394,7 +394,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                                   : "bg-amber-600/20 text-amber-400"
                               }`}
                             >
-                              {cliente.veio_do_site ? "Site" : "Balcao"}
+                              {cliente.veio_do_site ? "Site" : "Balcão"}
                             </span>
                           </td>
                           <td className="p-4 text-slate-500">{cliente.email || "-"}</td>
@@ -454,7 +454,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                                 e.stopPropagation()
                                 excluir(cliente)
                               }}
-                              title="Excluir cliente (so se nunca teve pedido)"
+                              title="Excluir cliente (só se nunca teve pedido)"
                             >
                               <Trash2 size={16} className="text-red-500" />
                             </Button>
@@ -509,7 +509,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                         type="email"
                         value={form.email}
                         onChange={(e) => campo("email", e.target.value)}
-                        placeholder="So se o cliente for usar o site"
+                        placeholder="Só se o cliente for usar o site"
                       />
                     </div>
                   )}
@@ -536,7 +536,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
 
               <Card>
                 <CardContent className="space-y-4 pt-6">
-                  <p className="text-sm font-medium text-muted-foreground">Endereco (opcional)</p>
+                  <p className="text-sm font-medium text-muted-foreground">Endereço (opcional)</p>
                   <div className="grid items-start gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>CEP</Label>
@@ -548,7 +548,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Numero</Label>
+                      <Label>Número</Label>
                       <Input value={form.numero} onChange={(e) => campo("numero", e.target.value)} />
                     </div>
                   </div>
@@ -592,7 +592,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
         campos={
           detalhe
             ? [
-                { label: "Origem", valor: detalhe.veio_do_site ? "Site" : "Balcao" },
+                { label: "Origem", valor: detalhe.veio_do_site ? "Site" : "Balcão" },
                 { label: "Email", valor: detalhe.email },
                 { label: "Telefone", valor: detalhe.telefone ? mascaraTelefone(detalhe.telefone) : null },
                 { label: "CPF/CNPJ", valor: detalhe.cpf_cnpj ? mascaraCpfCnpj(detalhe.cpf_cnpj) : null },

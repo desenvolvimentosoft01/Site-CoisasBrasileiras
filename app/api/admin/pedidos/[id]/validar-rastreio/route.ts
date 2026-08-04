@@ -14,7 +14,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   if (!codigoRastreio || !codigoServicoFrenet) {
     return NextResponse.json(
-      { erro: "Informe o codigo de rastreio e o codigo de servico da Frenet" },
+      { erro: "Informe o código de rastreio e o código de serviço da Frenet" },
       { status: 400 }
     )
   }

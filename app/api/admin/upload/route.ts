@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   const ehVideo = EXTENSOES_VIDEO.includes(extensao)
 
   if (!ehVideo && !EXTENSOES_IMAGEM.includes(extensao)) {
-    return NextResponse.json({ erro: "Formato de arquivo nao suportado" }, { status: 400 })
+    return NextResponse.json({ erro: "Formato de arquivo não suportado" }, { status: 400 })
   }
 
   const tamanhoMaximo = ehVideo ? TAMANHO_MAXIMO_VIDEO : TAMANHO_MAXIMO_IMAGEM

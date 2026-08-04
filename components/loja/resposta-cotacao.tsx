@@ -63,7 +63,7 @@ export function RespostaCotacao({
     }))
 
     if (itensPayload.some((i) => i.valorUnitarioCotado <= 0)) {
-      setErro("Informe o preco de todos os itens")
+      setErro("Informe o preço de todos os itens")
       return
     }
 
@@ -81,7 +81,7 @@ export function RespostaCotacao({
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErro(dados.erro || "Nao foi possivel enviar sua cotacao. Tente novamente.")
+      setErro(dados.erro || "Não foi possível enviar sua cotação. Tente novamente.")
       return
     }
     setRespondida(true)
@@ -92,7 +92,7 @@ export function RespostaCotacao({
       <div className="flex items-center justify-center gap-2 rounded-md bg-emerald-50 p-4 text-emerald-700">
         <CheckCircle2 size={18} />
         <span className="text-sm font-medium">
-          {status === "enviado" ? "Cotacao enviada! Obrigado." : "Essa cotacao ja foi respondida."}
+          {status === "enviado" ? "Cotação enviada! Obrigado." : "Essa cotação já foi respondida."}
         </span>
       </div>
     )
@@ -107,7 +107,7 @@ export function RespostaCotacao({
               <th className="p-3 font-medium">Item</th>
               <th className="p-3 font-medium">Qtde. pedida</th>
               <th className="p-3 font-medium">Qtde. que consegue</th>
-              <th className="p-3 font-medium">Preco unit. (R$)</th>
+              <th className="p-3 font-medium">Preço unit. (R$)</th>
             </tr>
           </thead>
           <tbody>
@@ -164,7 +164,7 @@ export function RespostaCotacao({
         disabled={enviando}
         className="flex h-11 w-full items-center justify-center rounded-md bg-emerald-600 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
       >
-        {enviando ? "Enviando..." : "Enviar cotacao"}
+        {enviando ? "Enviando..." : "Enviar cotação"}
       </button>
     </div>
   )

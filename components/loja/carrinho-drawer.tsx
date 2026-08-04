@@ -39,7 +39,7 @@ export function CarrinhoDrawer() {
         {itens.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-neutral-400">
             <ShoppingBag size={40} />
-            <p className="text-sm">Seu carrinho esta vazio.</p>
+            <p className="text-sm">Seu carrinho está vazio.</p>
           </div>
         ) : (
           <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">

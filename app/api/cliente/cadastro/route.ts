@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   const { nome, email, senha, telefone } = await request.json()
 
   if (!nome?.trim() || !email?.trim() || !senha) {
-    return NextResponse.json({ erro: "Nome, email e senha sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome, email e senha são obrigatórios" }, { status: 400 })
   }
 
   if (senha.length < 6) {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
   const existente = await query("SELECT id FROM TAB_CLIENTE WHERE email = $1", [email.trim()])
   if (existente.length > 0) {
-    return NextResponse.json({ erro: "Ja existe uma conta com esse email" }, { status: 409 })
+    return NextResponse.json({ erro: "Já existe uma conta com esse email" }, { status: 409 })
   }
 
   const senhaHash = await bcrypt.hash(senha, 10)

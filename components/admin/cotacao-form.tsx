@@ -80,7 +80,7 @@ export function CotacaoForm({
     }
     const itensValidos = itens.filter((i) => i.descricao.trim() && Number(i.quantidade) > 0)
     if (itensValidos.length === 0) {
-      setErro("Adicione pelo menos um item valido")
+      setErro("Adicione pelo menos um item válido")
       return
     }
 
@@ -132,7 +132,7 @@ export function CotacaoForm({
   return (
     <div className="w-full space-y-6">
       <p className="px-1 text-sm font-medium text-muted-foreground">
-        {cotacao ? `Editando cotacao #${String(cotacao.numero).padStart(4, "0")}` : "Nova cotacao"}
+        {cotacao ? `Editando cotação #${String(cotacao.numero).padStart(4, "0")}` : "Nova cotação"}
       </p>
       <div className="overflow-hidden rounded-lg border border-border">
         <BarraFerramentas
@@ -149,13 +149,13 @@ export function CotacaoForm({
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Itens (sem preco - o fornecedor cota)</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Itens (sem preço - o fornecedor cota)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {itens.map((item, indice) => (
               <div key={indice} className="grid grid-cols-12 gap-2 rounded-md border border-border p-3">
                 <div className="col-span-12 sm:col-span-7">
-                  <Label className="text-xs">Produto (opcional) ou descricao</Label>
+                  <Label className="text-xs">Produto (opcional) ou descrição</Label>
                   <select
                     value={item.produtoId || ""}
                     onChange={(e) => e.target.value && selecionarProdutoNoItem(indice, e.target.value)}
@@ -171,7 +171,7 @@ export function CotacaoForm({
                   <Input
                     value={item.descricao}
                     onChange={(e) => atualizarItem(indice, "descricao", e.target.value)}
-                    placeholder="Descricao do item"
+                    placeholder="Descrição do item"
                   />
                 </div>
                 <div className="col-span-8 sm:col-span-4">
@@ -197,12 +197,12 @@ export function CotacaoForm({
             </Button>
 
             <div className="space-y-2 border-t border-border pt-4">
-              <Label>Observacao (opcional)</Label>
+              <Label>Observação (opcional)</Label>
               <textarea
                 className="min-h-20 w-full rounded-md border border-input bg-transparent p-3 text-sm"
                 value={observacao}
                 onChange={(e) => setObservacao(e.target.value)}
-                placeholder="Ex: prazo de entrega desejado, condicoes de pagamento..."
+                placeholder="Ex: prazo de entrega desejado, condições de pagamento..."
               />
             </div>
           </CardContent>
@@ -227,7 +227,7 @@ export function CotacaoForm({
             </select>
             {fornecedorId && !fornecedores.find((f) => f.id === fornecedorId)?.email && (
               <p className="text-xs text-amber-500">
-                Esse fornecedor nao tem e-mail cadastrado - complete o cadastro pra poder enviar.
+                Esse fornecedor não tem e-mail cadastrado - complete o cadastro pra poder enviar.
               </p>
             )}
           </CardContent>

@@ -66,7 +66,7 @@ export default async function DashboardPage() {
     ),
     query(
       `SELECT p.id, p.status, p.total, p.origem, p.canal, p.forma_pagamento, p.criado_em,
-         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcao') AS cliente_nome
+         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcão') AS cliente_nome
        FROM TAB_PEDIDO p LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
        ORDER BY p.criado_em DESC LIMIT 5`
     ),
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Visao Geral</h1>
+      <h1 className="text-2xl font-semibold">Visão Geral</h1>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <CardIndicador titulo="Produtos ativos" icone={Package} cor="verde">
@@ -83,11 +83,11 @@ export default async function DashboardPage() {
         <CardIndicador titulo="Pedidos hoje (site)" icone={ShoppingCart} cor="azul">
           <div className="text-3xl font-semibold">{pedidosHoje}</div>
         </CardIndicador>
-        <CardIndicador titulo="Vendas balcao hoje" icone={Store} cor="roxo">
+        <CardIndicador titulo="Vendas balcão hoje" icone={Store} cor="roxo">
           <div className="text-3xl font-semibold">{vendasBalcaoHoje}</div>
           <div className="text-xs text-slate-400">{formatarMoeda(faturamentoBalcaoHoje)}</div>
         </CardIndicador>
-        <CardIndicador titulo="Faturamento do mes" icone={Wallet} cor="verde">
+        <CardIndicador titulo="Faturamento do mês" icone={Wallet} cor="verde">
           <div className="text-3xl font-semibold">{formatarMoeda(faturamentoMes)}</div>
         </CardIndicador>
         <CardIndicador titulo="Aguardando pagamento" icone={Clock} cor="ambar">
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Ultimos pedidos</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Últimos pedidos</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {pedidosRecentes.length === 0 ? (

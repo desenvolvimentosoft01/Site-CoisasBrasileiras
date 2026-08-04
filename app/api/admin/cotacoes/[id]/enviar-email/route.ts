@@ -18,10 +18,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     [id]
   )
   if (!cotacao) {
-    return NextResponse.json({ erro: "Cotacao nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Cotação não encontrada" }, { status: 404 })
   }
   if (cotacao.status === "aceita" || cotacao.status === "cancelada") {
-    return NextResponse.json({ erro: "Essa cotacao ja foi encerrada" }, { status: 400 })
+    return NextResponse.json({ erro: "Essa cotação já foi encerrada" }, { status: 400 })
   }
   if (!cotacao.fornecedor_email) {
     return NextResponse.json({ erro: "Fornecedor sem e-mail cadastrado" }, { status: 400 })

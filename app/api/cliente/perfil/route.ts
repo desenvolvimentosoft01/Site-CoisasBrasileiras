@@ -26,7 +26,7 @@ export async function PUT(request: Request) {
   const { nome, telefone, cpfCnpj } = await request.json()
 
   if (!nome || !nome.trim()) {
-    return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome é obrigatório" }, { status: 400 })
   }
 
   const [cliente] = await query(

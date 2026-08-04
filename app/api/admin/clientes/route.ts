@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     await request.json()
 
   if (!nome || !nome.trim()) {
-    return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome é obrigatório" }, { status: 400 })
   }
 
   // So checa duplicidade de e-mail quando ele foi informado - varios clientes
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   if (email?.trim()) {
     const existente = await query("SELECT id FROM TAB_CLIENTE WHERE email = $1", [email.trim()])
     if (existente.length > 0) {
-      return NextResponse.json({ erro: "Ja existe um cliente com esse e-mail" }, { status: 409 })
+      return NextResponse.json({ erro: "Já existe um cliente com esse e-mail" }, { status: 409 })
     }
   }
 
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     // 23505 = violacao de unique (ex: CPF/CNPJ ja cadastrado).
     if (erro instanceof Error && "code" in erro && erro.code === "23505") {
       return NextResponse.json(
-        { erro: "Ja existe um cliente com esse CPF/CNPJ ou e-mail" },
+        { erro: "Já existe um cliente com esse CPF/CNPJ ou e-mail" },
         { status: 409 }
       )
     }

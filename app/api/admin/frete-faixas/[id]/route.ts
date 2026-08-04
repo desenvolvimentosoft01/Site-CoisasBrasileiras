@@ -10,7 +10,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { valor, prazoDias } = await request.json()
 
   if (!valor || Number(valor) <= 0) {
-    return NextResponse.json({ erro: "Valor e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Valor é obrigatório" }, { status: 400 })
   }
 
   const [faixa] = await query(
@@ -21,7 +21,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!faixa) {
-    return NextResponse.json({ erro: "Faixa nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Faixa não encontrada" }, { status: 404 })
   }
 
   return NextResponse.json(faixa)

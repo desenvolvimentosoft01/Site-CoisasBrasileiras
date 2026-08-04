@@ -25,7 +25,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     [id]
   )
   if (!pedido) {
-    return NextResponse.json({ erro: "Pedido de compra nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido de compra não encontrado" }, { status: 404 })
   }
 
   const itens = await query(
@@ -55,7 +55,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   } = await request.json()
 
   if (!fornecedorId) {
-    return NextResponse.json({ erro: "Fornecedor e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Fornecedor é obrigatório" }, { status: 400 })
   }
   if (!Array.isArray(itens) || itens.length === 0) {
     return NextResponse.json({ erro: "Adicione pelo menos um item" }, { status: 400 })
@@ -63,10 +63,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const [atual] = await query("SELECT status FROM TAB_PEDIDO_COMPRA WHERE id = $1", [id])
   if (!atual) {
-    return NextResponse.json({ erro: "Pedido de compra nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido de compra não encontrado" }, { status: 404 })
   }
   if (atual.status !== "aberto") {
-    return NextResponse.json({ erro: "So e possivel editar pedidos de compra em aberto" }, { status: 400 })
+    return NextResponse.json({ erro: "Só é possível editar pedidos de compra em aberto" }, { status: 400 })
   }
 
   const valorTotal = itens.reduce((soma, item) => soma + item.quantidade * item.custoUnitario, 0)
@@ -106,15 +106,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { status } = await request.json()
 
   if (!STATUS_VALIDOS.includes(status)) {
-    return NextResponse.json({ erro: "Status invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Status inválido" }, { status: 400 })
   }
 
   const [atual] = await query("SELECT status FROM TAB_PEDIDO_COMPRA WHERE id = $1", [id])
   if (!atual) {
-    return NextResponse.json({ erro: "Pedido de compra nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido de compra não encontrado" }, { status: 404 })
   }
   if (atual.status === "atendido") {
-    return NextResponse.json({ erro: "Pedido de compra ja atendido (entrada lancada)" }, { status: 400 })
+    return NextResponse.json({ erro: "Pedido de compra já atendido (entrada lançada)" }, { status: 400 })
   }
 
   const [pedido] = await query(
@@ -133,7 +133,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const [atual] = await query("SELECT status FROM TAB_PEDIDO_COMPRA WHERE id = $1", [id])
   if (atual?.status === "atendido") {
     return NextResponse.json(
-      { erro: "Nao e possivel excluir um pedido de compra ja atendido" },
+      { erro: "Não é possível excluir um pedido de compra já atendido" },
       { status: 409 }
     )
   }

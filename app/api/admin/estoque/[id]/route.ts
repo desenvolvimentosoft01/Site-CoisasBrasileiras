@@ -17,7 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const novoEstoque = Number(estoque)
   if (!Number.isFinite(novoEstoque) || novoEstoque < 0) {
-    return NextResponse.json({ erro: "Estoque invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Estoque inválido" }, { status: 400 })
   }
 
   const [produto] = await query(
@@ -28,7 +28,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   )
 
   if (!produto) {
-    return NextResponse.json({ erro: "Produto nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Produto não encontrado" }, { status: 404 })
   }
 
   notificarClientesEstoqueVoltou(produto.id)

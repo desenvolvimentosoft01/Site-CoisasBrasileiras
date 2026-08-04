@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   // separado do pagamento avulso de pedido, so atualiza TAB_ASSINATURA_CLUBE.
   if (body?.type === "subscription_preapproval" && dataId) {
     if (!(await assinaturaValida(request, String(dataId)))) {
-      return NextResponse.json({ erro: "Assinatura invalida" }, { status: 401 })
+      return NextResponse.json({ erro: "Assinatura inválida" }, { status: 401 })
     }
     try {
       await sincronizarAssinaturaClube(String(dataId))
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
   }
 
   if (!(await assinaturaValida(request, String(paymentId)))) {
-    return NextResponse.json({ erro: "Assinatura invalida" }, { status: 401 })
+    return NextResponse.json({ erro: "Assinatura inválida" }, { status: 401 })
   }
 
   try {

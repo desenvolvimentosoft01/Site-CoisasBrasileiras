@@ -44,7 +44,7 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
       body: JSON.stringify({ aprovado: true }),
     })
     registrarAuditoria({
-      tela: "Avaliacoes",
+      tela: "Avaliações",
       acao: "edicao",
       tabela: "TAB_AVALIACAO_PRODUTO",
       registroId: avaliacao.id,
@@ -55,10 +55,10 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
   }
 
   async function excluir(avaliacao: Avaliacao) {
-    if (!(await confirmar({ descricao: `Excluir a avaliacao de "${avaliacao.cliente_nome}" pra "${avaliacao.produto_nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir a avaliação de "${avaliacao.cliente_nome}" pra "${avaliacao.produto_nome}"?`, destrutivo: true }))) return
     await fetch(`/api/admin/avaliacoes/${avaliacao.id}`, { method: "DELETE" })
     registrarAuditoria({
-      tela: "Avaliacoes",
+      tela: "Avaliações",
       acao: "exclusao",
       tabela: "TAB_AVALIACAO_PRODUTO",
       registroId: avaliacao.id,
@@ -75,7 +75,7 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Avaliacoes de produto</h1>
+      <h1 className="text-2xl font-semibold">Avaliações de produto</h1>
 
       <div className="flex flex-wrap items-center gap-2">
         {(["pendentes", "aprovadas", "todas"] as const).map((status) => (
@@ -96,7 +96,7 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
       <Card>
         <CardContent className="p-0">
           {avaliacoesFiltradas.length === 0 ? (
-            <p className="p-6 text-sm text-slate-500">Nenhuma avaliacao aqui.</p>
+            <p className="p-6 text-sm text-slate-500">Nenhuma avaliação aqui.</p>
           ) : (
             <div className="divide-y divide-border">
               {avaliacoesFiltradas.map((avaliacao) => (

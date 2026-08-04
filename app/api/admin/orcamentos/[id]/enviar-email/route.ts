@@ -18,10 +18,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     [id]
   )
   if (!orcamento) {
-    return NextResponse.json({ erro: "Orcamento nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Orçamento não encontrado" }, { status: 404 })
   }
   if (!orcamento.cliente_email) {
-    return NextResponse.json({ erro: "Cliente sem e-mail cadastrado nesse orcamento" }, { status: 400 })
+    return NextResponse.json({ erro: "Cliente sem e-mail cadastrado nesse orçamento" }, { status: 400 })
   }
 
   const [itens, config] = await Promise.all([

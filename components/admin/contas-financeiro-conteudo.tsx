@@ -245,11 +245,11 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Tipo</th>
-                        <th className="p-4 font-medium">Descricao</th>
+                        <th className="p-4 font-medium">Descrição</th>
                         <th className="p-4 font-medium">Vencimento</th>
                         <th className="p-4 font-medium">Valor</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -368,7 +368,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
               </div>
 
               <div className="space-y-2">
-                <Label>Descricao</Label>
+                <Label>Descrição</Label>
                 <Input value={descricao} onChange={(e) => setDescricao(e.target.value)} autoFocus />
               </div>
 
@@ -393,7 +393,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
               </div>
 
               <div className="space-y-2">
-                <Label>Observacao (opcional)</Label>
+                <Label>Observação (opcional)</Label>
                 <textarea
                   className="min-h-20 w-full rounded-md border border-input bg-transparent p-3 text-sm"
                   value={observacao}
@@ -431,7 +431,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                     ? `Pago${detalhe.pago_em ? " em " + new Date(detalhe.pago_em).toLocaleDateString("pt-BR") : ""}`
                     : "Em aberto",
                 },
-                { label: "Observacao", valor: detalhe.observacao },
+                { label: "Observação", valor: detalhe.observacao },
               ]
             : []
         }

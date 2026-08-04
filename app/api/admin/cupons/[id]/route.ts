@@ -29,7 +29,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!cupom) {
-    return NextResponse.json({ erro: "Cupom nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Cupom não encontrado" }, { status: 404 })
   }
 
   return NextResponse.json(cupom)

@@ -17,7 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { formaPagamento }: { formaPagamento: string } = await request.json()
 
   if (!formaPagamento) {
-    return NextResponse.json({ erro: "Forma de pagamento e obrigatoria" }, { status: 400 })
+    return NextResponse.json({ erro: "Forma de pagamento é obrigatória" }, { status: 400 })
   }
 
   const [orcamento] = await query(
@@ -26,11 +26,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     [id]
   )
   if (!orcamento) {
-    return NextResponse.json({ erro: "Orcamento nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Orçamento não encontrado" }, { status: 404 })
   }
   if (orcamento.status !== "aprovado") {
     return NextResponse.json(
-      { erro: "So e possivel converter um orcamento aprovado" },
+      { erro: "Só é possível converter um orçamento aprovado" },
       { status: 400 }
     )
   }

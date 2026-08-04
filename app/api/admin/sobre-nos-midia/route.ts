@@ -20,10 +20,10 @@ export async function POST(request: Request) {
   const { tipo, url, legenda, ordem } = await request.json()
 
   if (!TIPOS_VALIDOS.includes(tipo)) {
-    return NextResponse.json({ erro: "Tipo invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Tipo inválido" }, { status: 400 })
   }
   if (!url || !url.trim()) {
-    return NextResponse.json({ erro: "URL e obrigatoria" }, { status: 400 })
+    return NextResponse.json({ erro: "URL é obrigatória" }, { status: 400 })
   }
 
   const [midia] = await query(

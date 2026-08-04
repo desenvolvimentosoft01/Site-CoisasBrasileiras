@@ -48,10 +48,10 @@ export async function POST(request: Request) {
   } = await request.json()
 
   if (!clienteNome?.trim()) {
-    return NextResponse.json({ erro: "Nome do cliente e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome do cliente é obrigatório" }, { status: 400 })
   }
   if (!Array.isArray(itens) || itens.length === 0) {
-    return NextResponse.json({ erro: "O orcamento precisa ter pelo menos um item" }, { status: 400 })
+    return NextResponse.json({ erro: "O orçamento precisa ter pelo menos um item" }, { status: 400 })
   }
 
   const subtotal = itens.reduce((soma, item) => soma + item.quantidade * item.valorUnitario, 0)

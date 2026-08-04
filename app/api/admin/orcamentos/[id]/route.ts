@@ -23,7 +23,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     [id]
   )
   if (!orcamento) {
-    return NextResponse.json({ erro: "Orcamento nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Orçamento não encontrado" }, { status: 404 })
   }
 
   const itens = await query(
@@ -64,18 +64,18 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   } = await request.json()
 
   if (!clienteNome?.trim()) {
-    return NextResponse.json({ erro: "Nome do cliente e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome do cliente é obrigatório" }, { status: 400 })
   }
   if (!Array.isArray(itens) || itens.length === 0) {
-    return NextResponse.json({ erro: "O orcamento precisa ter pelo menos um item" }, { status: 400 })
+    return NextResponse.json({ erro: "O orçamento precisa ter pelo menos um item" }, { status: 400 })
   }
 
   const [atual] = await query("SELECT status FROM TAB_ORCAMENTO WHERE id = $1", [id])
   if (!atual) {
-    return NextResponse.json({ erro: "Orcamento nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Orçamento não encontrado" }, { status: 404 })
   }
   if (atual.status !== "aberto") {
-    return NextResponse.json({ erro: "So e possivel editar orcamentos em aberto" }, { status: 400 })
+    return NextResponse.json({ erro: "Só é possível editar orçamentos em aberto" }, { status: 400 })
   }
 
   const subtotal = itens.reduce((soma, item) => soma + item.quantidade * item.valorUnitario, 0)
@@ -133,15 +133,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { status } = await request.json()
 
   if (!STATUS_VALIDOS.includes(status)) {
-    return NextResponse.json({ erro: "Status invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Status inválido" }, { status: 400 })
   }
 
   const [atual] = await query("SELECT status FROM TAB_ORCAMENTO WHERE id = $1", [id])
   if (!atual) {
-    return NextResponse.json({ erro: "Orcamento nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Orçamento não encontrado" }, { status: 404 })
   }
   if (atual.status === "convertido") {
-    return NextResponse.json({ erro: "Orcamento ja convertido em venda" }, { status: 400 })
+    return NextResponse.json({ erro: "Orçamento já convertido em venda" }, { status: 400 })
   }
 
   const [orcamento] = await query(
@@ -160,7 +160,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const [atual] = await query("SELECT status FROM TAB_ORCAMENTO WHERE id = $1", [id])
   if (atual?.status === "convertido") {
     return NextResponse.json(
-      { erro: "Nao e possivel excluir um orcamento ja convertido em venda" },
+      { erro: "Não é possível excluir um orçamento já convertido em venda" },
       { status: 409 }
     )
   }

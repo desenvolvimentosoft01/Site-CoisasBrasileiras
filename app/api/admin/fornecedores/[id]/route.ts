@@ -10,7 +10,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const dados = await request.json()
 
   if (!dados.razaoSocial || !dados.razaoSocial.trim()) {
-    return NextResponse.json({ erro: "Razao social e obrigatoria" }, { status: 400 })
+    return NextResponse.json({ erro: "Razão social é obrigatória" }, { status: 400 })
   }
 
   const [fornecedor] = await query(
@@ -41,7 +41,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!fornecedor) {
-    return NextResponse.json({ erro: "Fornecedor nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Fornecedor não encontrado" }, { status: 404 })
   }
 
   return NextResponse.json(fornecedor)
@@ -60,7 +60,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     // bruto do banco pro client.
     if (erro instanceof Error && "code" in erro && erro.code === "23503") {
       return NextResponse.json(
-        { erro: "Este fornecedor ja tem compras vinculadas e nao pode ser excluido. Desative-o em vez disso." },
+        { erro: "Este fornecedor já tem compras vinculadas e não pode ser excluído. Desative-o em vez disso." },
         { status: 409 }
       )
     }

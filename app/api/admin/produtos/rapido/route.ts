@@ -25,18 +25,18 @@ export async function POST(request: Request) {
   const { nome, preco, codigoBarras } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null || Number(preco) <= 0) {
-    return NextResponse.json({ erro: "Nome e preco sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome e preço são obrigatórios" }, { status: 400 })
   }
   if (!codigoBarras) {
-    return NextResponse.json({ erro: "Codigo de barras e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Código de barras é obrigatório" }, { status: 400 })
   }
   if (!validarCodigoBarras(String(codigoBarras))) {
-    return NextResponse.json({ erro: "Codigo de barras invalido (confira o digito verificador)" }, { status: 400 })
+    return NextResponse.json({ erro: "Código de barras inválido (confira o dígito verificador)" }, { status: 400 })
   }
 
   const existente = await query("SELECT id FROM TAB_PRODUTO WHERE codigo_barras = $1", [codigoBarras])
   if (existente.length > 0) {
-    return NextResponse.json({ erro: "Ja existe um produto com esse codigo de barras" }, { status: 409 })
+    return NextResponse.json({ erro: "Já existe um produto com esse código de barras" }, { status: 409 })
   }
 
   let slug = gerarSlug(nome)

@@ -37,7 +37,7 @@ export default function CarrinhoPage() {
       <div className="mx-auto max-w-md px-4 py-20 text-center">
         <ShoppingBag size={40} className="mx-auto mb-4 text-neutral-300" />
         <h1 className="font-heading mb-3 text-2xl font-semibold text-emerald-950">
-          Seu carrinho esta vazio
+          Seu carrinho está vazio
         </h1>
         <Button nativeButton={false} render={<Link href="/produtos" />}>
           Ver produtos
@@ -58,7 +58,7 @@ export default function CarrinhoPage() {
             {/* Cabecalho da tabela - some no mobile, os itens viram cards empilhados */}
             <div className="hidden grid-cols-[1fr_auto_auto_auto] gap-4 border-b border-black/5 px-5 py-3 text-xs font-medium uppercase text-neutral-400 sm:grid">
               <span>Produto</span>
-              <span>Preco</span>
+              <span>Preço</span>
               <span>Quantidade</span>
               <span className="text-right">Subtotal</span>
             </div>
@@ -127,11 +127,11 @@ export default function CarrinhoPage() {
               </div>
               <div className="flex justify-between text-neutral-600">
                 <span>Frete</span>
-                <span>{valorFrete === 0 ? "Gratis" : formatarPreco(valorFrete)}</span>
+                <span>{valorFrete === 0 ? "Grátis" : formatarPreco(valorFrete)}</span>
               </div>
               {freteGratisAcimaDe > 0 && valorFrete > 0 && (
                 <p className="text-xs text-primary">
-                  Frete gratis em compras acima de {formatarPreco(freteGratisAcimaDe)}
+                  Frete grátis em compras acima de {formatarPreco(freteGratisAcimaDe)}
                 </p>
               )}
               {cupom && (
@@ -148,7 +148,7 @@ export default function CarrinhoPage() {
             </div>
 
             <Button size="lg" className="w-full" nativeButton={false} render={<Link href="/checkout" />}>
-              Continuar para a finalizacao de compra
+              Continuar para a finalização de compra
             </Button>
           </CardContent>
         </Card>

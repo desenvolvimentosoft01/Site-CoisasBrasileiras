@@ -39,7 +39,7 @@ export async function PUT(request: Request) {
 
   for (const item of itens) {
     if (!item.id || typeof item.preco !== "number" || item.preco <= 0) {
-      return NextResponse.json({ erro: "Item invalido na lista de reajuste" }, { status: 400 })
+      return NextResponse.json({ erro: "Item inválido na lista de reajuste" }, { status: 400 })
     }
   }
 

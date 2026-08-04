@@ -120,7 +120,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
         <div>
           <h1 className="text-2xl font-semibold">Faixas de frete</h1>
           <p className="text-sm text-muted-foreground">
-            Valor por regiao e peso, usado no calculo do frete real no checkout. Sem contrato
+            Valor por região e peso, usado no cálculo do frete real no checkout. Sem contrato
             com os Correios ainda - ajuste esses valores conforme o custo real de envio.
           </p>
         </div>
@@ -141,7 +141,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
                     <th className="p-4 font-medium">Peso (kg)</th>
                     <th className="p-4 font-medium">Valor (R$)</th>
                     <th className="p-4 font-medium">Prazo (dias)</th>
-                    <th className="p-4 font-medium text-right">Acoes</th>
+                    <th className="p-4 font-medium text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -205,7 +205,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-5">
           <div className="space-y-2">
-            <Label>Regiao</Label>
+            <Label>Região</Label>
             <Select value={novaRegiao} onValueChange={(v) => setNovaRegiao((v as Faixa["regiao"]) || "sudeste")}>
               <SelectTrigger>
                 <SelectValue />

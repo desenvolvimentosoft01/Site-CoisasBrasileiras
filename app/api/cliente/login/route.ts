@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   )
 
   if (clientes.length === 0) {
-    return NextResponse.json({ erro: "Email ou senha invalidos" }, { status: 401 })
+    return NextResponse.json({ erro: "Email ou senha inválidos" }, { status: 401 })
   }
 
   const cliente = clientes[0]
@@ -35,13 +35,13 @@ export async function POST(request: Request) {
   // bloqueado. Mensagem generica de proposito, igual ao caso de senha errada,
   // pra nao revelar pra quem tenta logar que a conta existe mas foi bloqueada.
   if (!cliente.ativo) {
-    return NextResponse.json({ erro: "Email ou senha invalidos" }, { status: 401 })
+    return NextResponse.json({ erro: "Email ou senha inválidos" }, { status: 401 })
   }
 
   const senhaCorreta = await bcrypt.compare(senha, cliente.senha_hash)
 
   if (!senhaCorreta) {
-    return NextResponse.json({ erro: "Email ou senha invalidos" }, { status: 401 })
+    return NextResponse.json({ erro: "Email ou senha inválidos" }, { status: 401 })
   }
 
   limparTentativas(chaveLimite)

@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   if (cronSecret) {
     const auth = request.headers.get("authorization")
     if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ erro: "Nao autorizado" }, { status: 401 })
+      return NextResponse.json({ erro: "Não autorizado" }, { status: 401 })
     }
   }
 

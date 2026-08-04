@@ -23,8 +23,8 @@ export type SobreNosMidia = {
 
 const TIPOS = [
   { valor: "imagem" as const, rotulo: "Foto", icone: ImagePlus },
-  { valor: "video_link" as const, rotulo: "Video (link do YouTube/Vimeo)", icone: Link2 },
-  { valor: "video_arquivo" as const, rotulo: "Video (arquivo)", icone: Video },
+  { valor: "video_link" as const, rotulo: "Vídeo (link do YouTube/Vimeo)", icone: Link2 },
+  { valor: "video_arquivo" as const, rotulo: "Vídeo (arquivo)", icone: Video },
 ]
 
 export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosMidia[] }) {
@@ -112,7 +112,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
     setErro("")
 
     if (!url.trim()) {
-      setErro(tipo === "video_link" ? "Cole o link do video" : "Envie o arquivo")
+      setErro(tipo === "video_link" ? "Cole o link do vídeo" : "Envie o arquivo")
       return
     }
 
@@ -141,7 +141,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
 
     const salvo = await resposta.json()
     registrarAuditoria({
-      tela: "Sobre Nos",
+      tela: "Sobre Nós",
       acao: editando ? "edicao" : "cadastro",
       tabela: "TAB_SOBRE_NOS_MIDIA",
       registroId: editando?.id ?? salvo.id,
@@ -154,10 +154,10 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
   }
 
   async function excluir(midia: SobreNosMidia) {
-    if (!(await confirmar({ descricao: `Excluir esse item da galeria "Sobre Nos"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir esse item da galeria "Sobre Nós"?`, destrutivo: true }))) return
     await fetch(`/api/admin/sobre-nos-midia/${midia.id}`, { method: "DELETE" })
     registrarAuditoria({
-      tela: "Sobre Nos",
+      tela: "Sobre Nós",
       acao: "exclusao",
       tabela: "TAB_SOBRE_NOS_MIDIA",
       registroId: midia.id,
@@ -171,10 +171,10 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Sobre Nos - fotos e videos</h1>
+      <h1 className="text-2xl font-semibold">Sobre Nós - fotos e vídeos</h1>
       <p className="text-sm text-muted-foreground">
-        Gerencia a galeria de fotos e videos mostrada na pagina /sobre do site. O texto da pagina
-        continua em Configuracoes &gt; Paginas.
+        Gerencia a galeria de fotos e vídeos mostrada na página /sobre do site. O texto da página
+        continua em Configurações &gt; Páginas.
       </p>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
@@ -212,7 +212,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
           </div>
 
           {midias.length === 0 ? (
-            <p className="text-sm text-slate-500">Nenhuma foto ou video cadastrado ainda.</p>
+            <p className="text-sm text-slate-500">Nenhuma foto ou vídeo cadastrado ainda.</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {midias.map((midia) => (
@@ -298,7 +298,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
 
               {tipo === "video_link" ? (
                 <div className="space-y-2">
-                  <Label>Link do video</Label>
+                  <Label>Link do vídeo</Label>
                   <Input
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
@@ -310,7 +310,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
               ) : (
                 !editando && (
                   <div className="space-y-2">
-                    <Label>{tipo === "imagem" ? "Foto" : "Arquivo de video"}</Label>
+                    <Label>{tipo === "imagem" ? "Foto" : "Arquivo de vídeo"}</Label>
                     {url ? (
                       <div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-md bg-slate-100">
                         {tipo === "imagem" ? (
@@ -345,7 +345,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
                       onChange={selecionarArquivo}
                     />
                     {tipo === "video_arquivo" && (
-                      <p className="text-xs text-slate-400">Video ate 50MB (mp4, webm ou mov).</p>
+                      <p className="text-xs text-slate-400">Vídeo até 50MB (mp4, webm ou mov).</p>
                     )}
                   </div>
                 )
@@ -353,13 +353,13 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
 
               {editando && (
                 <p className="text-xs text-slate-400">
-                  Pra trocar a foto/video em si, exclua este item e adicione um novo.
+                  Pra trocar a foto/vídeo em si, exclua este item e adicione um novo.
                 </p>
               )}
 
               <div className="space-y-2">
                 <Label>Legenda (opcional)</Label>
-                <Input value={legenda} onChange={(e) => setLegenda(e.target.value)} placeholder="Nossa loja fisica" />
+                <Input value={legenda} onChange={(e) => setLegenda(e.target.value)} placeholder="Nossa loja física" />
               </div>
 
               <div className="space-y-2">

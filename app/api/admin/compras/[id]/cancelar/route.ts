@@ -31,7 +31,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return NextResponse.json(compraCancelada)
   } catch (erro) {
     if (erro instanceof Error && erro.message === "NOT_FOUND") {
-      return NextResponse.json({ erro: "Compra nao encontrada" }, { status: 404 })
+      return NextResponse.json({ erro: "Compra não encontrada" }, { status: 404 })
     }
     const mensagem = erro instanceof Error ? erro.message : "Erro ao cancelar compra"
     return NextResponse.json({ erro: mensagem }, { status: 409 })

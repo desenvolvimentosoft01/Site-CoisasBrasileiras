@@ -30,14 +30,14 @@ export async function POST(request: Request) {
   } = dados
 
   if (!fornecedorId) {
-    return NextResponse.json({ erro: "Fornecedor e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Fornecedor é obrigatório" }, { status: 400 })
   }
   if (!Array.isArray(itens) || itens.length === 0) {
     return NextResponse.json({ erro: "Adicione pelo menos um item" }, { status: 400 })
   }
   for (const item of itens) {
     if (!item.produtoId || !(Number(item.quantidade) > 0) || Number(item.custoUnitario) < 0) {
-      return NextResponse.json({ erro: "Item invalido: confira produto, quantidade e custo" }, { status: 400 })
+      return NextResponse.json({ erro: "Item inválido: confira produto, quantidade e custo" }, { status: 400 })
     }
   }
 

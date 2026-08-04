@@ -64,7 +64,7 @@ export function AvaliacaoProduto({ produtoId }: { produtoId: string }) {
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErro(dados.erro || "Erro ao enviar avaliacao")
+      setErro(dados.erro || "Erro ao enviar avaliação")
       return
     }
     setEnviado(true)
@@ -78,7 +78,7 @@ export function AvaliacaoProduto({ produtoId }: { produtoId: string }) {
         <Link href="/entrar" className="text-primary underline">
           Entre na sua conta
         </Link>{" "}
-        pra avaliar este produto (disponivel pra quem ja comprou).
+        pra avaliar este produto (disponível pra quem já comprou).
       </p>
     )
   }
@@ -89,8 +89,8 @@ export function AvaliacaoProduto({ produtoId }: { produtoId: string }) {
     return (
       <p className="text-sm text-emerald-700">
         {enviado
-          ? "Avaliacao enviada! Ela aparece aqui assim que for aprovada."
-          : "Voce ja avaliou este produto."}
+          ? "Avaliação enviada! Ela aparece aqui assim que for aprovada."
+          : "Você já avaliou este produto."}
       </p>
     )
   }
@@ -111,7 +111,7 @@ export function AvaliacaoProduto({ produtoId }: { produtoId: string }) {
         disabled={enviando}
         className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
       >
-        {enviando ? "Enviando..." : "Enviar avaliacao"}
+        {enviando ? "Enviando..." : "Enviar avaliação"}
       </button>
     </div>
   )

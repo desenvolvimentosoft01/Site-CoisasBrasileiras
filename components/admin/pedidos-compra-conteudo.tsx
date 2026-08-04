@@ -114,7 +114,7 @@ export function PedidosCompraConteudo({
 
   async function enviarPorEmail(pedido: PedidoCompra) {
     if (!pedido.fornecedor_email) {
-      toast.error("Esse fornecedor nao tem e-mail cadastrado")
+      toast.error("Esse fornecedor não tem e-mail cadastrado")
       return
     }
     setEnviandoEmailId(pedido.id)
@@ -136,7 +136,7 @@ export function PedidosCompraConteudo({
   async function enviarPorWhatsapp(pedido: PedidoCompra) {
     const numero = pedido.fornecedor_telefone?.replace(/\D/g, "")
     if (!numero) {
-      toast.error("Esse fornecedor nao tem telefone cadastrado")
+      toast.error("Esse fornecedor não tem telefone cadastrado")
       return
     }
     const resposta = await fetch(`/api/admin/pedidos-compra/${pedido.id}`)
@@ -146,7 +146,7 @@ export function PedidosCompraConteudo({
     const linhasItens = detalhe.itens
       .map((i: { descricao: string; quantidade: string; custo_unitario: string }) => `${i.quantidade}x ${i.descricao}`)
       .join("\n")
-    const mensagem = `Ola, ${pedido.fornecedor_nome}! Segue o pedido de compra ${numeroFormatado(pedido.numero)}:\n\n${linhasItens}\n\nTotal estimado: ${formatarMoeda(pedido.valor_total)}${
+    const mensagem = `Olá, ${pedido.fornecedor_nome}! Segue o pedido de compra ${numeroFormatado(pedido.numero)}:\n\n${linhasItens}\n\nTotal estimado: ${formatarMoeda(pedido.valor_total)}${
       pedido.observacao ? `\n\nObs: ${pedido.observacao}` : ""
     }`
     window.open(`https://wa.me/${numeroComDdi}?text=${encodeURIComponent(mensagem)}`, "_blank")
@@ -267,7 +267,7 @@ export function PedidosCompraConteudo({
                     pedidoSelecionado.status === "cancelado",
                 },
                 {
-                  label: "Lancar entrada",
+                  label: "Lançar entrada",
                   icon: ArrowRightCircle,
                   onClick: () => pedidoSelecionado && lancarEntrada(pedidoSelecionado),
                   disabled: !pedidoSelecionado || pedidoSelecionado.status !== "enviado",
@@ -299,12 +299,12 @@ export function PedidosCompraConteudo({
                   <table className="w-full min-w-[720px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
-                        <th className="p-4 font-medium">Numero</th>
+                        <th className="p-4 font-medium">Número</th>
                         <th className="p-4 font-medium">Fornecedor</th>
                         <th className="p-4 font-medium">Status</th>
                         <th className="p-4 font-medium">Total</th>
                         <th className="p-4 font-medium">Data</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -386,7 +386,7 @@ export function PedidosCompraConteudo({
                                   e.stopPropagation()
                                   lancarEntrada(pedido)
                                 }}
-                                title="Lancar entrada"
+                                title="Lançar entrada"
                               >
                                 <ArrowRightCircle size={16} className="text-primary" />
                               </Button>
@@ -429,7 +429,7 @@ export function PedidosCompraConteudo({
                   : []),
                 { label: "Total", valor: formatarMoeda(detalhe.valor_total) },
                 { label: "Data", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },
-                ...(detalhe.observacao ? [{ label: "Observacao", valor: detalhe.observacao }] : []),
+                ...(detalhe.observacao ? [{ label: "Observação", valor: detalhe.observacao }] : []),
                 ...(detalhe.enviado_email_em
                   ? [{ label: "E-mail enviado em", valor: new Date(detalhe.enviado_email_em).toLocaleString("pt-BR") }]
                   : []),

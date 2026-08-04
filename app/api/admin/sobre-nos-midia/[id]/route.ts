@@ -16,7 +16,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!midia) {
-    return NextResponse.json({ erro: "Midia nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Mídia não encontrada" }, { status: 404 })
   }
 
   revalidatePath("/", "layout")

@@ -32,7 +32,7 @@ function EntrarForm() {
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErro(dados.erro || "Nao foi possivel entrar")
+      setErro(dados.erro || "Não foi possível entrar")
       return
     }
 
@@ -65,7 +65,7 @@ function EntrarForm() {
         </form>
 
         <p className="mt-4 text-center text-sm text-neutral-500">
-          Ainda nao tem conta?{" "}
+          Ainda não tem conta?{" "}
           <Link href="/cadastro" className="font-medium text-emerald-700 hover:underline">
             Cadastre-se
           </Link>

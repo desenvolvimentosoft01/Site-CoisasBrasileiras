@@ -178,7 +178,7 @@ export function ProdutoCard({
               {semEstoque ? (
                 <span className="text-red-500">Esgotado</span>
               ) : produto.estoque <= 5 ? (
-                <span className="text-amber-600">Ultimas {produto.estoque} unidades</span>
+                <span className="text-amber-600">Últimas {produto.estoque} unidades</span>
               ) : (
                 `${produto.estoque} em estoque`
               )}
@@ -196,7 +196,7 @@ export function ProdutoCard({
           {semEstoque ? (
             "Esgotado"
           ) : atingiuLimite ? (
-            "Maximo no carrinho"
+            "Máximo no carrinho"
           ) : adicionado ? (
             <>
               <Check size={14} />

@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "Nenhum arquivo enviado" }, { status: 400 })
   }
   if (arquivo.size > TAMANHO_MAXIMO) {
-    return NextResponse.json({ erro: "Arquivo maior que 2MB - nao parece ser um XML de NF-e valido" }, { status: 400 })
+    return NextResponse.json({ erro: "Arquivo maior que 2MB - não parece ser um XML de NF-e válido" }, { status: 400 })
   }
   if (!arquivo.name.toLowerCase().endsWith(".xml")) {
     return NextResponse.json({ erro: "Envie um arquivo .xml" }, { status: 400 })

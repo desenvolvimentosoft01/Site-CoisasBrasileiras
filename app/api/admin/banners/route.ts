@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const { titulo, subtitulo, link, imagemUrl, corFundo, ordem } = await request.json()
 
   if (!titulo || !titulo.trim()) {
-    return NextResponse.json({ erro: "Titulo e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Título é obrigatório" }, { status: 400 })
   }
 
   const [banner] = await query(

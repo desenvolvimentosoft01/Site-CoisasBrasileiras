@@ -11,7 +11,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { titulo, subtitulo, link, imagemUrl, corFundo, ordem, ativo } = await request.json()
 
   if (!titulo || !titulo.trim()) {
-    return NextResponse.json({ erro: "Titulo e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Título é obrigatório" }, { status: 400 })
   }
 
   const [banner] = await query(
@@ -32,7 +32,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!banner) {
-    return NextResponse.json({ erro: "Banner nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Banner não encontrado" }, { status: 404 })
   }
 
   revalidatePath("/", "layout")

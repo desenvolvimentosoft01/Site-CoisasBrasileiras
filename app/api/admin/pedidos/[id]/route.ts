@@ -41,7 +41,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   )
 
   if (!pedido) {
-    return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido não encontrado" }, { status: 404 })
   }
 
   const itens = await query(
@@ -63,14 +63,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { status, codigoRastreio, transportadora } = await request.json()
 
   if (status !== undefined && !STATUS_VALIDOS.includes(status)) {
-    return NextResponse.json({ erro: "Status invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Status inválido" }, { status: 400 })
   }
   // "Pago" so pode ser definido automaticamente pelo webhook do Mercado
   // Pago (confirmacao real de pagamento) - nunca manualmente pelo admin,
   // que poderia liberar um pedido sem o pagamento ter de fato entrado.
   if (status === "pago") {
     return NextResponse.json(
-      { erro: "Status 'Pago' e definido automaticamente pela confirmacao do Mercado Pago e nao pode ser alterado manualmente" },
+      { erro: "Status 'Pago' é definido automaticamente pela confirmação do Mercado Pago e não pode ser alterado manualmente" },
       { status: 400 }
     )
   }
@@ -107,7 +107,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!pedido) {
-    return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido não encontrado" }, { status: 404 })
   }
 
   // Notifica o cliente por email sempre que o status muda manualmente pelo

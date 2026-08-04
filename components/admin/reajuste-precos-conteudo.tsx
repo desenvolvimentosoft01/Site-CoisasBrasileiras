@@ -125,7 +125,7 @@ export function ReajustePrecosConteudo({
       return
     }
     if (!valorNumerico && Object.keys(precosManuais).length === 0) {
-      setErro("Informe um valor de reajuste ou digite um preco manualmente na grade")
+      setErro("Informe um valor de reajuste ou digite um preço manualmente na grade")
       return
     }
 
@@ -154,7 +154,7 @@ export function ReajustePrecosConteudo({
 
     for (const item of itens) {
       registrarAuditoria({
-        tela: "Reajuste de precos",
+        tela: "Reajuste de preços",
         acao: "edicao",
         tabela: "TAB_PRODUTO",
         registroId: item.id,
@@ -177,7 +177,7 @@ export function ReajustePrecosConteudo({
   async function salvarLinha(produto: Produto) {
     const precoNovo = precoFinal(produto)
     if (!precoNovo || precoNovo <= 0) {
-      setErro("Preco invalido")
+      setErro("Preço inválido")
       return
     }
 
@@ -196,7 +196,7 @@ export function ReajustePrecosConteudo({
 
     if (!resposta.ok) {
       const dados = await resposta.json().catch(() => ({}))
-      setErro(dados.erro ?? "Erro ao salvar preco")
+      setErro(dados.erro ?? "Erro ao salvar preço")
       return
     }
 
@@ -215,14 +215,14 @@ export function ReajustePrecosConteudo({
       const { [produto.id]: _removido, ...resto } = atual
       return resto
     })
-    setSucesso(`Preco de "${produto.nome}" atualizado`)
+    setSucesso(`Preço de "${produto.nome}" atualizado`)
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Reajuste de Precos</h1>
+      <h1 className="text-2xl font-semibold">Reajuste de Preços</h1>
       <p className="text-sm text-slate-500">
-        Atualize o preco de varios produtos de uma vez, por percentual ou valor fixo. Confira a pre-visualizacao antes de aplicar.
+        Atualize o preço de vários produtos de uma vez, por percentual ou valor fixo. Confira a pré-visualização antes de aplicar.
       </p>
 
       {erro && <p className="rounded-md bg-red-50 p-3 text-sm text-red-600">{erro}</p>}
@@ -249,14 +249,14 @@ export function ReajustePrecosConteudo({
             </div>
 
             <div className="space-y-2">
-              <Label>Direcao</Label>
+              <Label>Direção</Label>
               <Select value={direcao} onValueChange={(v) => setDirecao(v as "aumento" | "reducao")}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="aumento">Aumento</SelectItem>
-                  <SelectItem value="reducao">Reducao</SelectItem>
+                  <SelectItem value="reducao">Redução</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -280,7 +280,7 @@ export function ReajustePrecosConteudo({
                 onChange={(e) => setAplicarNoPromocional(e.target.checked)}
                 className="h-4 w-4 rounded border-input accent-primary"
               />
-              Aplicar tambem no preco promocional
+              Aplicar também no preço promocional
             </label>
 
             <Button onClick={aplicarReajuste} disabled={salvando || selecionados.size === 0} className="ml-auto">
@@ -317,7 +317,7 @@ export function ReajustePrecosConteudo({
             Selecionar filtrados ({produtosFiltrados.length})
           </Button>
           <Button variant="outline" size="sm" onClick={limparSelecao}>
-            Limpar selecao
+            Limpar seleção
           </Button>
         </CardContent>
       </Card>
@@ -331,8 +331,8 @@ export function ReajustePrecosConteudo({
                   <th className="p-4 font-medium"></th>
                   <th className="p-4 font-medium">Produto</th>
                   <th className="p-4 font-medium">Custo</th>
-                  <th className="p-4 font-medium">Preco atual</th>
-                  <th className="p-4 font-medium">Preco novo</th>
+                  <th className="p-4 font-medium">Preço atual</th>
+                  <th className="p-4 font-medium">Preço novo</th>
                   <th className="p-4 font-medium"></th>
                 </tr>
               </thead>

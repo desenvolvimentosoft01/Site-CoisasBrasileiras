@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   }
 
   if (!token || (decisao !== "aprovado" && decisao !== "recusado")) {
-    return NextResponse.json({ erro: "Parametros invalidos" }, { status: 400 })
+    return NextResponse.json({ erro: "Parâmetros inválidos" }, { status: 400 })
   }
 
   // So responde se ainda estiver "aberto" - impede que um segundo clique (ou
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   )
 
   if (!orcamento) {
-    return NextResponse.json({ erro: "Orcamento nao encontrado ou ja respondido" }, { status: 409 })
+    return NextResponse.json({ erro: "Orçamento não encontrado ou já respondido" }, { status: 409 })
   }
 
   const emailAdmin = (await getSegredo("email_notificacoes_admin")) || (await getSegredo("email_user"))

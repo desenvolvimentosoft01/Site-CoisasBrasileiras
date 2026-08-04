@@ -92,7 +92,7 @@ export function PedidoCompraForm({
     }
     const itensValidos = itens.filter((i) => i.descricao.trim() && Number(i.quantidade) > 0)
     if (itensValidos.length === 0) {
-      setErro("Adicione pelo menos um item valido")
+      setErro("Adicione pelo menos um item válido")
       return
     }
 
@@ -169,7 +169,7 @@ export function PedidoCompraForm({
             {itens.map((item, indice) => (
               <div key={indice} className="grid grid-cols-12 gap-2 rounded-md border border-border p-3">
                 <div className="col-span-12 sm:col-span-5">
-                  <Label className="text-xs">Produto (opcional) ou descricao</Label>
+                  <Label className="text-xs">Produto (opcional) ou descrição</Label>
                   <select
                     value={item.produtoId || ""}
                     onChange={(e) => e.target.value && selecionarProdutoNoItem(indice, e.target.value)}
@@ -185,7 +185,7 @@ export function PedidoCompraForm({
                   <Input
                     value={item.descricao}
                     onChange={(e) => atualizarItem(indice, "descricao", e.target.value)}
-                    placeholder="Descricao do item"
+                    placeholder="Descrição do item"
                   />
                 </div>
                 <div className="col-span-4 sm:col-span-2">
@@ -226,7 +226,7 @@ export function PedidoCompraForm({
             </Button>
 
             <div className="space-y-2 border-t border-border pt-4">
-              <Label>Observacao (opcional)</Label>
+              <Label>Observação (opcional)</Label>
               <textarea
                 className="min-h-20 w-full rounded-md border border-input bg-transparent p-3 text-sm"
                 value={observacao}
@@ -257,7 +257,7 @@ export function PedidoCompraForm({
               </select>
               {fornecedorId && !fornecedores.find((f) => f.id === fornecedorId)?.email && (
                 <p className="text-xs text-amber-500">
-                  Esse fornecedor nao tem e-mail cadastrado - complete o cadastro pra poder enviar.
+                  Esse fornecedor não tem e-mail cadastrado - complete o cadastro pra poder enviar.
                 </p>
               )}
             </CardContent>

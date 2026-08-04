@@ -219,7 +219,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">Slug</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>

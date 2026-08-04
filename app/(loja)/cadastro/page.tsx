@@ -34,7 +34,7 @@ export default function CadastroPage() {
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErro(dados.erro || "Nao foi possivel criar a conta")
+      setErro(dados.erro || "Não foi possível criar a conta")
       return
     }
 
@@ -81,7 +81,7 @@ export default function CadastroPage() {
           </form>
 
           <p className="mt-4 text-center text-sm text-neutral-500">
-            Ja tem conta?{" "}
+            Já tem conta?{" "}
             <Link href="/entrar" className="font-medium text-emerald-700 hover:underline">
               Entrar
             </Link>

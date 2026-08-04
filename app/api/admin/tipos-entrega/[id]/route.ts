@@ -10,7 +10,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { nome, ativo } = await request.json()
 
   if (!nome || !nome.trim()) {
-    return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome é obrigatório" }, { status: 400 })
   }
 
   try {
@@ -19,12 +19,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       [nome.trim(), ativo ?? true, id]
     )
     if (!tipo) {
-      return NextResponse.json({ erro: "Tipo de entrega nao encontrado" }, { status: 404 })
+      return NextResponse.json({ erro: "Tipo de entrega não encontrado" }, { status: 404 })
     }
     return NextResponse.json(tipo)
   } catch (erro) {
     if (erro instanceof Error && "code" in erro && erro.code === "23505") {
-      return NextResponse.json({ erro: "Ja existe um tipo de entrega com esse nome" }, { status: 409 })
+      return NextResponse.json({ erro: "Já existe um tipo de entrega com esse nome" }, { status: 409 })
     }
     throw erro
   }

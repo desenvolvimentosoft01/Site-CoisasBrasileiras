@@ -18,14 +18,14 @@ export async function POST(request: Request) {
     await request.json()
 
   if (!codigo || !codigo.trim() || !valor) {
-    return NextResponse.json({ erro: "Codigo e valor sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Código e valor são obrigatórios" }, { status: 400 })
   }
 
   const codigoNormalizado = codigo.trim().toUpperCase()
 
   const existente = await query("SELECT id FROM TAB_CUPOM WHERE codigo = $1", [codigoNormalizado])
   if (existente.length > 0) {
-    return NextResponse.json({ erro: "Ja existe um cupom com esse codigo" }, { status: 409 })
+    return NextResponse.json({ erro: "Já existe um cupom com esse código" }, { status: 409 })
   }
 
   const [cupom] = await query(

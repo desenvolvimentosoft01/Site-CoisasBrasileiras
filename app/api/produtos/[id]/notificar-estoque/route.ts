@@ -11,15 +11,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { email } = await request.json()
 
   if (!email || !REGEX_EMAIL.test(email)) {
-    return NextResponse.json({ erro: "E-mail invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "E-mail inválido" }, { status: 400 })
   }
 
   const [produto] = await query("SELECT id, estoque FROM TAB_PRODUTO WHERE id = $1 AND ativo = true", [id])
   if (!produto) {
-    return NextResponse.json({ erro: "Produto nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Produto não encontrado" }, { status: 404 })
   }
   if (Number(produto.estoque) > 0) {
-    return NextResponse.json({ erro: "Este produto ja esta disponivel" }, { status: 409 })
+    return NextResponse.json({ erro: "Este produto já está disponível" }, { status: 409 })
   }
 
   await query(

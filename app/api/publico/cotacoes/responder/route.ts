@@ -16,11 +16,11 @@ export async function POST(request: Request) {
   }
 
   if (!token || !Array.isArray(itens) || itens.length === 0) {
-    return NextResponse.json({ erro: "Parametros invalidos" }, { status: 400 })
+    return NextResponse.json({ erro: "Parâmetros inválidos" }, { status: 400 })
   }
   for (const item of itens) {
     if (!item.itemId || item.quantidadeCotada < 0 || item.valorUnitarioCotado < 0) {
-      return NextResponse.json({ erro: "Confira as quantidades e precos informados" }, { status: 400 })
+      return NextResponse.json({ erro: "Confira as quantidades e preços informados" }, { status: 400 })
     }
   }
 
@@ -29,10 +29,10 @@ export async function POST(request: Request) {
     [token]
   )
   if (!cotacao) {
-    return NextResponse.json({ erro: "Cotacao nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Cotação não encontrada" }, { status: 404 })
   }
   if (cotacao.status !== "enviado") {
-    return NextResponse.json({ erro: "Essa cotacao nao esta mais aguardando resposta" }, { status: 409 })
+    return NextResponse.json({ erro: "Essa cotação não está mais aguardando resposta" }, { status: 409 })
   }
 
   const [fornecedor] = await query("SELECT razao_social FROM TAB_FORNECEDOR WHERE id = $1", [cotacao.fornecedor_id])

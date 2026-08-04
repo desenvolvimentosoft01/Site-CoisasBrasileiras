@@ -7,7 +7,7 @@ export async function GET() {
   const sessao = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
 
   if (!sessao) {
-    return NextResponse.json({ erro: "Nao autenticado" }, { status: 401 })
+    return NextResponse.json({ erro: "Não autenticado" }, { status: 401 })
   }
 
   return NextResponse.json(sessao)

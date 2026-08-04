@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     !endereco?.cidade ||
     !endereco?.estado
   ) {
-    return NextResponse.json({ erro: "Endereco incompleto" }, { status: 400 })
+    return NextResponse.json({ erro: "Endereço incompleto" }, { status: 400 })
   }
 
   try {
@@ -324,7 +324,7 @@ export async function POST(request: Request) {
     } catch (erroGateway) {
       console.error("[checkout] Falha ao criar link de pagamento:", erroGateway)
       return NextResponse.json(
-        { erro: "Nao foi possivel iniciar o pagamento agora. Tente novamente em instantes." },
+        { erro: "Não foi possível iniciar o pagamento agora. Tente novamente em instantes." },
         { status: 502 }
       )
     }

@@ -64,7 +64,7 @@ type ProdutoDesejado = {
 const rotulosStatus: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
   pago: "Pago",
-  em_separacao: "Em separacao",
+  em_separacao: "Em separação",
   enviado: "Enviado",
   entregue: "Entregue",
   cancelado: "Cancelado",
@@ -77,7 +77,7 @@ type Assinatura = {
 } | null
 
 const rotulosAssinatura: Record<string, string> = {
-  pendente: "Aguardando confirmacao do pagamento",
+  pendente: "Aguardando confirmação do pagamento",
   autorizada: "Ativa",
   pausada: "Pausada",
   cancelada: "Cancelada",
@@ -274,7 +274,7 @@ function MinhaContaConteudo() {
             </div>
             <div className="flex items-end gap-3 sm:col-span-2">
               <Button type="submit" disabled={salvando}>
-                {salvando ? "Salvando..." : "Salvar alteracoes"}
+                {salvando ? "Salvando..." : "Salvar alterações"}
               </Button>
               {salvo && <span className="text-sm text-emerald-600">Salvo!</span>}
             </div>
@@ -295,18 +295,18 @@ function MinhaContaConteudo() {
             <>
               {assinatura?.status === "pendente" && (
                 <p className="text-sm text-amber-600">
-                  Sua ultima tentativa de assinatura nao foi concluida. Clique abaixo pra tentar de novo.
+                  Sua última tentativa de assinatura não foi concluída. Clique abaixo pra tentar de novo.
                 </p>
               )}
               <p className="text-sm text-neutral-600">
-                Assine o Clube por {formatarMoeda(String(valorMensalidadeClube))}/mes e tenha preco
+                Assine o Clube por {formatarMoeda(String(valorMensalidadeClube))}/mês e tenha preço
                 exclusivo em produtos selecionados.
               </p>
               <Button onClick={assinarClube} disabled={processandoClube || valorMensalidadeClube <= 0}>
                 {processandoClube ? "Abrindo..." : "Assinar o Clube"}
               </Button>
               {valorMensalidadeClube <= 0 && (
-                <p className="text-xs text-neutral-400">Assinatura ainda nao disponivel.</p>
+                <p className="text-xs text-neutral-400">Assinatura ainda não disponível.</p>
               )}
             </>
           ) : (
@@ -324,7 +324,7 @@ function MinhaContaConteudo() {
               <p className="text-sm text-neutral-500">
                 Mensalidade: {formatarMoeda(assinatura.valor_mensalidade)}
                 {assinatura.proximo_vencimento &&
-                  ` · Proxima cobranca: ${new Date(assinatura.proximo_vencimento).toLocaleDateString("pt-BR")}`}
+                  ` · Próxima cobrança: ${new Date(assinatura.proximo_vencimento).toLocaleDateString("pt-BR")}`}
               </p>
               {assinatura.status === "autorizada" && (
                 <Button
@@ -347,7 +347,7 @@ function MinhaContaConteudo() {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancelar assinatura do Clube?</AlertDialogTitle>
             <AlertDialogDescription>
-              Voce vai deixar de ter acesso aos precos exclusivos de assinante imediatamente. Voce pode assinar
+              Você vai deixar de ter acesso aos preços exclusivos de assinante imediatamente. Você pode assinar
               novamente quando quiser.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -416,13 +416,13 @@ function MinhaContaConteudo() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <MapPin size={18} />
-            Enderecos salvos
+            Endereços salvos
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {perfil.enderecos.length === 0 ? (
             <p className="text-sm text-neutral-500">
-              Nenhum endereco salvo ainda - ele e criado automaticamente no primeiro checkout.
+              Nenhum endereço salvo ainda - ele é criado automaticamente no primeiro checkout.
             </p>
           ) : (
             perfil.enderecos.map((endereco) => (
@@ -449,7 +449,7 @@ function MinhaContaConteudo() {
         </CardHeader>
         <CardContent className="space-y-2">
           {pedidos.length === 0 ? (
-            <p className="text-sm text-neutral-500">Voce ainda nao fez nenhum pedido.</p>
+            <p className="text-sm text-neutral-500">Você ainda não fez nenhum pedido.</p>
           ) : (
             pedidos.map((pedido) => (
               <Link

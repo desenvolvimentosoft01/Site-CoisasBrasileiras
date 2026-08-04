@@ -17,7 +17,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   )
 
   if (!compra) {
-    return NextResponse.json({ erro: "Compra nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Compra não encontrada" }, { status: 404 })
   }
 
   const itens = await query(
@@ -38,11 +38,11 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const [compra] = await query("SELECT status FROM TAB_COMPRA WHERE id = $1", [id])
   if (!compra) {
-    return NextResponse.json({ erro: "Compra nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Compra não encontrada" }, { status: 404 })
   }
   if (compra.status === "recebida") {
     return NextResponse.json(
-      { erro: "Compra ja recebida nao pode ser excluida (ja afetou estoque/custo/financeiro). Use cancelar se aplicavel." },
+      { erro: "Compra já recebida não pode ser excluída (já afetou estoque/custo/financeiro). Use cancelar se aplicável." },
       { status: 409 }
     )
   }

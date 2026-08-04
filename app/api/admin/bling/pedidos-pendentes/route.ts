@@ -16,7 +16,7 @@ export async function DELETE(request: Request) {
 
   const { id }: { id: string } = await request.json()
   if (!id) {
-    return NextResponse.json({ erro: "id e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "id é obrigatório" }, { status: 400 })
   }
 
   await descartarPedidoPendenteMarketplace(id)

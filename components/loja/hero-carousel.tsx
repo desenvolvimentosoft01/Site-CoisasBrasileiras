@@ -27,15 +27,15 @@ const slidesPadrao: BannerSlide[] = [
   },
   {
     id: "padrao-2",
-    titulo: "Imagens religiosas para sua fe",
-    subtitulo: "Nossa Senhora, Sagrada Familia e Santos em porcelana",
+    titulo: "Imagens religiosas para sua fé",
+    subtitulo: "Nossa Senhora, Sagrada Família e Santos em porcelana",
     link: "/produtos",
     imagem_url: null,
     cor_fundo: "from-amber-700 to-amber-900",
   },
   {
     id: "padrao-3",
-    titulo: "O presente perfeito para cada ocasiao",
+    titulo: "O presente perfeito para cada ocasião",
     subtitulo: "Presentes e perfumaria com frete para todo o Brasil",
     link: "/produtos",
     imagem_url: null,
@@ -106,7 +106,7 @@ export function HeroCarousel({ banners }: { banners: BannerSlide[] }) {
           <button
             onClick={proximo}
             className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-2 text-white backdrop-blur transition-colors hover:bg-white/30"
-            aria-label="Proximo"
+            aria-label="Próximo"
           >
             <ChevronRight size={22} />
           </button>

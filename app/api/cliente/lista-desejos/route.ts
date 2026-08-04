@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   const { produtoId } = await request.json()
   if (!produtoId) {
-    return NextResponse.json({ erro: "produtoId e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "produtoId é obrigatório" }, { status: 400 })
   }
 
   await query(

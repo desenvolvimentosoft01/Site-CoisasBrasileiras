@@ -53,9 +53,9 @@ export default function FavoritosPage() {
 
       {produtos.length === 0 ? (
         <div className="rounded-lg border border-black/5 p-10 text-center text-neutral-500">
-          <p>Voce ainda nao favoritou nenhum produto.</p>
+          <p>Você ainda não favoritou nenhum produto.</p>
           <Link href="/produtos" className="mt-3 inline-block text-primary underline">
-            Ver catalogo
+            Ver catálogo
           </Link>
         </div>
       ) : (

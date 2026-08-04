@@ -57,7 +57,7 @@ export type PedidoRelatorio = {
 const ROTULOS_STATUS: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
   pago: "Pago",
-  em_separacao: "Em separacao",
+  em_separacao: "Em separação",
   enviado: "Enviado",
   entregue: "Entregue",
   cancelado: "Cancelado",
@@ -160,7 +160,7 @@ export function RelatoriosConteudo({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Relatorios</h1>
+        <h1 className="text-2xl font-semibold">Relatórios</h1>
 
         <div className="flex flex-wrap items-end gap-2">
           {/* Form GET simples - recarrega a pagina com o periodo escolhido,
@@ -171,7 +171,7 @@ export function RelatoriosConteudo({
               <Input type="date" name="inicio" defaultValue={inicioPeriodo} className="w-40" />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Ate</Label>
+              <Label className="text-xs">Até</Label>
               <Input type="date" name="fim" defaultValue={fimPeriodo} className="w-40" />
             </div>
             <Button type="submit" variant="outline">
@@ -179,14 +179,14 @@ export function RelatoriosConteudo({
             </Button>
           </form>
           <BotaoImprimir
-            descricaoPeriodo={`Periodo: ${inicioPeriodo} a ${fimPeriodo}`}
+            descricaoPeriodo={`Período: ${inicioPeriodo} a ${fimPeriodo}`}
             campos={[
               { chave: "hoje", rotulo: "Vendas de hoje" },
               { chave: "resumo", rotulo: "Resumo (pedidos, faturamento, ticket)" },
-              { chave: "grafico", rotulo: "Grafico de vendas" },
+              { chave: "grafico", rotulo: "Gráfico de vendas" },
               { chave: "origem", rotulo: "Vendas por origem" },
               { chave: "maisVendidos", rotulo: "Produtos mais vendidos" },
-              { chave: "estoque", rotulo: "Posicao de estoque" },
+              { chave: "estoque", rotulo: "Posição de estoque" },
               { chave: "pedidos", rotulo: "Lista de pedidos" },
             ]}
             onCamposOcultos={aplicarCamposOcultos}
@@ -218,7 +218,7 @@ export function RelatoriosConteudo({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Faturamento no periodo</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Faturamento no período</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">
             {formatarMoeda(dados.resumo.faturamento_total)}
@@ -226,7 +226,7 @@ export function RelatoriosConteudo({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Ticket medio</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Ticket médio</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">
             {formatarMoeda(dados.resumo.ticket_medio)}
@@ -236,11 +236,11 @@ export function RelatoriosConteudo({
 
       <Card data-print-section="grafico">
         <CardHeader>
-          <CardTitle className="text-sm text-slate-500">Vendas no periodo</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Vendas no período</CardTitle>
         </CardHeader>
         <CardContent>
           {grafico.length === 0 ? (
-            <p className="text-sm text-slate-400">Nenhuma venda no periodo.</p>
+            <p className="text-sm text-slate-400">Nenhuma venda no período.</p>
           ) : (
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -266,7 +266,7 @@ export function RelatoriosConteudo({
         </CardHeader>
         <CardContent className="p-0">
           {dados.vendasPorOrigem.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400">Nenhuma venda no periodo.</p>
+            <p className="p-6 text-sm text-slate-400">Nenhuma venda no período.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[420px] text-sm">
@@ -280,7 +280,7 @@ export function RelatoriosConteudo({
                 <tbody>
                   {dados.vendasPorOrigem.map((linha) => (
                     <tr key={linha.origem} className="border-b border-slate-200 last:border-0">
-                      <td className="p-4 capitalize">{linha.origem === "balcao" ? "Balcao" : "Site"}</td>
+                      <td className="p-4 capitalize">{linha.origem === "balcao" ? "Balcão" : "Site"}</td>
                       <td className="p-4">{linha.total_pedidos}</td>
                       <td className="p-4">{formatarMoeda(linha.faturamento)}</td>
                     </tr>
@@ -294,7 +294,7 @@ export function RelatoriosConteudo({
 
       <Card data-print-section="maisVendidos">
         <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-sm text-slate-500">Produtos mais vendidos no periodo</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Produtos mais vendidos no período</CardTitle>
           <Button
             variant="outline"
             size="sm"
@@ -316,7 +316,7 @@ export function RelatoriosConteudo({
         </CardHeader>
         <CardContent className="p-0">
           {produtosMaisVendidosOrdenados.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400">Nenhuma venda no periodo.</p>
+            <p className="p-6 text-sm text-slate-400">Nenhuma venda no período.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] text-sm">
@@ -343,7 +343,7 @@ export function RelatoriosConteudo({
       </Card>
 
       <div data-print-section="estoque">
-        <h2 className="mb-3 text-lg font-semibold">Estoque (posicao atual)</h2>
+        <h2 className="mb-3 text-lg font-semibold">Estoque (posição atual)</h2>
         <div className="grid gap-4 sm:grid-cols-4">
           <Card>
             <CardHeader>
@@ -397,7 +397,7 @@ export function RelatoriosConteudo({
                   <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Produto</th>
                     <th className="p-4 font-medium">SKU</th>
-                    <th className="p-4 font-medium">Minimo</th>
+                    <th className="p-4 font-medium">Mínimo</th>
                     <th className="p-4 font-medium">Estoque</th>
                   </tr>
                 </thead>
@@ -422,7 +422,7 @@ export function RelatoriosConteudo({
       </Card>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Pedidos do periodo</h2>
+        <h2 className="mb-3 text-lg font-semibold">Pedidos do período</h2>
 
         <Card className="mb-4 print:hidden">
           <CardContent className="space-y-3 pt-6">

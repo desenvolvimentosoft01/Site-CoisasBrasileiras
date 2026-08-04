@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const { login, senha } = await request.json()
 
   if (!login || !senha) {
-    return NextResponse.json({ erro: "Informe usuario/email e senha" }, { status: 400 })
+    return NextResponse.json({ erro: "Informe usuário/email e senha" }, { status: 400 })
   }
 
   const chaveLimite = `admin:${login}`
@@ -33,14 +33,14 @@ export async function POST(request: Request) {
   )
 
   if (usuarios.length === 0) {
-    return NextResponse.json({ erro: "Usuario/email ou senha invalidos" }, { status: 401 })
+    return NextResponse.json({ erro: "Usuário/email ou senha inválidos" }, { status: 401 })
   }
 
   const usuario = usuarios[0]
   const senhaCorreta = await bcrypt.compare(senha, usuario.senha_hash)
 
   if (!senhaCorreta) {
-    return NextResponse.json({ erro: "Usuario/email ou senha invalidos" }, { status: 401 })
+    return NextResponse.json({ erro: "Usuário/email ou senha inválidos" }, { status: 401 })
   }
 
   limparTentativas(chaveLimite)

@@ -24,7 +24,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     [id]
   )
   if (!cotacao) {
-    return NextResponse.json({ erro: "Cotacao nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Cotação não encontrada" }, { status: 404 })
   }
 
   const itens = await query(
@@ -53,7 +53,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   } = await request.json()
 
   if (!fornecedorId) {
-    return NextResponse.json({ erro: "Fornecedor e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Fornecedor é obrigatório" }, { status: 400 })
   }
   if (!Array.isArray(itens) || itens.length === 0) {
     return NextResponse.json({ erro: "Adicione pelo menos um item" }, { status: 400 })
@@ -61,10 +61,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const [atual] = await query("SELECT status FROM TAB_COTACAO WHERE id = $1", [id])
   if (!atual) {
-    return NextResponse.json({ erro: "Cotacao nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Cotação não encontrada" }, { status: 404 })
   }
   if (atual.status !== "aberto") {
-    return NextResponse.json({ erro: "So e possivel editar cotacoes em aberto" }, { status: 400 })
+    return NextResponse.json({ erro: "Só é possível editar cotações em aberto" }, { status: 400 })
   }
 
   const cotacao = await transacao(async (executar) => {
@@ -103,15 +103,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { status } = await request.json()
 
   if (!STATUS_VALIDOS.includes(status)) {
-    return NextResponse.json({ erro: "Status invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Status inválido" }, { status: 400 })
   }
 
   const [atual] = await query("SELECT status FROM TAB_COTACAO WHERE id = $1", [id])
   if (!atual) {
-    return NextResponse.json({ erro: "Cotacao nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Cotação não encontrada" }, { status: 404 })
   }
   if (atual.status === "aceita") {
-    return NextResponse.json({ erro: "Cotacao ja aceita (pedido de compra gerado)" }, { status: 400 })
+    return NextResponse.json({ erro: "Cotação já aceita (pedido de compra gerado)" }, { status: 400 })
   }
 
   const [cotacao] = await query(
@@ -129,7 +129,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const [atual] = await query("SELECT status FROM TAB_COTACAO WHERE id = $1", [id])
   if (atual?.status === "aceita") {
-    return NextResponse.json({ erro: "Nao e possivel excluir uma cotacao ja aceita" }, { status: 409 })
+    return NextResponse.json({ erro: "Não é possível excluir uma cotação já aceita" }, { status: 409 })
   }
 
   await query("DELETE FROM TAB_COTACAO WHERE id = $1", [id])

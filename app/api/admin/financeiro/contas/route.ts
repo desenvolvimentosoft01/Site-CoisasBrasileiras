@@ -21,10 +21,10 @@ export async function POST(request: Request) {
   const { tipo, descricao, valor, vencimento, categoria, observacao } = await request.json()
 
   if (tipo !== "pagar" && tipo !== "receber") {
-    return NextResponse.json({ erro: "Tipo invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Tipo inválido" }, { status: 400 })
   }
   if (!descricao?.trim() || !valor || !vencimento) {
-    return NextResponse.json({ erro: "Descricao, valor e vencimento sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Descrição, valor e vencimento são obrigatórios" }, { status: 400 })
   }
 
   const [conta] = await query(

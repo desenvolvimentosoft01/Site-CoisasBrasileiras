@@ -127,7 +127,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
     // Nunca inclui a senha no log de auditoria, mesmo que tenha sido trocada.
     const salvo = await resposta.json()
     registrarAuditoria({
-      tela: "Usuarios",
+      tela: "Usuários",
       acao: usuarioEditando ? "edicao" : "cadastro",
       tabela: "TAB_USUARIO_ADMIN",
       registroId: usuarioEditando?.id ?? salvo.id,
@@ -147,7 +147,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
   }
 
   async function excluir(usuario: Usuario) {
-    if (!(await confirmar({ descricao: `Excluir o usuario "${usuario.nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o usuário "${usuario.nome}"?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/usuarios/${usuario.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()
@@ -155,7 +155,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
       return
     }
     registrarAuditoria({
-      tela: "Usuarios",
+      tela: "Usuários",
       acao: "exclusao",
       tabela: "TAB_USUARIO_ADMIN",
       registroId: usuario.id,
@@ -169,7 +169,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Usuarios</h1>
+      <h1 className="text-2xl font-semibold">Usuários</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
@@ -205,19 +205,19 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
             />
             <CardContent className="p-0">
               {usuarios.length === 0 ? (
-                <p className="p-6 text-sm text-slate-500">Nenhum usuario cadastrado ainda.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhum usuário cadastrado ainda.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[720px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Nome</th>
-                        <th className="p-4 font-medium">Usuario</th>
+                        <th className="p-4 font-medium">Usuário</th>
                         <th className="p-4 font-medium">Email</th>
                         <th className="p-4 font-medium">Papel</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium">Ultimo acesso</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium">Último acesso</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -296,7 +296,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
           <p className="px-1 text-sm font-medium text-muted-foreground">
-            {usuarioEditando ? `Editando: ${usuarioEditando.nome}` : "Novo usuario"}
+            {usuarioEditando ? `Editando: ${usuarioEditando.nome}` : "Novo usuário"}
           </p>
           <div className="overflow-hidden rounded-lg border border-border">
             <BarraFerramentas
@@ -332,11 +332,11 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
               </div>
 
               <div className="space-y-2">
-                <Label>Usuario de login (opcional)</Label>
+                <Label>Usuário de login (opcional)</Label>
                 <Input
                   value={usuarioLogin}
                   onChange={(e) => setUsuarioLogin(e.target.value)}
-                  placeholder="Ex: joao.silva - se vazio, entra so com o e-mail"
+                  placeholder="Ex: joao.silva - se vazio, entra só com o e-mail"
                 />
               </div>
 
@@ -378,12 +378,12 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
         campos={
           detalhe
             ? [
-                { label: "Usuario", valor: detalhe.usuario },
+                { label: "Usuário", valor: detalhe.usuario },
                 { label: "Email", valor: detalhe.email },
                 { label: "Papel", valor: detalhe.papel },
                 { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
                 {
-                  label: "Ultimo acesso",
+                  label: "Último acesso",
                   valor: detalhe.ultimo_login ? new Date(detalhe.ultimo_login).toLocaleString("pt-BR") : "Nunca acessou",
                 },
                 { label: "Criado em", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },

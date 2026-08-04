@@ -48,7 +48,7 @@ type Pedido = {
 const opcoesStatus = [
   { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento" },
   { valor: "pago", rotulo: "Pago" },
-  { valor: "em_separacao", rotulo: "Em separacao" },
+  { valor: "em_separacao", rotulo: "Em separação" },
   { valor: "enviado", rotulo: "Enviado" },
   { valor: "entregue", rotulo: "Entregue" },
   { valor: "cancelado", rotulo: "Cancelado" },
@@ -74,10 +74,10 @@ const rotulosStatus: Record<string, string> = Object.fromEntries(
 
 function montarMensagemWhatsapp(pedido: Pedido): string {
   const numeroPedido = pedido.id.slice(0, 8).toUpperCase()
-  let mensagem = `Ola ${pedido.cliente_nome}! Seu pedido #${numeroPedido} na Coisas Brasileiras esta com status: ${rotulosStatus[pedido.status] ?? pedido.status}.`
+  let mensagem = `Olá ${pedido.cliente_nome}! Seu pedido #${numeroPedido} na Coisas Brasileiras está com status: ${rotulosStatus[pedido.status] ?? pedido.status}.`
 
   if (pedido.codigo_rastreio) {
-    mensagem += ` Codigo de rastreio: ${pedido.codigo_rastreio}${pedido.transportadora ? ` (${pedido.transportadora})` : ""}.`
+    mensagem += ` Código de rastreio: ${pedido.codigo_rastreio}${pedido.transportadora ? ` (${pedido.transportadora})` : ""}.`
   }
 
   return mensagem
@@ -142,7 +142,7 @@ export default function DetalhePedidoPage() {
     setAtualizandoSituacaoNfe(false)
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErroSituacaoNfe(dados.erro || "Erro ao consultar situacao no Bling")
+      setErroSituacaoNfe(dados.erro || "Erro ao consultar situação no Bling")
       return
     }
     carregar()
@@ -163,7 +163,7 @@ export default function DetalhePedidoPage() {
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErroValidacao(dados.erro || "Codigo de rastreio invalido na Frenet")
+      setErroValidacao(dados.erro || "Código de rastreio inválido na Frenet")
       return false
     }
     setResultadoValidacao(await resposta.json())
@@ -260,7 +260,7 @@ export default function DetalhePedidoPage() {
           Pedido
           {pedido.origem === "balcao" && (
             <span className="rounded-full bg-amber-600/20 px-2 py-0.5 text-xs text-amber-400">
-              Venda balcao
+              Venda balcão
             </span>
           )}
         </h1>
@@ -296,11 +296,11 @@ export default function DetalhePedidoPage() {
           {pedido.status === "aguardando_pagamento" ? (
             <div className="space-y-2">
               <span className="inline-block rounded-full bg-amber-500/20 px-3 py-1.5 text-sm text-amber-600">
-                Aguardando pagamento (automatico via Mercado Pago)
+                Aguardando pagamento (automático via Mercado Pago)
               </span>
               <p className="text-xs text-muted-foreground">
-                So vira &quot;Pago&quot; quando o Mercado Pago confirmar - nao da pra marcar manualmente
-                (evita liberar pedido sem o pagamento ter entrado de verdade). So resta cancelar.
+                Só vira &quot;Pago&quot; quando o Mercado Pago confirmar - não dá pra marcar manualmente
+                (evita liberar pedido sem o pagamento ter entrado de verdade). Só resta cancelar.
               </p>
               <Button
                 size="sm"
@@ -362,7 +362,7 @@ export default function DetalhePedidoPage() {
                   disabled={atualizandoSituacaoNfe}
                 >
                   <RefreshCw size={14} className={`mr-1.5 ${atualizandoSituacaoNfe ? "animate-spin" : ""}`} />
-                  {atualizandoSituacaoNfe ? "Consultando..." : "Atualizar situacao no Bling"}
+                  {atualizandoSituacaoNfe ? "Consultando..." : "Atualizar situação no Bling"}
                 </Button>
                 {pedido.bling_nota_situacao_atualizada_em && (
                   <span className="text-xs text-slate-400">
@@ -378,7 +378,7 @@ export default function DetalhePedidoPage() {
                       Enviada por e-mail em {new Date(pedido.bling_nota_email_enviada_em).toLocaleString("pt-BR")}
                     </span>
                   ) : (
-                    <span className="text-amber-600">Ainda nao enviada por e-mail (falha no envio)</span>
+                    <span className="text-amber-600">Ainda não enviada por e-mail (falha no envio)</span>
                   )}
                 </p>
               )}
@@ -412,10 +412,10 @@ export default function DetalhePedidoPage() {
               ) : (
                 <div className="space-y-2 rounded-lg border border-red-500/30 bg-red-500/5 p-3">
                   <p className="text-xs text-amber-600">
-                    O estoque dos itens deste pedido sera estornado automaticamente ao cancelar a nota.
+                    O estoque dos itens deste pedido será estornado automaticamente ao cancelar a nota.
                   </p>
                   <Label className="text-xs">
-                    Justificativa do cancelamento (minimo 15 caracteres, exigencia da Sefaz)
+                    Justificativa do cancelamento (mínimo 15 caracteres, exigência da Sefaz)
                   </Label>
                   <Input
                     value={justificativaCancelamento}
@@ -475,7 +475,7 @@ export default function DetalhePedidoPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Codigo de rastreio</Label>
+              <Label>Código de rastreio</Label>
               <Input
                 value={codigoRastreio}
                 onChange={(e) => setCodigoRastreio(e.target.value.toUpperCase())}
@@ -485,8 +485,8 @@ export default function DetalhePedidoPage() {
                 codigoRastreio.trim() !== "" &&
                 !/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(codigoRastreio.trim()) && (
                   <p className="text-xs text-amber-500">
-                    Formato incomum pros Correios (esperado: 2 letras + 9 numeros + 2 letras, ex:
-                    BR123456789BR). Salva do mesmo jeito, so um alerta.
+                    Formato incomum pros Correios (esperado: 2 letras + 9 números + 2 letras, ex:
+                    BR123456789BR). Salva do mesmo jeito, só um alerta.
                   </p>
                 )}
             </div>
@@ -501,7 +501,7 @@ export default function DetalhePedidoPage() {
               <Input
                 value={codigoServicoFrenet}
                 onChange={(e) => setCodigoServicoFrenet(e.target.value)}
-                placeholder="Codigo do servico Frenet (painel da conta)"
+                placeholder="Código do serviço Frenet (painel da conta)"
                 className="max-w-56"
               />
               <Button
@@ -515,10 +515,10 @@ export default function DetalhePedidoPage() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Se preencher o codigo de servico, o rastreio e validado automaticamente ao clicar em
-              &quot;Salvar e notificar cliente&quot; - se o codigo nao existir de verdade na transportadora,
-              o salvamento e a notificacao sao bloqueados. Sem o codigo de servico preenchido, nao
-              da pra validar (fica so o aviso de formato) e o salvamento funciona normal.
+              Se preencher o código de serviço, o rastreio é validado automaticamente ao clicar em
+              &quot;Salvar e notificar cliente&quot; - se o código não existir de verdade na transportadora,
+              o salvamento e a notificação são bloqueados. Sem o código de serviço preenchido, não
+              dá pra validar (fica só o aviso de formato) e o salvamento funciona normal.
             </p>
             {erroValidacao && <p className="text-sm text-red-500">{erroValidacao}</p>}
             {resultadoValidacao && (
@@ -590,7 +590,7 @@ export default function DetalhePedidoPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Endereco de entrega</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Endereço de entrega</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 text-sm text-slate-400">
             {pedido.logradouro ? (
@@ -605,7 +605,7 @@ export default function DetalhePedidoPage() {
                 </p>
               </>
             ) : (
-              <p className="text-slate-400">Venda balcao - sem entrega.</p>
+              <p className="text-slate-400">Venda balcão - sem entrega.</p>
             )}
           </CardContent>
         </Card>

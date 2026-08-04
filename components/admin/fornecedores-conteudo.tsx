@@ -240,11 +240,11 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                   <table className="w-full min-w-[560px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
-                        <th className="p-4 font-medium">Razao social</th>
+                        <th className="p-4 font-medium">Razão social</th>
                         <th className="p-4 font-medium">CNPJ/CPF</th>
                         <th className="p-4 font-medium">Telefone</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -347,7 +347,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
           <Card>
             <CardContent className="grid items-start gap-4 pt-6 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Razao social</Label>
+                <Label>Razão social</Label>
                 <Input value={form.razaoSocial} onChange={(e) => campo("razaoSocial", e.target.value)} autoFocus />
               </div>
               <div className="space-y-2">
@@ -363,11 +363,11 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                 />
               </div>
               <div className="space-y-2">
-                <Label>Inscricao Estadual</Label>
+                <Label>Inscrição Estadual</Label>
                 <Input
                   value={form.inscricaoEstadual}
                   onChange={(e) => campo("inscricaoEstadual", e.target.value)}
-                  placeholder="Isento, se nao contribuinte"
+                  placeholder="Isento, se não contribuinte"
                 />
               </div>
               <div className="space-y-2">
@@ -396,7 +396,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                 <Input value={form.logradouro} onChange={(e) => campo("logradouro", e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Numero</Label>
+                <Label>Número</Label>
                 <Input value={form.numero} onChange={(e) => campo("numero", e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -420,7 +420,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label>Observacao</Label>
+                <Label>Observação</Label>
                 <Input value={form.observacao} onChange={(e) => campo("observacao", e.target.value)} />
               </div>
 
@@ -446,16 +446,16 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
             ? [
                 { label: "Nome fantasia", valor: detalhe.nome_fantasia },
                 { label: "CNPJ/CPF", valor: detalhe.cnpj_cpf ? mascaraCpfCnpj(detalhe.cnpj_cpf) : null },
-                { label: "Inscricao Estadual", valor: detalhe.inscricao_estadual },
+                { label: "Inscrição Estadual", valor: detalhe.inscricao_estadual },
                 { label: "Telefone", valor: detalhe.telefone ? mascaraTelefone(detalhe.telefone) : null },
                 { label: "E-mail", valor: detalhe.email },
                 {
-                  label: "Endereco",
+                  label: "Endereço",
                   valor: [detalhe.logradouro, detalhe.numero, detalhe.bairro, detalhe.cidade, detalhe.estado]
                     .filter(Boolean)
                     .join(", ") || null,
                 },
-                { label: "Observacao", valor: detalhe.observacao },
+                { label: "Observação", valor: detalhe.observacao },
                 { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
               ]
             : []

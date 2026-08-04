@@ -112,7 +112,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ ...pedidoAtualizado.atualizado, bling_nota_email_enviada_em: emailEnviadoEm })
   } catch (erro) {
     if (erro instanceof Error && erro.message === "NOT_FOUND") {
-      return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
+      return NextResponse.json({ erro: "Pedido não encontrado" }, { status: 404 })
     }
     return NextResponse.json(
       { erro: erro instanceof Error ? erro.message : "Erro ao emitir NF-e no Bling" },

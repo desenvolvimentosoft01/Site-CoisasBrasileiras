@@ -12,8 +12,8 @@ type Props = {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  aprovado: "Voce aprovou este orcamento.",
-  recusado: "Voce recusou este orcamento.",
+  aprovado: "Você aprovou este orçamento.",
+  recusado: "Você recusou este orçamento.",
 }
 
 export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, observacaoCliente }: Props) {
@@ -36,11 +36,11 @@ export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, ob
       })
       if (!resposta.ok) {
         const dados = await resposta.json()
-        throw new Error(dados.erro || "Nao foi possivel registrar sua resposta")
+        throw new Error(dados.erro || "Não foi possível registrar sua resposta")
       }
       setStatus(decisao)
     } catch (e) {
-      setErro(e instanceof Error ? e.message : "Nao foi possivel registrar sua resposta. Tente novamente.")
+      setErro(e instanceof Error ? e.message : "Não foi possível registrar sua resposta. Tente novamente.")
     } finally {
       setEnviando(null)
     }
@@ -61,7 +61,7 @@ export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, ob
           </span>
         </div>
         {status === "recusado" && observacaoCliente && (
-          <p className="text-center text-xs text-red-500">Sua observacao: "{observacaoCliente}"</p>
+          <p className="text-center text-xs text-red-500">Sua observação: "{observacaoCliente}"</p>
         )}
       </div>
     )
@@ -76,7 +76,7 @@ export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, ob
             value={observacao}
             onChange={(e) => setObservacao(e.target.value)}
             rows={3}
-            placeholder="Ex.: preco acima do esperado, prazo muito longo..."
+            placeholder="Ex.: preço acima do esperado, prazo muito longo..."
             className="mt-1 w-full rounded-md border border-slate-300 p-2 text-sm"
           />
         </label>
@@ -110,14 +110,14 @@ export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, ob
           disabled={!!enviando}
           className="flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-emerald-600 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
         >
-          <CheckCircle2 size={16} /> {enviando === "aprovado" ? "Enviando..." : "Aprovar orcamento"}
+          <CheckCircle2 size={16} /> {enviando === "aprovado" ? "Enviando..." : "Aprovar orçamento"}
         </button>
         <button
           onClick={() => setConfirmandoRecusa(true)}
           disabled={!!enviando}
           className="flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-red-500 font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-50"
         >
-          <XCircle size={16} /> Recusar orcamento
+          <XCircle size={16} /> Recusar orçamento
         </button>
       </div>
     </div>

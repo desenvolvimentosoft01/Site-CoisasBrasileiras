@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const { codigo, subtotal } = await request.json()
 
   if (!codigo) {
-    return NextResponse.json({ erro: "Informe o codigo do cupom" }, { status: 400 })
+    return NextResponse.json({ erro: "Informe o código do cupom" }, { status: 400 })
   }
 
   const resultado = await validarCupom(codigo, sessaoOuErro.id, Number(subtotal) || 0)

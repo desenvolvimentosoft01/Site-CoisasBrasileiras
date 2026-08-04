@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const dados = await request.json()
 
   if (!dados.razaoSocial || !dados.razaoSocial.trim()) {
-    return NextResponse.json({ erro: "Razao social e obrigatoria" }, { status: 400 })
+    return NextResponse.json({ erro: "Razão social é obrigatória" }, { status: 400 })
   }
 
   const [fornecedor] = await query(

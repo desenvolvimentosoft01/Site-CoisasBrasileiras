@@ -16,7 +16,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!avaliacao) {
-    return NextResponse.json({ erro: "Avaliacao nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Avaliação não encontrada" }, { status: 404 })
   }
 
   revalidatePath("/", "layout")

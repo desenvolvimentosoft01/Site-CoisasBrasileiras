@@ -71,11 +71,11 @@ export function RelatorioEstoqueConteudo({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Relatorio de Estoque</h1>
-          <p className="text-sm text-muted-foreground">Posicao atual do estoque, ao valor de venda.</p>
+          <h1 className="text-2xl font-semibold">Relatório de Estoque</h1>
+          <p className="text-sm text-muted-foreground">Posição atual do estoque, ao valor de venda.</p>
         </div>
         <BotaoImprimir
-          descricaoPeriodo="Posicao atual do estoque - nao ha filtro de periodo, e uma foto de agora."
+          descricaoPeriodo="Posição atual do estoque - não há filtro de período, é uma foto de agora."
           campos={[
             { chave: "resumo", rotulo: "Resumo de totais" },
             { chave: "lista", rotulo: "Lista de produtos" },
@@ -137,7 +137,7 @@ export function RelatorioEstoqueConteudo({
                 onChange={(e) => setSomenteAlerta(e.target.checked)}
                 className="h-4 w-4 rounded border-input accent-primary"
               />
-              Somente abaixo do minimo
+              Somente abaixo do mínimo
             </label>
             <label className="flex items-center gap-2 pb-2 text-sm">
               <input
@@ -175,7 +175,7 @@ export function RelatorioEstoqueConteudo({
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
               <AlertTriangle size={14} className="text-amber-500" />
-              Abaixo do minimo
+              Abaixo do mínimo
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold text-amber-500">{qtdAbaixoMinimo}</CardContent>
@@ -203,10 +203,10 @@ export function RelatorioEstoqueConteudo({
                     <th className="p-4 font-medium">Produto</th>
                     <th className="p-4 font-medium">Categoria</th>
                     <th className="p-4 font-medium">Estoque</th>
-                    <th className="p-4 font-medium">Minimo</th>
+                    <th className="p-4 font-medium">Mínimo</th>
                     <th className="p-4 font-medium">Valor unit.</th>
                     <th className="p-4 font-medium">Valor em estoque</th>
-                    <th className="p-4 font-medium">Situacao</th>
+                    <th className="p-4 font-medium">Situação</th>
                   </tr>
                 </thead>
                 <tbody>

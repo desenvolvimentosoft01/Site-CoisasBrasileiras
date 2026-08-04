@@ -35,7 +35,7 @@ const ABAS_STATUS = [
   { valor: "todos", rotulo: "Todos" },
   { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento" },
   { valor: "pago", rotulo: "Pago" },
-  { valor: "em_separacao", rotulo: "Em separacao" },
+  { valor: "em_separacao", rotulo: "Em separação" },
   { valor: "enviado", rotulo: "Enviado" },
   { valor: "entregue", rotulo: "Entregue" },
   { valor: "cancelado", rotulo: "Cancelado" },
@@ -66,7 +66,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
       return
     }
 
-    toast.success(`${dados.importados} pedido(s) importado(s), ${dados.pendentes} pendencia(s)`)
+    toast.success(`${dados.importados} pedido(s) importado(s), ${dados.pendentes} pendência(s)`)
     fetch("/api/admin/bling/pedidos-pendentes")
       .then((r) => (r.ok ? r.json() : []))
       .then(setPendentes)
@@ -101,7 +101,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
         <Card className="border-amber-500/30 bg-amber-500/5">
           <CardContent className="space-y-2 p-4">
             <p className="text-sm font-medium text-amber-600">
-              {pendentes.length} pedido(s) de marketplace nao importado(s)
+              {pendentes.length} pedido(s) de marketplace não importado(s)
             </p>
             <ul className="space-y-1.5">
               {pendentes.map((pendente) => (
@@ -113,7 +113,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                     type="button"
                     onClick={() => descartarPendencia(pendente.id)}
                     className="shrink-0 text-amber-500 hover:text-amber-700"
-                    title="Descartar (o proximo import vai tentar de novo)"
+                    title="Descartar (o próximo import vai tentar de novo)"
                   >
                     <X size={14} />
                   </button>

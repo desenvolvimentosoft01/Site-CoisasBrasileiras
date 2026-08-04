@@ -21,7 +21,7 @@ function Selo({ atual, anterior }: { atual: number; anterior: number }) {
     <span className={`inline-flex items-center gap-1 text-xs font-medium ${v.positivo ? "text-emerald-500" : "text-red-400"}`}>
       <Icone size={12} />
       {v.percentual >= 0 ? "+" : ""}
-      {v.percentual.toFixed(1)}% vs periodo anterior
+      {v.percentual.toFixed(1)}% vs período anterior
     </span>
   )
 }
@@ -48,7 +48,7 @@ export function RelatorioLucroConteudo({
           <h1 className="text-2xl font-semibold">Lucro / DRE gerencial</h1>
           <p className="text-sm text-muted-foreground">
             <Link href="/admin/relatorios" className="hover:underline">
-              Relatorios
+              Relatórios
             </Link>{" "}
             / Lucro
           </p>
@@ -60,7 +60,7 @@ export function RelatorioLucroConteudo({
             <Input type="date" name="inicio" defaultValue={inicioPeriodo} className="w-40" />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Ate</Label>
+            <Label className="text-xs">Até</Label>
             <Input type="date" name="fim" defaultValue={fimPeriodo} className="w-40" />
           </div>
           <Button type="submit" variant="outline">
@@ -72,18 +72,18 @@ export function RelatorioLucroConteudo({
       {semConfiguracao && (
         <Card className="border-amber-500/40 bg-amber-500/10">
           <CardContent className="pt-6 text-sm text-amber-500">
-            Taxas de pagamento e aliquota de imposto ainda nao configuradas — os valores abaixo
-            nao descontam essas despesas. Configure em{" "}
+            Taxas de pagamento e alíquota de imposto ainda não configuradas — os valores abaixo
+            não descontam essas despesas. Configure em{" "}
             <Link href="/admin/configuracoes" className="underline">
-              Configuracoes &gt; Custos
+              Configurações &gt; Custos
             </Link>{" "}
-            pra um numero mais proximo do real.
+            pra um número mais próximo do real.
           </CardContent>
         </Card>
       )}
 
       <p className="text-xs text-muted-foreground">
-        Comparando com o periodo anterior de mesma duracao ({periodoAnteriorLabel})
+        Comparando com o período anterior de mesma duração ({periodoAnteriorLabel})
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -110,7 +110,7 @@ export function RelatorioLucroConteudo({
         </Card>
         <Card className="border-primary/40">
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Lucro liquido</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Lucro líquido</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
             <div className={`text-2xl font-semibold ${dre.lucroLiquido >= 0 ? "text-emerald-500" : "text-red-400"}`}>
@@ -123,13 +123,13 @@ export function RelatorioLucroConteudo({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-slate-500">Composicao do resultado</CardTitle>
+          <CardTitle className="text-sm text-slate-500">Composição do resultado</CardTitle>
         </CardHeader>
         <CardContent>
           <table className="w-full text-sm">
             <tbody>
               <tr className="border-b border-border">
-                <td className="py-2">Faturamento (pedidos pagos no periodo)</td>
+                <td className="py-2">Faturamento (pedidos pagos no período)</td>
                 <td className="py-2 text-right font-medium">{formatarMoeda(dre.faturamento)}</td>
               </tr>
               <tr className="border-b border-border text-red-400">
@@ -149,11 +149,11 @@ export function RelatorioLucroConteudo({
                 <td className="py-2 text-right">{formatarMoeda(dre.imposto)}</td>
               </tr>
               <tr className="border-b border-border text-red-400">
-                <td className="py-2">(-) Despesas fixas do periodo (contas a pagar, exceto compras)</td>
+                <td className="py-2">(-) Despesas fixas do período (contas a pagar, exceto compras)</td>
                 <td className="py-2 text-right">{formatarMoeda(dre.despesasFixas)}</td>
               </tr>
               <tr className="text-base font-semibold">
-                <td className="py-2">= Lucro liquido estimado</td>
+                <td className="py-2">= Lucro líquido estimado</td>
                 <td className={`py-2 text-right ${dre.lucroLiquido >= 0 ? "text-emerald-500" : "text-red-400"}`}>
                   {formatarMoeda(dre.lucroLiquido)}
                 </td>
@@ -170,7 +170,7 @@ export function RelatorioLucroConteudo({
           </CardHeader>
           <CardContent className="p-0">
             {dre.produtos.length === 0 ? (
-              <p className="p-6 text-sm text-slate-500">Nenhuma venda no periodo.</p>
+              <p className="p-6 text-sm text-slate-500">Nenhuma venda no período.</p>
             ) : (
               <div className="max-h-96 overflow-x-auto overflow-y-auto">
                 <table className="w-full min-w-[360px] text-sm">
@@ -204,7 +204,7 @@ export function RelatorioLucroConteudo({
           </CardHeader>
           <CardContent className="p-0">
             {dre.categorias.length === 0 ? (
-              <p className="p-6 text-sm text-slate-500">Nenhuma venda no periodo.</p>
+              <p className="p-6 text-sm text-slate-500">Nenhuma venda no período.</p>
             ) : (
               <div className="overflow-x-auto">
               <table className="w-full min-w-[360px] text-sm">

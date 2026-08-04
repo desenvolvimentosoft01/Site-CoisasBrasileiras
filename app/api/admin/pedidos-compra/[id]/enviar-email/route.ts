@@ -18,7 +18,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     [id]
   )
   if (!pedido) {
-    return NextResponse.json({ erro: "Pedido de compra nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido de compra não encontrado" }, { status: 404 })
   }
   if (!pedido.fornecedor_email) {
     return NextResponse.json({ erro: "Fornecedor sem e-mail cadastrado" }, { status: 400 })

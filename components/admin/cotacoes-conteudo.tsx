@@ -121,7 +121,7 @@ export function CotacoesConteudo({
 
   async function enviarPorEmail(cotacao: Cotacao) {
     if (!cotacao.fornecedor_email) {
-      toast.error("Esse fornecedor nao tem e-mail cadastrado")
+      toast.error("Esse fornecedor não tem e-mail cadastrado")
       return
     }
     setEnviandoEmailId(cotacao.id)
@@ -132,19 +132,19 @@ export function CotacoesConteudo({
       toast.error(dados.erro || "Erro ao enviar o e-mail")
       return
     }
-    toast.success(`Cotacao enviada para ${cotacao.fornecedor_email}!`)
+    toast.success(`Cotação enviada para ${cotacao.fornecedor_email}!`)
     recarregar()
   }
 
   async function enviarPorWhatsapp(cotacao: Cotacao) {
     const numero = cotacao.fornecedor_telefone?.replace(/\D/g, "")
     if (!numero) {
-      toast.error("Esse fornecedor nao tem telefone cadastrado")
+      toast.error("Esse fornecedor não tem telefone cadastrado")
       return
     }
     const numeroComDdi = numero.startsWith("55") ? numero : `55${numero}`
     const link = `${window.location.origin}/cotacao/responder/${cotacao.token_resposta}`
-    const mensagem = `Ola, ${cotacao.fornecedor_nome}! Precisamos de uma cotacao pro pedido ${numeroFormatado(cotacao.numero)}.\n\nAcesse o link pra informar a quantidade que consegue entregar e o preco de cada item: ${link}`
+    const mensagem = `Olá, ${cotacao.fornecedor_nome}! Precisamos de uma cotação pro pedido ${numeroFormatado(cotacao.numero)}.\n\nAcesse o link pra informar a quantidade que consegue entregar e o preço de cada item: ${link}`
     window.open(`https://wa.me/${numeroComDdi}?text=${encodeURIComponent(mensagem)}`, "_blank")
 
     if (cotacao.status === "aberto") {
@@ -160,7 +160,7 @@ export function CotacoesConteudo({
   async function aceitar(cotacao: Cotacao) {
     if (
       !(await confirmar({
-        descricao: `Aceitar a cotacao ${numeroFormatado(cotacao.numero)} e gerar um Pedido de Compra com os valores informados pelo fornecedor?`,
+        descricao: `Aceitar a cotação ${numeroFormatado(cotacao.numero)} e gerar um Pedido de Compra com os valores informados pelo fornecedor?`,
       }))
     )
       return
@@ -169,15 +169,15 @@ export function CotacoesConteudo({
     setAceitandoId(null)
     if (!resposta.ok) {
       const dados = await resposta.json()
-      toast.error(dados.erro || "Erro ao aceitar a cotacao")
+      toast.error(dados.erro || "Erro ao aceitar a cotação")
       return
     }
-    toast.success("Cotacao aceita! Pedido de compra gerado.")
+    toast.success("Cotação aceita! Pedido de compra gerado.")
     recarregar()
   }
 
   async function recusar(cotacao: Cotacao) {
-    if (!(await confirmar({ descricao: `Recusar a cotacao ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Recusar a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/cotacoes/${cotacao.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -192,7 +192,7 @@ export function CotacoesConteudo({
   }
 
   async function cancelar(cotacao: Cotacao) {
-    if (!(await confirmar({ descricao: `Cancelar a cotacao ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Cancelar a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/cotacoes/${cotacao.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -207,7 +207,7 @@ export function CotacoesConteudo({
   }
 
   async function excluir(cotacao: Cotacao) {
-    if (!(await confirmar({ descricao: `Excluir a cotacao ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/cotacoes/${cotacao.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()
@@ -238,7 +238,7 @@ export function CotacoesConteudo({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Cotacao</h1>
+      <h1 className="text-2xl font-semibold">Cotação</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">
@@ -322,17 +322,17 @@ export function CotacoesConteudo({
             />
             <CardContent className="p-0">
               {cotacoesFiltradas.length === 0 ? (
-                <p className="p-6 text-sm text-slate-500">Nenhuma cotacao encontrada.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhuma cotação encontrada.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[720px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
-                        <th className="p-4 font-medium">Numero</th>
+                        <th className="p-4 font-medium">Número</th>
                         <th className="p-4 font-medium">Fornecedor</th>
                         <th className="p-4 font-medium">Status</th>
                         <th className="p-4 font-medium">Data</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -413,7 +413,7 @@ export function CotacoesConteudo({
             ? [
                 { label: "Fornecedor", valor: fornecedores.find((f) => f.id === detalhe.fornecedor_id)?.razao_social ?? "" },
                 { label: "Status", valor: STATUS_LABEL[detalhe.status] },
-                ...(detalhe.observacao ? [{ label: "Observacao", valor: detalhe.observacao }] : []),
+                ...(detalhe.observacao ? [{ label: "Observação", valor: detalhe.observacao }] : []),
                 ...(detalhe.itens.some((i) => i.valor_unitario_cotado != null)
                   ? [
                       {

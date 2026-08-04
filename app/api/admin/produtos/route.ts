@@ -61,19 +61,19 @@ export async function POST(request: Request) {
   } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
-    return NextResponse.json({ erro: "Nome e preco sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome e preço são obrigatórios" }, { status: 400 })
   }
   if (precoClubeTipo && precoClubeTipo !== "fixo" && precoClubeTipo !== "percentual") {
-    return NextResponse.json({ erro: "Tipo do preco do Clube invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Tipo do preço do Clube inválido" }, { status: 400 })
   }
   if (!codigoBarras || !String(codigoBarras).trim()) {
-    return NextResponse.json({ erro: "Codigo de barras (GTIN/EAN) e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Código de barras (GTIN/EAN) é obrigatório" }, { status: 400 })
   }
   if (!validarCodigoBarras(String(codigoBarras))) {
-    return NextResponse.json({ erro: "Codigo de barras invalido (precisa ser EAN-13/EAN-8 com digito verificador correto)" }, { status: 400 })
+    return NextResponse.json({ erro: "Código de barras inválido (precisa ser EAN-13/EAN-8 com dígito verificador correto)" }, { status: 400 })
   }
   if (!ncm || !String(ncm).trim()) {
-    return NextResponse.json({ erro: "NCM e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "NCM é obrigatório" }, { status: 400 })
   }
 
   const slug = gerarSlug(nome)
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
   if (sku) {
     const existente = await query("SELECT id FROM TAB_PRODUTO WHERE sku = $1", [sku])
     if (existente.length > 0) {
-      return NextResponse.json({ erro: "Ja existe um produto com esse SKU" }, { status: 409 })
+      return NextResponse.json({ erro: "Já existe um produto com esse SKU" }, { status: 409 })
     }
   }
 

@@ -17,7 +17,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   )
 
   if (!produto) {
-    return NextResponse.json({ erro: "Produto nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Produto não encontrado" }, { status: 404 })
   }
 
   const categorias = await query(
@@ -63,19 +63,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
-    return NextResponse.json({ erro: "Nome e preco sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome e preço são obrigatórios" }, { status: 400 })
   }
   if (precoClubeTipo && precoClubeTipo !== "fixo" && precoClubeTipo !== "percentual") {
-    return NextResponse.json({ erro: "Tipo do preco do Clube invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Tipo do preço do Clube inválido" }, { status: 400 })
   }
   if (!codigoBarras || !String(codigoBarras).trim()) {
-    return NextResponse.json({ erro: "Codigo de barras (GTIN/EAN) e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Código de barras (GTIN/EAN) é obrigatório" }, { status: 400 })
   }
   if (!validarCodigoBarras(String(codigoBarras))) {
-    return NextResponse.json({ erro: "Codigo de barras invalido (precisa ser EAN-13/EAN-8 com digito verificador correto)" }, { status: 400 })
+    return NextResponse.json({ erro: "Código de barras inválido (precisa ser EAN-13/EAN-8 com dígito verificador correto)" }, { status: 400 })
   }
   if (!ncm || !String(ncm).trim()) {
-    return NextResponse.json({ erro: "NCM e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "NCM é obrigatório" }, { status: 400 })
   }
 
   if (sku) {
@@ -84,7 +84,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       id,
     ])
     if (existente.length > 0) {
-      return NextResponse.json({ erro: "Ja existe um produto com esse SKU" }, { status: 409 })
+      return NextResponse.json({ erro: "Já existe um produto com esse SKU" }, { status: 409 })
     }
   }
 
@@ -119,7 +119,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!produto) {
-    return NextResponse.json({ erro: "Produto nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Produto não encontrado" }, { status: 404 })
   }
 
   notificarClientesEstoqueVoltou(produto.id)
@@ -164,7 +164,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     // nao deixa vazar o erro bruto do banco pro client.
     if (erro instanceof Error && "code" in erro && erro.code === "23503") {
       return NextResponse.json(
-        { erro: "Este produto ja tem pedidos vinculados e nao pode ser excluido. Desative-o em vez disso." },
+        { erro: "Este produto já tem pedidos vinculados e não pode ser excluído. Desative-o em vez disso." },
         { status: 409 }
       )
     }

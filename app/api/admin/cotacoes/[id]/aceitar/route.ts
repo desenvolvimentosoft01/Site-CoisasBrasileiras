@@ -15,10 +15,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     [id]
   )
   if (!cotacao) {
-    return NextResponse.json({ erro: "Cotacao nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Cotação não encontrada" }, { status: 404 })
   }
   if (cotacao.status !== "respondida") {
-    return NextResponse.json({ erro: "So e possivel aceitar uma cotacao ja respondida pelo fornecedor" }, { status: 400 })
+    return NextResponse.json({ erro: "Só é possível aceitar uma cotação já respondida pelo fornecedor" }, { status: 400 })
   }
 
   const itens = await query(

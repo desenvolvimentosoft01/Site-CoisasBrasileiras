@@ -121,7 +121,7 @@ export default function CheckoutPage() {
 
     if (!resposta.ok) {
       const dados = await resposta.json()
-      setErro(dados.erro || "Nao foi possivel finalizar o pedido")
+      setErro(dados.erro || "Não foi possível finalizar o pedido")
       return
     }
 
@@ -137,7 +137,7 @@ export default function CheckoutPage() {
           Entre na sua conta
         </h1>
         <p className="mb-6 text-neutral-500">
-          Voce precisa estar logado para finalizar a compra.
+          Você precisa estar logado para finalizar a compra.
         </p>
         <Button nativeButton={false} render={<Link href="/entrar?voltar=/checkout" />}>Entrar</Button>
       </div>
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <h1 className="font-heading mb-3 text-2xl font-semibold text-emerald-950">
-          Seu carrinho esta vazio
+          Seu carrinho está vazio
         </h1>
         <Button nativeButton={false} render={<Link href="/produtos" />}>Ver produtos</Button>
       </div>
@@ -163,7 +163,7 @@ export default function CheckoutPage() {
         <Card>
           <CardContent className="pt-6">
             <form onSubmit={finalizarPedido} className="space-y-4">
-              <h2 className="font-medium text-neutral-800">Endereco de entrega</h2>
+              <h2 className="font-medium text-neutral-800">Endereço de entrega</h2>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Numero</Label>
+                  <Label>Número</Label>
                   <Input
                     value={numero}
                     onChange={(e) => setNumero(e.target.value)}
@@ -227,7 +227,7 @@ export default function CheckoutPage() {
                 {enviando ? "Finalizando..." : "Confirmar pedido"}
               </Button>
               <p className="text-xs text-neutral-400">
-                Voce sera redirecionado para o Mercado Pago para concluir o pagamento (Pix, cartao ou boleto,
+                Você será redirecionado para o Mercado Pago para concluir o pagamento (Pix, cartão ou boleto,
                 conforme disponibilidade).
               </p>
             </form>
@@ -255,9 +255,9 @@ export default function CheckoutPage() {
                 <div className="space-y-2 py-1">
                   <span className="text-sm text-neutral-600">Frete</span>
                   {carregandoFrete ? (
-                    <p className="text-xs text-neutral-400">Calculando opcoes de frete...</p>
+                    <p className="text-xs text-neutral-400">Calculando opções de frete...</p>
                   ) : opcoesFrete.length === 0 ? (
-                    <p className="text-xs text-neutral-400">Nenhuma opcao de frete encontrada.</p>
+                    <p className="text-xs text-neutral-400">Nenhuma opção de frete encontrada.</p>
                   ) : (
                     opcoesFrete.map((opcao, indice) => (
                       <label
@@ -279,13 +279,13 @@ export default function CheckoutPage() {
                             {opcao.transportadora} - {opcao.servico}
                             {opcao.prazoDias != null && (
                               <span className="block text-xs text-neutral-500">
-                                Prazo: {opcao.prazoDias} dia(s) util(is)
+                                Prazo: {opcao.prazoDias} dia(s) útil(eis)
                               </span>
                             )}
                           </span>
                         </span>
                         <span className="font-medium">
-                          {opcao.valor === 0 ? "Gratis" : formatarPreco(opcao.valor)}
+                          {opcao.valor === 0 ? "Grátis" : formatarPreco(opcao.valor)}
                         </span>
                       </label>
                     ))
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
               )}
               {freteGratisAcimaDe > 0 && valorFrete > 0 && (
                 <p className="text-xs text-emerald-600">
-                  Frete gratis em compras acima de {formatarPreco(freteGratisAcimaDe)}
+                  Frete grátis em compras acima de {formatarPreco(freteGratisAcimaDe)}
                 </p>
               )}
               {cupom && (

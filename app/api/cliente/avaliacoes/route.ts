@@ -22,13 +22,13 @@ export async function POST(request: Request) {
   const { produtoId, nota, comentario } = await request.json()
 
   if (!produtoId || !(Number(nota) >= 1 && Number(nota) <= 5)) {
-    return NextResponse.json({ erro: "Nota invalida" }, { status: 400 })
+    return NextResponse.json({ erro: "Nota inválida" }, { status: 400 })
   }
 
   const comprou = await clienteComprouProduto(sessaoOuErro.id, produtoId)
   if (!comprou) {
     return NextResponse.json(
-      { erro: "So quem comprou o produto (pedido pago) pode avalia-lo" },
+      { erro: "Só quem comprou o produto (pedido pago) pode avaliá-lo" },
       { status: 403 }
     )
   }
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   } catch (erro) {
     // 23505 = ja existe avaliacao desse cliente pra esse produto (UNIQUE)
     if (erro instanceof Error && "code" in erro && erro.code === "23505") {
-      return NextResponse.json({ erro: "Voce ja avaliou este produto" }, { status: 409 })
+      return NextResponse.json({ erro: "Você já avaliou este produto" }, { status: 409 })
     }
     throw erro
   }

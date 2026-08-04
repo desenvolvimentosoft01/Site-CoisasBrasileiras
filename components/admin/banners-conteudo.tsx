@@ -27,7 +27,7 @@ export type Banner = {
 
 const CORES = [
   { valor: "from-emerald-700 to-emerald-900", rotulo: "Verde" },
-  { valor: "from-amber-700 to-amber-900", rotulo: "Ambar" },
+  { valor: "from-amber-700 to-amber-900", rotulo: "Âmbar" },
   { valor: "from-emerald-800 to-teal-900", rotulo: "Verde-azulado" },
   { valor: "from-rose-700 to-rose-900", rotulo: "Rosa" },
   { valor: "from-neutral-700 to-neutral-900", rotulo: "Cinza" },
@@ -225,7 +225,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
 
           {banners.length === 0 ? (
             <p className="text-sm text-slate-500">
-              Nenhum banner cadastrado - a home esta usando os slides padrao.
+              Nenhum banner cadastrado - a home está usando os slides padrão.
             </p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -316,11 +316,11 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
           <Card className="max-w-lg">
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <Label>Titulo</Label>
+                <Label>Título</Label>
                 <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} autoFocus />
               </div>
               <div className="space-y-2">
-                <Label>Subtitulo</Label>
+                <Label>Subtítulo</Label>
                 <Input value={subtitulo} onChange={(e) => setSubtitulo(e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -406,7 +406,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
         campos={
           detalhe
             ? [
-                { label: "Subtitulo", valor: detalhe.subtitulo },
+                { label: "Subtítulo", valor: detalhe.subtitulo },
                 { label: "Link", valor: detalhe.link },
                 { label: "Ordem", valor: detalhe.ordem },
                 { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },

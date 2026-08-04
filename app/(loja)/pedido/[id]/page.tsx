@@ -11,7 +11,7 @@ function formatarPreco(valor: string) {
 const rotulosStatus: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
   pago: "Pago",
-  em_separacao: "Em separacao",
+  em_separacao: "Em separação",
   enviado: "Enviado",
   entregue: "Entregue",
   cancelado: "Cancelado",
@@ -78,7 +78,7 @@ export default async function ConfirmacaoPedidoPage({
           </div>
           <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
             <span>Pago</span>
-            <span>Separacao</span>
+            <span>Separação</span>
             <span>Enviado</span>
             <span>Entregue</span>
           </div>
@@ -92,7 +92,7 @@ export default async function ConfirmacaoPedidoPage({
             <div className="font-medium text-emerald-900">
               {pedido.transportadora || "Rastreio"}: {pedido.codigo_rastreio}
             </div>
-            <div className="text-emerald-700">Use o codigo acima no site da transportadora</div>
+            <div className="text-emerald-700">Use o código acima no site da transportadora</div>
           </div>
         </div>
       )}

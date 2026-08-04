@@ -11,11 +11,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { nome, ativa, imagemUrl, categoriaPaiId } = await request.json()
 
   if (!nome || !nome.trim()) {
-    return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome é obrigatório" }, { status: 400 })
   }
 
   if (categoriaPaiId === id) {
-    return NextResponse.json({ erro: "Uma categoria nao pode ser pai dela mesma" }, { status: 400 })
+    return NextResponse.json({ erro: "Uma categoria não pode ser pai dela mesma" }, { status: 400 })
   }
 
   const [categoria] = await query(
@@ -24,7 +24,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   )
 
   if (!categoria) {
-    return NextResponse.json({ erro: "Categoria nao encontrada" }, { status: 404 })
+    return NextResponse.json({ erro: "Categoria não encontrada" }, { status: 404 })
   }
 
   revalidatePath("/", "layout")

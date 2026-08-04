@@ -343,7 +343,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                   onChange={(e) => setTexto(e.target.value)}
                   rows={4}
                   className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
-                  placeholder="Adorei a porcelana, chegou rapido e muito bem embalada..."
+                  placeholder="Adorei a porcelana, chegou rápido e muito bem embalada..."
                 />
               </div>
               <div className="space-y-2">

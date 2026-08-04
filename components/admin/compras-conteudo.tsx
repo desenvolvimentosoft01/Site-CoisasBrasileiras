@@ -173,7 +173,7 @@ export function ComprasConteudo({
     setPedidoCompraVinculado({ id: pedidoCompraParaLancar.id, numero: pedidoCompraParaLancar.numero })
     if (pedidoCompraParaLancar.qtdItensSemProduto > 0) {
       toast.warning(
-        `${pedidoCompraParaLancar.qtdItensSemProduto} item(ns) desse pedido de compra nao tem produto vinculado do catalogo e precisam ser adicionados na mao.`
+        `${pedidoCompraParaLancar.qtdItensSemProduto} item(ns) desse pedido de compra não tem produto vinculado do catálogo e precisam ser adicionados na mão.`
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -375,7 +375,7 @@ export function ComprasConteudo({
         setFornecedorId(novoFornecedor.id)
         fornecedorIdResolvido = novoFornecedor.id
         registrarAuditoria({
-          tela: "Entrada de NF (importacao XML)",
+          tela: "Entrada de NF (importação XML)",
           acao: "cadastro",
           tabela: "TAB_FORNECEDOR",
           registroId: novoFornecedor.id,
@@ -589,7 +589,7 @@ export function ComprasConteudo({
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Numero da nota</Label>
+                <Label className="text-xs">Número da nota</Label>
                 <Input value={filtroNumeroNota} onChange={(e) => setFiltroNumeroNota(e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -606,7 +606,7 @@ export function ComprasConteudo({
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Observacao/descricao</Label>
+                <Label className="text-xs">Observação/descrição</Label>
                 <Input value={filtroObservacao} onChange={(e) => setFiltroObservacao(e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -614,7 +614,7 @@ export function ComprasConteudo({
                 <Input type="date" value={filtroDataCompraDe} onChange={(e) => setFiltroDataCompraDe(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Data da compra - ate</Label>
+                <Label className="text-xs">Data da compra - até</Label>
                 <Input type="date" value={filtroDataCompraAte} onChange={(e) => setFiltroDataCompraAte(e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -629,7 +629,7 @@ export function ComprasConteudo({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Data de entrada - ate</Label>
+                <Label className="text-xs">Data de entrada - até</Label>
                 <Input
                   type="date"
                   value={filtroDataEntradaAte}
@@ -639,7 +639,7 @@ export function ComprasConteudo({
               <div className="space-y-2">
                 <Label className="text-xs">
                   Pedido de compra
-                  <CampoDica>Numero do Pedido de Compra que originou essa entrada (ex: PC.0001).</CampoDica>
+                  <CampoDica>Número do Pedido de Compra que originou essa entrada (ex: PC.0001).</CampoDica>
                 </Label>
                 <Input
                   value={filtroPedidoCompra}
@@ -672,7 +672,7 @@ export function ComprasConteudo({
                         <th className="p-4 font-medium">Data</th>
                         <th className="p-4 font-medium">Total</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -765,7 +765,7 @@ export function ComprasConteudo({
             <Card className="border-primary/40 bg-primary/5">
               <CardContent className="flex items-center gap-2 pt-6 text-sm">
                 <Link2 size={16} className="text-primary" />
-                Essa entrada esta referenciada ao Pedido de Compra PC.
+                Essa entrada está referenciada ao Pedido de Compra PC.
                 {String(pedidoCompraVinculado.numero).padStart(4, "0")}. Ao salvar, o pedido de compra fica
                 marcado como &quot;atendido&quot;.
               </CardContent>
@@ -821,15 +821,15 @@ export function ComprasConteudo({
                   {importandoXml ? "Lendo XML..." : "Importar XML da NF-e"}
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Le o XML que o fornecedor enviou e preenche fornecedor, numero e itens
-                  automaticamente. Nao precisa de certificado digital - so leitura.
+                  Lê o XML que o fornecedor enviou e preenche fornecedor, número e itens
+                  automaticamente. Não precisa de certificado digital - só leitura.
                 </p>
               </div>
               {erroXml && <p className="text-sm text-red-500">{erroXml}</p>}
               {chaveXmlInvalida && (
                 <p className="flex items-center gap-1.5 text-sm text-amber-500">
                   <AlertTriangle size={14} />
-                  A chave de acesso deste XML nao bateu na validacao (dados podem estar
+                  A chave de acesso deste XML não bateu na validação (dados podem estar
                   incompletos ou o arquivo alterado) - confira os valores antes de salvar.
                 </p>
               )}
@@ -855,8 +855,8 @@ export function ComprasConteudo({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Numero da nota
-                  <CampoDica>Opcional - numero da nota fiscal que o fornecedor emitiu.</CampoDica>
+                  Número da nota
+                  <CampoDica>Opcional - número da nota fiscal que o fornecedor emitiu.</CampoDica>
                 </Label>
                 <Input value={numeroNota} onChange={(e) => setNumeroNota(e.target.value)} />
               </div>
@@ -864,8 +864,8 @@ export function ComprasConteudo({
                 <Label>
                   Chave de acesso
                   <CampoDica>
-                    Opcional - os 44 digitos da chave da NF-e. Preenchido automaticamente ao
-                    importar XML; em nota manual so preencha se tiver a chave em maos.
+                    Opcional - os 44 dígitos da chave da NF-e. Preenchido automaticamente ao
+                    importar XML; em nota manual só preencha se tiver a chave em mãos.
                   </CampoDica>
                 </Label>
                 <Input
@@ -898,7 +898,7 @@ export function ComprasConteudo({
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label>Observacao</Label>
+                <Label>Observação</Label>
                 <Input value={observacao} onChange={(e) => setObservacao(e.target.value)} />
               </div>
             </CardContent>
@@ -911,8 +911,8 @@ export function ComprasConteudo({
                   Itens do XML pendentes de mapeamento ({itensXmlPendentes.length})
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Associe cada item da nota a um produto do catalogo e clique em &quot;Adicionar&quot; -
-                  itens nao mapeados nao entram na compra.
+                  Associe cada item da nota a um produto do catálogo e clique em &quot;Adicionar&quot; -
+                  itens não mapeados não entram na compra.
                 </p>
                 <div className="space-y-2">
                   {itensXmlPendentes.map((item, indice) => (
@@ -1042,8 +1042,8 @@ export function ComprasConteudo({
           <Card>
             <CardContent className="space-y-4 pt-6">
               <p className="text-xs text-muted-foreground">
-                Acompanha as notas de entrada ja registradas no Bling (fornecedor emitiu, Sefaz
-                autorizou). O lancamento no nosso sistema (dar entrada no estoque/custo) continua
+                Acompanha as notas de entrada já registradas no Bling (fornecedor emitiu, Sefaz
+                autorizou). O lançamento no nosso sistema (dar entrada no estoque/custo) continua
                 sendo feito importando o XML dessa nota em &quot;Cadastro&quot;.
               </p>
 
@@ -1087,11 +1087,11 @@ export function ComprasConteudo({
                       <tr className="border-b border-border text-left text-slate-500">
                         <th className="p-3 font-medium">NF</th>
                         <th className="p-3 font-medium">Fornecedor</th>
-                        <th className="p-3 font-medium">Emissao</th>
+                        <th className="p-3 font-medium">Emissão</th>
                         <th className="p-3 font-medium">Valor</th>
-                        <th className="p-3 font-medium">Situacao (Bling)</th>
+                        <th className="p-3 font-medium">Situação (Bling)</th>
                         <th className="p-3 font-medium">Status</th>
-                        <th className="p-3 font-medium text-right">Acoes</th>
+                        <th className="p-3 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1119,7 +1119,7 @@ export function ComprasConteudo({
                               }`}
                             >
                               {nota.statusLocal === "lancada"
-                                ? "Lancada"
+                                ? "Lançada"
                                 : nota.statusLocal === "cancelada"
                                   ? "Cancelada"
                                   : "Pendente"}
@@ -1128,7 +1128,7 @@ export function ComprasConteudo({
                           <td className="p-3 text-right">
                             {nota.statusLocal === "pendente" && (
                               <Button variant="outline" size="sm" onClick={() => lancarEntradaDeNotaBling(nota)}>
-                                Lancar entrada
+                                Lançar entrada
                               </Button>
                             )}
                           </td>

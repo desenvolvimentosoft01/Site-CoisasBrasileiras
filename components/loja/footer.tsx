@@ -43,7 +43,7 @@ export async function Footer() {
           </div>
           <div className="flex items-center gap-2">
             <CreditCard size={18} />
-            Pix, cartao e boleto
+            Pix, cartão e boleto
           </div>
           {whatsappDigitos && (
             <Link

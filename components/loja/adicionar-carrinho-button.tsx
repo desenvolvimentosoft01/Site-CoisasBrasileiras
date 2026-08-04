@@ -54,7 +54,7 @@ export function AdicionarCarrinhoButton({
     <div className="space-y-2">
       <p className="text-xs text-neutral-500">
         {estoque <= 5 ? (
-          <span className="font-medium text-amber-600">Ultimas {estoque} unidades em estoque</span>
+          <span className="font-medium text-amber-600">Últimas {estoque} unidades em estoque</span>
         ) : (
           `${estoque} em estoque`
         )}

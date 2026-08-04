@@ -58,7 +58,7 @@ export default async function FinanceiroPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Faturamento do site (mes)</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Faturamento do site (mês)</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-semibold">{formatarMoeda(faturamentoMes)}</CardContent>
         </Card>
@@ -67,7 +67,7 @@ export default async function FinanceiroPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Vencendo nos proximos 7 dias</CardTitle>
+            <CardTitle className="text-sm text-slate-500">Vencendo nos próximos 7 dias</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {contasVencendo.length === 0 ? (

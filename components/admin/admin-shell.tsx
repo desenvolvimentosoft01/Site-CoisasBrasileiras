@@ -43,10 +43,10 @@ type ItemMenu = ItemLink | ItemGrupo
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
 const menu: ItemMenu[] = [
-  { tipo: "link", href: "/admin/dashboard", label: "Visao Geral", icone: LayoutDashboard },
-  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcao", icone: Store },
+  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", icone: LayoutDashboard },
+  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: Store },
   { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", icone: ShoppingCart },
-  { tipo: "link", href: "/admin/orcamentos", label: "Orcamentos", icone: FileText },
+  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", icone: FileText },
   { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: Users },
   {
     tipo: "grupo",
@@ -56,7 +56,7 @@ const menu: ItemMenu[] = [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
       { href: "/admin/estoque", label: "Estoque" },
-      { href: "/admin/precos", label: "Reajuste de Precos", somenteAdmin: true },
+      { href: "/admin/precos", label: "Reajuste de Preços", somenteAdmin: true },
     ],
   },
   {
@@ -66,9 +66,9 @@ const menu: ItemMenu[] = [
     filhos: [
       { href: "/admin/cupons", label: "Cupons" },
       { href: "/admin/banners", label: "Banners" },
-      { href: "/admin/sobre-nos", label: "Sobre Nos" },
+      { href: "/admin/sobre-nos", label: "Sobre Nós" },
       { href: "/admin/feedbacks", label: "Feedbacks" },
-      { href: "/admin/avaliacoes", label: "Avaliacoes" },
+      { href: "/admin/avaliacoes", label: "Avaliações" },
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },
     ],
   },
@@ -78,7 +78,7 @@ const menu: ItemMenu[] = [
     label: "Compras",
     icone: Truck,
     filhos: [
-      { href: "/admin/cotacoes", label: "Cotacao", somenteAdmin: true },
+      { href: "/admin/cotacoes", label: "Cotação", somenteAdmin: true },
       { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
       { href: "/admin/compras", label: "Entrada de NF", somenteAdmin: true },
       { href: "/admin/fornecedores", label: "Fornecedores", somenteAdmin: true },
@@ -86,7 +86,7 @@ const menu: ItemMenu[] = [
   },
   {
     tipo: "grupo",
-    label: "Relatorios",
+    label: "Relatórios",
     icone: BarChart3,
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
@@ -97,11 +97,11 @@ const menu: ItemMenu[] = [
   },
   {
     tipo: "grupo",
-    label: "Configuracoes",
+    label: "Configurações",
     icone: Settings,
     filhos: [
-      { href: "/admin/usuarios", label: "Usuarios", somenteAdmin: true },
-      { href: "/admin/configuracoes", label: "Configuracoes da Loja" },
+      { href: "/admin/usuarios", label: "Usuários", somenteAdmin: true },
+      { href: "/admin/configuracoes", label: "Configurações da Loja" },
     ],
   },
 ]

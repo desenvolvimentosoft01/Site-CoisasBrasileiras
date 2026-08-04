@@ -142,19 +142,19 @@ export function ProdutoForm({
     setErro("")
 
     if (!nome.trim() || !preco) {
-      setErro("Nome e preco sao obrigatorios")
+      setErro("Nome e preço são obrigatórios")
       return
     }
     if (!codigoBarras.trim()) {
-      setErro("Codigo de barras (GTIN/EAN) e obrigatorio")
+      setErro("Código de barras (GTIN/EAN) é obrigatório")
       return
     }
     if (!validarCodigoBarras(codigoBarras)) {
-      setErro("Codigo de barras invalido - precisa ter 13 digitos (EAN-13) com digito verificador correto")
+      setErro("Código de barras inválido - precisa ter 13 dígitos (EAN-13) com dígito verificador correto")
       return
     }
     if (!ncm.trim()) {
-      setErro("NCM e obrigatorio")
+      setErro("NCM é obrigatório")
       return
     }
     if (precoClube && precoClubeTipo === "percentual") {
@@ -291,7 +291,7 @@ export function ProdutoForm({
               <div className="space-y-2">
                 <Label>
                   SKU
-                  <CampoDica>Codigo interno do produto, opcional - usado so pra controle proprio.</CampoDica>
+                  <CampoDica>Código interno do produto, opcional - usado só pra controle próprio.</CampoDica>
                 </Label>
                 <Input
                   value={sku}
@@ -304,23 +304,23 @@ export function ProdutoForm({
                 <Label>
                   EAN *
                   <CampoDica>
-                    Codigo de barras (GTIN/EAN-13), 13 digitos. Usado no leitor da Venda Balcao e na
-                    importacao de XML de compra.
+                    Código de barras (GTIN/EAN-13), 13 dígitos. Usado no leitor da Venda Balcão e na
+                    importação de XML de compra.
                   </CampoDica>
                 </Label>
                 <Input
                   value={codigoBarras}
                   onChange={(e) => setCodigoBarras(e.target.value.replace(/\D/g, "").slice(0, 13))}
-                  placeholder="13 digitos"
+                  placeholder="13 dígitos"
                   inputMode="numeric"
                   className="max-w-40"
                 />
                 {codigoBarras.length > 0 && codigoBarras.length < 13 ? (
-                  <p className="text-xs text-amber-500">Faltam {13 - codigoBarras.length} digito(s)</p>
+                  <p className="text-xs text-amber-500">Faltam {13 - codigoBarras.length} dígito(s)</p>
                 ) : codigoBarras.length === 13 && !validarCodigoBarras(codigoBarras) ? (
-                  <p className="text-xs text-red-500">Digito verificador nao confere - confira o codigo</p>
+                  <p className="text-xs text-red-500">Dígito verificador não confere - confira o código</p>
                 ) : codigoBarras.length === 13 ? (
-                  <p className="text-xs text-emerald-500">Codigo valido</p>
+                  <p className="text-xs text-emerald-500">Código válido</p>
                 ) : null}
               </div>
               <div className="space-y-2">
@@ -339,7 +339,7 @@ export function ProdutoForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Descricao</Label>
+              <Label>Descrição</Label>
               <textarea
                 className="min-h-24 w-full rounded-md border border-input bg-transparent p-3 text-sm"
                 value={descricao}
@@ -349,7 +349,7 @@ export function ProdutoForm({
 
             <div className="grid items-start gap-4 sm:grid-cols-5">
               <div className="space-y-2">
-                <Label>Preco (R$)</Label>
+                <Label>Preço (R$)</Label>
                 <Input
                   inputMode="numeric"
                   value={preco}
@@ -361,7 +361,7 @@ export function ProdutoForm({
               <div className="space-y-2">
                 <Label>
                   Promo (R$)
-                  <CampoDica>Preco promocional - quando preenchido, substitui o preco normal no site.</CampoDica>
+                  <CampoDica>Preço promocional - quando preenchido, substitui o preço normal no site.</CampoDica>
                 </Label>
                 <Input
                   inputMode="numeric"
@@ -374,7 +374,7 @@ export function ProdutoForm({
               <div className="space-y-2">
                 <Label>
                   Clube
-                  <CampoDica>So aparece pra clientes com assinatura do Clube ativa. Vazio = nao participa.</CampoDica>
+                  <CampoDica>Só aparece pra clientes com assinatura do Clube ativa. Vazio = não participa.</CampoDica>
                 </Label>
                 <div className="flex gap-1">
                   <select
@@ -413,7 +413,7 @@ export function ProdutoForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Estoque minimo</Label>
+                <Label>Estoque mínimo</Label>
                 <Input
                   inputMode="numeric"
                   value={estoqueMinimo}
@@ -426,7 +426,7 @@ export function ProdutoForm({
             {produto && Number(produto.custo) > 0 && (
               <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
                 <span className="text-muted-foreground">
-                  Custo medio atual:{" "}
+                  Custo médio atual:{" "}
                   <span className="font-medium text-foreground">
                     {Number(produto.custo).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </span>
@@ -451,7 +451,7 @@ export function ProdutoForm({
 
             <div className="space-y-2">
               <Label className="text-muted-foreground">
-                Peso e dimensoes (para calculo de frete)
+                Peso e dimensões (para cálculo de frete)
               </Label>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div className="space-y-2">

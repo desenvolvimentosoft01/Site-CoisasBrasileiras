@@ -69,8 +69,8 @@ const CORES_STATUS: Record<Orcamento["status"], string> = {
 const FORMAS_PAGAMENTO = [
   { valor: "dinheiro", rotulo: "Dinheiro" },
   { valor: "pix", rotulo: "Pix" },
-  { valor: "cartao_credito", rotulo: "Cartao de credito" },
-  { valor: "cartao_debito", rotulo: "Cartao de debito" },
+  { valor: "cartao_credito", rotulo: "Cartão de crédito" },
+  { valor: "cartao_debito", rotulo: "Cartão de débito" },
 ]
 
 export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais: Orcamento[] }) {
@@ -139,12 +139,12 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   function enviarPorWhatsapp(orcamento: Orcamento) {
     const numero = orcamento.cliente_telefone?.replace(/\D/g, "")
     if (!numero) {
-      toast.error("Esse orcamento nao tem telefone do cliente cadastrado")
+      toast.error("Esse orçamento não tem telefone do cliente cadastrado")
       return
     }
     const numeroComDdi = numero.startsWith("55") ? numero : `55${numero}`
     const link = `${window.location.origin}/orcamento/aprovar/${orcamento.token_aprovacao}?canal=whatsapp`
-    const mensagem = `Ola, ${orcamento.cliente_nome}! Segue o orcamento ${numeroFormatado(orcamento.numero)}${
+    const mensagem = `Olá, ${orcamento.cliente_nome}! Segue o orçamento ${numeroFormatado(orcamento.numero)}${
       orcamento.titulo ? ` "${orcamento.titulo}"` : ""
     }.\n\nAcesse o link para ver os detalhes e aprovar ou recusar: ${link}`
     window.open(`https://wa.me/${numeroComDdi}?text=${encodeURIComponent(mensagem)}`, "_blank")
@@ -152,7 +152,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
 
   async function enviarPorEmail(orcamento: Orcamento) {
     if (!orcamento.cliente_email) {
-      toast.error("Esse orcamento nao tem e-mail do cliente cadastrado")
+      toast.error("Esse orçamento não tem e-mail do cliente cadastrado")
       return
     }
     setEnviandoEmailId(orcamento.id)
@@ -163,12 +163,12 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
       toast.error(dados.erro || "Erro ao enviar o e-mail")
       return
     }
-    toast.success(`Orcamento enviado para ${orcamento.cliente_email}!`)
+    toast.success(`Orçamento enviado para ${orcamento.cliente_email}!`)
     recarregar()
   }
 
   async function excluir(orcamento: Orcamento) {
-    if (!(await confirmar({ descricao: `Excluir o orcamento #${orcamento.numero}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o orçamento #${orcamento.numero}?`, destrutivo: true }))) return
     const resposta = await fetch(`/api/admin/orcamentos/${orcamento.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()
@@ -220,7 +220,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Orcamentos</h1>
+      <h1 className="text-2xl font-semibold">Orçamentos</h1>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">
@@ -289,18 +289,18 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
             />
             <CardContent className="p-0">
               {orcamentosFiltrados.length === 0 ? (
-                <p className="p-6 text-sm text-slate-500">Nenhum orcamento encontrado.</p>
+                <p className="p-6 text-sm text-slate-500">Nenhum orçamento encontrado.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[720px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
-                        <th className="p-4 font-medium">Numero</th>
+                        <th className="p-4 font-medium">Número</th>
                         <th className="p-4 font-medium">Cliente</th>
                         <th className="p-4 font-medium">Status</th>
                         <th className="p-4 font-medium">Total</th>
                         <th className="p-4 font-medium">Data</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -444,7 +444,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Converter orcamento em venda</DialogTitle>
+            <DialogTitle>Converter orçamento em venda</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -473,7 +473,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
 
             <p className="text-xs text-muted-foreground">
               Isso vai gerar uma venda (baixando o estoque dos itens vinculados a produtos) e marcar
-              este orcamento como convertido.
+              este orçamento como convertido.
             </p>
 
             {erroConversao && <p className="text-sm text-red-500">{erroConversao}</p>}
@@ -497,7 +497,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
         campos={
           detalhe
             ? [
-                { label: "Titulo", valor: detalhe.titulo },
+                { label: "Título", valor: detalhe.titulo },
                 { label: "Cliente", valor: detalhe.cliente_nome },
                 { label: "Status", valor: detalhe.status },
                 { label: "Subtotal", valor: formatarMoeda(detalhe.subtotal) },
@@ -516,7 +516,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                         } em ${new Date(detalhe.respondido_em).toLocaleString("pt-BR")}`,
                       },
                       ...(detalhe.observacao_cliente
-                        ? [{ label: "Observacao do cliente", valor: detalhe.observacao_cliente }]
+                        ? [{ label: "Observação do cliente", valor: detalhe.observacao_cliente }]
                         : []),
                     ]
                   : []),

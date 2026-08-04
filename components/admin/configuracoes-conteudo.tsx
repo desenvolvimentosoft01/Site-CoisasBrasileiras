@@ -241,7 +241,7 @@ function ConfiguracoesFormulario({
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-semibold">Configuracoes da loja</h1>
+      <h1 className="text-2xl font-semibold">Configurações da loja</h1>
 
       <form onSubmit={salvar} className="space-y-6">
         <Tabs defaultValue="contato">
@@ -252,7 +252,7 @@ function ConfiguracoesFormulario({
             </TabsTrigger>
             <TabsTrigger value="paginas">
               <FileText size={14} className="mr-1.5" />
-              Paginas
+              Páginas
             </TabsTrigger>
             <TabsTrigger value="frete">
               <Truck size={14} className="mr-1.5" />
@@ -260,11 +260,11 @@ function ConfiguracoesFormulario({
             </TabsTrigger>
             <TabsTrigger value="aparencia">
               <Palette size={14} className="mr-1.5" />
-              Aparencia
+              Aparência
             </TabsTrigger>
             <TabsTrigger value="anuncio">
               <Megaphone size={14} className="mr-1.5" />
-              Anuncio
+              Anúncio
             </TabsTrigger>
             <TabsTrigger value="custos">
               <Percent size={14} className="mr-1.5" />
@@ -272,7 +272,7 @@ function ConfiguracoesFormulario({
             </TabsTrigger>
             <TabsTrigger value="integracoes">
               <Plug size={14} className="mr-1.5" />
-              Integracoes
+              Integrações
             </TabsTrigger>
           </TabsList>
 
@@ -292,14 +292,14 @@ function ConfiguracoesFormulario({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Mensagem padrao do WhatsApp</Label>
+                  <Label>Mensagem padrão do WhatsApp</Label>
                   <Input
                     value={whatsappMensagem}
                     onChange={(e) => setWhatsappMensagem(e.target.value)}
                     placeholder="Olá, quero saber mais sobre os seus produtos"
                   />
                   <p className="text-xs text-slate-400">
-                    Preenchida automaticamente quando o cliente clica no botao de WhatsApp do site.
+                    Preenchida automaticamente quando o cliente clica no botão de WhatsApp do site.
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -319,13 +319,13 @@ function ConfiguracoesFormulario({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Endereco</Label>
+                  <Label>Endereço</Label>
                   <Input
                     value={enderecoContato}
                     onChange={(e) => setEnderecoContato(e.target.value)}
                     placeholder="Rua Exemplo, 123 - Bairro, Cidade - UF"
                   />
-                  <p className="text-xs text-slate-400">Mostrado na pagina de Contato do site.</p>
+                  <p className="text-xs text-slate-400">Mostrado na página de Contato do site.</p>
                 </div>
               </CardContent>
             </Card>
@@ -334,19 +334,19 @@ function ConfiguracoesFormulario({
           <TabsContent value="paginas" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Pagina &quot;Sobre Nos&quot;</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Página &quot;Sobre Nós&quot;</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Label>Texto da pagina</Label>
+                <Label>Texto da página</Label>
                 <textarea
                   value={textoSobreNos}
                   onChange={(e) => setTextoSobreNos(e.target.value)}
                   rows={10}
-                  placeholder="Conte a historia da loja, missao, valores etc."
+                  placeholder="Conte a história da loja, missão, valores etc."
                   className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                 />
                 <p className="text-xs text-slate-400">
-                  Mostrado na pagina /sobre do site. Use linhas em branco pra separar paragrafos.
+                  Mostrado na página /sobre do site. Use linhas em branco pra separar parágrafos.
                 </p>
               </CardContent>
             </Card>
@@ -359,7 +359,7 @@ function ConfiguracoesFormulario({
               </CardHeader>
               <CardContent className="grid items-start gap-4 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
-                  <Label>CEP de origem (endereco da loja)</Label>
+                  <Label>CEP de origem (endereço da loja)</Label>
                   <Input
                     value={cepOrigem}
                     onChange={(e) => setCepOrigem(mascaraCEP(e.target.value))}
@@ -368,7 +368,7 @@ function ConfiguracoesFormulario({
                     className="max-w-40"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Necessario so se for usar cotacao real de frete (Frenet). Preenchido +
+                    Necessário só se for usar cotação real de frete (Frenet). Preenchido +
                     token configurado no ambiente, o frete passa a ser calculado automaticamente
                     pela transportadora real em vez da tabela abaixo.
                   </p>
@@ -376,7 +376,7 @@ function ConfiguracoesFormulario({
                 <div className="space-y-2">
                   <Label>
                     Valor base / fallback (R$)
-                    <CampoDica>Usado so quando nao ha faixa de peso/regiao cadastrada pro estado do cliente.</CampoDica>
+                    <CampoDica>Usado só quando não há faixa de peso/região cadastrada pro estado do cliente.</CampoDica>
                   </Label>
                   <Input
                     inputMode="numeric"
@@ -386,7 +386,7 @@ function ConfiguracoesFormulario({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Frete gratis acima de (R$)</Label>
+                  <Label>Frete grátis acima de (R$)</Label>
                   <Input
                     inputMode="numeric"
                     value={freteGratisAcimaDe}
@@ -400,9 +400,9 @@ function ConfiguracoesFormulario({
             <Card>
               <CardContent className="flex items-center justify-between pt-6">
                 <div>
-                  <p className="text-sm font-medium">Faixas de frete por regiao e peso</p>
+                  <p className="text-sm font-medium">Faixas de frete por região e peso</p>
                   <p className="text-xs text-muted-foreground">
-                    E o que realmente calcula o valor mostrado no checkout do site.
+                    É o que realmente calcula o valor mostrado no checkout do site.
                   </p>
                 </div>
                 <Button
@@ -419,9 +419,9 @@ function ConfiguracoesFormulario({
             <Card>
               <CardContent className="flex items-center justify-between pt-6">
                 <div>
-                  <p className="text-sm font-medium">Tipos de entrega (venda balcao)</p>
+                  <p className="text-sm font-medium">Tipos de entrega (venda balcão)</p>
                   <p className="text-xs text-muted-foreground">
-                    Retirada na loja, motoboy etc - escolhido ao finalizar uma venda balcao.
+                    Retirada na loja, motoboy etc - escolhido ao finalizar uma venda balcão.
                   </p>
                 </div>
                 <Button
@@ -439,7 +439,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="aparencia" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Aparencia do site</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Aparência do site</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -449,7 +449,7 @@ function ConfiguracoesFormulario({
                       {logoUrl ? (
                         <Image src={logoUrl} alt="Logo" width={64} height={64} className="h-full w-full object-contain" />
                       ) : (
-                        <Image src="/logo.webp" alt="Logo padrao" width={64} height={64} className="h-full w-full object-contain" />
+                        <Image src="/logo.webp" alt="Logo padrão" width={64} height={64} className="h-full w-full object-contain" />
                       )}
                     </div>
                     <div className="space-y-1">
@@ -478,14 +478,14 @@ function ConfiguracoesFormulario({
                           className="ml-2"
                           onClick={() => setLogoUrl("")}
                         >
-                          Usar padrao
+                          Usar padrão
                         </Button>
                       )}
                     </div>
                   </div>
                   <p className="text-xs text-slate-400">
-                    Usada no cabecalho e rodape do site e no painel administrativo. Se nao enviar
-                    nenhuma, usa a logo padrao do sistema.
+                    Usada no cabeçalho e rodapé do site e no painel administrativo. Se não enviar
+                    nenhuma, usa a logo padrão do sistema.
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -497,7 +497,7 @@ function ConfiguracoesFormulario({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Cor principal (botoes, links, destaques)</Label>
+                  <Label>Cor principal (botões, links, destaques)</Label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -512,12 +512,12 @@ function ConfiguracoesFormulario({
                     />
                   </div>
                   <p className="text-xs text-slate-400">
-                    Usada nos botoes do site, links e destaques de preco. Escolha um tom escuro o
-                    suficiente para o texto branco ficar legivel em cima.
+                    Usada nos botões do site, links e destaques de preço. Escolha um tom escuro o
+                    suficiente para o texto branco ficar legível em cima.
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Texto do rodape</Label>
+                  <Label>Texto do rodapé</Label>
                   <Input
                     value={textoRodape}
                     onChange={(e) => setTextoRodape(e.target.value)}
@@ -531,7 +531,7 @@ function ConfiguracoesFormulario({
           <TabsContent value="anuncio" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Faixa de anuncio</CardTitle>
+                <CardTitle className="text-sm text-slate-500">Faixa de anúncio</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Label>Texto no topo do site</Label>
@@ -551,9 +551,9 @@ function ConfiguracoesFormulario({
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-xs text-muted-foreground">
-                  Usadas so pro calculo do relatorio de lucro (nao afetam o valor cobrado do
+                  Usadas só pro cálculo do relatório de lucro (não afetam o valor cobrado do
                   cliente no checkout). Confira a taxa real no painel do gateway - varia por
-                  forma de pagamento e volume negociado. Deixe em branco ate a implantacao.
+                  forma de pagamento e volume negociado. Deixe em branco até a implantação.
                 </p>
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase text-slate-400">Mercado Pago</p>
@@ -572,7 +572,7 @@ function ConfiguracoesFormulario({
                     <div className="space-y-2">
                       <Label>
                         Taxa fixa (R$)
-                        <CampoDica>Valor fixo cobrado pelo Mercado Pago por transacao.</CampoDica>
+                        <CampoDica>Valor fixo cobrado pelo Mercado Pago por transação.</CampoDica>
                       </Label>
                       <Input
                         inputMode="numeric"
@@ -592,7 +592,7 @@ function ConfiguracoesFormulario({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Regime tributario</Label>
+                  <Label>Regime tributário</Label>
                   <select
                     value={regimeTributario}
                     onChange={(e) => setRegimeTributario(e.target.value)}
@@ -604,10 +604,10 @@ function ConfiguracoesFormulario({
                     <option value="mei">MEI</option>
                   </select>
                   <p className="text-xs text-muted-foreground">
-                    So informativo aqui - o calculo de imposto de verdade continua com o Bling/contador.
+                    Só informativo aqui - o cálculo de imposto de verdade continua com o Bling/contador.
                   </p>
                 </div>
-                <Label>Aliquota sobre faturamento (%)</Label>
+                <Label>Alíquota sobre faturamento (%)</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -618,8 +618,8 @@ function ConfiguracoesFormulario({
                   className="max-w-48"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Percentual estimado usado so no relatorio de lucro liquido - confirme a
-                  aliquota real com o contador da loja antes de configurar aqui.
+                  Percentual estimado usado só no relatório de lucro líquido - confirme a
+                  alíquota real com o contador da loja antes de configurar aqui.
                 </p>
               </CardContent>
             </Card>
@@ -638,9 +638,9 @@ function ConfiguracoesFormulario({
                   className="max-w-48"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Cobrada automaticamente todo mes via Mercado Pago enquanto a assinatura
-                  estiver ativa. Produtos com &quot;Preco do Clube&quot; preenchido (no cadastro de
-                  produto) mostram esse preco so pra quem tem assinatura ativa.
+                  Cobrada automaticamente todo mês via Mercado Pago enquanto a assinatura
+                  estiver ativa. Produtos com &quot;Preço do Clube&quot; preenchido (no cadastro de
+                  produto) mostram esse preço só pra quem tem assinatura ativa.
                 </p>
               </CardContent>
             </Card>
@@ -658,11 +658,11 @@ function ConfiguracoesFormulario({
               <TabsContent value="bling" className="mt-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm text-slate-500">Bling (emissao de NF-e)</CardTitle>
+                    <CardTitle className="text-sm text-slate-500">Bling (emissão de NF-e)</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-xs text-muted-foreground">
-                      So emite nota fiscal a partir do pedido pago - nao sincroniza estoque nem
+                      Só emite nota fiscal a partir do pedido pago - não sincroniza estoque nem
                       financeiro com o Bling.
                     </p>
 
@@ -671,18 +671,18 @@ function ConfiguracoesFormulario({
                     )}
                     {mensagemBling === "erro_state" && (
                       <p className="text-sm text-red-500">
-                        Nao foi possivel confirmar a conexao (state invalido). Tente novamente.
+                        Não foi possível confirmar a conexão (state inválido). Tente novamente.
                       </p>
                     )}
                     {mensagemBling === "erro_token" && (
                       <p className="text-sm text-red-500">
-                        O Bling recusou a conexao. Confira o Client ID/Secret abaixo e tente
+                        O Bling recusou a conexão. Confira o Client ID/Secret abaixo e tente
                         novamente.
                       </p>
                     )}
                     {mensagemBling === "erro_nao_configurado" && (
                       <p className="text-sm text-red-500">
-                        Integracao com o Bling ainda nao configurada. Preencha o Client ID e o
+                        Integração com o Bling ainda não configurada. Preencha o Client ID e o
                         Client Secret abaixo (gerados ao registrar o app em developer.bling.com.br).
                       </p>
                     )}
@@ -735,7 +735,7 @@ function ConfiguracoesFormulario({
                         bem-sucedido. */}
                     {blingStatus?.ultimoErro && (
                       <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-                        <p className="text-sm font-medium text-amber-600">Pendencia fiscal</p>
+                        <p className="text-sm font-medium text-amber-600">Pendência fiscal</p>
                         <p className="mt-1 text-xs text-amber-700">{blingStatus.ultimoErro}</p>
                         {blingStatus.ultimoErroEm && (
                           <p className="mt-1 text-xs text-amber-600/70">
@@ -778,12 +778,12 @@ function ConfiguracoesFormulario({
                   <CardContent className="space-y-4">
                     <p className="text-xs text-muted-foreground">
                       Conecte Mercado Livre e Shopee direto no painel do Bling. Preencha aqui
-                      o codigo da &quot;loja&quot; de cada canal (Bling &gt; Configuracoes &gt; Lojas) pra esse
+                      o código da &quot;loja&quot; de cada canal (Bling &gt; Configurações &gt; Lojas) pra esse
                       sistema importar automaticamente os pedidos como pedidos de verdade,
-                      com baixa de estoque. Canal sem codigo preenchido nao e importado.
+                      com baixa de estoque. Canal sem código preenchido não é importado.
                     </p>
                     <div className="space-y-2">
-                      <Label>Codigo da loja Bling - Mercado Livre</Label>
+                      <Label>Código da loja Bling - Mercado Livre</Label>
                       <Input
                         value={blingLojaMercadoLivre}
                         onChange={(e) => setBlingLojaMercadoLivre(e.target.value)}
@@ -792,7 +792,7 @@ function ConfiguracoesFormulario({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Codigo da loja Bling - Shopee</Label>
+                      <Label>Código da loja Bling - Shopee</Label>
                       <Input
                         value={blingLojaShopee}
                         onChange={(e) => setBlingLojaShopee(e.target.value)}
@@ -815,12 +815,12 @@ function ConfiguracoesFormulario({
                   <CardContent className="space-y-4">
                     <p className="text-xs text-muted-foreground">
                       Token guardado de forma isolada, nunca aparece em nenhuma tela ou resposta
-                      de API - so mostramos se ja esta &quot;configurado&quot;. Deixe em branco pra nao
-                      mexer no que ja esta salvo.
+                      de API - só mostramos se já está &quot;configurado&quot;. Deixe em branco pra não
+                      mexer no que já está salvo.
                     </p>
                     <div className="space-y-2">
                       <Label className="flex items-center gap-1.5">
-                        Token de acesso (producao)
+                        Token de acesso (produção)
                         {segredosStatus.mercadopago_access_token && (
                           <span className="flex items-center gap-1 text-xs text-emerald-500">
                             <Check size={12} /> configurado
@@ -846,9 +846,9 @@ function ConfiguracoesFormulario({
                           </span>
                         )}
                         <CampoDica>
-                          Painel do Mercado Pago &gt; sua aplicacao &gt; Webhooks &gt; &quot;Assinatura secreta&quot; (so
-                          existe depois de configurar a URL do webhook la). Sem isso, o webhook ainda funciona,
-                          mas sem validar se a notificacao realmente veio do Mercado Pago.
+                          Painel do Mercado Pago &gt; sua aplicação &gt; Webhooks &gt; &quot;Assinatura secreta&quot; (só
+                          existe depois de configurar a URL do webhook lá). Sem isso, o webhook ainda funciona,
+                          mas sem validar se a notificação realmente veio do Mercado Pago.
                         </CampoDica>
                       </Label>
                       <InputSenha
@@ -881,8 +881,8 @@ function ConfiguracoesFormulario({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-xs text-muted-foreground">
-                      Usado pra cotacao real de frete no checkout e validacao de rastreio. Sem
-                      isso configurado, o frete cai na tabela de faixas por regiao.
+                      Usado pra cotação real de frete no checkout e validação de rastreio. Sem
+                      isso configurado, o frete cai na tabela de faixas por região.
                     </p>
                     <div className="space-y-2">
                       <Label className="flex items-center gap-1.5">
@@ -916,7 +916,7 @@ function ConfiguracoesFormulario({
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
                       <KeyRound size={16} />
-                      Email (Gmail, envio de notificacoes)
+                      Email (Gmail, envio de notificações)
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -948,12 +948,12 @@ function ConfiguracoesFormulario({
                         />
                       </div>
                       <div className="space-y-2 sm:col-span-2">
-                        <Label>E-mail pra receber notificacoes internas (opcional)</Label>
+                        <Label>E-mail pra receber notificações internas (opcional)</Label>
                         <Input
                           type="email"
                           value={emailNotificacoesAdmin}
                           onChange={(e) => setEmailNotificacoesAdmin(e.target.value)}
-                          placeholder="Vazio usa o proprio e-mail remetente acima"
+                          placeholder="Vazio usa o próprio e-mail remetente acima"
                         />
                       </div>
                     </div>
@@ -972,7 +972,7 @@ function ConfiguracoesFormulario({
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={salvando}>
-            {salvando ? "Salvando..." : "Salvar configuracoes"}
+            {salvando ? "Salvando..." : "Salvar configurações"}
           </Button>
           {salvo && <span className="text-sm text-emerald-500">Salvo!</span>}
         </div>

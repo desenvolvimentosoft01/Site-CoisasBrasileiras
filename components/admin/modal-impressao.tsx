@@ -46,16 +46,16 @@ export function ModalImpressao({
     <Dialog open={aberto} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Imprimir relatorio</DialogTitle>
+          <DialogTitle>Imprimir relatório</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <p className="text-xs text-muted-foreground">
-            {descricaoPeriodo ?? "O relatorio sai com os filtros aplicados na tela."}
+            {descricaoPeriodo ?? "O relatório sai com os filtros aplicados na tela."}
           </p>
 
           <div className="space-y-2">
-            <Label>Orientacao</Label>
+            <Label>Orientação</Label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -84,7 +84,7 @@ export function ModalImpressao({
 
           {campos && campos.length > 0 && (
             <div className="space-y-2">
-              <Label>Secoes a incluir</Label>
+              <Label>Seções a incluir</Label>
               {campos.map((campo) => (
                 <label key={campo.chave} className="flex items-center gap-2 text-sm">
                   <input

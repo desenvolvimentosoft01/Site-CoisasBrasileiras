@@ -113,7 +113,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">Tipos de entrega</h1>
           <p className="text-sm text-muted-foreground">
-            Usado na venda balcao quando a venda tem alguma forma de entrega (retirada, motoboy etc).
+            Usado na venda balcão quando a venda tem alguma forma de entrega (retirada, motoboy etc).
           </p>
         </div>
       </div>
@@ -147,7 +147,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                   <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Nome</th>
                     <th className="p-4 font-medium">Status</th>
-                    <th className="p-4 font-medium text-right">Acoes</th>
+                    <th className="p-4 font-medium text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody>

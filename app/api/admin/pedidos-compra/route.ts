@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   } = await request.json()
 
   if (!fornecedorId) {
-    return NextResponse.json({ erro: "Fornecedor e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Fornecedor é obrigatório" }, { status: 400 })
   }
   if (!Array.isArray(itens) || itens.length === 0) {
     return NextResponse.json({ erro: "Adicione pelo menos um item" }, { status: 400 })

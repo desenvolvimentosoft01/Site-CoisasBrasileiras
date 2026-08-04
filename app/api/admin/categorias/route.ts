@@ -30,14 +30,14 @@ export async function POST(request: Request) {
   const { nome, imagemUrl, categoriaPaiId } = await request.json()
 
   if (!nome || !nome.trim()) {
-    return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome é obrigatório" }, { status: 400 })
   }
 
   const slug = gerarSlug(nome)
 
   const existente = await query("SELECT id FROM TAB_CATEGORIA WHERE slug = $1", [slug])
   if (existente.length > 0) {
-    return NextResponse.json({ erro: "Ja existe uma categoria com esse nome" }, { status: 409 })
+    return NextResponse.json({ erro: "Já existe uma categoria com esse nome" }, { status: 409 })
   }
 
   const [categoria] = await query(

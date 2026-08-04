@@ -205,11 +205,11 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                   <table className="w-full min-w-[640px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
-                        <th className="p-4 font-medium">Codigo</th>
+                        <th className="p-4 font-medium">Código</th>
                         <th className="p-4 font-medium">Desconto</th>
                         <th className="p-4 font-medium">Usos</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -315,7 +315,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
           <Card className="max-w-lg">
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <Label>Codigo</Label>
+                <Label>Código</Label>
                 <Input
                   value={codigo}
                   onChange={(e) => setCodigo(e.target.value.toUpperCase())}
@@ -351,8 +351,8 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
               <div className="grid items-start grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>
-                    Valor minimo (R$)
-                    <CampoDica>Valor minimo da compra pro cupom poder ser usado.</CampoDica>
+                    Valor mínimo (R$)
+                    <CampoDica>Valor mínimo da compra pro cupom poder ser usado.</CampoDica>
                   </Label>
                   <Input
                     type="number"
@@ -404,8 +404,8 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                   label: "Desconto",
                   valor: detalhe.tipo === "percentual" ? `${Number(detalhe.valor)}%` : formatarMoeda(detalhe.valor),
                 },
-                { label: "Valor minimo", valor: formatarMoeda(detalhe.valor_minimo) },
-                { label: "Apenas 1a compra", valor: detalhe.primeira_compra_apenas ? "Sim" : "Nao" },
+                { label: "Valor mínimo", valor: formatarMoeda(detalhe.valor_minimo) },
+                { label: "Apenas 1a compra", valor: detalhe.primeira_compra_apenas ? "Sim" : "Não" },
                 {
                   label: "Usos",
                   valor: `${detalhe.usos_atuais}${detalhe.uso_maximo ? ` / ${detalhe.uso_maximo}` : " (ilimitado)"}`,

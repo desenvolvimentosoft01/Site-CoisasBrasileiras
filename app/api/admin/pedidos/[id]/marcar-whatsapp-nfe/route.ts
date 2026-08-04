@@ -20,7 +20,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   )
 
   if (!pedido) {
-    return NextResponse.json({ erro: "Pedido nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Pedido não encontrado" }, { status: 404 })
   }
 
   return NextResponse.json(pedido)

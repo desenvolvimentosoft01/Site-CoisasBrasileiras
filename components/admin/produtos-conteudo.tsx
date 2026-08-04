@@ -173,10 +173,10 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">SKU</th>
                         <th className="p-4 font-medium">Categorias</th>
-                        <th className="p-4 font-medium">Preco</th>
+                        <th className="p-4 font-medium">Preço</th>
                         <th className="p-4 font-medium">Estoque</th>
                         <th className="p-4 font-medium">Status</th>
-                        <th className="p-4 font-medium text-right">Acoes</th>
+                        <th className="p-4 font-medium text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -201,7 +201,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                                   aria-label="Cadastro incompleto"
                                   role="img"
                                 >
-                                  <title>Cadastro incompleto - falta NCM e/ou codigo de barras</title>
+                                  <title>Cadastro incompleto - falta NCM e/ou código de barras</title>
                                 </AlertTriangle>
                               )}
                             </span>
@@ -303,12 +303,12 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
             ? [
                 { label: "SKU", valor: detalhe.sku },
                 { label: "NCM", valor: detalhe.ncm },
-                { label: "Codigo de barras", valor: detalhe.codigo_barras },
+                { label: "Código de barras", valor: detalhe.codigo_barras },
                 { label: "Categorias", valor: detalhe.categorias.join(", ") },
-                { label: "Preco", valor: formatarPreco(detalhe.preco) },
-                { label: "Preco promocional", valor: detalhe.preco_promocional ? formatarPreco(detalhe.preco_promocional) : null },
+                { label: "Preço", valor: formatarPreco(detalhe.preco) },
+                { label: "Preço promocional", valor: detalhe.preco_promocional ? formatarPreco(detalhe.preco_promocional) : null },
                 { label: "Estoque", valor: detalhe.estoque },
-                { label: "Estoque minimo", valor: detalhe.estoque_minimo },
+                { label: "Estoque mínimo", valor: detalhe.estoque_minimo },
                 { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
               ]
             : []

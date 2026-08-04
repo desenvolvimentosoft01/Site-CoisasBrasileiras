@@ -11,15 +11,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { nome, papel, ativo, senha, usuario } = await request.json()
 
   if (!nome?.trim()) {
-    return NextResponse.json({ erro: "Nome e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome é obrigatório" }, { status: 400 })
   }
   if (papel !== "admin" && papel !== "operador") {
-    return NextResponse.json({ erro: "Papel invalido" }, { status: 400 })
+    return NextResponse.json({ erro: "Papel inválido" }, { status: 400 })
   }
   // Ninguem pode rebaixar ou desativar a si mesmo - evita ficar sem admin.
   if (id === sessaoOuErro.id && (papel !== "admin" || ativo === false)) {
     return NextResponse.json(
-      { erro: "Voce nao pode rebaixar ou desativar seu proprio usuario" },
+      { erro: "Você não pode rebaixar ou desativar seu próprio usuário" },
       { status: 400 }
     )
   }
@@ -34,7 +34,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       [usuarioLogin, id]
     )
     if (conflito.length > 0) {
-      return NextResponse.json({ erro: "Ja existe um usuario com esse nome de usuario" }, { status: 409 })
+      return NextResponse.json({ erro: "Já existe um usuário com esse nome de usuário" }, { status: 409 })
     }
   }
 
@@ -53,7 +53,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       )
 
   if (!usuarioAtualizado) {
-    return NextResponse.json({ erro: "Usuario nao encontrado" }, { status: 404 })
+    return NextResponse.json({ erro: "Usuário não encontrado" }, { status: 404 })
   }
 
   return NextResponse.json(usuarioAtualizado)
@@ -66,7 +66,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const { id } = await params
 
   if (id === sessaoOuErro.id) {
-    return NextResponse.json({ erro: "Voce nao pode excluir seu proprio usuario" }, { status: 400 })
+    return NextResponse.json({ erro: "Você não pode excluir seu próprio usuário" }, { status: 400 })
   }
 
   await query("DELETE FROM TAB_USUARIO_ADMIN WHERE id = $1", [id])

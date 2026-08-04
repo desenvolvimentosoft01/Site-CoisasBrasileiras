@@ -84,7 +84,7 @@ export default async function RelatoriosPage({
     query(
       `SELECT
          p.id, p.status, p.total, p.origem, p.canal, p.criado_em,
-         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcao') AS cliente_nome,
+         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente balcão') AS cliente_nome,
          te.nome AS tipo_entrega,
          COALESCE(
            (SELECT json_agg(DISTINCT cat.nome)

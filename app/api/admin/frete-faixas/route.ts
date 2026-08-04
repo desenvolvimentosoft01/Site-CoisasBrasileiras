@@ -23,13 +23,13 @@ export async function POST(request: Request) {
   const { regiao, pesoMinKg, pesoMaxKg, valor, prazoDias } = await request.json()
 
   if (!REGIOES_VALIDAS.includes(regiao)) {
-    return NextResponse.json({ erro: "Regiao invalida" }, { status: 400 })
+    return NextResponse.json({ erro: "Região inválida" }, { status: 400 })
   }
   if (pesoMinKg === undefined || pesoMaxKg === undefined || Number(pesoMaxKg) <= Number(pesoMinKg)) {
-    return NextResponse.json({ erro: "Faixa de peso invalida" }, { status: 400 })
+    return NextResponse.json({ erro: "Faixa de peso inválida" }, { status: 400 })
   }
   if (!valor || Number(valor) <= 0) {
-    return NextResponse.json({ erro: "Valor e obrigatorio" }, { status: 400 })
+    return NextResponse.json({ erro: "Valor é obrigatório" }, { status: 400 })
   }
 
   try {
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   } catch (erro) {
     if (erro instanceof Error && "code" in erro && erro.code === "23505") {
       return NextResponse.json(
-        { erro: "Ja existe uma faixa igual (mesma regiao e peso) cadastrada" },
+        { erro: "Já existe uma faixa igual (mesma região e peso) cadastrada" },
         { status: 409 }
       )
     }

@@ -37,10 +37,10 @@ const corAcao: Record<RegistroAuditoria["acao"], string> = {
 
 const ROTULOS_ACAO: Record<RegistroAuditoria["acao"], string> = {
   cadastro: "Cadastro",
-  edicao: "Edicao",
-  exclusao: "Exclusao",
-  inativacao: "Inativacao",
-  ativacao: "Ativacao",
+  edicao: "Edição",
+  exclusao: "Exclusão",
+  inativacao: "Inativação",
+  ativacao: "Ativação",
 }
 
 const TODOS = "__todos__"
@@ -100,10 +100,10 @@ export function AuditoriaConteudo({
         <div>
           <h1 className="text-2xl font-semibold">Auditoria</h1>
           <p className="text-sm text-muted-foreground">
-            Historico de cadastros, edicoes e exclusoes feitas no painel (ate 500 registros no periodo).
+            Histórico de cadastros, edições e exclusões feitas no painel (até 500 registros no período).
           </p>
         </div>
-        <BotaoImprimir descricaoPeriodo={`Periodo: ${inicioPeriodo} a ${fimPeriodo}`} />
+        <BotaoImprimir descricaoPeriodo={`Período: ${inicioPeriodo} a ${fimPeriodo}`} />
       </div>
 
       <Card className="print:hidden">
@@ -123,11 +123,11 @@ export function AuditoriaConteudo({
               <Input type="date" name="inicio" defaultValue={inicioPeriodo} className="w-40" />
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs">Ate</Label>
+              <Label className="text-xs">Até</Label>
               <Input type="date" name="fim" defaultValue={fimPeriodo} className="w-40" />
             </div>
             <Button type="submit" variant="outline" size="sm">
-              Aplicar periodo
+              Aplicar período
             </Button>
           </form>
 
@@ -150,13 +150,13 @@ export function AuditoriaConteudo({
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label className="text-xs">Acao</Label>
+              <Label className="text-xs">Ação</Label>
               <Select value={filtro.acao} onValueChange={(v) => setFiltro((f) => ({ ...f, acao: v || TODOS }))}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={TODOS}>Todas as acoes</SelectItem>
+                  <SelectItem value={TODOS}>Todas as ações</SelectItem>
                   {(Object.keys(ROTULOS_ACAO) as RegistroAuditoria["acao"][]).map((acao) => (
                     <SelectItem key={acao} value={acao}>
                       {ROTULOS_ACAO[acao]}
@@ -167,7 +167,7 @@ export function AuditoriaConteudo({
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label className="text-xs">Usuario</Label>
+              <Label className="text-xs">Usuário</Label>
               <Select
                 value={filtro.usuario}
                 onValueChange={(v) => setFiltro((f) => ({ ...f, usuario: v || TODOS }))}
@@ -176,7 +176,7 @@ export function AuditoriaConteudo({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={TODOS}>Todos os usuarios</SelectItem>
+                  <SelectItem value={TODOS}>Todos os usuários</SelectItem>
                   {usuarios.map((usuario) => (
                     <SelectItem key={usuario} value={usuario}>
                       {usuario}
@@ -191,7 +191,7 @@ export function AuditoriaConteudo({
               <div className="relative">
                 <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Usuario, tela, tabela..."
+                  placeholder="Usuário, tela, tabela..."
                   value={filtro.texto}
                   onChange={(e) => setFiltro((f) => ({ ...f, texto: e.target.value }))}
                   onKeyDown={(e) => e.key === "Enter" && pesquisar()}
@@ -226,9 +226,9 @@ export function AuditoriaConteudo({
                 <thead>
                   <tr className="border-b border-slate-200 text-left text-slate-500">
                     <th className="p-4 font-medium">Data</th>
-                    <th className="p-4 font-medium">Usuario</th>
+                    <th className="p-4 font-medium">Usuário</th>
                     <th className="p-4 font-medium">Tela</th>
-                    <th className="p-4 font-medium">Acao</th>
+                    <th className="p-4 font-medium">Ação</th>
                     <th className="p-4 font-medium">Tabela</th>
                   </tr>
                 </thead>

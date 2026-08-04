@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const { nome, texto, imagemUrl, nota, ordem } = await request.json()
 
   if (!nome || !nome.trim() || !texto || !texto.trim()) {
-    return NextResponse.json({ erro: "Nome e texto sao obrigatorios" }, { status: 400 })
+    return NextResponse.json({ erro: "Nome e texto são obrigatórios" }, { status: 400 })
   }
 
   const [feedback] = await query(

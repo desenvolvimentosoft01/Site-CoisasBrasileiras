@@ -51,7 +51,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
       <AlertDialog open={opcoes !== null} onOpenChange={(aberto) => !aberto && fechar(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{opcoes?.titulo ?? "Confirmar acao"}</AlertDialogTitle>
+            <AlertDialogTitle>{opcoes?.titulo ?? "Confirmar ação"}</AlertDialogTitle>
             <AlertDialogDescription>{opcoes?.descricao}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
