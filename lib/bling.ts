@@ -268,6 +268,16 @@ export async function emitirNotaFiscalBling(params: {
   }
 }
 
+// Reconsulta a situacao atual da nota de venda no Bling (mesmo codigo
+// numerico usado em listarNotasEntradaBling) - usado pra atualizar a tela do
+// pedido sem precisar abrir o Bling pra ver se uma nota travada (rejeitada,
+// aguardando protocolo etc) ja mudou de status.
+export async function consultarSituacaoNotaFiscalBling(blingNotaId: string): Promise<number> {
+  const resposta = await chamarBling(`/notas-fiscais/${blingNotaId}`)
+  const dadosNota = resposta?.data ?? resposta
+  return Number(dadosNota?.situacao)
+}
+
 // Cancela uma NF-e ja autorizada na Sefaz. O Bling exige justificativa com
 // pelo menos 15 caracteres (regra da propria Sefaz para cancelamento de NF-e).
 export async function cancelarNotaFiscalBling(blingNotaId: string, justificativa: string): Promise<void> {

@@ -12,6 +12,7 @@ import { CampoDica } from "@/components/ui/campo-dica"
 import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
 
 export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null }
 export type ProdutoSelecionavel = {
@@ -34,19 +35,7 @@ type NotaEntradaBling = {
   statusLocal: "pendente" | "lancada" | "cancelada"
 }
 
-const SITUACAO_BLING_LABEL: Record<number, string> = {
-  1: "Pendente",
-  2: "Cancelada",
-  3: "Aguardando recibo",
-  4: "Rejeitada",
-  5: "Autorizada",
-  6: "Emitida DANFE",
-  7: "Registrada",
-  8: "Aguardando protocolo",
-  9: "Denegada",
-  10: "Consulta situacao",
-  11: "Bloqueada",
-}
+const SITUACAO_BLING_LABEL = SITUACAO_NFE_BLING_LABEL
 
 type ItemNfeXml = {
   codigoFornecedor: string

@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Truck, MessageCircle, FileText, BadgeCheck, ArrowLeft, ShoppingBag } from "lucide-react"
+import { Truck, MessageCircle, FileText, BadgeCheck, ArrowLeft, ShoppingBag, RefreshCw } from "lucide-react"
 import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
+import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
 
 type Pedido = {
   id: string
@@ -25,6 +26,8 @@ type Pedido = {
   bling_pedido_id: string | null
   bling_nota_email_enviada_em: string | null
   nota_fiscal_whatsapp_enviada_em: string | null
+  bling_nota_situacao: number | null
+  bling_nota_situacao_atualizada_em: string | null
   origem: "site" | "balcao"
   canal: CanalPedido | null
   criado_em: string
@@ -101,6 +104,8 @@ export default function DetalhePedidoPage() {
   const [cancelandoNfe, setCancelandoNfe] = useState(false)
   const [erroCancelamento, setErroCancelamento] = useState("")
   const [mostrarFormCancelar, setMostrarFormCancelar] = useState(false)
+  const [atualizandoSituacaoNfe, setAtualizandoSituacaoNfe] = useState(false)
+  const [erroSituacaoNfe, setErroSituacaoNfe] = useState("")
 
   const carregar = useCallback(async () => {
     const resposta = await fetch(`/api/admin/pedidos/${params.id}`)
@@ -126,6 +131,20 @@ export default function DetalhePedidoPage() {
       body: JSON.stringify({ status: novoStatus }),
     })
     setSalvandoStatus(false)
+    carregar()
+  }
+
+  async function atualizarSituacaoNfe() {
+    if (!pedido) return
+    setErroSituacaoNfe("")
+    setAtualizandoSituacaoNfe(true)
+    const resposta = await fetch(`/api/admin/pedidos/${pedido.id}/atualizar-situacao-nfe`, { method: "POST" })
+    setAtualizandoSituacaoNfe(false)
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      setErroSituacaoNfe(dados.erro || "Erro ao consultar situacao no Bling")
+      return
+    }
     carregar()
   }
 
@@ -330,6 +349,28 @@ export default function DetalhePedidoPage() {
           {pedido.bling_nota_id && !pedido.bling_nota_cancelada_em ? (
             <div className="space-y-3 text-sm">
               <p className="text-slate-500">NF-e emitida (Bling #{pedido.bling_nota_id}).</p>
+              <div className="flex flex-wrap items-center gap-2">
+                {pedido.bling_nota_situacao != null && (
+                  <span className="rounded-full bg-slate-200 px-2 py-1 text-xs font-medium text-slate-600">
+                    {SITUACAO_NFE_BLING_LABEL[pedido.bling_nota_situacao] ?? pedido.bling_nota_situacao}
+                  </span>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={atualizarSituacaoNfe}
+                  disabled={atualizandoSituacaoNfe}
+                >
+                  <RefreshCw size={14} className={`mr-1.5 ${atualizandoSituacaoNfe ? "animate-spin" : ""}`} />
+                  {atualizandoSituacaoNfe ? "Consultando..." : "Atualizar situacao no Bling"}
+                </Button>
+                {pedido.bling_nota_situacao_atualizada_em && (
+                  <span className="text-xs text-slate-400">
+                    Consultado em {new Date(pedido.bling_nota_situacao_atualizada_em).toLocaleString("pt-BR")}
+                  </span>
+                )}
+              </div>
+              {erroSituacaoNfe && <p className="text-xs text-red-500">{erroSituacaoNfe}</p>}
               {pedido.cliente_email && (
                 <p className="text-xs text-slate-500">
                   {pedido.bling_nota_email_enviada_em ? (
