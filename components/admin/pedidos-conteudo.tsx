@@ -90,7 +90,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Pedidos</h1>
+        <h1 className="text-2xl font-semibold">Pedido de Venda</h1>
         <Button variant="outline" size="sm" onClick={importarDoMarketplace} disabled={importando}>
           <RefreshCw size={14} className={importando ? "animate-spin" : undefined} />
           {importando ? "Importando..." : "Importar do Mercado Livre / Shopee"}

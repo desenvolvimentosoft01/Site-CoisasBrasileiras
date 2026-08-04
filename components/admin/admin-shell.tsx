@@ -45,7 +45,7 @@ type ItemMenu = ItemLink | ItemGrupo
 const menu: ItemMenu[] = [
   { tipo: "link", href: "/admin/dashboard", label: "Visao Geral", icone: LayoutDashboard },
   { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcao", icone: Store },
-  { tipo: "link", href: "/admin/pedidos", label: "Pedidos", icone: ShoppingCart },
+  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", icone: ShoppingCart },
   { tipo: "link", href: "/admin/orcamentos", label: "Orcamentos", icone: FileText },
   { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: Users },
   {
