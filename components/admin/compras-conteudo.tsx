@@ -72,6 +72,7 @@ type DadosNfeXml = {
 export type Compra = {
   id: string
   numero_nota: string | null
+  chave_acesso: string | null
   status: "pendente" | "recebida" | "cancelada"
   valor_frete: string
   data_compra: string
@@ -136,6 +137,7 @@ export function ComprasConteudo({
 
   const [fornecedorId, setFornecedorId] = useState("")
   const [numeroNota, setNumeroNota] = useState("")
+  const [chaveAcesso, setChaveAcesso] = useState("")
   const [dataCompra, setDataCompra] = useState(() => new Date().toISOString().slice(0, 10))
   const [dataVencimento, setDataVencimento] = useState("")
   const [valorFrete, setValorFrete] = useState("")
@@ -269,6 +271,7 @@ export function ComprasConteudo({
   function abrirNova() {
     setFornecedorId("")
     setNumeroNota("")
+    setChaveAcesso("")
     setDataCompra(new Date().toISOString().slice(0, 10))
     setDataVencimento("")
     setValorFrete("")
@@ -337,6 +340,7 @@ export function ComprasConteudo({
     }
 
     setChaveXmlInvalida(!dados.chaveValida)
+    if (dados.chaveAcesso) setChaveAcesso(dados.chaveAcesso)
 
     const cnpjEmitente = dados.emitente.cnpj
     const fornecedorExistente = fornecedoresDisponiveis.find(
@@ -454,6 +458,7 @@ export function ComprasConteudo({
       body: JSON.stringify({
         fornecedorId,
         numeroNota: numeroNota || null,
+        chaveAcesso: chaveAcesso || null,
         valorFrete: valorMoedaParaNumero(valorFrete || "0,00"),
         dataCompra,
         dataVencimento: dataVencimento || null,
@@ -674,7 +679,14 @@ export function ComprasConteudo({
                       {comprasFiltradas.map((compra) => (
                         <tr key={compra.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4 font-medium">{compra.fornecedor_nome}</td>
-                          <td className="p-4 text-slate-500">{compra.numero_nota || "-"}</td>
+                          <td className="p-4 text-slate-500">
+                            {compra.numero_nota || "-"}
+                            {compra.chave_acesso && (
+                              <div className="text-xs text-slate-400" title={compra.chave_acesso}>
+                                {compra.chave_acesso}
+                              </div>
+                            )}
+                          </td>
                           <td className="p-4 text-slate-500">
                             {compra.pedido_compra_numero
                               ? `PC.${String(compra.pedido_compra_numero).padStart(4, "0")}`
@@ -847,6 +859,21 @@ export function ComprasConteudo({
                   <CampoDica>Opcional - numero da nota fiscal que o fornecedor emitiu.</CampoDica>
                 </Label>
                 <Input value={numeroNota} onChange={(e) => setNumeroNota(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>
+                  Chave de acesso
+                  <CampoDica>
+                    Opcional - os 44 digitos da chave da NF-e. Preenchido automaticamente ao
+                    importar XML; em nota manual so preencha se tiver a chave em maos.
+                  </CampoDica>
+                </Label>
+                <Input
+                  value={chaveAcesso}
+                  onChange={(e) => setChaveAcesso(e.target.value.replace(/\D/g, "").slice(0, 44))}
+                  maxLength={44}
+                  inputMode="numeric"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Data da compra</Label>

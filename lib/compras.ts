@@ -96,7 +96,7 @@ export async function receberCompra(compraId: string) {
 
 export async function listarCompras() {
   return query(
-    `SELECT c.id, c.numero_nota, c.status, c.valor_frete, c.data_compra, c.data_vencimento,
+    `SELECT c.id, c.numero_nota, c.chave_acesso, c.status, c.valor_frete, c.data_compra, c.data_vencimento,
             c.observacao, c.criado_em, c.atualizado_em, c.pedido_compra_id,
             pc.numero AS pedido_compra_numero,
             f.id AS fornecedor_id, f.razao_social AS fornecedor_nome, f.cnpj_cpf AS fornecedor_cnpj_cpf,
