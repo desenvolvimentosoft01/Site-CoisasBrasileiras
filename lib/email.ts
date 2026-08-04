@@ -271,6 +271,105 @@ export function templatePedidoCompraEnviado(params: {
   `)
 }
 
+export function templateCotacaoEnviada(params: {
+  nomeFornecedor: string
+  numero: number
+  itens: { descricao: string; quantidade: number }[]
+  observacao: string | null
+  link: string
+}): string {
+  const numeroFormatado = `CT.${String(params.numero).padStart(4, "0")}`
+  const linhas = params.itens
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#333;">
+        ${escapeHtml(item.descricao)}
+      </td>
+      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#333;text-align:right;">
+        ${item.quantidade}
+      </td>
+    </tr>`
+    )
+    .join("")
+
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Cotacao ${numeroFormatado}</h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#555;">
+      Ola ${escapeHtml(params.nomeFornecedor)}, gostariamos de uma cotacao pros itens abaixo.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="font-size:12px;color:#999;padding-bottom:4px;">Item</td><td style="font-size:12px;color:#999;padding-bottom:4px;text-align:right;">Qtde.</td></tr>
+      ${linhas}
+    </table>
+    ${
+      params.observacao
+        ? `<p style="margin:16px 0 0;font-size:14px;color:#555;">
+            <strong>Observacao:</strong><br>${escapeHtml(params.observacao)}
+          </p>`
+        : ""
+    }
+    <p style="margin:20px 0 0;text-align:center;">
+      <a href="${params.link}" style="display:inline-block;background:#065f46;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
+        Responder cotacao
+      </a>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:#999;text-align:center;">
+      Clique no botao acima pra informar a quantidade que consegue entregar e o preco de cada item.
+    </p>
+  `)
+}
+
+export function templateCotacaoRespondida(params: {
+  numero: number
+  fornecedorNome: string
+  itens: { descricao: string; quantidadeSolicitada: number; quantidadeCotada: number; valorUnitarioCotado: number }[]
+  desconto: number
+  total: number
+}): string {
+  const numeroFormatado = `CT.${String(params.numero).padStart(4, "0")}`
+  const linhas = params.itens
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#333;">${escapeHtml(item.descricao)}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#333;text-align:right;">
+        ${item.quantidadeCotada} (pedido: ${item.quantidadeSolicitada})
+      </td>
+      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#333;text-align:right;">
+        ${item.valorUnitarioCotado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+      </td>
+    </tr>`
+    )
+    .join("")
+
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Fornecedor respondeu a cotacao ${numeroFormatado}</h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#555;">${escapeHtml(params.fornecedorNome)}</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="font-size:12px;color:#999;padding-bottom:4px;">Item</td>
+        <td style="font-size:12px;color:#999;padding-bottom:4px;text-align:right;">Qtde. cotada</td>
+        <td style="font-size:12px;color:#999;padding-bottom:4px;text-align:right;">Valor unit.</td>
+      </tr>
+      ${linhas}
+    </table>
+    ${
+      params.desconto > 0
+        ? `<p style="margin:16px 0 0;font-size:14px;color:#555;text-align:right;">
+            Desconto: -${params.desconto.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          </p>`
+        : ""
+    }
+    <p style="margin:8px 0 0;font-size:18px;font-weight:700;color:#065f46;text-align:right;">
+      Total cotado: ${params.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:#999;">
+      Va em Compras &gt; Cotacao pra aceitar ou recusar.
+    </p>
+  `)
+}
+
 export function templateOrcamentoEnviado(params: {
   nomeCliente: string
   numero: number

@@ -9,16 +9,34 @@ type ItemPedidoCompra = {
   custoUnitario: number
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
+  const { searchParams } = new URL(request.url)
+  const fornecedorId = searchParams.get("fornecedorId")
+  const status = searchParams.get("status")
+
+  const condicoes: string[] = []
+  const valores: string[] = []
+  if (fornecedorId) {
+    valores.push(fornecedorId)
+    condicoes.push(`pc.fornecedor_id = $${valores.length}`)
+  }
+  if (status) {
+    valores.push(status)
+    condicoes.push(`pc.status = $${valores.length}`)
+  }
+
   const pedidos = await query(
-    `SELECT pc.id, pc.numero, pc.status, pc.observacao, pc.valor_total, pc.enviado_email_em,
-       pc.criado_em, pc.fornecedor_id, f.razao_social AS fornecedor_nome, f.email AS fornecedor_email
+    `SELECT pc.id, pc.numero, pc.status, pc.observacao, pc.valor_total, pc.desconto, pc.enviado_email_em,
+       pc.criado_em, pc.fornecedor_id, f.razao_social AS fornecedor_nome, f.email AS fornecedor_email,
+       f.telefone AS fornecedor_telefone
      FROM TAB_PEDIDO_COMPRA pc
      JOIN TAB_FORNECEDOR f ON f.id = pc.fornecedor_id
-     ORDER BY pc.criado_em DESC`
+     ${condicoes.length > 0 ? `WHERE ${condicoes.join(" AND ")}` : ""}
+     ORDER BY pc.criado_em DESC`,
+    valores
   )
   return NextResponse.json(pedidos)
 }

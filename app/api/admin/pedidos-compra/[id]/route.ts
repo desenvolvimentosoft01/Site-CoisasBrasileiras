@@ -16,8 +16,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { id } = await params
 
   const [pedido] = await query(
-    `SELECT pc.id, pc.numero, pc.status, pc.observacao, pc.valor_total, pc.enviado_email_em,
-       pc.criado_em, pc.fornecedor_id, f.razao_social AS fornecedor_nome, f.email AS fornecedor_email
+    `SELECT pc.id, pc.numero, pc.status, pc.observacao, pc.valor_total, pc.desconto, pc.enviado_email_em,
+       pc.criado_em, pc.fornecedor_id, f.razao_social AS fornecedor_nome, f.email AS fornecedor_email,
+       f.telefone AS fornecedor_telefone
      FROM TAB_PEDIDO_COMPRA pc
      JOIN TAB_FORNECEDOR f ON f.id = pc.fornecedor_id
      WHERE pc.id = $1`,

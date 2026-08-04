@@ -77,6 +77,7 @@ const menu: ItemMenu[] = [
     label: "Compras",
     icone: Truck,
     filhos: [
+      { href: "/admin/cotacoes", label: "Cotacao", somenteAdmin: true },
       { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
       { href: "/admin/compras", label: "Entrada de NF", somenteAdmin: true },
       { href: "/admin/fornecedores", label: "Fornecedores", somenteAdmin: true },

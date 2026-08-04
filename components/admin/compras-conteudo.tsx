@@ -82,6 +82,8 @@ export type Compra = {
   fornecedor_id: string
   fornecedor_nome: string
   fornecedor_cnpj_cpf: string | null
+  pedido_compra_id: string | null
+  pedido_compra_numero: number | null
   valor_itens: string
 }
 
@@ -123,6 +125,7 @@ export function ComprasConteudo({
   const [fornecedoresDisponiveis, setFornecedoresDisponiveis] = useState<Fornecedor[]>(fornecedores)
   const [aba, setAba] = useState(pedidoCompraParaLancar ? "formulario" : "lista")
   const [pedidoCompraVinculado, setPedidoCompraVinculado] = useState<{ id: string; numero: number } | null>(null)
+  const [pedidosCompraSugeridos, setPedidosCompraSugeridos] = useState<{ id: string; numero: number }[]>([])
 
   const [importandoXml, setImportandoXml] = useState(false)
   const [erroXml, setErroXml] = useState("")
@@ -182,6 +185,7 @@ export function ComprasConteudo({
   const [filtroDataCompraAte, setFiltroDataCompraAte] = useState("")
   const [filtroDataEntradaDe, setFiltroDataEntradaDe] = useState("")
   const [filtroDataEntradaAte, setFiltroDataEntradaAte] = useState("")
+  const [filtroPedidoCompra, setFiltroPedidoCompra] = useState("")
 
   function limparFiltros() {
     setFiltroFornecedor("")
@@ -192,6 +196,7 @@ export function ComprasConteudo({
     setFiltroDataCompraAte("")
     setFiltroDataEntradaDe("")
     setFiltroDataEntradaAte("")
+    setFiltroPedidoCompra("")
   }
 
   const comprasFiltradas = compras.filter((compra) => {
@@ -214,6 +219,12 @@ export function ComprasConteudo({
       const dataEntrada = compra.atualizado_em.slice(0, 10)
       if (filtroDataEntradaDe && dataEntrada < filtroDataEntradaDe) return false
       if (filtroDataEntradaAte && dataEntrada > filtroDataEntradaAte) return false
+    }
+    if (filtroPedidoCompra) {
+      const numeroFormatado = compra.pedido_compra_numero
+        ? `PC.${String(compra.pedido_compra_numero).padStart(4, "0")}`
+        : ""
+      if (!numeroFormatado.toLowerCase().includes(filtroPedidoCompra.trim().toLowerCase())) return false
     }
     return true
   })
@@ -273,6 +284,7 @@ export function ComprasConteudo({
     setMapeamentoXml({})
     setBlingNotaVinculada(null)
     setPedidoCompraVinculado(null)
+    setPedidosCompraSugeridos([])
     setAba("formulario")
   }
 
@@ -331,8 +343,11 @@ export function ComprasConteudo({
       (f) => f.cnpj_cpf?.replace(/\D/g, "") === cnpjEmitente
     )
 
+    let fornecedorIdResolvido: string | null = null
+
     if (fornecedorExistente) {
       setFornecedorId(fornecedorExistente.id)
+      fornecedorIdResolvido = fornecedorExistente.id
     } else {
       const respostaFornecedor = await fetch("/api/admin/fornecedores", {
         method: "POST",
@@ -354,6 +369,7 @@ export function ComprasConteudo({
         const novoFornecedor = await respostaFornecedor.json()
         setFornecedoresDisponiveis((atual) => [...atual, novoFornecedor])
         setFornecedorId(novoFornecedor.id)
+        fornecedorIdResolvido = novoFornecedor.id
         registrarAuditoria({
           tela: "Entrada de NF (importacao XML)",
           acao: "cadastro",
@@ -361,6 +377,18 @@ export function ComprasConteudo({
           registroId: novoFornecedor.id,
           depois: { razao_social: novoFornecedor.razao_social, cnpj_cpf: novoFornecedor.cnpj_cpf },
         })
+      }
+    }
+
+    // Sugere vincular a um Pedido de Compra ja enviado desse fornecedor -
+    // admin escolhe manualmente (pode ter mais de um em aberto).
+    setPedidosCompraSugeridos([])
+    if (fornecedorIdResolvido) {
+      const respostaPedidos = await fetch(
+        `/api/admin/pedidos-compra?fornecedorId=${fornecedorIdResolvido}&status=enviado`
+      )
+      if (respostaPedidos.ok) {
+        setPedidosCompraSugeridos(await respostaPedidos.json())
       }
     }
 
@@ -603,6 +631,17 @@ export function ComprasConteudo({
                   onChange={(e) => setFiltroDataEntradaAte(e.target.value)}
                 />
               </div>
+              <div className="space-y-2">
+                <Label className="text-xs">
+                  Pedido de compra
+                  <CampoDica>Numero do Pedido de Compra que originou essa entrada (ex: PC.0001).</CampoDica>
+                </Label>
+                <Input
+                  value={filtroPedidoCompra}
+                  onChange={(e) => setFiltroPedidoCompra(e.target.value)}
+                  placeholder="PC.0001"
+                />
+              </div>
               <div className="sm:col-span-2 lg:col-span-4">
                 <Button type="button" variant="outline" size="sm" onClick={limparFiltros}>
                   Limpar filtros
@@ -624,6 +663,7 @@ export function ComprasConteudo({
                       <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Fornecedor</th>
                         <th className="p-4 font-medium">NF</th>
+                        <th className="p-4 font-medium">Pedido de compra</th>
                         <th className="p-4 font-medium">Data</th>
                         <th className="p-4 font-medium">Total</th>
                         <th className="p-4 font-medium">Status</th>
@@ -635,6 +675,11 @@ export function ComprasConteudo({
                         <tr key={compra.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4 font-medium">{compra.fornecedor_nome}</td>
                           <td className="p-4 text-slate-500">{compra.numero_nota || "-"}</td>
+                          <td className="p-4 text-slate-500">
+                            {compra.pedido_compra_numero
+                              ? `PC.${String(compra.pedido_compra_numero).padStart(4, "0")}`
+                              : "-"}
+                          </td>
                           <td className="p-4 text-slate-500">
                             {new Date(compra.data_compra).toLocaleDateString("pt-BR")}
                           </td>
@@ -708,9 +753,37 @@ export function ComprasConteudo({
             <Card className="border-primary/40 bg-primary/5">
               <CardContent className="flex items-center gap-2 pt-6 text-sm">
                 <Link2 size={16} className="text-primary" />
-                Lançando a entrada do Pedido de Compra PC.{String(pedidoCompraVinculado.numero).padStart(4, "0")} -
-                fornecedor e itens ja vieram preenchidos. Ao salvar, o pedido de compra fica marcado como
-                &quot;atendido&quot;.
+                Essa entrada esta referenciada ao Pedido de Compra PC.
+                {String(pedidoCompraVinculado.numero).padStart(4, "0")}. Ao salvar, o pedido de compra fica
+                marcado como &quot;atendido&quot;.
+              </CardContent>
+            </Card>
+          )}
+
+          {!pedidoCompraVinculado && pedidosCompraSugeridos.length > 0 && (
+            <Card className="border-amber-500/40 bg-amber-500/5">
+              <CardContent className="space-y-2 pt-6 text-sm">
+                <p className="flex items-center gap-2">
+                  <Link2 size={16} className="text-amber-500" />
+                  Esse fornecedor tem pedido(s) de compra enviado(s) aguardando entrega - referenciar essa
+                  compra a um deles?
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {pedidosCompraSugeridos.map((pedido) => (
+                    <Button
+                      key={pedido.id}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setPedidoCompraVinculado(pedido)
+                        setPedidosCompraSugeridos([])
+                      }}
+                    >
+                      Referenciar PC.{String(pedido.numero).padStart(4, "0")}
+                    </Button>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}

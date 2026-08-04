@@ -97,13 +97,15 @@ export async function receberCompra(compraId: string) {
 export async function listarCompras() {
   return query(
     `SELECT c.id, c.numero_nota, c.status, c.valor_frete, c.data_compra, c.data_vencimento,
-            c.observacao, c.criado_em, c.atualizado_em,
+            c.observacao, c.criado_em, c.atualizado_em, c.pedido_compra_id,
+            pc.numero AS pedido_compra_numero,
             f.id AS fornecedor_id, f.razao_social AS fornecedor_nome, f.cnpj_cpf AS fornecedor_cnpj_cpf,
             COALESCE(SUM(ci.quantidade * ci.custo_unitario), 0) AS valor_itens
      FROM TAB_COMPRA c
      JOIN TAB_FORNECEDOR f ON f.id = c.fornecedor_id
+     LEFT JOIN TAB_PEDIDO_COMPRA pc ON pc.id = c.pedido_compra_id
      LEFT JOIN TAB_COMPRA_ITEM ci ON ci.compra_id = c.id
-     GROUP BY c.id, f.id, f.razao_social, f.cnpj_cpf
+     GROUP BY c.id, f.id, f.razao_social, f.cnpj_cpf, pc.numero
      ORDER BY c.criado_em DESC`
   )
 }

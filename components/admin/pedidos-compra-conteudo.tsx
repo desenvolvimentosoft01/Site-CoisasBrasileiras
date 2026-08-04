@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Pencil, Trash2, FilePlus, Eye, Mail, Ban, RefreshCw, ArrowRightCircle } from "lucide-react"
+import { Pencil, Trash2, FilePlus, Eye, Mail, Ban, RefreshCw, ArrowRightCircle, MessageCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatarMoeda } from "@/lib/mascaras"
 import {
@@ -24,11 +24,13 @@ export type PedidoCompra = {
   status: "aberto" | "enviado" | "atendido" | "cancelado"
   observacao: string | null
   valor_total: string
+  desconto: string
   enviado_email_em: string | null
   criado_em: string
   fornecedor_id: string
   fornecedor_nome: string
   fornecedor_email: string | null
+  fornecedor_telefone: string | null
 }
 
 const ABAS_STATUS = [
@@ -131,6 +133,34 @@ export function PedidosCompraConteudo({
     router.push(`/admin/compras?pedidoCompraId=${pedido.id}`)
   }
 
+  async function enviarPorWhatsapp(pedido: PedidoCompra) {
+    const numero = pedido.fornecedor_telefone?.replace(/\D/g, "")
+    if (!numero) {
+      toast.error("Esse fornecedor nao tem telefone cadastrado")
+      return
+    }
+    const resposta = await fetch(`/api/admin/pedidos-compra/${pedido.id}`)
+    const detalhe = await resposta.json()
+
+    const numeroComDdi = numero.startsWith("55") ? numero : `55${numero}`
+    const linhasItens = detalhe.itens
+      .map((i: { descricao: string; quantidade: string; custo_unitario: string }) => `${i.quantidade}x ${i.descricao}`)
+      .join("\n")
+    const mensagem = `Ola, ${pedido.fornecedor_nome}! Segue o pedido de compra ${numeroFormatado(pedido.numero)}:\n\n${linhasItens}\n\nTotal estimado: ${formatarMoeda(pedido.valor_total)}${
+      pedido.observacao ? `\n\nObs: ${pedido.observacao}` : ""
+    }`
+    window.open(`https://wa.me/${numeroComDdi}?text=${encodeURIComponent(mensagem)}`, "_blank")
+
+    if (pedido.status === "aberto") {
+      await fetch(`/api/admin/pedidos-compra/${pedido.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "enviado" }),
+      }).catch(() => {})
+      recarregar()
+    }
+  }
+
   async function cancelar(pedido: PedidoCompra) {
     if (!(await confirmar({ descricao: `Cancelar o pedido de compra ${numeroFormatado(pedido.numero)}?`, destrutivo: true })))
       return
@@ -226,6 +256,15 @@ export function PedidosCompraConteudo({
                     pedidoSelecionado.status === "atendido" ||
                     pedidoSelecionado.status === "cancelado" ||
                     enviandoEmailId === pedidoSelecionado?.id,
+                },
+                {
+                  label: "Enviar WhatsApp",
+                  icon: MessageCircle,
+                  onClick: () => pedidoSelecionado && enviarPorWhatsapp(pedidoSelecionado),
+                  disabled:
+                    !pedidoSelecionado ||
+                    pedidoSelecionado.status === "atendido" ||
+                    pedidoSelecionado.status === "cancelado",
                 },
                 {
                   label: "Lancar entrada",
@@ -326,6 +365,19 @@ export function PedidosCompraConteudo({
                                 <Mail size={16} className="text-blue-500" />
                               </Button>
                             )}
+                            {(pedido.status === "aberto" || pedido.status === "enviado") && (
+                              <Button
+                                variant="ghost"
+                                size="icon-lg"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  enviarPorWhatsapp(pedido)
+                                }}
+                                title="Enviar por WhatsApp"
+                              >
+                                <MessageCircle size={16} className="text-emerald-500" />
+                              </Button>
+                            )}
                             {pedido.status === "enviado" && (
                               <Button
                                 variant="ghost"
@@ -372,6 +424,9 @@ export function PedidosCompraConteudo({
             ? [
                 { label: "Fornecedor", valor: detalhe.fornecedor_nome },
                 { label: "Status", valor: STATUS_LABEL[detalhe.status] },
+                ...(Number(detalhe.desconto) > 0
+                  ? [{ label: "Desconto", valor: formatarMoeda(detalhe.desconto) }]
+                  : []),
                 { label: "Total", valor: formatarMoeda(detalhe.valor_total) },
                 { label: "Data", valor: new Date(detalhe.criado_em).toLocaleDateString("pt-BR") },
                 ...(detalhe.observacao ? [{ label: "Observacao", valor: detalhe.observacao }] : []),
