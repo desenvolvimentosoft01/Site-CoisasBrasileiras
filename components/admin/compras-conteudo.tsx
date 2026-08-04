@@ -6,13 +6,28 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { List, Plus, Trash2, PackageCheck, Ban, FileUp, AlertTriangle, Radio, RefreshCw, Link2 } from "lucide-react"
+import {
+  List,
+  Plus,
+  Trash2,
+  PackageCheck,
+  Ban,
+  FileUp,
+  AlertTriangle,
+  Radio,
+  RefreshCw,
+  Link2,
+  Eye,
+  Pencil,
+} from "lucide-react"
 import { toast } from "sonner"
 import { CampoDica } from "@/components/ui/campo-dica"
 import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
+import { validarChaveAcesso } from "@/lib/chave-acesso"
+import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null }
 export type ProdutoSelecionavel = {
@@ -151,6 +166,9 @@ export function ComprasConteudo({
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
   const [processandoId, setProcessandoId] = useState<string | null>(null)
+  const [editandoId, setEditandoId] = useState<string | null>(null)
+  const [carregandoEdicao, setCarregandoEdicao] = useState(false)
+  const [detalhe, setDetalhe] = useState<Compra | null>(null)
 
   // Veio do link "Lancar entrada" de um Pedido de Compra (ver
   // app/admin/compras/page.tsx) - pre-preenche fornecedor e itens (so os que
@@ -269,6 +287,7 @@ export function ComprasConteudo({
   }
 
   function abrirNova() {
+    setEditandoId(null)
     setFornecedorId("")
     setNumeroNota("")
     setChaveAcesso("")
@@ -289,6 +308,78 @@ export function ComprasConteudo({
     setPedidoCompraVinculado(null)
     setPedidosCompraSugeridos([])
     setAba("formulario")
+  }
+
+  // So compra "pendente" pode ser editada (ver PUT em app/api/admin/compras/[id]) -
+  // uma vez recebida ja afetou estoque/custo/financeiro.
+  async function abrirEdicao(compra: Compra) {
+    setCarregandoEdicao(true)
+    const resposta = await fetch(`/api/admin/compras/${compra.id}`)
+    setCarregandoEdicao(false)
+    if (!resposta.ok) {
+      toast.error("Erro ao carregar a compra pra edição")
+      return
+    }
+    const dados = await resposta.json()
+
+    setEditandoId(compra.id)
+    setFornecedorId(dados.fornecedor_id)
+    setNumeroNota(dados.numero_nota || "")
+    setChaveAcesso(dados.chave_acesso || "")
+    setDataCompra(String(dados.data_compra).slice(0, 10))
+    setDataVencimento(dados.data_vencimento ? String(dados.data_vencimento).slice(0, 10) : "")
+    setValorFrete(mascaraMoeda(String(Math.round(Number(dados.valor_frete) * 100))))
+    setObservacao(dados.observacao || "")
+    setItens(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- item vem direto da API, formato conhecido
+      dados.itens.map((i: any) => ({
+        produtoId: i.produto_id,
+        nome: i.produto_nome,
+        quantidade: i.quantidade,
+        custoUnitario: mascaraMoeda(String(Math.round(Number(i.custo_unitario) * 100))),
+      }))
+    )
+    setProdutoId("")
+    setQuantidade("1")
+    setCustoUnitario("")
+    setErro("")
+    setErroXml("")
+    setChaveXmlInvalida(false)
+    setItensXmlPendentes([])
+    setMapeamentoXml({})
+    setBlingNotaVinculada(null)
+    setPedidoCompraVinculado(null)
+    setPedidosCompraSugeridos([])
+    setAba("formulario")
+  }
+
+  async function excluir(compra: Compra) {
+    if (
+      !(await confirmar({
+        descricao: `Excluir a compra de "${compra.fornecedor_nome}"? Essa ação não pode ser desfeita.`,
+        destrutivo: true,
+      }))
+    )
+      return
+
+    setProcessandoId(compra.id)
+    const resposta = await fetch(`/api/admin/compras/${compra.id}`, { method: "DELETE" })
+    setProcessandoId(null)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json()
+      toast.error(dados.erro || "Erro ao excluir compra")
+      return
+    }
+
+    registrarAuditoria({
+      tela: "Entrada de NF",
+      acao: "exclusao",
+      tabela: "TAB_COMPRA",
+      registroId: compra.id,
+      antes: { fornecedor_nome: compra.fornecedor_nome, numero_nota: compra.numero_nota },
+    })
+    recarregar()
   }
 
   function adicionarItem() {
@@ -450,28 +541,41 @@ export function ComprasConteudo({
       return
     }
 
+    if (chaveAcesso && chaveAcesso.length === 44 && !validarChaveAcesso(chaveAcesso)) {
+      setErro("A chave de acesso digitada não é válida - confira os 44 dígitos.")
+      return
+    }
+
     setSalvando(true)
 
-    const resposta = await fetch("/api/admin/compras", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fornecedorId,
-        numeroNota: numeroNota || null,
-        chaveAcesso: chaveAcesso || null,
-        valorFrete: valorMoedaParaNumero(valorFrete || "0,00"),
-        dataCompra,
-        dataVencimento: dataVencimento || null,
-        observacao: observacao || null,
-        itens: itens.map((i) => ({
-          produtoId: i.produtoId,
-          quantidade: i.quantidade,
-          custoUnitario: valorMoedaParaNumero(i.custoUnitario),
-        })),
-        blingNotaId: blingNotaVinculada?.id || null,
-        pedidoCompraId: pedidoCompraVinculado?.id || null,
-      }),
-    })
+    const corpo = {
+      fornecedorId,
+      numeroNota: numeroNota || null,
+      chaveAcesso: chaveAcesso || null,
+      valorFrete: valorMoedaParaNumero(valorFrete || "0,00"),
+      dataCompra,
+      dataVencimento: dataVencimento || null,
+      observacao: observacao || null,
+      itens: itens.map((i) => ({
+        produtoId: i.produtoId,
+        quantidade: i.quantidade,
+        custoUnitario: valorMoedaParaNumero(i.custoUnitario),
+      })),
+      blingNotaId: blingNotaVinculada?.id || null,
+      pedidoCompraId: pedidoCompraVinculado?.id || null,
+    }
+
+    const resposta = editandoId
+      ? await fetch(`/api/admin/compras/${editandoId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corpo),
+        })
+      : await fetch("/api/admin/compras", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corpo),
+        })
 
     setSalvando(false)
 
@@ -484,7 +588,7 @@ export function ComprasConteudo({
     const salva = await resposta.json()
     registrarAuditoria({
       tela: "Entrada de NF",
-      acao: "cadastro",
+      acao: editandoId ? "edicao" : "cadastro",
       tabela: "TAB_COMPRA",
       registroId: salva.id,
       depois: { fornecedor_id: fornecedorId, itens: itens.length },
@@ -704,8 +808,25 @@ export function ComprasConteudo({
                             </span>
                           </td>
                           <td className="p-4 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon-lg"
+                              onClick={() => setDetalhe(compra)}
+                              title="Ver detalhe"
+                            >
+                              <Eye size={16} />
+                            </Button>
                             {compra.status === "pendente" && (
                               <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-lg"
+                                  disabled={processandoId === compra.id}
+                                  onClick={() => abrirEdicao(compra)}
+                                  title="Editar"
+                                >
+                                  <Pencil size={16} />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon-lg"
@@ -724,6 +845,15 @@ export function ComprasConteudo({
                                 >
                                   <Ban size={16} className="text-red-500" />
                                 </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-lg"
+                                  disabled={processandoId === compra.id}
+                                  onClick={() => excluir(compra)}
+                                  title="Excluir"
+                                >
+                                  <Trash2 size={16} className="text-red-500" />
+                                </Button>
                               </>
                             )}
                           </td>
@@ -739,13 +869,15 @@ export function ComprasConteudo({
 
         <TabsContent value="formulario" className="mt-4 space-y-4">
           <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">Nova compra</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              {editandoId ? "Editando compra" : "Nova compra"}
+            </span>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setAba("lista")}>
                 Cancelar
               </Button>
-              <Button onClick={salvar} disabled={salvando}>
-                {salvando ? "Salvando..." : "Salvar compra"}
+              <Button onClick={salvar} disabled={salvando || carregandoEdicao}>
+                {salvando ? "Salvando..." : editandoId ? "Salvar alterações" : "Salvar compra"}
               </Button>
             </div>
           </div>
@@ -874,6 +1006,12 @@ export function ComprasConteudo({
                   maxLength={44}
                   inputMode="numeric"
                 />
+                {chaveAcesso.length === 44 && !validarChaveAcesso(chaveAcesso) && (
+                  <p className="flex items-center gap-1.5 text-xs text-amber-500">
+                    <AlertTriangle size={12} />
+                    Esses 44 dígitos não formam uma chave válida - confira antes de salvar.
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Data da compra</Label>
@@ -1142,6 +1280,43 @@ export function ComprasConteudo({
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalDetalhe
+        aberto={!!detalhe}
+        onOpenChange={(aberto) => !aberto && setDetalhe(null)}
+        titulo={detalhe ? `Compra - ${detalhe.fornecedor_nome}` : ""}
+        campos={
+          detalhe
+            ? [
+                { label: "Fornecedor", valor: detalhe.fornecedor_nome },
+                { label: "CNPJ/CPF", valor: detalhe.fornecedor_cnpj_cpf },
+                { label: "Número da nota", valor: detalhe.numero_nota },
+                { label: "Chave de acesso", valor: detalhe.chave_acesso },
+                { label: "Status", valor: STATUS_LABEL[detalhe.status] },
+                {
+                  label: "Pedido de compra",
+                  valor: detalhe.pedido_compra_numero
+                    ? `PC.${String(detalhe.pedido_compra_numero).padStart(4, "0")}`
+                    : null,
+                },
+                { label: "Data da compra", valor: new Date(detalhe.data_compra).toLocaleDateString("pt-BR") },
+                {
+                  label: "Vencimento",
+                  valor: detalhe.data_vencimento
+                    ? new Date(detalhe.data_vencimento).toLocaleDateString("pt-BR")
+                    : null,
+                },
+                { label: "Valor dos itens", valor: formatarMoeda(Number(detalhe.valor_itens)) },
+                { label: "Frete", valor: formatarMoeda(Number(detalhe.valor_frete)) },
+                {
+                  label: "Total",
+                  valor: formatarMoeda(Number(detalhe.valor_itens) + Number(detalhe.valor_frete)),
+                },
+                { label: "Observação", valor: detalhe.observacao },
+              ]
+            : []
+        }
+      />
     </div>
   )
 }

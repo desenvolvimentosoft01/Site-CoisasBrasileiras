@@ -1,4 +1,5 @@
 import { XMLParser } from "fast-xml-parser"
+import { validarChaveAcesso } from "@/lib/chave-acesso"
 
 // Le e valida XML de NF-e de ENTRADA (nota que o fornecedor emitiu e ja
 // autorizou na Sefaz) - so leitura, nunca assinatura/emissao, por isso nao
@@ -35,28 +36,6 @@ export type DadosNfeXml = {
   itens: ItemNfeXml[]
   valorFrete: number
   valorTotal: number
-}
-
-// Digito verificador da chave de acesso (44 digitos) - algoritmo modulo 11
-// padrao da nota fiscal eletronica. Confere so a integridade do numero (nao
-// consulta a Sefaz - isso exigiria certificado/servico pago, fora de escopo).
-export function validarChaveAcesso(chave: string): boolean {
-  const digitos = chave.replace(/\D/g, "")
-  if (digitos.length !== 44) return false
-
-  const corpo = digitos.slice(0, 43)
-  const dvInformado = Number(digitos[43])
-
-  let soma = 0
-  let peso = 2
-  for (let i = corpo.length - 1; i >= 0; i--) {
-    soma += Number(corpo[i]) * peso
-    peso = peso === 9 ? 2 : peso + 1
-  }
-  const resto = soma % 11
-  const dvCalculado = resto < 2 ? 0 : 11 - resto
-
-  return dvCalculado === dvInformado
 }
 
 // Alguns campos viram objeto quando so ha 1 ocorrencia e array quando ha
