@@ -16,7 +16,8 @@ export async function POST(request: Request) {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const dados = await request.json()
-  const { fornecedorId, numeroNota, valorFrete, dataCompra, dataVencimento, observacao, itens, blingNotaId } = dados
+  const { fornecedorId, numeroNota, valorFrete, dataCompra, dataVencimento, observacao, itens, blingNotaId, pedidoCompraId } =
+    dados
 
   if (!fornecedorId) {
     return NextResponse.json({ erro: "Fornecedor e obrigatorio" }, { status: 400 })
@@ -34,8 +35,8 @@ export async function POST(request: Request) {
   // loop de itens deixava uma compra "orfa" com itens incompletos no banco.
   const compra = await transacao(async (q) => {
     const [novaCompra] = await q(
-      `INSERT INTO TAB_COMPRA (fornecedor_id, numero_nota, valor_frete, data_compra, data_vencimento, observacao, bling_nota_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO TAB_COMPRA (fornecedor_id, numero_nota, valor_frete, data_compra, data_vencimento, observacao, bling_nota_id, pedido_compra_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id, fornecedor_id, numero_nota, status, valor_frete, data_compra, data_vencimento, observacao, criado_em`,
       [
         fornecedorId,
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
         dataVencimento || null,
         observacao || null,
         blingNotaId || null,
+        pedidoCompraId || null,
       ]
     )
 
@@ -52,6 +54,13 @@ export async function POST(request: Request) {
       await q(
         "INSERT INTO TAB_COMPRA_ITEM (compra_id, produto_id, quantidade, custo_unitario) VALUES ($1, $2, $3, $4)",
         [novaCompra.id, item.produtoId, Number(item.quantidade), Number(item.custoUnitario)]
+      )
+    }
+
+    if (pedidoCompraId) {
+      await q(
+        "UPDATE TAB_PEDIDO_COMPRA SET status = 'atendido', atualizado_em = NOW() WHERE id = $1",
+        [pedidoCompraId]
       )
     }
 

@@ -244,6 +244,33 @@ export function templateNotaFiscalEmitida(params: {
   `)
 }
 
+export function templatePedidoCompraEnviado(params: {
+  nomeFornecedor: string
+  numero: number
+  itens: ItemEmail[]
+  total: number
+  observacao: string | null
+}): string {
+  const numeroFormatado = `PC.${String(params.numero).padStart(4, "0")}`
+  return envelope(`
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Pedido de compra ${numeroFormatado}</h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#555;">
+      Ola ${escapeHtml(params.nomeFornecedor)}, gostariamos de solicitar os itens abaixo.
+    </p>
+    ${tabelaItens(params.itens)}
+    <p style="margin:16px 0 0;font-size:18px;font-weight:700;color:#065f46;text-align:right;">
+      Total estimado: ${params.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+    </p>
+    ${
+      params.observacao
+        ? `<p style="margin:16px 0 0;font-size:14px;color:#555;">
+            <strong>Observacao:</strong><br>${escapeHtml(params.observacao)}
+          </p>`
+        : ""
+    }
+  `)
+}
+
 export function templateOrcamentoEnviado(params: {
   nomeCliente: string
   numero: number

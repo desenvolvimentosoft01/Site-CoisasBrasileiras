@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -99,19 +99,30 @@ const STATUS_LABEL: Record<Compra["status"], string> = {
   cancelada: "Cancelada",
 }
 
+type PedidoCompraParaLancar = {
+  id: string
+  numero: number
+  fornecedor_id: string
+  qtdItensSemProduto: number
+  itens: { produto_id: string; descricao: string; quantidade: string; custo_unitario: string }[]
+}
+
 export function ComprasConteudo({
   comprasIniciais,
   fornecedores,
   produtos,
+  pedidoCompraParaLancar,
 }: {
   comprasIniciais: Compra[]
   fornecedores: Fornecedor[]
   produtos: ProdutoSelecionavel[]
+  pedidoCompraParaLancar?: PedidoCompraParaLancar | null
 }) {
   const confirmar = useConfirmar()
   const [compras, setCompras] = useState<Compra[]>(comprasIniciais)
   const [fornecedoresDisponiveis, setFornecedoresDisponiveis] = useState<Fornecedor[]>(fornecedores)
-  const [aba, setAba] = useState("lista")
+  const [aba, setAba] = useState(pedidoCompraParaLancar ? "formulario" : "lista")
+  const [pedidoCompraVinculado, setPedidoCompraVinculado] = useState<{ id: string; numero: number } | null>(null)
 
   const [importandoXml, setImportandoXml] = useState(false)
   const [erroXml, setErroXml] = useState("")
@@ -135,6 +146,33 @@ export function ComprasConteudo({
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
   const [processandoId, setProcessandoId] = useState<string | null>(null)
+
+  // Veio do link "Lancar entrada" de um Pedido de Compra (ver
+  // app/admin/compras/page.tsx) - pre-preenche fornecedor e itens (so os que
+  // tem produto vinculado no catalogo; itens avulsos precisam ser adicionados
+  // na mao, ja que a Entrada de NF exige produto cadastrado por item).
+  useEffect(() => {
+    if (!pedidoCompraParaLancar) return
+    setFornecedorId(pedidoCompraParaLancar.fornecedor_id)
+    setItens(
+      pedidoCompraParaLancar.itens.map((i) => {
+        const produto = produtos.find((p) => p.id === i.produto_id)
+        return {
+          produtoId: i.produto_id,
+          nome: produto?.nome ?? i.descricao,
+          quantidade: Number(i.quantidade),
+          custoUnitario: mascaraMoeda(String(Math.round(Number(i.custo_unitario) * 100))),
+        }
+      })
+    )
+    setPedidoCompraVinculado({ id: pedidoCompraParaLancar.id, numero: pedidoCompraParaLancar.numero })
+    if (pedidoCompraParaLancar.qtdItensSemProduto > 0) {
+      toast.warning(
+        `${pedidoCompraParaLancar.qtdItensSemProduto} item(ns) desse pedido de compra nao tem produto vinculado do catalogo e precisam ser adicionados na mao.`
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [filtroFornecedor, setFiltroFornecedor] = useState("")
   const [filtroNumeroNota, setFiltroNumeroNota] = useState("")
@@ -234,6 +272,7 @@ export function ComprasConteudo({
     setItensXmlPendentes([])
     setMapeamentoXml({})
     setBlingNotaVinculada(null)
+    setPedidoCompraVinculado(null)
     setAba("formulario")
   }
 
@@ -397,6 +436,7 @@ export function ComprasConteudo({
           custoUnitario: valorMoedaParaNumero(i.custoUnitario),
         })),
         blingNotaId: blingNotaVinculada?.id || null,
+        pedidoCompraId: pedidoCompraVinculado?.id || null,
       }),
     })
 
@@ -660,6 +700,17 @@ export function ComprasConteudo({
                 Lançando a entrada da nota Bling #{blingNotaVinculada.numero}. Importe o XML dessa
                 nota abaixo pra preencher os itens - ao salvar, a compra fica vinculada e some da
                 lista de pendentes em &quot;Notas do Bling&quot;.
+              </CardContent>
+            </Card>
+          )}
+
+          {pedidoCompraVinculado && (
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="flex items-center gap-2 pt-6 text-sm">
+                <Link2 size={16} className="text-primary" />
+                Lançando a entrada do Pedido de Compra PC.{String(pedidoCompraVinculado.numero).padStart(4, "0")} -
+                fornecedor e itens ja vieram preenchidos. Ao salvar, o pedido de compra fica marcado como
+                &quot;atendido&quot;.
               </CardContent>
             </Card>
           )}
