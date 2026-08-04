@@ -41,6 +41,14 @@ type ItemMenu = ItemLink | ItemGrupo
 
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
+// pathname.startsWith(href) sozinho da falso positivo quando um href e
+// prefixo textual de outro (ex: "/admin/pedidos" e prefixo de
+// "/admin/pedidos-compra") - exige que o pathname termine exatamente no href
+// ou continue com "/" (uma subrota de verdade, tipo "/admin/pedidos/123").
+function rotaAtiva(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
 const menu: ItemMenu[] = [
   { tipo: "link", href: "/admin/dashboard", label: "Visao Geral", icone: LayoutDashboard },
   { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcao", icone: Store },
@@ -159,7 +167,7 @@ export function AdminShell({
     menu
       .filter(
         (item): item is ItemGrupo =>
-          item.tipo === "grupo" && item.filhos.some((f) => pathname.startsWith(f.href))
+          item.tipo === "grupo" && item.filhos.some((f) => rotaAtiva(pathname, f.href))
       )
       .map((item) => item.label)
   )
@@ -182,7 +190,7 @@ export function AdminShell({
     .join("")
     .toUpperCase()
 
-  const paginaAtual = planoDeMenu.find((item) => pathname.startsWith(item.href))
+  const paginaAtual = planoDeMenu.find((item) => rotaAtiva(pathname, item.href))
 
   // Breadcrumb simples a partir do path atual - so mostra a secao (nao
   // segmenta por UUID/subpaginas como o InMenteGestao, porque nossas rotas
@@ -228,7 +236,7 @@ export function AdminShell({
             if (item.tipo === "link") {
               if (item.somenteAdmin && sessao.papel !== "admin") return null
               const Icone = item.icone
-              const ativo = pathname.startsWith(item.href)
+              const ativo = rotaAtiva(pathname, item.href)
               return (
                 <Link
                   key={item.href}
@@ -251,7 +259,7 @@ export function AdminShell({
 
             const Icone = item.icone
             const aberto = gruposAbertos.includes(item.label)
-            const grupoAtivo = filhosVisiveis.some((f) => pathname.startsWith(f.href))
+            const grupoAtivo = filhosVisiveis.some((f) => rotaAtiva(pathname, f.href))
 
             return (
               <div key={item.label}>
@@ -274,7 +282,7 @@ export function AdminShell({
                 {aberto && (
                   <div className="mb-1 ml-6 mt-0.5 space-y-0.5 border-l border-slate-700 pl-3">
                     {filhosVisiveis.map((filho) => {
-                      const ativo = pathname.startsWith(filho.href)
+                      const ativo = rotaAtiva(pathname, filho.href)
                       return (
                         <Link
                           key={filho.href}
