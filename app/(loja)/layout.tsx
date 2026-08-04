@@ -5,6 +5,14 @@ import { WhatsappFlutuante } from "@/components/loja/whatsapp-flutuante"
 import { getConfiguracoes } from "@/lib/configuracoes"
 import { query } from "@/lib/db"
 
+// Sem isso, o Next tenta pre-renderizar as paginas da loja em build-time (SSG)
+// e precisa do banco disponivel durante o "npm run build" - quebra em builds
+// feitos numa maquina sem acesso ao Postgres de producao (ex: build separado
+// do deploy). Forcar dinamico faz a busca (config/categorias) rodar sempre a
+// cada request, na maquina que de fato serve o site - e configuracao/estoque
+// mudam com frequencia mesmo, cache estatico aqui so traria dado desatualizado.
+export const dynamic = "force-dynamic"
+
 export default async function LojaLayout({ children }: { children: React.ReactNode }) {
   const [config, categorias] = await Promise.all([
     getConfiguracoes([
