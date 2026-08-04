@@ -291,8 +291,13 @@ function MinhaContaConteudo() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {!assinatura || assinatura.status === "cancelada" ? (
+          {!assinatura || assinatura.status === "cancelada" || assinatura.status === "pendente" ? (
             <>
+              {assinatura?.status === "pendente" && (
+                <p className="text-sm text-amber-600">
+                  Sua ultima tentativa de assinatura nao foi concluida. Clique abaixo pra tentar de novo.
+                </p>
+              )}
               <p className="text-sm text-neutral-600">
                 Assine o Clube por {formatarMoeda(String(valorMensalidadeClube))}/mes e tenha preco
                 exclusivo em produtos selecionados.

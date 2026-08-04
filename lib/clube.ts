@@ -47,10 +47,18 @@ export async function criarAssinaturaClube(params: {
   siteUrl: string
 }): Promise<string> {
   // Evita duplo-clique criar duas assinaturas cobrando em paralelo - so
-  // permite uma nova se a atual (se existir) ja estiver cancelada.
+  // bloqueia se ja existir uma assinatura de fato ativa (autorizada/pausada).
+  // "pendente" fica pra tras quando o cliente fecha a aba do MP sem concluir
+  // o pagamento - nesse caso deixa tentar de novo, cancelando a pendente
+  // anterior primeiro (ela nunca chegou a ser cobrada).
   const assinaturaExistente = await assinaturaAtualDoCliente(params.clienteId)
-  if (assinaturaExistente && assinaturaExistente.status !== "cancelada") {
+  if (assinaturaExistente && ["autorizada", "pausada"].includes(assinaturaExistente.status)) {
     throw new Error("Voce ja tem uma assinatura do Clube em andamento")
+  }
+  if (assinaturaExistente && assinaturaExistente.status === "pendente") {
+    await query("UPDATE TAB_ASSINATURA_CLUBE SET status = 'cancelada', atualizado_em = NOW() WHERE id = $1", [
+      assinaturaExistente.id,
+    ])
   }
 
   const valor = await valorMensalidadeClube()
