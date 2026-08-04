@@ -31,7 +31,7 @@ npm install
 
 ### 3. Configurar o banco de dados
 
-Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `030_integracao_segredos.sql`), com `psql` ou outro cliente de sua preferência:
+Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `044_compra_chave_acesso.sql`), com `psql` ou outro cliente de sua preferência:
 
 ```bash
 for f in migrations/0*.sql; do psql -U postgres -d coisas_brasileiras -f "$f"; done
@@ -59,6 +59,7 @@ cp .env.example .env.local
 | `FRENET_TOKEN` / `FRENET_API_URL` | Cotação real de frete e validação de rastreio (opcional — sem isso, cai na tabela de faixas por região/peso) |
 | `BLING_CLIENT_ID` / `BLING_CLIENT_SECRET` | Credenciais OAuth do app Bling (emissão/cancelamento de NF-e) |
 | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Upload de imagem em ambiente serverless (opcional em VPS com disco persistente) |
+| `CRON_SECRET` | Autentica as chamadas dos crons (`/api/cron/*`) feitas pelo agendador externo (opcional — sem ele, as rotas ficam sem checagem de autorização) |
 
 Frenet, Mercado Pago e Email também podem ser configurados direto pelo painel admin (Configurações > Integrações), sem precisar mexer em variável de ambiente — as variáveis acima servem de fallback/bootstrap inicial.
 
@@ -105,6 +106,13 @@ verdade — o upload de imagem de produto em `public/uploads/` (comportamento
 padrão, sem configuração extra) funciona sem custo adicional, e o Cloudinary
 (`lib/cloudinary.ts`) fica **desligado por padrão**, só necessário se algum
 dia quiser CDN/otimização automática de imagem.
+
+As páginas da loja (`app/(loja)/layout.tsx`) são forçadas a renderizar sob
+demanda (`export const dynamic = "force-dynamic"`) — sem isso, o
+`npm run build` tenta pré-renderizar essas páginas e precisa do banco
+disponível nesse momento, o que quebra se o build rodar numa máquina sem
+acesso direto ao Postgres de produção (ex: pipeline de deploy separado do
+servidor final).
 
 Hoje existe também um ambiente de **homologação na Vercel + Neon**
 (Postgres gerenciado), usado para testes antes da produção final:

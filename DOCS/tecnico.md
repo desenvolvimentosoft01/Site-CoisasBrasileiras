@@ -39,21 +39,38 @@ As migrations ficam em `migrations/*.sql`, numeradas e aplicadas manualmente na 
 | `028_lista_desejos.sql` | Cria `TAB_LISTA_DESEJOS` (favoritos do cliente) |
 | `029_compra_vencimento_fornecedor_ie.sql` | `TAB_COMPRA` ganha `data_vencimento`; `TAB_FORNECEDOR` ganha `inscricao_estadual` |
 | `030_integracao_segredos.sql` | Cria `TAB_INTEGRACAO_SEGREDO` (chave/valor, isolada como `TAB_INTEGRACAO_BLING`) — Frenet, Mercado Pago e Email passam a ser configuráveis pelo admin, sem depender só de variável de ambiente |
+| `031_bling_ultimo_erro.sql` | `TAB_INTEGRACAO_BLING` ganha `ultimo_erro`/`ultimo_erro_em` (exibido no painel de pendências fiscais) |
+| `032_bling_nota_notificada.sql` | Cria `TAB_BLING_NOTA_NOTIFICADA` (controla quais notas de entrada pendentes do Bling já geraram notificação, evita duplicar aviso) |
+| `033_bling_notas_pendentes_count.sql` | `TAB_INTEGRACAO_BLING` ganha `notas_pendentes` (contador exibido no badge do menu do admin) |
+| `034_sobre_nos_midia.sql` | Cria `TAB_SOBRE_NOS_MIDIA` (fotos/vídeos da galeria da página Sobre Nós) |
+| `035_dedup_endereco_pedido.sql` | Sem nova coluna — corrige dados duplicados de endereço/pedido (reenvio de checkout) |
+| `036_pedidos_marketplace.sql` | `TAB_PEDIDO` ganha canal `marketplace` (constraint) e `bling_pedido_id`; cria `TAB_BLING_PEDIDO_PENDENTE` — importação de pedidos do Mercado Livre/Shopee via Bling |
+| `037_nfe_envio_status.sql` | `TAB_PEDIDO` ganha `bling_nota_email_enviada_em` e `nota_fiscal_whatsapp_enviada_em` (rastreia se a NF-e foi enviada ao cliente por cada canal) |
+| `038_preco_clube_percentual.sql` | `TAB_PRODUTO` ganha `preco_clube_tipo` ('fixo'/'percentual') — preço do Clube pode ser cadastrado como desconto percentual em vez de valor fixo |
+| `039_orcamento_aprovacao_publica.sql` | `TAB_ORCAMENTO` ganha `token_aprovacao`, `cliente_email`, `canal_resposta`, `observacao_cliente`, `enviado_email_em`, `respondido_em` — aprovação pública do orçamento por link (WhatsApp/e-mail), sem precisar logar no admin |
+| `040_pedido_situacao_nfe.sql` | `TAB_PEDIDO` ganha `bling_nota_situacao`/`bling_nota_situacao_atualizada_em` (situação detalhada da NF-e, além do já existente cancelamento) |
+| `041_pedido_compra.sql` | Cria `TAB_PEDIDO_COMPRA` e `TAB_PEDIDO_COMPRA_ITEM` (pedido de compra enviado ao fornecedor, antes da nota chegar); `TAB_COMPRA` ganha `pedido_compra_id` pra referenciar o pedido que originou a entrada |
+| `042_cotacao.sql` | Cria `TAB_COTACAO` e `TAB_COTACAO_ITEM` (cotação de preço com fornecedor, etapa anterior ao Pedido de Compra) |
+| `043_pedido_compra_desconto.sql` | `TAB_PEDIDO_COMPRA` ganha `desconto` |
+| `044_compra_chave_acesso.sql` | `TAB_COMPRA` ganha `chave_acesso` (chave de 44 dígitos da NF-e, opcional — preenchida automaticamente ao importar XML ou digitada manualmente) |
 
 ## Módulos do painel admin (`app/admin/*`)
 
 Todos os `page.tsx` são Server Components que consultam o banco direto (`query()`) e passam os dados iniciais para um componente client `*Conteudo` em `components/admin/`.
 
-- **dashboard** — indicadores gerais (produtos ativos, pedidos hoje, faturamento do mês, pendentes, estoque baixo) + últimos pedidos (com canal, forma de pagamento e indicador de "provavelmente abandonado").
+- **dashboard** ("Visão Geral") — indicadores gerais (produtos ativos, pedidos hoje, faturamento do mês, pendentes, estoque baixo) + últimos pedidos (com canal, forma de pagamento e indicador de "provavelmente abandonado").
 - **venda-balcao** — PDV: produtos (com leitor de código de barras e cadastro rápido), clientes, tipos de entrega e grade combinada de pedidos site+balcão.
-- **pedidos** — lista todos os pedidos (site + balcão), com cliente via LEFT JOIN. Status "Pago" nunca é definido manualmente aqui — só pelo webhook do Mercado Pago; a tela restringe as transições possíveis conforme o status atual.
-- **orcamentos** — documento pré-venda (`TAB_ORCAMENTO`), convertido em pedido balcão quando aprovado.
+- **pedidos** ("Pedido de Venda") — lista todos os pedidos (site + balcão + marketplace), com cliente via LEFT JOIN. Status "Pago" nunca é definido manualmente aqui — só pelo webhook do Mercado Pago; a tela restringe as transições possíveis conforme o status atual. Mostra a situação detalhada da NF-e no Bling (não só emitida/cancelada) e se ela já foi enviada ao cliente por e-mail e por WhatsApp. Pedidos de Mercado Livre/Shopee entram automaticamente via importação do Bling (canal `marketplace`, cron diário — ver `app/api/cron/importar-pedidos-marketplace`).
+- **orcamentos** — documento pré-venda (`TAB_ORCAMENTO`), convertido em pedido balcão quando aprovado. Suporta aprovação pública por link (token único, sem precisar logar no admin) enviado por e-mail (com PDF anexado) ou WhatsApp.
 - **clientes** — cadastro (aba, não modal), com endereço completo e busca automática por CEP (BrasilAPI). Flag de quem veio do site (tem `senha_hash`) vs. cadastrado só pelo admin. Exclusão física só é permitida sem pedido vinculado; havendo histórico, só inativar.
-- **produtos**, **categorias**, **estoque** — CRUD de catálogo. Produto exige NCM e código de barras (GTIN/EAN, validado por dígito verificador).
+- **produtos**, **categorias**, **estoque** — CRUD de catálogo. Produto exige NCM e código de barras (GTIN/EAN, validado por dígito verificador). Preço do Clube pode ser fixo ou percentual de desconto (`preco_clube_tipo`).
 - **precos** — reajuste de preços em massa (percentual ou valor fixo, com pré-visualização) ou edição direta de uma linha na grade. Restrito a papel "admin".
 - **fornecedores** — cadastro, com endereço e Inscrição Estadual.
-- **compras** — entrada de compra manual (atualiza custo médio ponderado e dá alta no estoque ao ser recebida), com importação de XML de NF-e e painel de notas de entrada pendentes no Bling.
+- **cotacoes** ("Cotação") — cotação de preço com um ou mais fornecedores (`TAB_COTACAO`/`TAB_COTACAO_ITEM`), etapa opcional antes do Pedido de Compra. Restrito a "admin".
+- **pedidos-compra** ("Pedido de Compra") — pedido formal enviado ao fornecedor por e-mail ou WhatsApp (`TAB_PEDIDO_COMPRA`/`TAB_PEDIDO_COMPRA_ITEM`, com desconto), referenciado depois pela Entrada de NF quando a mercadoria chega. Restrito a "admin".
+- **compras** ("Entrada de NF") — lançamento da entrada em si (manual ou por importação de XML de NF-e), com filtros por fornecedor/data/status/observação, painel de notas de entrada pendentes no Bling, e referência ao Pedido de Compra que originou a entrada. Atualiza custo médio ponderado e dá alta no estoque ao ser recebida. Chave de acesso da NF-e (44 dígitos) é preenchida automaticamente ao importar XML ou pode ser digitada manualmente em nota lançada sem XML.
 - **cupons**, **banners**, **feedbacks**, **avaliacoes** — CRUD de marketing. Avaliações são de produto, feitas pelo cliente (compra verificada) e passam por aprovação do admin.
+- **sobre-nos** — textos e galeria de fotos/vídeos (`TAB_SOBRE_NOS_MIDIA`) da página institucional Sobre Nós.
 - **clube** — assinantes do clube (assinatura recorrente via Mercado Pago), gerida pelo próprio cliente + webhook — sem CRUD manual aqui.
 - **financeiro** — contas a pagar/receber (`TAB_CONTA`) + faturamento do site. Restrito a papel "admin".
 - **relatorios** — vendas por período (com filtro por canal/status/categoria, vendas de hoje, produtos mais/menos vendidos), resumo de estoque (com filtro de estoque zerado), lucro/DRE.
@@ -68,6 +85,8 @@ PagBank foi removido — todo pagamento hoje é só Mercado Pago.
 - **`lib/mercadopago.ts`** — Checkout Pro (compra avulsa) + `PreApproval` (assinatura recorrente do Clube). Usado no checkout, no webhook (consulta pagamento/assinatura) e na tela de configurações do Clube.
 - **`lib/frenet.ts`** — cotação real de frete por CEP (múltiplas transportadoras) e validação de código de rastreio (`/tracking/trackinginfo`). Sem token configurado, o frete cai automaticamente na tabela de faixas por região/peso (`TAB_FRETE_FAIXA`).
 - **`lib/bling.ts`** — OAuth2, emissão **e cancelamento** de NF-e (não sincroniza estoque/financeiro, não sincroniza cadastro de produto — NCM e GTIN vão por item na hora de emitir). `BLING_CLIENT_ID`/`BLING_CLIENT_SECRET` são credenciais do app (env, nível de deploy); token de acesso da loja fica em `TAB_INTEGRACAO_BLING` e renova sozinho via refresh_token quando expira em <60s.
+- **`lib/bling-marketplace.ts`** — importa pedidos de Mercado Livre/Shopee que chegaram no Bling (canal `marketplace` em `TAB_PEDIDO`, cruzado por `bling_pedido_id`). Chamado pelo cron `app/api/cron/importar-pedidos-marketplace` 1x/dia (limite do plano Hobby da Vercel). Outro cron, `app/api/cron/notas-bling-pendentes`, atualiza o contador de notas de entrada pendentes no Bling. Ambos aceitam `CRON_SECRET` opcional (header `Authorization: Bearer`) pra autenticar o agendador externo.
+- **`lib/nfe-xml.ts`** — leitura (não emissão) de XML de NF-e de entrada: extrai fornecedor, itens e chave de acesso, valida o dígito verificador da chave (módulo 11) sem consultar a Sefaz. Usado na Entrada de NF pra pré-preencher o lançamento a partir do XML que o fornecedor manda.
 - **`lib/email.ts`** — Nodemailer/Gmail. Templates: pedido criado, pedido pago, novo pedido (aviso ao admin), status atualizado, rastreio salvo, "voltou ao estoque".
 - **`lib/cloudinary.ts`** — upload assinado via API REST (sem SDK). Só necessário em ambiente serverless (Vercel) sem disco persistente; em VPS cai pro disco local.
 
