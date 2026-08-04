@@ -28,6 +28,7 @@ import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { ROTULOS_STATUS, statusExibicao } from "@/lib/status-pedido"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { validarCodigoBarras } from "@/lib/codigo-barras"
 
 export type Produto = {
   id: string
@@ -250,6 +251,12 @@ export function VendaBalcaoConteudo({
 
     const produto = produtos.find((p) => p.codigo_barras === codigo)
     if (!produto) {
+      // Codigo invalido (leitura falha, digitacao errada) - nao oferece
+      // cadastro rapido pra nao criar produto com codigo de barras furado.
+      if (!validarCodigoBarras(codigo)) {
+        setErroCodigoBarras("Codigo de barras invalido (digito verificador nao confere) - leia de novo")
+        return
+      }
       // Produto nao cadastrado - oferece cadastro rapido em vez de so travar
       // a venda. O modal pergunta (Cancelar = nao quer cadastrar).
       setModalCadastroRapido({ codigoBarras: codigo })
@@ -492,7 +499,10 @@ export function VendaBalcaoConteudo({
                 <Input
                   placeholder="Ler codigo de barras..."
                   value={codigoBarrasLido}
-                  onChange={(e) => setCodigoBarrasLido(e.target.value)}
+                  onChange={(e) => {
+                    setCodigoBarrasLido(e.target.value)
+                    setErroCodigoBarras("")
+                  }}
                   onKeyDown={lerCodigoBarras}
                   className="pl-9"
                   autoFocus
@@ -882,6 +892,9 @@ export function VendaBalcaoConteudo({
               Nenhum produto com o codigo <strong>{modalCadastroRapido?.codigoBarras}</strong>. Deseja
               cadastrar agora pra continuar a venda?
             </p>
+            {modalCadastroRapido && validarCodigoBarras(modalCadastroRapido.codigoBarras) && (
+              <p className="text-xs text-emerald-500">Codigo de barras valido</p>
+            )}
             <div className="space-y-2">
               <Label>Nome do produto</Label>
               <Input value={novoProdutoNome} onChange={(e) => setNovoProdutoNome(e.target.value)} autoFocus />
