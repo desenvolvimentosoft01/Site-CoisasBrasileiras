@@ -86,8 +86,13 @@ export type Compra = {
   status: "pendente" | "recebida" | "cancelada"
   valor_frete: string
   data_compra: string
+  data_vencimento: string | null
+  observacao: string | null
   criado_em: string
+  atualizado_em: string
+  fornecedor_id: string
   fornecedor_nome: string
+  fornecedor_cnpj_cpf: string | null
   valor_itens: string
 }
 
@@ -141,6 +146,50 @@ export function ComprasConteudo({
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
   const [processandoId, setProcessandoId] = useState<string | null>(null)
+
+  const [filtroFornecedor, setFiltroFornecedor] = useState("")
+  const [filtroNumeroNota, setFiltroNumeroNota] = useState("")
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | Compra["status"]>("todos")
+  const [filtroObservacao, setFiltroObservacao] = useState("")
+  const [filtroDataCompraDe, setFiltroDataCompraDe] = useState("")
+  const [filtroDataCompraAte, setFiltroDataCompraAte] = useState("")
+  const [filtroDataEntradaDe, setFiltroDataEntradaDe] = useState("")
+  const [filtroDataEntradaAte, setFiltroDataEntradaAte] = useState("")
+
+  function limparFiltros() {
+    setFiltroFornecedor("")
+    setFiltroNumeroNota("")
+    setFiltroStatus("todos")
+    setFiltroObservacao("")
+    setFiltroDataCompraDe("")
+    setFiltroDataCompraAte("")
+    setFiltroDataEntradaDe("")
+    setFiltroDataEntradaAte("")
+  }
+
+  const comprasFiltradas = compras.filter((compra) => {
+    if (filtroFornecedor && compra.fornecedor_id !== filtroFornecedor) return false
+    if (filtroStatus !== "todos" && compra.status !== filtroStatus) return false
+    if (
+      filtroNumeroNota &&
+      !(compra.numero_nota || "").toLowerCase().includes(filtroNumeroNota.trim().toLowerCase())
+    )
+      return false
+    if (
+      filtroObservacao &&
+      !(compra.observacao || "").toLowerCase().includes(filtroObservacao.trim().toLowerCase())
+    )
+      return false
+    if (filtroDataCompraDe && compra.data_compra.slice(0, 10) < filtroDataCompraDe) return false
+    if (filtroDataCompraAte && compra.data_compra.slice(0, 10) > filtroDataCompraAte) return false
+    if (filtroDataEntradaDe || filtroDataEntradaAte) {
+      if (compra.status !== "recebida") return false
+      const dataEntrada = compra.atualizado_em.slice(0, 10)
+      if (filtroDataEntradaDe && dataEntrada < filtroDataEntradaDe) return false
+      if (filtroDataEntradaAte && dataEntrada > filtroDataEntradaAte) return false
+    }
+    return true
+  })
 
   const [notasBling, setNotasBling] = useState<NotaEntradaBling[]>([])
   const [carregandoNotasBling, setCarregandoNotasBling] = useState(false)
@@ -459,11 +508,86 @@ export function ComprasConteudo({
           )}
         </div>
 
-        <TabsContent value="lista" className="mt-4">
+        <TabsContent value="lista" className="mt-4 space-y-4">
+          <Card>
+            <CardContent className="grid items-end gap-3 pt-6 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Fornecedor</Label>
+                <select
+                  value={filtroFornecedor}
+                  onChange={(e) => setFiltroFornecedor(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                >
+                  <option value="">Todos</option>
+                  {fornecedoresDisponiveis.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.razao_social} {f.cnpj_cpf ? `(${f.cnpj_cpf})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Numero da nota</Label>
+                <Input value={filtroNumeroNota} onChange={(e) => setFiltroNumeroNota(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Status</Label>
+                <select
+                  value={filtroStatus}
+                  onChange={(e) => setFiltroStatus(e.target.value as typeof filtroStatus)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="pendente">Pendente</option>
+                  <option value="recebida">Recebida</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Observacao/descricao</Label>
+                <Input value={filtroObservacao} onChange={(e) => setFiltroObservacao(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Data da compra - de</Label>
+                <Input type="date" value={filtroDataCompraDe} onChange={(e) => setFiltroDataCompraDe(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Data da compra - ate</Label>
+                <Input type="date" value={filtroDataCompraAte} onChange={(e) => setFiltroDataCompraAte(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">
+                  Data de entrada - de
+                  <CampoDica>Data em que a compra foi recebida (deu entrada no estoque).</CampoDica>
+                </Label>
+                <Input
+                  type="date"
+                  value={filtroDataEntradaDe}
+                  onChange={(e) => setFiltroDataEntradaDe(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Data de entrada - ate</Label>
+                <Input
+                  type="date"
+                  value={filtroDataEntradaAte}
+                  onChange={(e) => setFiltroDataEntradaAte(e.target.value)}
+                />
+              </div>
+              <div className="sm:col-span-2 lg:col-span-4">
+                <Button type="button" variant="outline" size="sm" onClick={limparFiltros}>
+                  Limpar filtros
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardContent className="p-0">
               {compras.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhuma compra cadastrada ainda.</p>
+              ) : comprasFiltradas.length === 0 ? (
+                <p className="p-6 text-sm text-slate-500">Nenhuma compra encontrada com esses filtros.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[640px] text-sm">
@@ -478,7 +602,7 @@ export function ComprasConteudo({
                       </tr>
                     </thead>
                     <tbody>
-                      {compras.map((compra) => (
+                      {comprasFiltradas.map((compra) => (
                         <tr key={compra.id} className="border-b border-slate-200 last:border-0">
                           <td className="p-4 font-medium">{compra.fornecedor_nome}</td>
                           <td className="p-4 text-slate-500">{compra.numero_nota || "-"}</td>
