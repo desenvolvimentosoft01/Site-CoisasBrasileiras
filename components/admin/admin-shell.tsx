@@ -28,9 +28,11 @@ import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
 import { ConfirmProvider } from "@/components/admin/confirm-provider"
-import { EMAIL_DESENVOLVEDOR, type SessaoAdmin } from "@/lib/auth"
+import type { SessaoAdmin } from "@/lib/auth"
+import { EMAIL_DESENVOLVEDOR } from "@/lib/constantes"
 import { rotaAtiva } from "@/lib/rota-ativa"
 import { styleCoresTema } from "@/lib/cores"
+import { ProvedorCores, useCoresTema } from "@/lib/contexto-cores"
 import type { LucideIcon } from "lucide-react"
 
 type ItemLink = {
@@ -149,6 +151,27 @@ export function AdminShell({
   nomeLoja?: string
   children: React.ReactNode
 }) {
+  return (
+    <ProvedorCores coresIniciais={cores}>
+      <AdminShellInterno sessao={sessao} logoUrl={logoUrl} nomeLoja={nomeLoja}>
+        {children}
+      </AdminShellInterno>
+    </ProvedorCores>
+  )
+}
+
+function AdminShellInterno({
+  sessao,
+  logoUrl,
+  nomeLoja,
+  children,
+}: {
+  sessao: SessaoAdmin
+  logoUrl?: string
+  nomeLoja?: string
+  children: React.ReactNode
+}) {
+  const { cores } = useCoresTema()
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarAberta, setSidebarAberta] = useState(false)

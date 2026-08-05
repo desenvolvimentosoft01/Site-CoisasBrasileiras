@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { CORES_TEMA, styleCoresTema } from "@/lib/cores"
+import { useCoresTema } from "@/lib/contexto-cores"
 import { RotateCcw } from "lucide-react"
 
 // Usado so como posicao inicial do seletor de cor quando o campo ainda esta
@@ -28,16 +29,25 @@ const PADRAO_VISUAL: Record<string, string> = {
 }
 
 export function CoresConteudo({ coresIniciais }: { coresIniciais: Record<string, string> }) {
-  const [cores, setCores] = useState<Record<string, string>>(coresIniciais)
+  // Estado vive no contexto (compartilhado com o AdminShell) pra que mudar
+  // um seletor aqui reflita na hora na sidebar/botoes do resto da tela, sem
+  // precisar salvar nem dar F5. So sincroniza com o que veio do servidor na
+  // primeira renderizacao.
+  const { cores, setCores } = useCoresTema()
+  useEffect(() => {
+    setCores(coresIniciais)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- so na montagem, pra nao sobrescrever edicoes em andamento
+  }, [])
+
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
 
   function alterar(chave: string, valor: string) {
-    setCores((atual) => ({ ...atual, [chave]: valor }))
+    setCores({ ...cores, [chave]: valor })
   }
 
   function restaurar(chave: string) {
-    setCores((atual) => ({ ...atual, [chave]: "" }))
+    setCores({ ...cores, [chave]: "" })
   }
 
   async function salvar() {
@@ -57,12 +67,20 @@ export function CoresConteudo({ coresIniciais }: { coresIniciais: Record<string,
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Cores do sistema</h1>
-        <p className="text-sm text-slate-500">
-          Controla a paleta completa do site e do painel administrativo. Visível só para você.
-          Cor em branco = usa o padrão do sistema.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Cores do sistema</h1>
+          <p className="text-sm text-slate-500">
+            Controla a paleta completa do site e do painel administrativo. Visível só para você.
+            Cor em branco = usa o padrão do sistema.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={salvar} disabled={salvando}>
+            {salvando ? "Salvando..." : "Salvar cores"}
+          </Button>
+          {salvo && <span className="text-sm text-emerald-500">Salvo!</span>}
+        </div>
       </div>
 
       <div
