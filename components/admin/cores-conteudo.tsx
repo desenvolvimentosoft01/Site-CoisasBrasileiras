@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { CORES_TEMA, styleCoresTema } from "@/lib/cores"
 import { useCoresTema } from "@/lib/contexto-cores"
+import { registrarAuditoria } from "@/lib/auditoria"
 import { RotateCcw } from "lucide-react"
 
 // Usado so como posicao inicial do seletor de cor quando o campo ainda esta
@@ -39,6 +40,10 @@ export function CoresConteudo({ coresIniciais }: { coresIniciais: Record<string,
     // eslint-disable-next-line react-hooks/exhaustive-deps -- so na montagem, pra nao sobrescrever edicoes em andamento
   }, [])
 
+  // Snapshot do que estava salvo antes da proxima gravacao, pra auditoria
+  // registrar exatamente o que mudou (nao so o estado final).
+  const coresAntesRef = useRef(coresIniciais)
+
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
 
@@ -59,6 +64,15 @@ export function CoresConteudo({ coresIniciais }: { coresIniciais: Record<string,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(cores),
     })
+
+    registrarAuditoria({
+      tela: "Cores do Sistema",
+      acao: "edicao",
+      tabela: "TAB_CONFIGURACAO",
+      antes: coresAntesRef.current,
+      depois: cores,
+    })
+    coresAntesRef.current = cores
 
     setSalvando(false)
     setSalvo(true)

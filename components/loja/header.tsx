@@ -116,6 +116,8 @@ export function Header({
         <div className="flex items-center gap-2">
           <Link
             href="/admin/entrar"
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden rounded-full p-2 text-neutral-400 hover:bg-emerald-50 hover:text-primary md:block"
             aria-label="Área administrativa"
             title="Área administrativa"
@@ -218,6 +220,8 @@ export function Header({
           </Link>
           <Link
             href="/admin/entrar"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setMenuAberto(false)}
             className="rounded-md px-3 py-2 text-sm font-medium text-neutral-400 hover:bg-emerald-50"
           >
