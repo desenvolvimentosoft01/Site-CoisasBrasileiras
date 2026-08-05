@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { lerTokenSessao } from "@/lib/auth"
+import { lerTokenSessao, EMAIL_DESENVOLVEDOR } from "@/lib/auth"
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -32,6 +32,12 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/admin/fornecedores") ||
       pathname.startsWith("/admin/clube")
     if (somenteAdmin && sessao.papel !== "admin") {
+      const url = request.nextUrl.clone()
+      url.pathname = "/admin/dashboard"
+      return NextResponse.redirect(url)
+    }
+
+    if (pathname.startsWith("/admin/cores") && sessao.email !== EMAIL_DESENVOLVEDOR) {
       const url = request.nextUrl.clone()
       url.pathname = "/admin/dashboard"
       return NextResponse.redirect(url)

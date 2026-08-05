@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import {
   lerTokenSessao,
   lerTokenSessaoCliente,
+  EMAIL_DESENVOLVEDOR,
   type SessaoAdmin,
   type SessaoCliente,
 } from "@/lib/auth"
@@ -28,6 +29,19 @@ export async function exigirAdmin(): Promise<SessaoAdmin | NextResponse> {
 
   if (sessaoOuErro.papel !== "admin") {
     return NextResponse.json({ erro: "Acesso restrito ao administrador" }, { status: 403 })
+  }
+
+  return sessaoOuErro
+}
+
+// Mesma ideia, mas exige ser o e-mail do desenvolvedor - usada na rota de
+// cores do tema, que fica fora do alcance ate de administradores comuns.
+export async function exigirDesenvolvedor(): Promise<SessaoAdmin | NextResponse> {
+  const sessaoOuErro = await exigirSessao()
+  if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
+
+  if (sessaoOuErro.email !== EMAIL_DESENVOLVEDOR) {
+    return NextResponse.json({ erro: "Acesso restrito" }, { status: 403 })
   }
 
   return sessaoOuErro

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { lerTokenSessao } from "@/lib/auth"
 import { getConfiguracoes } from "@/lib/configuracoes"
+import { CHAVES_COR_TEMA } from "@/lib/cores"
 import { AdminShell } from "@/components/admin/admin-shell"
 
 // Titulo proprio da aba do admin - sobrescreve o titulo do site (definido no
@@ -20,22 +21,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return <>{children}</>
   }
 
-  // Mesma cor primaria configurada em Configuracoes > Aparencia (a que o site
-  // publico usa) - o admin usa a cor de verdade da loja em vez de uma cor fixa
-  // propria, pra nao destoar visualmente do site.
-  const { cor_primaria, logo_url, nome_loja } = await getConfiguracoes([
-    "cor_primaria",
-    "logo_url",
-    "nome_loja",
-  ])
+  // Mesma paleta configurada em Configuracoes > Aparencia / Cores do Sistema
+  // (a que o site publico usa) - o admin usa as cores de verdade da loja em
+  // vez de cores fixas proprias, pra nao destoar visualmente do site.
+  const configuracoes = await getConfiguracoes([...CHAVES_COR_TEMA, "logo_url", "nome_loja"])
 
   return (
-    <AdminShell
-      sessao={sessao}
-      corPrimaria={cor_primaria || "#047857"}
-      logoUrl={logo_url || undefined}
-      nomeLoja={nome_loja || undefined}
-    >
+    <AdminShell sessao={sessao} cores={configuracoes} logoUrl={configuracoes.logo_url || undefined} nomeLoja={configuracoes.nome_loja || undefined}>
       {children}
     </AdminShell>
   )

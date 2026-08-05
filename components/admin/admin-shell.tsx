@@ -22,16 +22,25 @@ import {
   FileText,
   ArrowLeft,
   Truck,
+  Palette,
 } from "lucide-react"
 import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
 import { ConfirmProvider } from "@/components/admin/confirm-provider"
-import type { SessaoAdmin } from "@/lib/auth"
+import { EMAIL_DESENVOLVEDOR, type SessaoAdmin } from "@/lib/auth"
 import { rotaAtiva } from "@/lib/rota-ativa"
+import { styleCoresTema } from "@/lib/cores"
 import type { LucideIcon } from "lucide-react"
 
-type ItemLink = { tipo: "link"; href: string; label: string; icone: LucideIcon; somenteAdmin?: boolean }
+type ItemLink = {
+  tipo: "link"
+  href: string
+  label: string
+  icone: LucideIcon
+  somenteAdmin?: boolean
+  somenteDesenvolvedor?: boolean
+}
 type ItemGrupo = {
   tipo: "grupo"
   label: string
@@ -104,14 +113,17 @@ const menu: ItemMenu[] = [
       { href: "/admin/configuracoes", label: "Configurações da Loja" },
     ],
   },
+  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: Palette, somenteDesenvolvedor: true },
 ]
 
-// Achata o menu (so os itens visiveis pro papel da sessao) pra alimentar a
-// TabBar e o breadcrumb, que trabalham com uma lista simples de {href, label}.
-function itensVisiveis(papel: string): { href: string; label: string; icone: LucideIcon }[] {
+// Achata o menu (so os itens visiveis pro papel/email da sessao) pra
+// alimentar a TabBar e o breadcrumb, que trabalham com uma lista simples de
+// {href, label}.
+function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: LucideIcon }[] {
   const resultado: { href: string; label: string; icone: LucideIcon }[] = []
   for (const item of menu) {
     if (item.tipo === "link") {
+      if (item.somenteDesenvolvedor && email !== EMAIL_DESENVOLVEDOR) continue
       if (!item.somenteAdmin || papel === "admin") resultado.push({ href: item.href, label: item.label, icone: item.icone })
     } else {
       for (const filho of item.filhos) {
@@ -126,13 +138,13 @@ function itensVisiveis(papel: string): { href: string; label: string; icone: Luc
 
 export function AdminShell({
   sessao,
-  corPrimaria,
+  cores,
   logoUrl,
   nomeLoja,
   children,
 }: {
   sessao: SessaoAdmin
-  corPrimaria: string
+  cores: Record<string, string>
   logoUrl?: string
   nomeLoja?: string
   children: React.ReactNode
@@ -152,7 +164,7 @@ export function AdminShell({
       .catch(() => {})
   }, [sessao.papel])
 
-  const planoDeMenu = itensVisiveis(sessao.papel)
+  const planoDeMenu = itensVisiveis(sessao.papel, sessao.email)
 
   // Abre automaticamente o grupo que contem a pagina atual, pra nao esconder
   // onde o usuario esta logo na primeira renderizacao.
@@ -199,10 +211,7 @@ export function AdminShell({
     // tem altura fixa de tela) "acabava" no meio da rolagem, bagunçando o
     // layout.
     <ConfirmProvider>
-    <div
-      className="flex h-screen overflow-hidden bg-slate-100"
-      style={{ "--primary": corPrimaria } as React.CSSProperties}
-    >
+    <div className="flex h-screen overflow-hidden bg-slate-100" style={styleCoresTema(cores)}>
       <Toaster position="top-right" richColors />
       {sidebarAberta && (
         <div
@@ -228,6 +237,7 @@ export function AdminShell({
           {menu.map((item) => {
             if (item.tipo === "link") {
               if (item.somenteAdmin && sessao.papel !== "admin") return null
+              if (item.somenteDesenvolvedor && sessao.email !== EMAIL_DESENVOLVEDOR) return null
               const Icone = item.icone
               const ativo = rotaAtiva(pathname, item.href)
               return (

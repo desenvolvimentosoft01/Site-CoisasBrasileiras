@@ -4,6 +4,7 @@ import { CarrinhoDrawer } from "@/components/loja/carrinho-drawer"
 import { WhatsappFlutuante } from "@/components/loja/whatsapp-flutuante"
 import { getConfiguracoes } from "@/lib/configuracoes"
 import { query } from "@/lib/db"
+import { CHAVES_COR_TEMA, styleCoresTema } from "@/lib/cores"
 
 // Sem isso, o Next tenta pre-renderizar as paginas da loja em build-time (SSG)
 // e precisa do banco disponivel durante o "npm run build" - quebra em builds
@@ -17,23 +18,21 @@ export default async function LojaLayout({ children }: { children: React.ReactNo
   const [config, categorias] = await Promise.all([
     getConfiguracoes([
       "banner_texto_topo",
-      "cor_primaria",
       "nome_loja",
       "logo_url",
       "whatsapp",
       "whatsapp_mensagem",
+      ...CHAVES_COR_TEMA,
     ]),
     query("SELECT id, nome, slug, categoria_pai_id FROM TAB_CATEGORIA WHERE ativa = true ORDER BY nome"),
   ])
 
   return (
-    // Sobrescreve a cor primaria do tema (usada em botoes, links, badges) com
-    // o valor configurado pelo admin em Configuracoes > Aparencia - so nesse
-    // wrapper, entao o painel admin (dark, fixo) nao e afetado.
-    <div
-      className="flex min-h-full flex-1 flex-col"
-      style={config.cor_primaria ? ({ "--primary": config.cor_primaria } as React.CSSProperties) : undefined}
-    >
+    // Sobrescreve a paleta do tema (usada em botoes, links, badges, fundos)
+    // com os valores configurados em Configuracoes > Aparencia / Cores do
+    // Sistema - so nesse wrapper, entao o painel admin (dark, fixo) nao e
+    // afetado.
+    <div className="flex min-h-full flex-1 flex-col" style={styleCoresTema(config)}>
       {config.banner_texto_topo && (
         <div className="bg-primary px-4 py-2 text-center text-sm font-medium text-white">
           {config.banner_texto_topo}

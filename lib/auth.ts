@@ -17,6 +17,12 @@ export type SessaoAdmin = {
   papel: string
 }
 
+// Unico e-mail com acesso a aba "Cores do Sistema" (Configuracoes >
+// Aparencia expõe so a cor primaria pro lojista; a paleta completa do tema
+// fica restrita ao desenvolvedor, pra evitar que alguem sem noção de design
+// quebre a legibilidade do site inteiro).
+export const EMAIL_DESENVOLVEDOR = "desenvolvimentosoft01@gmail.com"
+
 export type SessaoCliente = {
   id: string
   nome: string
