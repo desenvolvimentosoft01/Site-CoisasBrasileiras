@@ -1,4 +1,4 @@
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { NextResponse } from "next/server"
 import {
   lerTokenSessao,
@@ -50,7 +50,18 @@ export async function exigirDesenvolvedor(): Promise<SessaoAdmin | NextResponse>
 // Mesma ideia, mas para rotas do cliente final (checkout, area do cliente).
 export async function exigirSessaoCliente(): Promise<SessaoCliente | NextResponse> {
   const cookieStore = await cookies()
-  const sessao = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
+  const cookieBruto = cookieStore.get("cliente_sessao")?.value
+  const sessao = await lerTokenSessaoCliente(cookieBruto)
+
+  // DEBUG TEMPORARIO - remover apos diagnosticar loop de login
+  const cabecalhos = await headers()
+  console.log("[debug-auth] exigirSessaoCliente", {
+    host: cabecalhos.get("host"),
+    proto: cabecalhos.get("x-forwarded-proto"),
+    cookieHeaderPresente: !!cabecalhos.get("cookie"),
+    cookieClienteSessaoPresente: !!cookieBruto,
+    sessaoValida: !!sessao,
+  })
 
   if (!sessao) {
     return NextResponse.json({ erro: "Nao autenticado" }, { status: 401 })
