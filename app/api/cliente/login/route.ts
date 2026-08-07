@@ -61,13 +61,5 @@ export async function POST(request: Request) {
     path: "/",
   })
 
-  // DEBUG TEMPORARIO - remover apos diagnosticar loop de login
-  console.log("[debug-auth] login OK", {
-    host: request.headers.get("host"),
-    proto: request.headers.get("x-forwarded-proto"),
-    nodeEnv: process.env.NODE_ENV,
-    origin: request.headers.get("origin"),
-  })
-
   return response
 }

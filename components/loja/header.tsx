@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { ChevronDown, Heart, LayoutDashboard, Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useCarrinho } from "@/lib/carrinho-store"
@@ -27,14 +28,21 @@ export function Header({
   const [logado, setLogado] = useState(false)
   const itens = useCarrinho((s) => s.itens)
   const totalItens = itens.reduce((soma, i) => soma + i.quantidade, 0)
+  const pathname = usePathname()
 
   // Evita mismatch de hidratacao: o total vindo do localStorage (persist do
   // zustand) so existe no client, entao so mostramos o contador apos montar.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flag de hidratacao, precisa rodar so no client
     setMontado(true)
-    fetch("/api/cliente/me").then((r) => setLogado(r.ok))
   }, [])
+
+  // Reconsulta a sessao a cada troca de rota - o Header fica no layout raiz e
+  // nao remonta na navegacao, entao sem isso o icone de conta ficava preso no
+  // estado "deslogado" mesmo apos um login/cadastro bem-sucedido.
+  useEffect(() => {
+    fetch("/api/cliente/me").then((r) => setLogado(r.ok))
+  }, [pathname])
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-white/90 backdrop-blur">
