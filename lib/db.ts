@@ -1,4 +1,12 @@
 import { Pool, type PoolClient } from "pg"
+import { setDefaultResultOrder } from "dns"
+
+// O host do pooler do Supabase tem registro AAAA (IPv6), e o Node por padrao
+// tenta IPv6 primeiro - em VPS sem rota IPv6 de saida (ex: alguns planos da
+// Hostinger) isso da ECONNREFUSED direto num endereco IPv6, mesmo com o IPv4
+// funcionando normalmente. Forcar IPv4 primeiro evita essa tentativa que
+// sempre falha nesse tipo de ambiente.
+setDefaultResultOrder("ipv4first")
 
 const ehLocalhost = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL ?? "")
 
