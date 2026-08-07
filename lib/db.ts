@@ -8,12 +8,6 @@ import { setDefaultResultOrder } from "dns"
 // sempre falha nesse tipo de ambiente.
 setDefaultResultOrder("ipv4first")
 
-// DEBUG TEMPORARIO - remover depois de confirmar qual DATABASE_URL o processo recebe em producao.
-console.log(
-  "[debug] DATABASE_URL recebida:",
-  (process.env.DATABASE_URL ?? "(vazia)").replace(/:[^:@]*@/, ":***@")
-)
-
 const ehLocalhost = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL ?? "")
 
 const pool = new Pool({
