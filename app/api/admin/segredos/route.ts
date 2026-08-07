@@ -5,6 +5,7 @@ import { NextResponse } from "next/server"
 const CHAVES = [
   "frenet_token",
   "mercadopago_access_token",
+  "mercadopago_public_key",
   "mercadopago_webhook_secret",
   "email_user",
   "email_pass",
@@ -26,7 +27,8 @@ export async function GET() {
 
   CHAVES.forEach((chave, indice) => {
     const valor = valores[indice]
-    const ehTextoVisivel = chave === "email_user" || chave === "email_notificacoes_admin"
+    const ehTextoVisivel =
+      chave === "email_user" || chave === "email_notificacoes_admin" || chave === "mercadopago_public_key"
     mapa[chave] = ehTextoVisivel ? { configurado: Boolean(valor), valor: valor || "" } : { configurado: Boolean(valor) }
   })
 

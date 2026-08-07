@@ -10,6 +10,7 @@ function formatarPreco(valor: string) {
 
 const rotulosStatus: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
+  processando_pagamento: "Processando pagamento",
   pago: "Pago",
   em_separacao: "Em separação",
   enviado: "Enviado",

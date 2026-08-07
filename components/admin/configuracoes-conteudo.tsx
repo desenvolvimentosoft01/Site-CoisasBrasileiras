@@ -119,6 +119,7 @@ function ConfiguracoesFormulario({
   const [blingClientId, setBlingClientId] = useState("")
   const [blingClientSecret, setBlingClientSecret] = useState("")
   const [mpAccessToken, setMpAccessToken] = useState("")
+  const [mpPublicKey, setMpPublicKey] = useState("")
   const [mpWebhookSecret, setMpWebhookSecret] = useState("")
   const [emailUser, setEmailUser] = useState("")
   const [emailPass, setEmailPass] = useState("")
@@ -138,6 +139,7 @@ function ConfiguracoesFormulario({
         )
         setEmailUser(dados.email_user?.valor || "")
         setEmailNotificacoesAdmin(dados.email_notificacoes_admin?.valor || "")
+        setMpPublicKey(dados.mercadopago_public_key?.valor || "")
       })
   }, [])
 
@@ -151,6 +153,7 @@ function ConfiguracoesFormulario({
       body: JSON.stringify({
         frenet_token: frenetToken,
         mercadopago_access_token: mpAccessToken,
+        mercadopago_public_key: mpPublicKey,
         mercadopago_webhook_secret: mpWebhookSecret,
         email_user: emailUser,
         email_pass: emailPass,
@@ -835,6 +838,22 @@ function ConfiguracoesFormulario({
                             ? "•••••••• (deixe em branco pra manter)"
                             : "Colar access token"
                         }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        Public key (produção)
+                        <CampoDica>
+                          Painel do Mercado Pago &gt; sua aplicação &gt; Credenciais de produção &gt; &quot;Public
+                          key&quot;. Diferente do token de acesso, essa chave não é secreta - ela é usada no
+                          navegador do cliente pra renderizar o formulário de pagamento na própria tela do
+                          checkout.
+                        </CampoDica>
+                      </Label>
+                      <Input
+                        value={mpPublicKey}
+                        onChange={(e) => setMpPublicKey(e.target.value)}
+                        placeholder="Colar public key"
                       />
                     </div>
                     <div className="space-y-2">

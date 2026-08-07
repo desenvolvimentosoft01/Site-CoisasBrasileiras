@@ -4,6 +4,10 @@
 // diferente.
 export const ROTULOS_STATUS: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento",
+  // Janela curta entre o cliente confirmar o pagamento no Payment Brick e o
+  // webhook do Mercado Pago confirmar o resultado - existe so pra travar o
+  // pedido contra pagamento duplicado (ver app/api/checkout/pagamento/route.ts).
+  processando_pagamento: "Processando pagamento",
   pago: "Pago",
   em_separacao: "Em separacao",
   enviado: "Enviado",

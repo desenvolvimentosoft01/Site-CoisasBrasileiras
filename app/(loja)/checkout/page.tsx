@@ -1,7 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { initMercadoPago, Payment } from "@mercadopago/sdk-react"
+import type { IPaymentFormData } from "@mercadopago/sdk-react/esm/bricks/payment/type"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -17,9 +20,22 @@ function formatarPreco(valor: number) {
 
 type OpcaoFrete = { transportadora: string; servico: string; valor: number; prazoDias: number | null }
 
+let mpInicializado = false
+
 export default function CheckoutPage() {
+  const router = useRouter()
   const { itens, limpar, cupom } = useCarrinho()
   const [logado, setLogado] = useState<boolean | null>(null)
+  const [emailCliente, setEmailCliente] = useState("")
+
+  // Pedido ja criado e aguardando pagamento - so preenchido depois que o
+  // endereco e confirmado, e o que faz a tela trocar do formulario de
+  // endereco pro Payment Brick (pagamento acontece na propria tela, sem
+  // redirecionar pro Mercado Pago).
+  const [pedidoPendente, setPedidoPendente] = useState<{ id: string; total: number } | null>(null)
+  const [chavePublicaMP, setChavePublicaMP] = useState<string | null>(null)
+  const [erroPagamento, setErroPagamento] = useState("")
+  const [pixDados, setPixDados] = useState<{ qrCode: string; qrCodeBase64: string } | null>(null)
 
   const [cep, setCep] = useState("")
   const [logradouro, setLogradouro] = useState("")
@@ -40,7 +56,23 @@ export default function CheckoutPage() {
   const valorFrete = opcaoFrete?.valor ?? 0
 
   useEffect(() => {
-    fetch("/api/cliente/me").then((r) => setLogado(r.ok))
+    fetch("/api/cliente/me")
+      .then(async (r) => {
+        setLogado(r.ok)
+        if (r.ok) setEmailCliente((await r.json()).email || "")
+      })
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/checkout/chave-publica")
+      .then((r) => r.json())
+      .then((dados) => {
+        if (dados.publicKey && !mpInicializado) {
+          initMercadoPago(dados.publicKey, { locale: "pt-BR" })
+          mpInicializado = true
+        }
+        setChavePublicaMP(dados.publicKey)
+      })
   }, [])
 
   const subtotal = totalCarrinho(itens)
@@ -125,9 +157,40 @@ export default function CheckoutPage() {
       return
     }
 
-    const { checkoutUrl } = await resposta.json()
+    const { pedidoId, total } = await resposta.json()
     limpar()
-    window.location.href = checkoutUrl
+    setPedidoPendente({ id: pedidoId, total })
+  }
+
+  // Chamado pelo Payment Brick quando o cliente confirma o pagamento
+  // (cartao tokenizado no navegador, ou escolha do Pix) - o resultado
+  // completo aparece na propria tela, sem sair do site.
+  async function processarPagamento({ formData }: IPaymentFormData) {
+    if (!pedidoPendente) return
+    setErroPagamento("")
+
+    const resposta = await fetch("/api/checkout/pagamento", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pedidoId: pedidoPendente.id, formData }),
+    })
+
+    const dados = await resposta.json()
+
+    if (!resposta.ok) {
+      setErroPagamento(dados.erro || "Não foi possível processar o pagamento")
+      return
+    }
+
+    if (dados.pix) {
+      setPixDados(dados.pix)
+      return
+    }
+
+    // Cartao aprovado, recusado ou em analise - o pedido ja reflete o status
+    // final assim que o webhook chegar, mas a pagina do pedido ja mostra o
+    // status "aguardando" corretamente enquanto isso.
+    router.push(`/pedido/${pedidoPendente.id}`)
   }
 
   if (logado === false) {
@@ -144,13 +207,87 @@ export default function CheckoutPage() {
     )
   }
 
-  if (itens.length === 0) {
+  if (itens.length === 0 && !pedidoPendente) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <h1 className="font-heading mb-3 text-2xl font-semibold text-emerald-950">
           Seu carrinho está vazio
         </h1>
         <Button nativeButton={false} render={<Link href="/produtos" />}>Ver produtos</Button>
+      </div>
+    )
+  }
+
+  if (pedidoPendente) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10 md:px-6">
+        <h1 className="font-heading mb-2 text-3xl font-semibold text-emerald-950">Pagamento</h1>
+        <p className="mb-8 text-sm text-neutral-500">
+          Pedido criado - total de {formatarPreco(pedidoPendente.total)}. Escolha como pagar, tudo aqui mesmo,
+          sem sair do site.
+        </p>
+
+        <Card>
+          <CardContent className="pt-6">
+            {pixDados ? (
+              <div className="space-y-4 text-center">
+                <h2 className="font-medium text-neutral-800">Pague com Pix</h2>
+                <p className="text-sm text-neutral-500">
+                  Escaneie o QR code no app do seu banco ou copie o código abaixo.
+                </p>
+                {pixDados.qrCodeBase64 && (
+                  // eslint-disable-next-line @next/next/no-img-element -- QR code vem como base64 direto da API do MP, nao vale a pena passar pelo otimizador do Next
+                  <img
+                    src={`data:image/png;base64,${pixDados.qrCodeBase64}`}
+                    alt="QR code Pix"
+                    className="mx-auto h-56 w-56"
+                  />
+                )}
+                <Input readOnly value={pixDados.qrCode} onClick={(e) => e.currentTarget.select()} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigator.clipboard.writeText(pixDados.qrCode)}
+                >
+                  Copiar código Pix
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full"
+                  render={<Link href={`/pedido/${pedidoPendente.id}`} />}
+                >
+                  Já paguei, ver meu pedido
+                </Button>
+              </div>
+            ) : chavePublicaMP ? (
+              <>
+                {erroPagamento && <p className="mb-4 text-sm text-red-500">{erroPagamento}</p>}
+                <Payment
+                  initialization={{
+                    amount: pedidoPendente.total,
+                    payer: { email: emailCliente },
+                  }}
+                  customization={{
+                    paymentMethods: {
+                      creditCard: "all",
+                      debitCard: "all",
+                      bankTransfer: "all",
+                      ticket: "all",
+                    },
+                  }}
+                  onSubmit={processarPagamento}
+                  onError={(erro) => {
+                    console.error("[Payment Brick]", erro)
+                    setErroPagamento("Não foi possível carregar o formulário de pagamento.")
+                  }}
+                />
+              </>
+            ) : (
+              <p className="text-sm text-neutral-500">Carregando formas de pagamento...</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -224,11 +361,11 @@ export default function CheckoutPage() {
               {erro && <p className="text-sm text-red-500">{erro}</p>}
 
               <Button type="submit" size="lg" className="w-full" disabled={enviando || logado === null}>
-                {enviando ? "Finalizando..." : "Confirmar pedido"}
+                {enviando ? "Finalizando..." : "Ir para o pagamento"}
               </Button>
               <p className="text-xs text-neutral-400">
-                Você será redirecionado para o Mercado Pago para concluir o pagamento (Pix, cartão ou boleto,
-                conforme disponibilidade).
+                Na próxima etapa você escolhe entre Pix, cartão ou boleto (conforme disponibilidade) sem sair
+                do site.
               </p>
             </form>
           </CardContent>

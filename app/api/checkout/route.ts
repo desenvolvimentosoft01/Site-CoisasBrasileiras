@@ -1,6 +1,5 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
-import { getPreferenceMP } from "@/lib/mercadopago"
 import { calcularOpcoesFrete } from "@/lib/configuracoes"
 import { enviarEmail, templatePedidoCriado } from "@/lib/email"
 import { NextResponse } from "next/server"
@@ -254,81 +253,6 @@ export async function POST(request: Request) {
       return { ...pedidoCriado, itensParaInserir, subtotal, valorFrete, valorDesconto }
     })
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-    const ehHttps = siteUrl.startsWith("https://")
-
-    let checkoutUrl: string | null | undefined
-
-    // A criacao do link de pagamento fica isolada num try/catch proprio: um
-    // erro aqui e sempre de infraestrutura (token nao configurado, gateway
-    // fora do ar) e nunca deve vazar detalhe interno (nome de variavel de
-    // ambiente, corpo de erro da API externa) pro cliente no checkout - so
-    // uma mensagem generica. O detalhe real vai pro log do servidor.
-    try {
-      // auto_return exige back_urls publicas em https - em dev local (http) o
-      // Mercado Pago rejeita, entao so habilitamos quando o site ja estiver publicado.
-      const preferenceMP = await getPreferenceMP()
-      const preferencia = await preferenceMP.create({
-        body: {
-          items: [
-            ...pedido.itensParaInserir.map(
-              (item: { produtoId: string; nome: string; quantidade: number; precoUnitario: number }) => ({
-                id: item.produtoId,
-                title: item.nome,
-                quantity: item.quantidade,
-                unit_price: item.precoUnitario,
-                currency_id: "BRL",
-              })
-            ),
-            ...(pedido.valorFrete > 0
-              ? [
-                  {
-                    id: "frete",
-                    title: "Frete",
-                    quantity: 1,
-                    unit_price: pedido.valorFrete,
-                    currency_id: "BRL" as const,
-                  },
-                ]
-              : []),
-            // O Mercado Pago aceita item com preco negativo para representar
-            // desconto, desde que a soma final feche com o total do pedido.
-            ...(pedido.valorDesconto > 0
-              ? [
-                  {
-                    id: "desconto",
-                    title: "Desconto (cupom)",
-                    quantity: 1,
-                    unit_price: -pedido.valorDesconto,
-                    currency_id: "BRL" as const,
-                  },
-                ]
-              : []),
-          ],
-          external_reference: pedido.id,
-          notification_url: `${siteUrl}/api/webhooks/mercadopago`,
-          back_urls: {
-            success: `${siteUrl}/pedido/${pedido.id}`,
-            pending: `${siteUrl}/pedido/${pedido.id}`,
-            failure: `${siteUrl}/pedido/${pedido.id}`,
-          },
-          ...(ehHttps ? { auto_return: "approved" as const } : {}),
-        },
-      })
-      // Com credenciais de teste, o Mercado Pago devolve tambem um
-      // sandbox_init_point - e ele que aceita login com usuario de teste
-      // (TESTUSER...). O init_point normal so aceita conta real, por isso
-      // fica como fallback (preferencia com credenciais de producao nao
-      // costuma vir com sandbox_init_point preenchido).
-      checkoutUrl = preferencia.sandbox_init_point || preferencia.init_point
-    } catch (erroGateway) {
-      console.error("[checkout] Falha ao criar link de pagamento:", erroGateway)
-      return NextResponse.json(
-        { erro: "Não foi possível iniciar o pagamento agora. Tente novamente em instantes." },
-        { status: 502 }
-      )
-    }
-
     // Nao usa await de proposito - o email nao deve atrasar a resposta do
     // checkout, e uma falha de envio ja e tratada (logada) dentro de enviarEmail.
     enviarEmail({
@@ -342,7 +266,11 @@ export async function POST(request: Request) {
       }),
     })
 
-    return NextResponse.json({ pedidoId: pedido.id, checkoutUrl })
+    // O pagamento em si (cartao/Pix) acontece na propria tela do checkout via
+    // Payment Brick, num segundo passo que chama /api/checkout/pagamento -
+    // aqui so devolvemos o pedido criado e o total pra inicializar o Brick.
+    const total = pedido.subtotal + pedido.valorFrete - pedido.valorDesconto
+    return NextResponse.json({ pedidoId: pedido.id, total })
   } catch (erro) {
     return NextResponse.json(
       { erro: erro instanceof Error ? erro.message : "Erro ao processar pedido" },
