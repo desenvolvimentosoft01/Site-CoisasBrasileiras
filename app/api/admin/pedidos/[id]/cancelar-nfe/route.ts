@@ -22,8 +22,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       )
 
       if (!pedido) throw new Error("NOT_FOUND")
-      if (!pedido.bling_nota_id) throw new Error("Este pedido nao tem NF-e emitida")
-      if (pedido.bling_nota_cancelada_em) throw new Error("Esta NF-e ja foi cancelada")
+      if (!pedido.bling_nota_id) throw new Error("Este pedido não tem NF-e emitida")
+      if (pedido.bling_nota_cancelada_em) throw new Error("Esta NF-e já foi cancelada")
 
       await cancelarNotaFiscalBling(pedido.bling_nota_id, justificativa || "")
 

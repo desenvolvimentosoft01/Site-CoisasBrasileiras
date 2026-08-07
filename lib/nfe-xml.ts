@@ -53,12 +53,12 @@ export function parseNfeXml(xmlTexto: string): DadosNfeXml {
   try {
     doc = parser.parse(xmlTexto)
   } catch {
-    throw new Error("Arquivo XML invalido ou corrompido")
+    throw new Error("Arquivo XML inválido ou corrompido")
   }
 
   const infNFe = doc?.nfeProc?.NFe?.infNFe ?? doc?.NFe?.infNFe
   if (!infNFe) {
-    throw new Error("Este arquivo nao parece ser uma NF-e valida (tag infNFe nao encontrada)")
+    throw new Error("Este arquivo não parece ser uma NF-e válida (tag infNFe não encontrada)")
   }
 
   const idAttr: string | undefined = infNFe["@_Id"]
@@ -72,7 +72,7 @@ export function parseNfeXml(xmlTexto: string): DadosNfeXml {
 
   const detalhes = paraArray(infNFe.det)
   if (detalhes.length === 0) {
-    throw new Error("XML nao tem nenhum item de produto (tag det)")
+    throw new Error("XML não tem nenhum item de produto (tag det)")
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota

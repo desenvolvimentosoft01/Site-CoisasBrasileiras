@@ -53,7 +53,7 @@ export async function criarAssinaturaClube(params: {
   // anterior primeiro (ela nunca chegou a ser cobrada).
   const assinaturaExistente = await assinaturaAtualDoCliente(params.clienteId)
   if (assinaturaExistente && ["autorizada", "pausada"].includes(assinaturaExistente.status)) {
-    throw new Error("Voce ja tem uma assinatura do Clube em andamento")
+    throw new Error("Você já tem uma assinatura do Clube em andamento")
   }
   if (assinaturaExistente && assinaturaExistente.status === "pendente") {
     await query("UPDATE TAB_ASSINATURA_CLUBE SET status = 'cancelada', atualizado_em = NOW() WHERE id = $1", [
@@ -63,7 +63,7 @@ export async function criarAssinaturaClube(params: {
 
   const valor = await valorMensalidadeClube()
   if (valor <= 0) {
-    throw new Error("O valor da mensalidade do Clube ainda nao foi configurado pela loja")
+    throw new Error("O valor da mensalidade do Clube ainda não foi configurado pela loja")
   }
 
   let preapproval
@@ -86,7 +86,7 @@ export async function criarAssinaturaClube(params: {
   }
 
   if (!preapproval.id || !preapproval.init_point) {
-    throw new Error("Mercado Pago nao devolveu os dados esperados da assinatura")
+    throw new Error("Mercado Pago não devolveu os dados esperados da assinatura")
   }
 
   await query(

@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "A venda precisa ter pelo menos um item" }, { status: 400 })
   }
   if (!formaPagamento) {
-    return NextResponse.json({ erro: "Forma de pagamento e obrigatoria" }, { status: 400 })
+    return NextResponse.json({ erro: "Forma de pagamento é obrigatória" }, { status: 400 })
   }
 
   try {

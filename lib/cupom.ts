@@ -18,7 +18,7 @@ export async function validarCupom(
   )
 
   if (!cupom) {
-    return { valido: false, erro: "Cupom nao encontrado" }
+    return { valido: false, erro: "Cupom não encontrado" }
   }
 
   if (cupom.validade && new Date(cupom.validade) < new Date()) {

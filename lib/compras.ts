@@ -14,10 +14,10 @@ export async function receberCompra(compraId: string) {
     )
 
     if (!compra) {
-      throw new Error("Compra nao encontrada")
+      throw new Error("Compra não encontrada")
     }
     if (compra.status !== "pendente") {
-      throw new Error("Esta compra ja foi recebida ou esta cancelada")
+      throw new Error("Esta compra já foi recebida ou está cancelada")
     }
 
     const itens = await q(

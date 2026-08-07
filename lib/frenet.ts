@@ -57,7 +57,7 @@ export async function cotarFreteFrenet(params: {
 }): Promise<OpcaoFreteFrenet[]> {
   const token = await getSegredo("frenet_token")
   if (!token) {
-    throw new Error("Token da Frenet nao configurado")
+    throw new Error("Token da Frenet não configurado")
   }
 
   const resposta = await fetch(`${FRENET_API_URL}/shipping/quote`, {
@@ -112,7 +112,7 @@ export async function rastrearPedidoFrenet(params: {
 }): Promise<{ status: string; eventos: EventoRastreio[] }> {
   const token = await getSegredo("frenet_token")
   if (!token) {
-    throw new Error("Token da Frenet nao configurado")
+    throw new Error("Token da Frenet não configurado")
   }
 
   const resposta = await fetch(`${FRENET_API_URL}/tracking/trackinginfo`, {
@@ -138,7 +138,7 @@ export async function rastrearPedidoFrenet(params: {
   }))
 
   return {
-    status: dados?.Status ?? (eventos[0]?.status || "Sem informacao"),
+    status: dados?.Status ?? (eventos[0]?.status || "Sem informação"),
     eventos,
   }
 }

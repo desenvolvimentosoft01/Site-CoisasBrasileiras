@@ -186,7 +186,7 @@ export async function POST(request: Request) {
         )
 
         if (!cupom) {
-          throw new Error("Cupom nao encontrado")
+          throw new Error("Cupom não encontrado")
         }
         if (cupom.validade && new Date(cupom.validade) < new Date()) {
           throw new Error("Cupom expirado")

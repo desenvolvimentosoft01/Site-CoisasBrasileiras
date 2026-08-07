@@ -18,7 +18,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         throw new Error("NOT_FOUND")
       }
       if (compra.status !== "pendente") {
-        throw new Error("So e possivel cancelar uma compra pendente (ainda nao recebida).")
+        throw new Error("Só é possível cancelar uma compra pendente (ainda não recebida).")
       }
 
       const [atualizada] = await q(

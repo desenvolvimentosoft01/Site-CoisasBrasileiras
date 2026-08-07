@@ -35,7 +35,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       // So bloqueia se ja tem nota emitida E ela NAO foi cancelada - depois
       // de cancelada, o admin pode emitir uma nova pro mesmo pedido.
       if (pedido.bling_nota_id && !pedido.bling_nota_cancelada_em) {
-        throw new Error("Este pedido ja tem uma NF-e emitida")
+        throw new Error("Este pedido já tem uma NF-e emitida")
       }
 
       const itens = await q(

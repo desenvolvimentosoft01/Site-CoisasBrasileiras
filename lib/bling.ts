@@ -25,7 +25,7 @@ async function obterCredenciais(): Promise<{ clientId: string; clientSecret: str
     getSegredo("bling_client_secret"),
   ])
   if (!clientId || !clientSecret) {
-    throw new Error("Credenciais do Bling nao configuradas")
+    throw new Error("Credenciais do Bling não configuradas")
   }
   return { clientId, clientSecret }
 }
@@ -99,7 +99,7 @@ async function obterTokenValido(): Promise<string> {
     "SELECT access_token, refresh_token, expira_em FROM TAB_INTEGRACAO_BLING LIMIT 1"
   )
   if (!conexao) {
-    throw new Error("Bling nao conectado - va em Configuracoes e conecte a conta do Bling primeiro")
+    throw new Error("Bling não conectado - vá em Configurações e conecte a conta do Bling primeiro")
   }
 
   const expiraEmBreve = new Date(conexao.expira_em).getTime() - Date.now() < 60_000
