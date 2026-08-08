@@ -172,6 +172,7 @@ export function ComprasConteudo({
   // na mao, ja que a Entrada de NF exige produto cadastrado por item).
   useEffect(() => {
     if (!pedidoCompraParaLancar) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- pre-preenchimento unico a partir de prop, nao sincronizacao continua
     setFornecedorId(pedidoCompraParaLancar.fornecedor_id)
     setItens(
       pedidoCompraParaLancar.itens.map((i) => {

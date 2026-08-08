@@ -45,6 +45,7 @@ export type Orcamento = {
   enviado_email_em: string | null
   respondido_em: string | null
   criado_em: string
+  marca: "colorido" | "branco"
 }
 
 function numeroFormatado(n: number) {
@@ -320,7 +321,8 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                             {orcamento.titulo && (
                               <p className="text-xs text-slate-400">{orcamento.titulo}</p>
                             )}
-                            {orcamento.cliente_nome}
+                            {orcamento.cliente_nome}{" "}
+                            <span className="text-xs">{orcamento.marca === "branco" ? "⚪" : "🎨"}</span>
                           </td>
                           <td className="p-4">
                             <span className={`rounded-full px-2 py-1 text-xs ${CORES_STATUS[orcamento.status]}`}>
@@ -499,6 +501,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
             ? [
                 { label: "Título", valor: detalhe.titulo },
                 { label: "Cliente", valor: detalhe.cliente_nome },
+                { label: "Site", valor: detalhe.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras" },
                 { label: "Status", valor: detalhe.status },
                 { label: "Subtotal", valor: formatarMoeda(detalhe.subtotal) },
                 { label: "Desconto", valor: formatarMoeda(detalhe.desconto) },

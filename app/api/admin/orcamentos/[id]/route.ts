@@ -18,7 +18,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const [orcamento] = await query(
     `SELECT id, numero, titulo, cliente_id, cliente_nome, cliente_telefone, cliente_email, condicoes,
        status, subtotal, desconto, total, pedido_id, token_aprovacao, canal_resposta,
-       observacao_cliente, enviado_email_em, respondido_em, criado_em
+       observacao_cliente, enviado_email_em, respondido_em, criado_em, marca
      FROM TAB_ORCAMENTO WHERE id = $1`,
     [id]
   )
@@ -51,6 +51,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     clienteEmail,
     condicoes,
     desconto,
+    marca,
     itens,
   }: {
     titulo?: string | null
@@ -60,6 +61,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     clienteEmail?: string | null
     condicoes?: string | null
     desconto?: number
+    marca?: "colorido" | "branco"
     itens: ItemOrcamento[]
   } = await request.json()
 
@@ -86,9 +88,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const [atualizado] = await executar(
       `UPDATE TAB_ORCAMENTO
        SET titulo = $1, cliente_id = $2, cliente_nome = $3, cliente_telefone = $4, cliente_email = $5,
-           condicoes = $6, subtotal = $7, desconto = $8, total = $9, atualizado_em = NOW()
-       WHERE id = $10
-       RETURNING id, numero, titulo, status, subtotal, desconto, total, criado_em`,
+           condicoes = $6, subtotal = $7, desconto = $8, total = $9, marca = $10, atualizado_em = NOW()
+       WHERE id = $11
+       RETURNING id, numero, titulo, status, subtotal, desconto, total, criado_em, marca`,
       [
         titulo || null,
         clienteId || null,
@@ -99,6 +101,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         subtotal,
         valorDesconto,
         total,
+        marca === "branco" ? "branco" : "colorido",
         id,
       ]
     )

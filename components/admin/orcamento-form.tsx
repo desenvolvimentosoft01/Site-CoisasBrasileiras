@@ -10,7 +10,13 @@ import { formatarMoeda, mascaraTelefone } from "@/lib/mascaras"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 type Cliente = { id: string; nome: string; email: string | null; telefone: string | null }
-type ProdutoDisponivel = { id: string; nome: string; preco: string; preco_promocional: string | null }
+type ProdutoDisponivel = {
+  id: string
+  nome: string
+  preco: string
+  preco_promocional: string | null
+  marca: "colorido" | "branco"
+}
 
 type ItemForm = {
   produtoId: string | null
@@ -34,6 +40,7 @@ export type OrcamentoExistente = {
   respondido_em: string | null
   canal_resposta: "email" | "whatsapp" | null
   observacao_cliente: string | null
+  marca: "colorido" | "branco"
   itens: { produto_id: string | null; descricao: string; quantidade: string; valor_unitario: string }[]
 }
 
@@ -81,6 +88,7 @@ export function OrcamentoForm({
       valorUnitario: i.valor_unitario,
     })) || [{ produtoId: null, descricao: "", quantidade: "1", valorUnitario: "" }]
   )
+  const [marca, setMarca] = useState<"colorido" | "branco">(orcamento?.marca ?? "colorido")
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
   const [statusAtual, setStatusAtual] = useState(orcamento)
@@ -105,6 +113,20 @@ export function OrcamentoForm({
     setClienteTelefone(cliente.telefone || "")
     setClienteEmail(cliente.email || "")
     setBuscaCliente("")
+  }
+
+  // Produtos sao por marca - trocar a marca do orcamento invalida itens que
+  // ja apontam pra um produto de catalogo da outra marca (mesmo padrao do
+  // produto-form.tsx com categorias).
+  function trocarMarca(novaMarca: "colorido" | "branco") {
+    setMarca(novaMarca)
+    setItens((atual) =>
+      atual.map((item) =>
+        item.produtoId && produtosDisponiveis.find((p) => p.id === item.produtoId)?.marca !== novaMarca
+          ? { ...item, produtoId: null }
+          : item
+      )
+    )
   }
 
   function adicionarItem() {
@@ -165,6 +187,7 @@ export function OrcamentoForm({
       clienteEmail: clienteEmail.trim() || null,
       condicoes: condicoes || null,
       desconto: Number(desconto) || 0,
+      marca,
       itens: itensValidos.map((i) => ({
         produtoId: i.produtoId,
         descricao: i.descricao,
@@ -219,6 +242,7 @@ export function OrcamentoForm({
         valorUnitario: i.valor_unitario,
       })) || [{ produtoId: null, descricao: "", quantidade: "1", valorUnitario: "" }]
     )
+    setMarca(orcamento?.marca ?? "colorido")
     setErro("")
   }
 
@@ -244,6 +268,25 @@ export function OrcamentoForm({
               : []),
             { label: "Cancelar", icon: X, onClick: onCancelar, variante: "danger" },
           ]}
+          extra={
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-slate-500">Site:</span>
+              {(["colorido", "branco"] as const).map((opcao) => (
+                <button
+                  key={opcao}
+                  type="button"
+                  onClick={() => trocarMarca(opcao)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                    marca === opcao
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-slate-300 bg-white text-slate-500 hover:border-primary/50"
+                  }`}
+                >
+                  {opcao === "branco" ? "⚪ Porcelanas Brancas" : "🎨 Coisas Brasileiras"}
+                </button>
+              ))}
+            </div>
+          }
         />
       </div>
 
@@ -262,7 +305,7 @@ export function OrcamentoForm({
             </span>
           )}
           {statusAtual.observacao_cliente && (
-            <span className="w-full text-xs opacity-80">Observação do cliente: "{statusAtual.observacao_cliente}"</span>
+            <span className="w-full text-xs opacity-80">Observação do cliente: &ldquo;{statusAtual.observacao_cliente}&rdquo;</span>
           )}
         </div>
       )}
@@ -285,11 +328,13 @@ export function OrcamentoForm({
                     className="mb-1 w-full rounded-md border border-slate-300 bg-slate-100 p-2 text-sm"
                   >
                     <option value="">Selecione um produto...</option>
-                    {produtosDisponiveis.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nome}
-                      </option>
-                    ))}
+                    {produtosDisponiveis
+                      .filter((p) => p.marca === marca)
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.nome}
+                        </option>
+                      ))}
                   </select>
                   <Input
                     value={item.descricao}

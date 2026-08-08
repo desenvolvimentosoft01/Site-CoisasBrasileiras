@@ -21,7 +21,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const [orcamento] = await query(
-    `SELECT id, status, total, cliente_id, cliente_nome, cliente_telefone
+    `SELECT id, status, total, cliente_id, cliente_nome, cliente_telefone, marca
      FROM TAB_ORCAMENTO WHERE id = $1`,
     [id]
   )
@@ -60,8 +60,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
       const [pedidoCriado] = await executar(
         `INSERT INTO TAB_PEDIDO
-           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso)
-         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5)
+           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, marca)
+         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6)
          RETURNING id, total, criado_em`,
         [
           orcamento.cliente_id || null,
@@ -69,6 +69,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           formaPagamento,
           orcamento.cliente_id ? null : orcamento.cliente_nome,
           orcamento.cliente_id ? null : orcamento.cliente_telefone,
+          orcamento.marca,
         ]
       )
 

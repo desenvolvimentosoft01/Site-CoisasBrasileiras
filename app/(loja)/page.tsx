@@ -46,7 +46,8 @@ export default async function HomePage() {
   // essa vitrine e sobre o que realmente vende no site (a venda balcao pode
   // ter negociacao/desconto que nao reflete a demanda real do catalogo online).
   const feedbacks = await query(
-    "SELECT id, nome, texto, imagem_url, nota FROM TAB_FEEDBACK WHERE ativo = true ORDER BY ordem, criado_em DESC LIMIT 6"
+    "SELECT id, nome, texto, imagem_url, nota FROM TAB_FEEDBACK WHERE ativo = true AND marca = $1 ORDER BY ordem, criado_em DESC LIMIT 6",
+    [marca]
   )
 
   const maisVendidos = await query(

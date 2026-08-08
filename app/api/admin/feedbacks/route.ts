@@ -15,17 +15,17 @@ export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
-  const { nome, texto, imagemUrl, nota, ordem } = await request.json()
+  const { nome, texto, imagemUrl, nota, ordem, marca } = await request.json()
 
   if (!nome || !nome.trim() || !texto || !texto.trim()) {
     return NextResponse.json({ erro: "Nome e texto são obrigatórios" }, { status: 400 })
   }
 
   const [feedback] = await query(
-    `INSERT INTO TAB_FEEDBACK (nome, texto, imagem_url, nota, ordem)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO TAB_FEEDBACK (nome, texto, imagem_url, nota, ordem, marca)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [nome.trim(), texto.trim(), imagemUrl || null, nota || 5, ordem || 0]
+    [nome.trim(), texto.trim(), imagemUrl || null, nota || 5, ordem || 0, marca === "branco" ? "branco" : "colorido"]
   )
 
   revalidatePath("/", "layout")

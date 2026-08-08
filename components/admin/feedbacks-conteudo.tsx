@@ -22,6 +22,7 @@ export type Feedback = {
   nota: number
   ordem: number
   ativo: boolean
+  marca: "colorido" | "branco"
 }
 
 function SeletorNota({ valor, onChange }: { valor: number; onChange: (n: number) => void }) {
@@ -53,6 +54,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
   const [nota, setNota] = useState(5)
   const [ordem, setOrdem] = useState("0")
   const [ativo, setAtivo] = useState(true)
+  const [marca, setMarca] = useState<"colorido" | "branco">("colorido")
   const [enviandoImagem, setEnviandoImagem] = useState(false)
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
@@ -72,6 +74,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
     setNota(5)
     setOrdem(String(feedbacks.length))
     setAtivo(true)
+    setMarca("colorido")
     setErro("")
     setAba("formulario")
   }
@@ -85,6 +88,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
     setNota(feedback.nota)
     setOrdem(String(feedback.ordem))
     setAtivo(feedback.ativo)
+    setMarca(feedback.marca)
     setErro("")
     setAba("formulario")
   }
@@ -115,6 +119,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
       setNota(editando.nota)
       setOrdem(String(editando.ordem))
       setAtivo(editando.ativo)
+      setMarca(editando.marca)
     } else {
       setNome("")
       setTexto("")
@@ -122,6 +127,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
       setNota(5)
       setOrdem(String(feedbacks.length))
       setAtivo(true)
+      setMarca("colorido")
     }
     setErro("")
   }
@@ -137,6 +143,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
       nota,
       ordem: Number(ordem) || 0,
       ativo,
+      marca,
     }
 
     const url = editando ? `/api/admin/feedbacks/${editando.id}` : "/api/admin/feedbacks"
@@ -270,6 +277,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                       >
                         {feedback.ativo ? "Ativo" : "Inativo"}
                       </span>
+                      <span className="text-xs">{feedback.marca === "branco" ? "⚪" : "🎨"}</span>
                       <div>
                         <Button
                           variant="ghost"
@@ -327,6 +335,25 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                 { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
                 { label: "Cancelar", icon: X, onClick: () => setAba("lista"), variante: "danger" },
               ]}
+              extra={
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-slate-500">Cadastrar para o site:</span>
+                  {(["colorido", "branco"] as const).map((opcao) => (
+                    <button
+                      key={opcao}
+                      type="button"
+                      onClick={() => setMarca(opcao)}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                        marca === opcao
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-slate-300 bg-white text-slate-500 hover:border-primary/50"
+                      }`}
+                    >
+                      {opcao === "branco" ? "⚪ Porcelanas Brancas" : "🎨 Coisas Brasileiras"}
+                    </button>
+                  ))}
+                </div>
+              }
             />
           </div>
 
@@ -412,6 +439,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                 { label: "Nota", valor: `${detalhe.nota} / 5` },
                 { label: "Ordem", valor: detalhe.ordem },
                 { label: "Status", valor: detalhe.ativo ? "Ativo" : "Inativo" },
+                { label: "Site", valor: detalhe.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras" },
               ]
             : []
         }

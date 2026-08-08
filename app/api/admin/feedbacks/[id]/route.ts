@@ -8,7 +8,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const { id } = await params
-  const { nome, texto, imagemUrl, nota, ordem, ativo } = await request.json()
+  const { nome, texto, imagemUrl, nota, ordem, ativo, marca } = await request.json()
 
   if (!nome || !nome.trim() || !texto || !texto.trim()) {
     return NextResponse.json({ erro: "Nome e texto são obrigatórios" }, { status: 400 })
@@ -16,10 +16,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const [feedback] = await query(
     `UPDATE TAB_FEEDBACK
-     SET nome = $1, texto = $2, imagem_url = $3, nota = $4, ordem = $5, ativo = $6
-     WHERE id = $7
+     SET nome = $1, texto = $2, imagem_url = $3, nota = $4, ordem = $5, ativo = $6, marca = $7
+     WHERE id = $8
      RETURNING *`,
-    [nome.trim(), texto.trim(), imagemUrl || null, nota || 5, ordem || 0, ativo ?? true, id]
+    [
+      nome.trim(),
+      texto.trim(),
+      imagemUrl || null,
+      nota || 5,
+      ordem || 0,
+      ativo ?? true,
+      marca === "branco" ? "branco" : "colorido",
+      id,
+    ]
   )
 
   if (!feedback) {

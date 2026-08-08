@@ -61,7 +61,7 @@ export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, ob
           </span>
         </div>
         {status === "recusado" && observacaoCliente && (
-          <p className="text-center text-xs text-red-500">Sua observação: "{observacaoCliente}"</p>
+          <p className="text-center text-xs text-red-500">Sua observação: &ldquo;{observacaoCliente}&rdquo;</p>
         )}
       </div>
     )
