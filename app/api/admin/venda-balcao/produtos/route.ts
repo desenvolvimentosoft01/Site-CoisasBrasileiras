@@ -8,7 +8,7 @@ export async function GET() {
 
   const produtos = await query(`
     SELECT
-      p.id, p.nome, p.preco, p.preco_promocional, p.estoque, p.codigo_barras,
+      p.id, p.nome, p.preco, p.preco_promocional, p.estoque, p.codigo_barras, p.marca,
       COALESCE(
         json_agg(DISTINCT c.nome) FILTER (WHERE c.id IS NOT NULL),
         '[]'

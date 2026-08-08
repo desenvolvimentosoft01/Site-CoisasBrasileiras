@@ -23,6 +23,7 @@ export type Banner = {
   cor_fundo: string
   ordem: number
   ativo: boolean
+  marca: "colorido" | "branco"
 }
 
 const CORES = [
@@ -37,6 +38,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   const confirmar = useConfirmar()
   const [banners, setBanners] = useState<Banner[]>(bannersIniciais)
   const [aba, setAba] = useState("lista")
+  const [filtroMarca, setFiltroMarca] = useState<"todas" | "colorido" | "branco">("todas")
   const [editando, setEditando] = useState<Banner | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [detalhe, setDetalhe] = useState<Banner | null>(null)
@@ -48,6 +50,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   const [corFundo, setCorFundo] = useState(CORES[0].valor)
   const [ordem, setOrdem] = useState("0")
   const [ativo, setAtivo] = useState(true)
+  const [marca, setMarca] = useState<"colorido" | "branco">("colorido")
   const [enviandoImagem, setEnviandoImagem] = useState(false)
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
@@ -68,6 +71,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
     setCorFundo(CORES[0].valor)
     setOrdem(String(banners.length))
     setAtivo(true)
+    setMarca(filtroMarca === "todas" ? "colorido" : filtroMarca)
     setErro("")
     setAba("formulario")
   }
@@ -82,6 +86,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
     setCorFundo(banner.cor_fundo)
     setOrdem(String(banner.ordem))
     setAtivo(banner.ativo)
+    setMarca(banner.marca)
     setErro("")
     setAba("formulario")
   }
@@ -95,6 +100,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
       setCorFundo(editando.cor_fundo)
       setOrdem(String(editando.ordem))
       setAtivo(editando.ativo)
+      setMarca(editando.marca)
     } else {
       setTitulo("")
       setSubtitulo("")
@@ -103,6 +109,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
       setCorFundo(CORES[0].valor)
       setOrdem(String(banners.length))
       setAtivo(true)
+      setMarca(filtroMarca === "todas" ? "colorido" : filtroMarca)
     }
     setErro("")
   }
@@ -136,6 +143,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
       corFundo,
       ordem: Number(ordem) || 0,
       ativo,
+      marca,
     }
 
     const url = editando ? `/api/admin/banners/${editando.id}` : "/api/admin/banners"
@@ -184,6 +192,8 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   }
 
   const bannerSelecionado = banners.find((b) => b.id === linhaSelecionada) ?? null
+  const bannersFiltrados =
+    filtroMarca === "todas" ? banners : banners.filter((b) => b.marca === filtroMarca)
 
   return (
     <div className="space-y-6">
@@ -202,6 +212,14 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
         </TabsList>
 
         <TabsContent value="lista" className="mt-4 space-y-4">
+          <Tabs value={filtroMarca} onValueChange={(v) => setFiltroMarca(v as typeof filtroMarca)}>
+            <TabsList>
+              <TabsTrigger value="todas">Todos</TabsTrigger>
+              <TabsTrigger value="colorido">Coloridos</TabsTrigger>
+              <TabsTrigger value="branco">Brancos</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <div className="overflow-hidden rounded-lg border border-slate-300">
             <BarraFerramentas
               botoes={[
@@ -223,13 +241,15 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
             />
           </div>
 
-          {banners.length === 0 ? (
+          {bannersFiltrados.length === 0 ? (
             <p className="text-sm text-slate-500">
-              Nenhum banner cadastrado - a home está usando os slides padrão.
+              {banners.length === 0
+                ? "Nenhum banner cadastrado - a home está usando os slides padrão."
+                : "Nenhum banner encontrado para essa marca."}
             </p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {banners.map((banner) => (
+              {bannersFiltrados.map((banner) => (
                 <Card
                   key={banner.id}
                   onClick={() =>
@@ -247,7 +267,12 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                       {banner.imagem_url && (
                         <Image src={banner.imagem_url} alt="" fill className="rounded-md object-cover opacity-40" />
                       )}
-                      <span className="relative">{banner.titulo}</span>
+                      <span className="relative flex items-center gap-1.5">
+                        <span title={banner.marca === "branco" ? "Branco" : "Colorido"}>
+                          {banner.marca === "branco" ? "⚪" : "🎨"}
+                        </span>
+                        {banner.titulo}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span
@@ -333,6 +358,26 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
               </div>
 
               <div className="space-y-2">
+                <Label>Marca</Label>
+                <div className="flex flex-wrap gap-2">
+                  {(["colorido", "branco"] as const).map((opcao) => (
+                    <button
+                      key={opcao}
+                      type="button"
+                      onClick={() => setMarca(opcao)}
+                      className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
+                        marca === opcao
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-input text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {opcao}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label>Cor de fundo</Label>
                 <div className="flex flex-wrap gap-2">
                   {CORES.map((cor) => (
@@ -406,6 +451,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
         campos={
           detalhe
             ? [
+                { label: "Marca", valor: detalhe.marca === "branco" ? "Branco" : "Colorido" },
                 { label: "Subtítulo", valor: detalhe.subtitulo },
                 { label: "Link", valor: detalhe.link },
                 { label: "Ordem", valor: detalhe.ordem },

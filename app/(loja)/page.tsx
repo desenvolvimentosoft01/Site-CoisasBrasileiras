@@ -6,8 +6,10 @@ import { ProdutoCard } from "@/components/loja/produto-card"
 import { FeedbacksSecao } from "@/components/loja/feedbacks-secao"
 import { lerTokenSessaoCliente } from "@/lib/auth"
 import { clienteTemClubeAtivo } from "@/lib/clube"
+import { resolverMarcaAtual } from "@/lib/marca"
 
 export default async function HomePage() {
+  const marca = await resolverMarcaAtual()
   const cookieStore = await cookies()
   const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
   const clubeAtivo = sessaoCliente ? await clienteTemClubeAtivo(sessaoCliente.id) : false
@@ -19,22 +21,25 @@ export default async function HomePage() {
       )
     : new Set()
   const banners = await query(
-    "SELECT id, titulo, subtitulo, link, imagem_url, cor_fundo FROM TAB_BANNER WHERE ativo = true ORDER BY ordem"
+    "SELECT id, titulo, subtitulo, link, imagem_url, cor_fundo FROM TAB_BANNER WHERE ativo = true AND marca = $1 ORDER BY ordem",
+    [marca]
   )
 
   const categorias = await query(
-    "SELECT id, nome, slug, imagem_url FROM TAB_CATEGORIA WHERE ativa = true AND categoria_pai_id IS NULL ORDER BY nome"
+    "SELECT id, nome, slug, imagem_url FROM TAB_CATEGORIA WHERE ativa = true AND categoria_pai_id IS NULL AND marca = $1 ORDER BY nome",
+    [marca]
   )
 
-  const destaques = await query(`
-    SELECT
+  const destaques = await query(
+    `SELECT
       p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.preco_clube, p.preco_clube_tipo, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa
     FROM TAB_PRODUTO p
-    WHERE p.ativo = true
+    WHERE p.ativo = true AND p.marca = $1
     ORDER BY p.criado_em DESC
-    LIMIT 8
-  `)
+    LIMIT 8`,
+    [marca]
+  )
 
   // Mais vendidos: soma a quantidade vendida em pedidos ja pagos, por produto.
   // So conta vendas de origem 'site' - venda balcao nao entra aqui, porque
@@ -44,19 +49,20 @@ export default async function HomePage() {
     "SELECT id, nome, texto, imagem_url, nota FROM TAB_FEEDBACK WHERE ativo = true ORDER BY ordem, criado_em DESC LIMIT 6"
   )
 
-  const maisVendidos = await query(`
-    SELECT
+  const maisVendidos = await query(
+    `SELECT
       p.id, p.nome, p.slug, p.preco, p.preco_promocional, p.preco_clube, p.preco_clube_tipo, p.estoque,
       (SELECT url FROM TAB_PRODUTO_IMAGEM WHERE produto_id = p.id ORDER BY ordem LIMIT 1) AS imagem_capa,
       SUM(pi.quantidade) AS total_vendido
     FROM TAB_PEDIDO_ITEM pi
     JOIN TAB_PEDIDO ped ON ped.id = pi.pedido_id
     JOIN TAB_PRODUTO p ON p.id = pi.produto_id
-    WHERE ped.status = 'pago' AND ped.origem = 'site' AND p.ativo = true
+    WHERE ped.status = 'pago' AND ped.origem = 'site' AND p.ativo = true AND p.marca = $1
     GROUP BY p.id
     ORDER BY total_vendido DESC
-    LIMIT 8
-  `)
+    LIMIT 8`,
+    [marca]
+  )
 
   return (
     <div>

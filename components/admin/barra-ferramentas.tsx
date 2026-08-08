@@ -51,6 +51,7 @@ export type BotaoToolbar =
 interface Props {
   botoes: BotaoToolbar[]
   titulo?: string
+  extra?: React.ReactNode
 }
 
 const varianteCss: Record<string, string> = {
@@ -64,7 +65,7 @@ const varianteCss: Record<string, string> = {
 // Barra de acoes com icone em cima do rotulo, no mesmo padrao visual do
 // InMenteGestao - usada nas telas de cadastro (grade e formulario) em vez de
 // botoes de texto soltos.
-export function BarraFerramentas({ botoes, titulo }: Props) {
+export function BarraFerramentas({ botoes, titulo, extra }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-slate-300 bg-slate-100 px-2 py-1.5 print:hidden">
       {titulo && (
@@ -97,6 +98,7 @@ export function BarraFerramentas({ botoes, titulo }: Props) {
           </button>
         )
       )}
+      {extra && <div className="ml-auto flex items-center">{extra}</div>}
     </div>
   )
 }

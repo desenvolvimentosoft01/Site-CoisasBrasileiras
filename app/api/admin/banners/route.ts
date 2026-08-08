@@ -15,15 +15,18 @@ export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
-  const { titulo, subtitulo, link, imagemUrl, corFundo, ordem } = await request.json()
+  const { titulo, subtitulo, link, imagemUrl, corFundo, ordem, marca } = await request.json()
 
   if (!titulo || !titulo.trim()) {
     return NextResponse.json({ erro: "Título é obrigatório" }, { status: 400 })
   }
+  if (marca && marca !== "colorido" && marca !== "branco") {
+    return NextResponse.json({ erro: "Marca inválida" }, { status: 400 })
+  }
 
   const [banner] = await query(
-    `INSERT INTO TAB_BANNER (titulo, subtitulo, link, imagem_url, cor_fundo, ordem)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO TAB_BANNER (titulo, subtitulo, link, imagem_url, cor_fundo, ordem, marca)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
     [
       titulo.trim(),
@@ -32,6 +35,7 @@ export async function POST(request: Request) {
       imagemUrl || null,
       corFundo || "from-emerald-700 to-emerald-900",
       ordem || 0,
+      marca || "colorido",
     ]
   )
 

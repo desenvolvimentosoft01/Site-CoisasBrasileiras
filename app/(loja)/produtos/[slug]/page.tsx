@@ -11,6 +11,7 @@ import { BotaoFavoritar } from "@/components/loja/botao-favoritar"
 import { lerTokenSessaoCliente } from "@/lib/auth"
 import { clienteTemClubeAtivo } from "@/lib/clube"
 import { calcularPrecoClube } from "@/lib/preco-clube"
+import { resolverMarcaAtual } from "@/lib/marca"
 
 function formatarPreco(valor: string | number) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -18,10 +19,11 @@ function formatarPreco(valor: string | number) {
 
 export default async function ProdutoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
+  const marca = await resolverMarcaAtual()
 
   const [produto] = await query(
-    "SELECT * FROM TAB_PRODUTO WHERE slug = $1 AND ativo = true",
-    [slug]
+    "SELECT * FROM TAB_PRODUTO WHERE slug = $1 AND ativo = true AND marca = $2",
+    [slug, marca]
   )
   if (!produto) notFound()
 

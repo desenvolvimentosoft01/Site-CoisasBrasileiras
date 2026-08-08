@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatarMoeda } from "@/lib/mascaras"
 import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, Filter, X } from "lucide-react"
 import { BotaoImprimir } from "@/components/admin/botao-imprimir"
@@ -48,6 +49,7 @@ export type PedidoRelatorio = {
   total: string
   origem: "site" | "balcao"
   canal: CanalPedido | null
+  marca: "colorido" | "branco"
   criado_em: string
   cliente_nome: string
   tipo_entrega: string | null
@@ -71,18 +73,23 @@ function formatarDia(dia: string) {
 }
 
 export function RelatoriosConteudo({
-  dados,
+  dados: dadosPorMarca,
   pedidosPeriodo,
   categorias,
   inicioPeriodo,
   fimPeriodo,
 }: {
-  dados: Relatorio
+  dados: { todas: Relatorio; colorido: Relatorio; branco: Relatorio }
   pedidosPeriodo: PedidoRelatorio[]
-  categorias: { id: string; nome: string }[]
+  categorias: { id: string; nome: string; marca: "colorido" | "branco" }[]
   inicioPeriodo: string
   fimPeriodo: string
 }) {
+  const [abaMarca, setAbaMarca] = useState<"todas" | "colorido" | "branco">("todas")
+  const dados = dadosPorMarca[abaMarca]
+  const categoriasDaAba =
+    abaMarca === "todas" ? categorias : categorias.filter((c) => c.marca === abaMarca)
+
   const grafico = dados.vendasPorDia.map((v) => ({
     dia: formatarDia(v.dia),
     total: Number(v.total),
@@ -122,6 +129,7 @@ export function RelatoriosConteudo({
 
   const pedidosFiltrados = useMemo(() => {
     return pedidosPeriodo.filter((p) => {
+      if (abaMarca !== "todas" && p.marca !== abaMarca) return false
       const canalPedido = p.canal ?? (p.origem === "balcao" ? "balcao" : "site")
       if (filtroCanal !== TODOS && canalPedido !== filtroCanal) return false
       if (filtroStatus !== TODOS && p.status !== filtroStatus) return false
@@ -131,7 +139,7 @@ export function RelatoriosConteudo({
       if (filtroCategoria !== TODOS && !p.categorias.includes(filtroCategoria)) return false
       return true
     })
-  }, [pedidosPeriodo, filtroCanal, filtroStatus, filtroEntrega, filtroCategoria])
+  }, [pedidosPeriodo, abaMarca, filtroCanal, filtroStatus, filtroEntrega, filtroCategoria])
 
   const filtrosAtivos =
     filtroCanal !== TODOS || filtroStatus !== TODOS || filtroEntrega !== TODOS || filtroCategoria !== TODOS
@@ -161,6 +169,14 @@ export function RelatoriosConteudo({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Relatórios</h1>
+
+        <Tabs value={abaMarca} onValueChange={(v) => setAbaMarca(v as typeof abaMarca)} className="print:hidden">
+          <TabsList>
+            <TabsTrigger value="todas">Todas</TabsTrigger>
+            <TabsTrigger value="colorido">🎨 Colorido</TabsTrigger>
+            <TabsTrigger value="branco">⚪ Branco</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <div className="flex flex-wrap items-end gap-2">
           {/* Form GET simples - recarrega a pagina com o periodo escolhido,
@@ -498,7 +514,7 @@ export function RelatoriosConteudo({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={TODOS}>Todas as categorias</SelectItem>
-                    {categorias.map((c) => (
+                    {categoriasDaAba.map((c) => (
                       <SelectItem key={c.id} value={c.nome}>
                         {c.nome}
                       </SelectItem>

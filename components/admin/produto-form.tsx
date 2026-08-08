@@ -20,7 +20,7 @@ import {
 import { validarCodigoBarras } from "@/lib/codigo-barras"
 import { registrarAuditoria } from "@/lib/auditoria"
 
-type Categoria = { id: string; nome: string; categoria_pai_id: string | null }
+type Categoria = { id: string; nome: string; categoria_pai_id: string | null; marca: "colorido" | "branco" }
 
 type ProdutoExistente = {
   id: string
@@ -34,6 +34,7 @@ type ProdutoExistente = {
   estoque: number
   estoque_minimo: number
   ativo: boolean
+  marca: "colorido" | "branco"
   sku: string | null
   ncm: string | null
   codigo_barras: string | null
@@ -55,14 +56,17 @@ function valorClubeInicial(produto?: ProdutoExistente): string {
 
 export function ProdutoForm({
   produto,
+  marcaPadrao,
   onSalvo,
   onCancelar,
 }: {
   produto?: ProdutoExistente
+  marcaPadrao?: "colorido" | "branco"
   onSalvo: () => void
   onCancelar: () => void
 }) {
   const [categoriasDisponiveis, setCategoriasDisponiveis] = useState<Categoria[]>([])
+  const [marca, setMarca] = useState<"colorido" | "branco">(produto?.marca ?? marcaPadrao ?? "colorido")
 
   const [nome, setNome] = useState(produto?.nome ?? "")
   const [descricao, setDescricao] = useState(produto?.descricao ?? "")
@@ -132,6 +136,15 @@ export function ProdutoForm({
       .then(setCategoriasDisponiveis)
   }, [])
 
+  // Categorias sao por marca - trocar a marca do produto invalida categorias
+  // que nao pertencem mais a ela.
+  function trocarMarca(novaMarca: "colorido" | "branco") {
+    setMarca(novaMarca)
+    setCategoriaIds((atual) =>
+      atual.filter((id) => categoriasDisponiveis.find((c) => c.id === id)?.marca === novaMarca)
+    )
+  }
+
   function alternarCategoria(id: string) {
     setCategoriaIds((atual) =>
       atual.includes(id) ? atual.filter((c) => c !== id) : [...atual, id]
@@ -181,6 +194,7 @@ export function ProdutoForm({
       estoque: Number(estoque) || 0,
       estoqueMinimo: Number(estoqueMinimo) || 0,
       ativo,
+      marca,
       sku: sku || null,
       ncm: ncm || null,
       codigoBarras: codigoBarras || null,
@@ -241,6 +255,7 @@ export function ProdutoForm({
     setEstoque(String(produto?.estoque ?? 0))
     setEstoqueMinimo(String(produto?.estoque_minimo ?? 0))
     setAtivo(produto?.ativo ?? true)
+    setMarca(produto?.marca ?? marcaPadrao ?? "colorido")
     setSku(produto?.sku ?? "")
     setNcm(produto?.ncm ?? "")
     setCodigoBarras(produto?.codigo_barras ?? "")
@@ -268,6 +283,25 @@ export function ProdutoForm({
             { label: "Limpar", icon: Eraser, onClick: limpar, variante: "warning" },
             { label: "Cancelar", icon: X, onClick: onCancelar, variante: "danger" },
           ]}
+          extra={
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-slate-500">Cadastrar para o site:</span>
+              {(["colorido", "branco"] as const).map((opcao) => (
+                <button
+                  key={opcao}
+                  type="button"
+                  onClick={() => trocarMarca(opcao)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                    marca === opcao
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-slate-300 bg-white text-slate-500 hover:border-primary/50"
+                  }`}
+                >
+                  {opcao === "branco" ? "⚪ Porcelanas Brancas" : "🎨 Coisas Brasileiras"}
+                </button>
+              ))}
+            </div>
+          }
         />
       </div>
 
@@ -496,7 +530,9 @@ export function ProdutoForm({
             <div className="space-y-2">
               <Label>Categorias</Label>
               <div className="flex flex-wrap gap-2">
-                {categoriasDisponiveis.map((categoria) => {
+                {categoriasDisponiveis
+                  .filter((categoria) => categoria.marca === marca)
+                  .map((categoria) => {
                   const pai = categoriasDisponiveis.find((c) => c.id === categoria.categoria_pai_id)
                   return (
                     <button
@@ -513,9 +549,9 @@ export function ProdutoForm({
                     </button>
                   )
                 })}
-                {categoriasDisponiveis.length === 0 && (
+                {categoriasDisponiveis.filter((c) => c.marca === marca).length === 0 && (
                   <p className="text-sm text-muted-foreground">
-                    Nenhuma categoria cadastrada ainda.
+                    Nenhuma categoria cadastrada ainda para essa marca.
                   </p>
                 )}
               </div>

@@ -23,6 +23,7 @@ export type Produto = {
   estoque: number
   estoque_minimo: number
   ativo: boolean
+  marca: "colorido" | "branco"
   categorias: string[]
 }
 
@@ -38,6 +39,7 @@ type ProdutoDetalhado = {
   estoque: number
   estoque_minimo: number
   ativo: boolean
+  marca: "colorido" | "branco"
   sku: string | null
   ncm: string | null
   codigo_barras: string | null
@@ -58,14 +60,16 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
   const [produtos, setProdutos] = useState<Produto[]>(produtosIniciais)
   const [aba, setAba] = useState("lista")
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativos" | "inativos">("ativos")
+  const [filtroMarca, setFiltroMarca] = useState<"todas" | "colorido" | "branco">("todas")
   const [editando, setEditando] = useState<ProdutoDetalhado | undefined>(undefined)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [detalhe, setDetalhe] = useState<Produto | null>(null)
 
   const produtosFiltrados = produtos.filter((p) => {
-    if (filtroStatus === "ativos") return p.ativo
-    if (filtroStatus === "inativos") return !p.ativo
+    if (filtroStatus === "ativos" && !p.ativo) return false
+    if (filtroStatus === "inativos" && p.ativo) return false
+    if (filtroMarca !== "todas" && p.marca !== filtroMarca) return false
     return true
   })
 
@@ -133,13 +137,22 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
         </TabsList>
 
         <TabsContent value="lista" className="mt-4 space-y-4">
-          <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
-            <TabsList>
-              <TabsTrigger value="ativos">Ativos</TabsTrigger>
-              <TabsTrigger value="inativos">Inativos</TabsTrigger>
-              <TabsTrigger value="todos">Todos</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex flex-wrap items-center gap-4">
+            <Tabs value={filtroMarca} onValueChange={(v) => setFiltroMarca(v as typeof filtroMarca)}>
+              <TabsList>
+                <TabsTrigger value="todas">Todas</TabsTrigger>
+                <TabsTrigger value="colorido">Coloridos</TabsTrigger>
+                <TabsTrigger value="branco">Brancos</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
+              <TabsList>
+                <TabsTrigger value="ativos">Ativos</TabsTrigger>
+                <TabsTrigger value="inativos">Inativos</TabsTrigger>
+                <TabsTrigger value="todos">Todos</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
           <Card className="overflow-hidden py-0">
             <BarraFerramentas
@@ -193,6 +206,12 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                         >
                           <td className="p-4">
                             <span className="flex items-center gap-1.5">
+                              <span
+                                className="text-sm leading-none"
+                                title={produto.marca === "branco" ? "Branco" : "Colorido"}
+                              >
+                                {produto.marca === "branco" ? "⚪" : "🎨"}
+                              </span>
                               {produto.nome}
                               {(!produto.ncm || !produto.codigo_barras) && (
                                 <AlertTriangle
@@ -287,6 +306,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
             <ProdutoForm
               key={editando?.id ?? "novo"}
               produto={editando}
+              marcaPadrao={filtroMarca === "todas" ? "colorido" : filtroMarca}
               onSalvo={handleSalvo}
               onCancelar={() => setAba("lista")}
             />
@@ -301,6 +321,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
         campos={
           detalhe
             ? [
+                { label: "Marca", valor: detalhe.marca === "branco" ? "Branco" : "Colorido" },
                 { label: "SKU", valor: detalhe.sku },
                 { label: "NCM", valor: detalhe.ncm },
                 { label: "Código de barras", valor: detalhe.codigo_barras },

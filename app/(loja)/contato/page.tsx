@@ -1,15 +1,14 @@
 import Link from "next/link"
 import { MapPin, Mail, MessageCircle, AtSign } from "lucide-react"
-import { getConfiguracoes } from "@/lib/configuracoes"
+import { getConfiguracoesMarca } from "@/lib/configuracoes"
+import { resolverMarcaAtual } from "@/lib/marca"
 
 export default async function ContatoPage() {
-  const config = await getConfiguracoes([
-    "whatsapp",
-    "whatsapp_mensagem",
-    "instagram",
-    "email_contato",
-    "endereco_contato",
-  ])
+  const marca = await resolverMarcaAtual()
+  const config = await getConfiguracoesMarca(
+    ["whatsapp", "whatsapp_mensagem", "instagram", "email_contato", "endereco_contato"],
+    marca
+  )
   const whatsappDigitos = config.whatsapp?.replace(/\D/g, "")
 
   return (

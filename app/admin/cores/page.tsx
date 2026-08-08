@@ -2,6 +2,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { lerTokenSessao, EMAIL_DESENVOLVEDOR } from "@/lib/auth"
 import { query } from "@/lib/db"
+import { getConfiguracoesMarca } from "@/lib/configuracoes"
 import { CHAVES_COR_TEMA } from "@/lib/cores"
 import { CoresConteudo } from "@/components/admin/cores-conteudo"
 
@@ -20,10 +21,12 @@ export default async function CoresPage() {
     "SELECT chave, valor FROM TAB_CONFIGURACAO WHERE chave = ANY($1)",
     [CHAVES_COR_TEMA]
   )
-  const coresIniciais: Record<string, string> = {}
+  const coresColorido: Record<string, string> = {}
   for (const linha of linhas) {
-    coresIniciais[linha.chave] = linha.valor ?? ""
+    coresColorido[linha.chave] = linha.valor ?? ""
   }
 
-  return <CoresConteudo coresIniciais={coresIniciais} />
+  const coresBranco = await getConfiguracoesMarca(CHAVES_COR_TEMA, "branco")
+
+  return <CoresConteudo coresColoridoIniciais={coresColorido} coresBrancoIniciais={coresBranco} />
 }

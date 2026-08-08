@@ -2,12 +2,14 @@ import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
 import { calcularOpcoesFrete } from "@/lib/configuracoes"
 import { enviarEmail, templatePedidoCriado } from "@/lib/email"
+import { resolverMarca } from "@/lib/marca"
 import { NextResponse } from "next/server"
 
 type ItemRequisicao = { produtoId: string; quantidade: number }
 type OpcaoFreteEscolhida = { transportadora: string; servico: string }
 
 export async function POST(request: Request) {
+  const marca = resolverMarca(request.headers.get("host"))
   const sessaoOuErro = await exigirSessaoCliente()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
   const cliente = sessaoOuErro
@@ -236,10 +238,10 @@ export async function POST(request: Request) {
 
       if (!pedidoCriado) {
         ;[pedidoCriado] = await q(
-          `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status, gateway_pagamento, canal)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento', $8, 'site')
+          `INSERT INTO TAB_PEDIDO (cliente_id, endereco_id, subtotal, valor_frete, valor_desconto, cupom_id, total, status, gateway_pagamento, canal, marca)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, 'aguardando_pagamento', $8, 'site', $9)
            RETURNING id`,
-          [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total, "mercadopago"]
+          [cliente.id, enderecoSalvo.id, subtotal, valorFrete, valorDesconto, cupomId, total, "mercadopago", marca]
         )
 
         for (const item of itensParaInserir) {

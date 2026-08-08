@@ -5,7 +5,7 @@ export default async function ProdutosPage() {
   const produtos = await query(`
     SELECT
       p.id, p.nome, p.slug, p.sku, p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
-      p.ativo, p.criado_em,
+      p.ativo, p.marca, p.criado_em,
       COALESCE(
         json_agg(DISTINCT c.nome) FILTER (WHERE c.id IS NOT NULL),
         '[]'

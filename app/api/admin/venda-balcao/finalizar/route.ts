@@ -44,10 +44,11 @@ export async function POST(request: Request) {
   try {
     const pedido = await transacao(async (executar) => {
       let total = 0
+      let marcaPedido: string | null = null
 
       for (const item of itens) {
         const [produto] = await executar(
-          "SELECT id, nome, estoque FROM TAB_PRODUTO WHERE id = $1 FOR UPDATE",
+          "SELECT id, nome, estoque, marca FROM TAB_PRODUTO WHERE id = $1 FOR UPDATE",
           [item.produtoId]
         )
         if (!produto) {
@@ -57,12 +58,15 @@ export async function POST(request: Request) {
           throw new Error(`Estoque insuficiente para "${produto.nome}" (disponivel: ${produto.estoque})`)
         }
         total += item.quantidade * item.precoUnitario
+        // Venda com itens de marcas diferentes (raro) fica com a marca do
+        // primeiro item - so pra filtro/relatorio, nao afeta a venda em si.
+        if (!marcaPedido) marcaPedido = produto.marca
       }
 
       const [pedidoCriado] = await executar(
         `INSERT INTO TAB_PEDIDO
-           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, tipo_entrega_id, canal)
-         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6, $7)
+           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, tipo_entrega_id, canal, marca)
+         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6, $7, $8)
          RETURNING id, total, criado_em`,
         [
           clienteId || null,
@@ -72,6 +76,7 @@ export async function POST(request: Request) {
           clienteTelefoneAvulso || null,
           tipoEntregaId || null,
           canal || "balcao",
+          marcaPedido || "colorido",
         ]
       )
 

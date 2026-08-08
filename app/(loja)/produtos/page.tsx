@@ -5,6 +5,7 @@ import { ProdutoCard } from "@/components/loja/produto-card"
 import { BuscaCatalogo } from "@/components/loja/busca-catalogo"
 import { lerTokenSessaoCliente } from "@/lib/auth"
 import { clienteTemClubeAtivo } from "@/lib/clube"
+import { resolverMarcaAtual } from "@/lib/marca"
 
 export default async function CatalogoPage({
   searchParams,
@@ -12,9 +13,10 @@ export default async function CatalogoPage({
   searchParams: Promise<{ categoria?: string; busca?: string }>
 }) {
   const { categoria, busca } = await searchParams
+  const marca = await resolverMarcaAtual()
 
-  const condicoes = ["p.ativo = true"]
-  const parametros: string[] = []
+  const condicoes = ["p.ativo = true", "p.marca = $1"]
+  const parametros: string[] = [marca]
 
   if (categoria) {
     parametros.push(categoria)

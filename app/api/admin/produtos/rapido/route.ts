@@ -22,13 +22,16 @@ export async function POST(request: Request) {
   const sessaoOuErro = await exigirSessao()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
-  const { nome, preco, codigoBarras } = await request.json()
+  const { nome, preco, codigoBarras, marca } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null || Number(preco) <= 0) {
     return NextResponse.json({ erro: "Nome e preço são obrigatórios" }, { status: 400 })
   }
   if (!codigoBarras) {
     return NextResponse.json({ erro: "Código de barras é obrigatório" }, { status: 400 })
+  }
+  if (marca && marca !== "colorido" && marca !== "branco") {
+    return NextResponse.json({ erro: "Marca inválida" }, { status: 400 })
   }
   if (!validarCodigoBarras(String(codigoBarras))) {
     return NextResponse.json({ erro: "Código de barras inválido (confira o dígito verificador)" }, { status: 400 })
@@ -46,10 +49,10 @@ export async function POST(request: Request) {
   }
 
   const [produto] = await query(
-    `INSERT INTO TAB_PRODUTO (nome, slug, preco, estoque, codigo_barras, ativo)
-     VALUES ($1, $2, $3, 1, $4, true)
-     RETURNING id, nome, slug, preco, preco_promocional, estoque, codigo_barras`,
-    [nome.trim(), slug, Number(preco), codigoBarras]
+    `INSERT INTO TAB_PRODUTO (nome, slug, preco, estoque, codigo_barras, ativo, marca)
+     VALUES ($1, $2, $3, 1, $4, true, $5)
+     RETURNING id, nome, slug, preco, preco_promocional, estoque, codigo_barras, marca`,
+    [nome.trim(), slug, Number(preco), codigoBarras, marca || "colorido"]
   )
 
   return NextResponse.json(produto, { status: 201 })

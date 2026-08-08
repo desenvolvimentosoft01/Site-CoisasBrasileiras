@@ -21,6 +21,7 @@ export type Categoria = {
   imagem_url: string | null
   ativa: boolean
   categoria_pai_id: string | null
+  marca: "colorido" | "branco"
   criado_em: string
 }
 
@@ -31,11 +32,13 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
   const confirmar = useConfirmar()
   const [categorias, setCategorias] = useState<Categoria[]>(categoriasIniciais)
   const [aba, setAba] = useState("lista")
+  const [filtroMarca, setFiltroMarca] = useState<"todas" | "colorido" | "branco">("todas")
   const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [detalhe, setDetalhe] = useState<Categoria | null>(null)
   const [nome, setNome] = useState("")
   const [ativa, setAtiva] = useState(true)
+  const [marca, setMarca] = useState<"colorido" | "branco">("colorido")
   const [categoriaPaiId, setCategoriaPaiId] = useState<string | null>(null)
   const [imagemUrl, setImagemUrl] = useState<string | null>(null)
   const [enviandoImagem, setEnviandoImagem] = useState(false)
@@ -78,6 +81,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     setLinhaSelecionada(null)
     setNome("")
     setAtiva(true)
+    setMarca(filtroMarca === "todas" ? "colorido" : filtroMarca)
     setCategoriaPaiId(null)
     setImagemUrl(null)
     setErro("")
@@ -89,6 +93,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     setLinhaSelecionada(categoria.id)
     setNome(categoria.nome)
     setAtiva(categoria.ativa)
+    setMarca(categoria.marca)
     setCategoriaPaiId(categoria.categoria_pai_id)
     setImagemUrl(categoria.imagem_url)
     setErro("")
@@ -99,11 +104,13 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     if (categoriaEditando) {
       setNome(categoriaEditando.nome)
       setAtiva(categoriaEditando.ativa)
+      setMarca(categoriaEditando.marca)
       setCategoriaPaiId(categoriaEditando.categoria_pai_id)
       setImagemUrl(categoriaEditando.imagem_url)
     } else {
       setNome("")
       setAtiva(true)
+      setMarca(filtroMarca === "todas" ? "colorido" : filtroMarca)
       setCategoriaPaiId(null)
       setImagemUrl(null)
     }
@@ -122,7 +129,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
     const resposta = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, ativa, imagemUrl, categoriaPaiId }),
+      body: JSON.stringify({ nome, ativa, imagemUrl, categoriaPaiId, marca }),
     })
 
     setSalvando(false)
@@ -163,12 +170,15 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
 
   const categoriaSelecionada = categorias.find((c) => c.id === linhaSelecionada) ?? null
 
+  const categoriasFiltradas =
+    filtroMarca === "todas" ? categorias : categorias.filter((c) => c.marca === filtroMarca)
+
   // Categorias principais primeiro, com as subcategorias logo abaixo do
   // respectivo pai (em vez de tudo em ordem alfabetica misturado).
-  const principais = categorias.filter((c) => !c.categoria_pai_id)
+  const principais = categoriasFiltradas.filter((c) => !c.categoria_pai_id)
   const categoriasOrdenadas = principais.flatMap((principal) => [
     principal,
-    ...categorias.filter((c) => c.categoria_pai_id === principal.id),
+    ...categoriasFiltradas.filter((c) => c.categoria_pai_id === principal.id),
   ])
 
   return (
@@ -187,7 +197,15 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="lista" className="mt-4 space-y-0">
+        <TabsContent value="lista" className="mt-4 space-y-4">
+          <Tabs value={filtroMarca} onValueChange={(v) => setFiltroMarca(v as typeof filtroMarca)}>
+            <TabsList>
+              <TabsTrigger value="todas">Todas</TabsTrigger>
+              <TabsTrigger value="colorido">Coloridas</TabsTrigger>
+              <TabsTrigger value="branco">Brancas</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <Card className="overflow-hidden py-0">
             <BarraFerramentas
               botoes={[
@@ -244,8 +262,14 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                             )}
                           </td>
                           <td className="p-4">
-                            <span className={categoria.categoria_pai_id ? "flex items-center gap-1.5 pl-4 text-slate-600" : "font-medium"}>
+                            <span className={categoria.categoria_pai_id ? "flex items-center gap-1.5 pl-4 text-slate-600" : "flex items-center gap-1.5 font-medium"}>
                               {categoria.categoria_pai_id && <CornerDownRight size={14} className="text-slate-400" />}
+                              <span
+                                className="text-sm leading-none"
+                                title={categoria.marca === "branco" ? "Branco" : "Colorido"}
+                              >
+                                {categoria.marca === "branco" ? "⚪" : "🎨"}
+                              </span>
                               {categoria.nome}
                             </span>
                           </td>
@@ -322,6 +346,31 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
               </div>
 
               <div className="space-y-2">
+                <Label>Marca</Label>
+                <div className="flex flex-wrap gap-2">
+                  {(["colorido", "branco"] as const).map((opcao) => (
+                    <button
+                      key={opcao}
+                      type="button"
+                      onClick={() => {
+                        setMarca(opcao)
+                        if (categorias.find((c) => c.id === categoriaPaiId)?.marca !== opcao) {
+                          setCategoriaPaiId(null)
+                        }
+                      }}
+                      className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
+                        marca === opcao
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-input text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {opcao}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label>Categoria pai</Label>
                 <select
                   value={categoriaPaiId ?? ""}
@@ -330,7 +379,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                 >
                   <option value="">Nenhuma (categoria principal)</option>
                   {categorias
-                    .filter((c) => !c.categoria_pai_id && c.id !== categoriaEditando?.id)
+                    .filter((c) => !c.categoria_pai_id && c.id !== categoriaEditando?.id && c.marca === marca)
                     .map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.nome}
@@ -396,6 +445,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
         campos={
           detalhe
             ? [
+                { label: "Marca", valor: detalhe.marca === "branco" ? "Branco" : "Colorido" },
                 { label: "Slug", valor: detalhe.slug },
                 {
                   label: "Categoria pai",

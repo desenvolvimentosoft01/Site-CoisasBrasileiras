@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { query } from "@/lib/db"
-import { getConfiguracoes } from "@/lib/configuracoes"
+import { getConfiguracoesMarca } from "@/lib/configuracoes"
+import { resolverMarcaAtual } from "@/lib/marca"
 
 type SobreNosMidia = {
   id: string
@@ -23,8 +24,9 @@ function urlEmbedVideo(url: string): string {
 }
 
 export default async function SobrePage() {
+  const marca = await resolverMarcaAtual()
   const [config, midias] = await Promise.all([
-    getConfiguracoes(["nome_loja", "texto_sobre_nos"]),
+    getConfiguracoesMarca(["nome_loja", "texto_sobre_nos"], marca),
     query("SELECT id, tipo, url, legenda FROM TAB_SOBRE_NOS_MIDIA ORDER BY ordem") as Promise<SobreNosMidia[]>,
   ])
   const nomeLoja = config.nome_loja || "Coisas Brasileiras"

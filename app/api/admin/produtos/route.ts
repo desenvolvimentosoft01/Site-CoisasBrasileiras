@@ -21,7 +21,7 @@ export async function GET() {
   const produtos = await query(`
     SELECT
       p.id, p.nome, p.slug, p.sku, p.ncm, p.codigo_barras, p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
-      p.ativo, p.criado_em,
+      p.ativo, p.marca, p.criado_em,
       COALESCE(
         json_agg(DISTINCT c.nome) FILTER (WHERE c.id IS NOT NULL),
         '[]'
@@ -56,12 +56,16 @@ export async function POST(request: Request) {
     codigoBarras,
     precoClube,
     precoClubeTipo,
+    marca,
     categoriaIds,
     imagensUrls,
   } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
     return NextResponse.json({ erro: "Nome e preço são obrigatórios" }, { status: 400 })
+  }
+  if (marca && marca !== "colorido" && marca !== "branco") {
+    return NextResponse.json({ erro: "Marca inválida" }, { status: 400 })
   }
   if (precoClubeTipo && precoClubeTipo !== "fixo" && precoClubeTipo !== "percentual") {
     return NextResponse.json({ erro: "Tipo do preço do Clube inválido" }, { status: 400 })
@@ -87,9 +91,9 @@ export async function POST(request: Request) {
 
   const [produto] = await query(
     `INSERT INTO TAB_PRODUTO
-       (nome, slug, descricao, preco, preco_promocional, preco_clube, preco_clube_tipo, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-     RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, criado_em`,
+       (nome, slug, descricao, preco, preco_promocional, preco_clube, preco_clube_tipo, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras, marca)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+     RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, marca, criado_em`,
     [
       nome.trim(),
       slug,
@@ -107,6 +111,7 @@ export async function POST(request: Request) {
       comprimentoCm || null,
       ncm || null,
       codigoBarras || null,
+      marca || "colorido",
     ]
   )
 

@@ -8,16 +8,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const { id } = await params
-  const { titulo, subtitulo, link, imagemUrl, corFundo, ordem, ativo } = await request.json()
+  const { titulo, subtitulo, link, imagemUrl, corFundo, ordem, ativo, marca } = await request.json()
 
   if (!titulo || !titulo.trim()) {
     return NextResponse.json({ erro: "Título é obrigatório" }, { status: 400 })
   }
+  if (marca && marca !== "colorido" && marca !== "branco") {
+    return NextResponse.json({ erro: "Marca inválida" }, { status: 400 })
+  }
 
   const [banner] = await query(
     `UPDATE TAB_BANNER
-     SET titulo = $1, subtitulo = $2, link = $3, imagem_url = $4, cor_fundo = $5, ordem = $6, ativo = $7
-     WHERE id = $8
+     SET titulo = $1, subtitulo = $2, link = $3, imagem_url = $4, cor_fundo = $5, ordem = $6, ativo = $7, marca = $8
+     WHERE id = $9
      RETURNING *`,
     [
       titulo.trim(),
@@ -27,6 +30,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       corFundo || "from-emerald-700 to-emerald-900",
       ordem || 0,
       ativo ?? true,
+      marca || "colorido",
       id,
     ]
   )

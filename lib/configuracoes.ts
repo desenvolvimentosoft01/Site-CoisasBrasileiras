@@ -1,8 +1,12 @@
 import { query } from "@/lib/db"
 import { cotarFreteFrenet, frenetConfigurado } from "@/lib/frenet"
 
+export type Marca = "colorido" | "branco"
+
 // Le configuracoes da loja (TAB_CONFIGURACAO, chave/valor) de uma vez so.
 // Usado tanto no calculo de frete quanto nas telas publicas (contato, etc.).
+// Sao chaves OPERACIONAIS (frete, integracoes) - compartilhadas pelos dois
+// sites, sem distincao de marca.
 export async function getConfiguracoes(chaves: string[]): Promise<Record<string, string>> {
   const linhas = await query(
     "SELECT chave, valor FROM TAB_CONFIGURACAO WHERE chave = ANY($1)",
@@ -13,6 +17,38 @@ export async function getConfiguracoes(chaves: string[]): Promise<Record<string,
     mapa[linha.chave] = linha.valor ?? ""
   }
   return mapa
+}
+
+// Mesma ideia, mas pra identidade visual (nome da loja, logo, cores,
+// contato) - cada marca (colorido/branco) mantem seus proprios valores em
+// TAB_CONFIGURACAO_MARCA, usado pelas paginas publicas do grupo (loja).
+export async function getConfiguracoesMarca(
+  chaves: string[],
+  marca: Marca
+): Promise<Record<string, string>> {
+  const linhas = await query(
+    "SELECT chave, valor FROM TAB_CONFIGURACAO_MARCA WHERE chave = ANY($1) AND marca = $2",
+    [chaves, marca]
+  )
+  const mapa: Record<string, string> = {}
+  for (const linha of linhas) {
+    mapa[linha.chave] = linha.valor ?? ""
+  }
+  return mapa
+}
+
+export async function salvarConfiguracoesMarca(
+  valores: Record<string, string>,
+  marca: Marca
+): Promise<void> {
+  for (const [chave, valor] of Object.entries(valores)) {
+    await query(
+      `INSERT INTO TAB_CONFIGURACAO_MARCA (chave, marca, valor, atualizado_em)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (chave, marca) DO UPDATE SET valor = $3, atualizado_em = NOW()`,
+      [chave, marca, valor]
+    )
+  }
 }
 
 // Agrupamento oficial de UF por regiao do IBGE - usado para achar a faixa de

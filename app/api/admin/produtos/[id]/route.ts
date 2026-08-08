@@ -58,12 +58,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     codigoBarras,
     precoClube,
     precoClubeTipo,
+    marca,
     categoriaIds,
     imagensUrls,
   } = await request.json()
 
   if (!nome || !nome.trim() || preco === undefined || preco === null) {
     return NextResponse.json({ erro: "Nome e preço são obrigatórios" }, { status: 400 })
+  }
+  if (marca && marca !== "colorido" && marca !== "branco") {
+    return NextResponse.json({ erro: "Marca inválida" }, { status: 400 })
   }
   if (precoClubeTipo && precoClubeTipo !== "fixo" && precoClubeTipo !== "percentual") {
     return NextResponse.json({ erro: "Tipo do preço do Clube inválido" }, { status: 400 })
@@ -94,9 +98,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
          estoque = $5, estoque_minimo = $6, ativo = $7, sku = $8,
          peso_kg = $9, altura_cm = $10, largura_cm = $11, comprimento_cm = $12,
          ncm = $13, preco_clube = $14, codigo_barras = $15, preco_clube_tipo = $16,
-         atualizado_em = NOW()
-     WHERE id = $17
-     RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo`,
+         marca = $17, atualizado_em = NOW()
+     WHERE id = $18
+     RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, marca`,
     [
       nome.trim(),
       descricao || null,
@@ -114,6 +118,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       precoClube || null,
       codigoBarras || null,
       precoClubeTipo || "fixo",
+      marca || "colorido",
       id,
     ]
   )

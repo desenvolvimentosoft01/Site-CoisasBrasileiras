@@ -1,18 +1,15 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Truck, CreditCard, MessageCircle, AtSign, Mail } from "lucide-react"
-import { getConfiguracoes } from "@/lib/configuracoes"
+import { getConfiguracoesMarca } from "@/lib/configuracoes"
+import { resolverMarcaAtual } from "@/lib/marca"
 
 export async function Footer() {
-  const config = await getConfiguracoes([
-    "whatsapp",
-    "whatsapp_mensagem",
-    "instagram",
-    "email_contato",
-    "nome_loja",
-    "texto_rodape",
-    "logo_url",
-  ])
+  const marca = await resolverMarcaAtual()
+  const config = await getConfiguracoesMarca(
+    ["whatsapp", "whatsapp_mensagem", "instagram", "email_contato", "nome_loja", "texto_rodape", "logo_url"],
+    marca
+  )
   const whatsappDigitos = config.whatsapp?.replace(/\D/g, "")
   const nomeLoja = config.nome_loja || "Coisas Brasileiras"
 

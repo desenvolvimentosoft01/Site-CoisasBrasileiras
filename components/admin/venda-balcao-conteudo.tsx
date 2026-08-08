@@ -39,6 +39,7 @@ export type Produto = {
   codigo_barras: string | null
   categorias: string[]
   imagem_url: string | null
+  marca: "colorido" | "branco"
 }
 
 export type Cliente = {
@@ -120,6 +121,7 @@ export function VendaBalcaoConteudo({
   const [cadastrandoRapido, setCadastrandoRapido] = useState(false)
   const [erroCadastroRapido, setErroCadastroRapido] = useState("")
   const [categoriaAtiva, setCategoriaAtiva] = useState("todas")
+  const [marcaAtiva, setMarcaAtiva] = useState<"todas" | "colorido" | "branco">("todas")
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([])
 
   const [clientes, setClientes] = useState(clientesIniciais)
@@ -197,14 +199,17 @@ export function VendaBalcaoConteudo({
 
   const categorias = useMemo(() => {
     const nomes = new Set<string>()
-    produtos.forEach((p) => p.categorias.forEach((c) => nomes.add(c)))
+    produtos
+      .filter((p) => marcaAtiva === "todas" || p.marca === marcaAtiva)
+      .forEach((p) => p.categorias.forEach((c) => nomes.add(c)))
     return ["todas", ...Array.from(nomes).sort()]
-  }, [produtos])
+  }, [produtos, marcaAtiva])
 
   const produtosFiltrados = produtos.filter((p) => {
+    const bateMarca = marcaAtiva === "todas" || p.marca === marcaAtiva
     const bateCategoria = categoriaAtiva === "todas" || p.categorias.includes(categoriaAtiva)
     const bateBusca = p.nome.toLowerCase().includes(busca.toLowerCase())
-    return bateCategoria && bateBusca
+    return bateMarca && bateCategoria && bateBusca
   })
 
   const clientesFiltrados = buscaCliente
@@ -287,6 +292,7 @@ export function VendaBalcaoConteudo({
         nome: novoProdutoNome,
         preco: valorMoedaParaNumero(novoProdutoPreco),
         codigoBarras: modalCadastroRapido.codigoBarras,
+        marca: marcaAtiva === "todas" ? "colorido" : marcaAtiva,
       }),
     })
     setCadastrandoRapido(false)
@@ -307,6 +313,7 @@ export function VendaBalcaoConteudo({
       codigo_barras: produtoCriado.codigo_barras,
       categorias: [],
       imagem_url: null,
+      marca: produtoCriado.marca,
     }
     setProdutos((atual) => [...atual, produtoCompleto])
     registrarAuditoria({
@@ -508,6 +515,23 @@ export function VendaBalcaoConteudo({
                   autoFocus
                 />
               </div>
+              {(["todas", "colorido", "branco"] as const).map((opcao) => (
+                <button
+                  key={opcao}
+                  onClick={() => {
+                    setMarcaAtiva(opcao)
+                    setCategoriaAtiva("todas")
+                  }}
+                  className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
+                    marcaAtiva === opcao
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-input text-muted-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {opcao === "todas" ? "Todas as marcas" : opcao}
+                </button>
+              ))}
+              <div className="mx-1 h-6 w-px bg-border" />
               {categorias.map((categoria) => (
                 <button
                   key={categoria}
@@ -538,6 +562,12 @@ export function VendaBalcaoConteudo({
                     <Card className="h-full transition-colors hover:border-primary/50 hover:bg-accent">
                       <CardContent className="space-y-2 p-3">
                         <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-slate-100 text-xs text-slate-400">
+                          <span
+                            className="absolute left-1 top-1 z-10 text-sm leading-none"
+                            title={produto.marca === "branco" ? "Branco" : "Colorido"}
+                          >
+                            {produto.marca === "branco" ? "⚪" : "🎨"}
+                          </span>
                           {produto.imagem_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
