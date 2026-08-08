@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus, Eye, Mail, MessageCircle, RefreshCw } from "lucide-react"
+import { Pencil, Trash2, Check, X as XIcon, ArrowRightCircle, FilePlus, Mail, MessageCircle, RefreshCw } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { OrcamentoForm, type OrcamentoExistente } from "@/components/admin/orcamento-form"
 import { toast } from "sonner"
@@ -340,7 +340,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                 setDetalhe(orcamento)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             {orcamento.status === "aberto" && (
                               <>
@@ -375,7 +375,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                     abrirEdicao(orcamento)
                                   }}
                                 >
-                                  <Pencil size={16} />
+                                  <span className="text-base leading-none">✏️</span>
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -423,7 +423,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                   excluir(orcamento)
                                 }}
                               >
-                                <Trash2 size={16} className="text-red-500" />
+                                <span className="text-base leading-none">🗑️</span>
                               </Button>
                             )}
                           </td>

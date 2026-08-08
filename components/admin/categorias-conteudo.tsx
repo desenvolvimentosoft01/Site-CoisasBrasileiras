@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List, ImagePlus, X, CornerDownRight, FilePlus, Save, Eraser, Eye } from "lucide-react"
+import { Trash2, Pencil, Plus, ImagePlus, X, CornerDownRight, FilePlus, Save, Eraser } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
@@ -178,7 +178,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <List size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">📋</span>
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
@@ -270,7 +270,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                                 setDetalhe(categoria)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -280,7 +280,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                                 abrirEdicao(categoria)
                               }}
                             >
-                              <Pencil size={16} />
+                              <span className="text-base leading-none">✏️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -290,7 +290,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                                 excluir(categoria)
                               }}
                             >
-                              <Trash2 size={16} className="text-red-500" />
+                              <span className="text-base leading-none">🗑️</span>
                             </Button>
                           </td>
                         </tr>

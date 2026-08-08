@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Trash2, Plus } from "lucide-react"
+import { ArrowLeft, Plus } from "lucide-react"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Faixa = {
@@ -187,7 +187,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
                           {salvandoId === faixa.id ? "Salvando..." : "Salvar"}
                         </Button>
                         <Button variant="ghost" size="icon-lg" onClick={() => excluir(faixa)}>
-                          <Trash2 size={16} className="text-red-500" />
+                          <span className="text-base leading-none">🗑️</span>
                         </Button>
                       </td>
                     </tr>

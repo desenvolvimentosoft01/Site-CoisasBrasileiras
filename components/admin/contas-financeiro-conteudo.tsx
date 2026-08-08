@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Plus, List, ArrowLeft, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
+import { Trash2, Pencil, Plus, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
@@ -207,7 +207,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <List size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">📋</span>
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
@@ -299,7 +299,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                                 setDetalhe(conta)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -309,7 +309,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                                 abrirEdicao(conta)
                               }}
                             >
-                              <Pencil size={16} />
+                              <span className="text-base leading-none">✏️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -319,7 +319,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                                 excluir(conta)
                               }}
                             >
-                              <Trash2 size={16} className="text-red-500" />
+                              <span className="text-base leading-none">🗑️</span>
                             </Button>
                           </td>
                         </tr>

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Pencil, Trash2, FilePlus, Eye, Mail, Ban, RefreshCw, ArrowRightCircle, MessageCircle } from "lucide-react"
+import { Pencil, Trash2, FilePlus, Mail, Ban, RefreshCw, ArrowRightCircle, MessageCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatarMoeda } from "@/lib/mascaras"
 import {
@@ -337,7 +337,7 @@ export function PedidosCompraConteudo({
                                 setDetalhe(pedido)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             {pedido.status === "aberto" && (
                               <Button
@@ -348,7 +348,7 @@ export function PedidosCompraConteudo({
                                   abrirEdicao(pedido)
                                 }}
                               >
-                                <Pencil size={16} />
+                                <span className="text-base leading-none">✏️</span>
                               </Button>
                             )}
                             {(pedido.status === "aberto" || pedido.status === "enviado") && (
@@ -400,7 +400,7 @@ export function PedidosCompraConteudo({
                                   excluir(pedido)
                                 }}
                               >
-                                <Trash2 size={16} className="text-red-500" />
+                                <span className="text-base leading-none">🗑️</span>
                               </Button>
                             )}
                           </td>

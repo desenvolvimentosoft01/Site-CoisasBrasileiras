@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Star, Check, Trash2 } from "lucide-react"
+import { Star, Check } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 
@@ -123,7 +123,7 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
                       </Button>
                     )}
                     <Button variant="ghost" size="icon-lg" onClick={() => excluir(avaliacao)} title="Excluir">
-                      <Trash2 size={16} className="text-red-500" />
+                      <span className="text-base leading-none">🗑️</span>
                     </Button>
                   </div>
                 </div>

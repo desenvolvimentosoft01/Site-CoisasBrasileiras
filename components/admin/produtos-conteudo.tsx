@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Plus, Pencil, Trash2, List, AlertTriangle, FilePlus, Eye } from "lucide-react"
+import { Plus, Pencil, Trash2, AlertTriangle, FilePlus } from "lucide-react"
 import { toast } from "sonner"
 import { ProdutoForm } from "@/components/admin/produto-form"
 import { registrarAuditoria } from "@/lib/auditoria"
@@ -123,7 +123,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <List size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">📋</span>
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
@@ -247,7 +247,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                                 setDetalhe(produto)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -257,7 +257,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                                 abrirEdicao(produto)
                               }}
                             >
-                              <Pencil size={16} />
+                              <span className="text-base leading-none">✏️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -267,7 +267,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                                 excluir(produto)
                               }}
                             >
-                              <Trash2 size={16} className="text-red-500" />
+                              <span className="text-base leading-none">🗑️</span>
                             </Button>
                           </td>
                         </tr>

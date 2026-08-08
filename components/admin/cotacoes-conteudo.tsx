@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Pencil, Trash2, FilePlus, Eye, Mail, MessageCircle, Ban, RefreshCw, CheckCircle2, XCircle } from "lucide-react"
+import { Pencil, Trash2, FilePlus, Mail, MessageCircle, Ban, RefreshCw, CheckCircle2, XCircle } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { CotacaoForm, type Fornecedor, type ProdutoDisponivel, type CotacaoExistente } from "@/components/admin/cotacao-form"
 import { toast } from "sonner"
@@ -364,7 +364,7 @@ export function CotacoesConteudo({
                                 verDetalhe(cotacao)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             {cotacao.status === "respondida" && (
                               <Button
@@ -389,7 +389,7 @@ export function CotacoesConteudo({
                                   excluir(cotacao)
                                 }}
                               >
-                                <Trash2 size={16} className="text-red-500" />
+                                <span className="text-base leading-none">🗑️</span>
                               </Button>
                             )}
                           </td>

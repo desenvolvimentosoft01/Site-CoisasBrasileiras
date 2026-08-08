@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { Trash2, Pencil, ArrowLeft, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
+import { Trash2, Pencil, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
@@ -181,7 +181,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                             setDetalhe(tipo)
                           }}
                         >
-                          <Eye size={16} />
+                          <span className="text-base leading-none">👁️</span>
                         </Button>
                         <Button
                           variant="ghost"
@@ -191,7 +191,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                             abrirEdicao(tipo)
                           }}
                         >
-                          <Pencil size={16} />
+                          <span className="text-base leading-none">✏️</span>
                         </Button>
                         <Button
                           variant="ghost"
@@ -201,7 +201,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                             excluir(tipo)
                           }}
                         >
-                          <Trash2 size={16} className="text-red-500" />
+                          <span className="text-base leading-none">🗑️</span>
                         </Button>
                       </td>
                     </tr>

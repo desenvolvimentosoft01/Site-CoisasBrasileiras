@@ -2,7 +2,6 @@ import { query } from "@/lib/db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatarMoeda } from "@/lib/mascaras"
 import Link from "next/link"
-import { AlertTriangle, Package, ShoppingCart, Store, Wallet, Clock, type LucideIcon } from "lucide-react"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { statusExibicao } from "@/lib/status-pedido"
 
@@ -18,12 +17,12 @@ const coresIndicador = {
 
 function CardIndicador({
   titulo,
-  icone: Icone,
+  icone,
   cor,
   children,
 }: {
   titulo: string
-  icone: LucideIcon
+  icone: string
   cor: keyof typeof coresIndicador
   children: React.ReactNode
 }) {
@@ -31,8 +30,8 @@ function CardIndicador({
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm text-slate-500">{titulo}</CardTitle>
-        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${coresIndicador[cor]}`}>
-          <Icone size={18} />
+        <div className={`flex h-9 w-9 items-center justify-center rounded-lg text-lg ${coresIndicador[cor]}`}>
+          {icone}
         </div>
       </CardHeader>
       <CardContent>{children}</CardContent>
@@ -77,20 +76,20 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-semibold">Visão Geral</h1>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <CardIndicador titulo="Produtos ativos" icone={Package} cor="verde">
+        <CardIndicador titulo="Produtos ativos" icone="📦" cor="verde">
           <div className="text-3xl font-semibold">{produtosAtivos}</div>
         </CardIndicador>
-        <CardIndicador titulo="Pedidos hoje (site)" icone={ShoppingCart} cor="azul">
+        <CardIndicador titulo="Pedidos hoje (site)" icone="🛒" cor="azul">
           <div className="text-3xl font-semibold">{pedidosHoje}</div>
         </CardIndicador>
-        <CardIndicador titulo="Vendas balcão hoje" icone={Store} cor="roxo">
+        <CardIndicador titulo="Vendas balcão hoje" icone="🏪" cor="roxo">
           <div className="text-3xl font-semibold">{vendasBalcaoHoje}</div>
           <div className="text-xs text-slate-400">{formatarMoeda(faturamentoBalcaoHoje)}</div>
         </CardIndicador>
-        <CardIndicador titulo="Faturamento do mês" icone={Wallet} cor="verde">
+        <CardIndicador titulo="Faturamento do mês" icone="💰" cor="verde">
           <div className="text-3xl font-semibold">{formatarMoeda(faturamentoMes)}</div>
         </CardIndicador>
-        <CardIndicador titulo="Aguardando pagamento" icone={Clock} cor="ambar">
+        <CardIndicador titulo="Aguardando pagamento" icone="⏳" cor="ambar">
           <div className="text-3xl font-semibold">{pedidosPendentes}</div>
         </CardIndicador>
       </div>
@@ -136,7 +135,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
-              <AlertTriangle size={16} className="text-amber-500" />
+              <span className="text-base leading-none">⚠️</span>
               Estoque baixo
             </CardTitle>
           </CardHeader>

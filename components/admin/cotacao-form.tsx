@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trash2, Plus, Save, Eraser, X } from "lucide-react"
+import { Plus, Save, Eraser, X } from "lucide-react"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null; email: string | null }
@@ -185,7 +185,7 @@ export function CotacaoForm({
                 </div>
                 <div className="col-span-4 sm:col-span-1 flex items-end justify-end">
                   <Button variant="ghost" size="icon" onClick={() => removerItem(indice)}>
-                    <Trash2 size={16} className="text-red-500" />
+                    <span className="text-base leading-none">🗑️</span>
                   </Button>
                 </div>
               </div>

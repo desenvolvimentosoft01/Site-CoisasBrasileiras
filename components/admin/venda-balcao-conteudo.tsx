@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Minus, Trash2, ShoppingCart, Search, User, X, Package, List, Barcode } from "lucide-react"
+import { Plus, Minus, ShoppingCart, Search, User, X, Package, Barcode } from "lucide-react"
 import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
@@ -406,7 +406,7 @@ export function VendaBalcaoConteudo({
               Produtos
             </TabsTrigger>
             <TabsTrigger value="vendas">
-              <List size={14} className="mr-1.5" />
+              <span className="mr-1.5 text-sm leading-none">📋</span>
               Vendas
             </TabsTrigger>
           </TabsList>
@@ -610,7 +610,7 @@ export function VendaBalcaoConteudo({
                           className="h-7 w-7"
                           onClick={() => removerItem(item.produtoId)}
                         >
-                          <Trash2 size={14} className="text-red-500" />
+                          <span className="text-sm leading-none">🗑️</span>
                         </Button>
                       </div>
                     </div>

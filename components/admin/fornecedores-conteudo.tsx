@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, List, FilePlus, Save, Eraser, X, Eye } from "lucide-react"
+import { Trash2, Pencil, Plus, FilePlus, Save, Eraser, X } from "lucide-react"
 import { mascaraCpfCnpj, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { toast } from "sonner"
@@ -203,7 +203,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <List size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">📋</span>
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
@@ -291,7 +291,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                                 setDetalhe(fornecedor)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -301,7 +301,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                                 abrirEdicao(fornecedor)
                               }}
                             >
-                              <Pencil size={16} />
+                              <span className="text-base leading-none">✏️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -311,7 +311,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                                 excluir(fornecedor)
                               }}
                             >
-                              <Trash2 size={16} className="text-red-500" />
+                              <span className="text-base leading-none">🗑️</span>
                             </Button>
                           </td>
                         </tr>

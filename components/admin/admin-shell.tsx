@@ -4,26 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Menu,
-  LogOut,
-  Settings,
-  BarChart3,
-  Percent,
-  Users,
-  Store,
-  Wallet,
-  ChevronDown,
-  ChevronRight,
-  Home,
-  FileText,
-  ArrowLeft,
-  Truck,
-  Palette,
-} from "lucide-react"
+import { Menu, LogOut, ChevronDown, ChevronRight, Home, ArrowLeft } from "lucide-react"
 import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
@@ -33,20 +14,21 @@ import { EMAIL_DESENVOLVEDOR } from "@/lib/constantes"
 import { rotaAtiva } from "@/lib/rota-ativa"
 import { styleCoresTema } from "@/lib/cores"
 import { ProvedorCores, useCoresTema } from "@/lib/contexto-cores"
-import type { LucideIcon } from "lucide-react"
 
+// Emoji em vez de icone de linha nos itens de menu - visual "realista",
+// mesmo padrao aplicado no Porcelanas Brancas.
 type ItemLink = {
   tipo: "link"
   href: string
   label: string
-  icone: LucideIcon
+  icone: string
   somenteAdmin?: boolean
   somenteDesenvolvedor?: boolean
 }
 type ItemGrupo = {
   tipo: "grupo"
   label: string
-  icone: LucideIcon
+  icone: string
   filhos: { href: string; label: string; somenteAdmin?: boolean }[]
 }
 type ItemMenu = ItemLink | ItemGrupo
@@ -54,15 +36,15 @@ type ItemMenu = ItemLink | ItemGrupo
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
 const menu: ItemMenu[] = [
-  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", icone: LayoutDashboard },
-  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: Store },
-  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", icone: ShoppingCart },
-  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", icone: FileText },
-  { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: Users },
+  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", icone: "📊" },
+  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: "🏪" },
+  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", icone: "🛒" },
+  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", icone: "📄" },
+  { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: "👥" },
   {
     tipo: "grupo",
     label: "Produtos",
-    icone: Package,
+    icone: "📦",
     filhos: [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
@@ -73,7 +55,7 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Marketing",
-    icone: Percent,
+    icone: "🏷️",
     filhos: [
       { href: "/admin/cupons", label: "Cupons" },
       { href: "/admin/banners", label: "Banners" },
@@ -83,11 +65,11 @@ const menu: ItemMenu[] = [
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },
     ],
   },
-  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: Wallet, somenteAdmin: true },
+  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: "💰", somenteAdmin: true },
   {
     tipo: "grupo",
     label: "Compras",
-    icone: Truck,
+    icone: "🚚",
     filhos: [
       { href: "/admin/cotacoes", label: "Cotação", somenteAdmin: true },
       { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
@@ -98,7 +80,7 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Relatórios",
-    icone: BarChart3,
+    icone: "📈",
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
       { href: "/admin/relatorios/lucro", label: "Lucro / DRE", somenteAdmin: true },
@@ -109,20 +91,20 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Configurações",
-    icone: Settings,
+    icone: "⚙️",
     filhos: [
       { href: "/admin/usuarios", label: "Usuários", somenteAdmin: true },
       { href: "/admin/configuracoes", label: "Configurações da Loja" },
     ],
   },
-  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: Palette, somenteDesenvolvedor: true },
+  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: "🎨", somenteDesenvolvedor: true },
 ]
 
 // Achata o menu (so os itens visiveis pro papel/email da sessao) pra
 // alimentar a TabBar e o breadcrumb, que trabalham com uma lista simples de
 // {href, label}.
-function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: LucideIcon }[] {
-  const resultado: { href: string; label: string; icone: LucideIcon }[] = []
+function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: string }[] {
+  const resultado: { href: string; label: string; icone: string }[] = []
   for (const item of menu) {
     if (item.tipo === "link") {
       if (item.somenteDesenvolvedor && email !== EMAIL_DESENVOLVEDOR) continue
@@ -261,7 +243,6 @@ function AdminShellInterno({
             if (item.tipo === "link") {
               if (item.somenteAdmin && sessao.papel !== "admin") return null
               if (item.somenteDesenvolvedor && sessao.email !== EMAIL_DESENVOLVEDOR) return null
-              const Icone = item.icone
               const ativo = rotaAtiva(pathname, item.href)
               return (
                 <Link
@@ -274,7 +255,7 @@ function AdminShellInterno({
                       : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
-                  <Icone size={15} />
+                  <span className="text-[15px] leading-none">{item.icone}</span>
                   {item.label}
                 </Link>
               )
@@ -283,7 +264,6 @@ function AdminShellInterno({
             const filhosVisiveis = item.filhos.filter((f) => !f.somenteAdmin || sessao.papel === "admin")
             if (filhosVisiveis.length === 0) return null
 
-            const Icone = item.icone
             const aberto = gruposAbertos.includes(item.label)
             const grupoAtivo = filhosVisiveis.some((f) => rotaAtiva(pathname, f.href))
 
@@ -295,7 +275,7 @@ function AdminShellInterno({
                     grupoAtivo ? "text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
-                  <Icone size={15} />
+                  <span className="text-[15px] leading-none">{item.icone}</span>
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.label === "Compras" && notasPendentesBling > 0 && (
                     <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white">

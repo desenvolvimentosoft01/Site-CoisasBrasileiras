@@ -7,9 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
-  List,
   Plus,
-  Trash2,
   PackageCheck,
   Ban,
   FileUp,
@@ -17,8 +15,6 @@ import {
   Radio,
   RefreshCw,
   Link2,
-  Eye,
-  Pencil,
 } from "lucide-react"
 import { toast } from "sonner"
 import { CampoDica } from "@/components/ui/campo-dica"
@@ -654,7 +650,7 @@ export function ComprasConteudo({
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="lista">
-              <List size={14} className="mr-1.5" />
+              <span className="mr-1.5 text-sm leading-none">📋</span>
               Grade
             </TabsTrigger>
             <TabsTrigger value="formulario">
@@ -814,7 +810,7 @@ export function ComprasConteudo({
                               onClick={() => setDetalhe(compra)}
                               title="Ver detalhe"
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             {compra.status === "pendente" && (
                               <>
@@ -825,7 +821,7 @@ export function ComprasConteudo({
                                   onClick={() => abrirEdicao(compra)}
                                   title="Editar"
                                 >
-                                  <Pencil size={16} />
+                                  <span className="text-base leading-none">✏️</span>
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -852,7 +848,7 @@ export function ComprasConteudo({
                                   onClick={() => excluir(compra)}
                                   title="Excluir"
                                 >
-                                  <Trash2 size={16} className="text-red-500" />
+                                  <span className="text-base leading-none">🗑️</span>
                                 </Button>
                               </>
                             )}
@@ -1153,7 +1149,7 @@ export function ComprasConteudo({
                           </td>
                           <td className="p-3 text-right">
                             <Button variant="ghost" size="icon-lg" onClick={() => removerItem(item.produtoId)}>
-                              <Trash2 size={16} className="text-red-500" />
+                              <span className="text-base leading-none">🗑️</span>
                             </Button>
                           </td>
                         </tr>

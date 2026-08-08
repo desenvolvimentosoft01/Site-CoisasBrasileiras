@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, List, FilePlus, Save, Eraser, X, Video, Link2, PlayCircle, Eye } from "lucide-react"
+import { Trash2, Pencil, Plus, ImagePlus, FilePlus, Save, Eraser, X, Video, Link2, PlayCircle } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
@@ -180,7 +180,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <List size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">📋</span>
             Galeria
           </TabsTrigger>
           <TabsTrigger value="formulario">
@@ -244,7 +244,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
                           setDetalhe(midia)
                         }}
                       >
-                        <Eye size={16} />
+                        <span className="text-base leading-none">👁️</span>
                       </Button>
                     </div>
                   </CardContent>
@@ -323,7 +323,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
                           onClick={() => setUrl("")}
                           className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white"
                         >
-                          <Trash2 size={12} />
+                          <span className="text-xs leading-none">🗑️</span>
                         </button>
                       </div>
                     ) : (

@@ -1,5 +1,40 @@
+import {
+  FilePlus,
+  Pencil,
+  Trash2,
+  Save,
+  Eraser,
+  X,
+  Ban,
+  Mail,
+  MessageCircle,
+  CheckCircle2,
+  XCircle,
+  ArrowRightCircle,
+  RefreshCw,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { LucideIcon } from "lucide-react"
+
+// Emoji em vez de icone de linha nos botoes da barra, mapeado pelo
+// componente lucide que a tela passa (identidade, nao label) - assim as 25
+// telas de cadastro ganham o visual "realista" sem precisar editar cada
+// uma. Icone sem mapeamento aqui continua caindo no <btn.icon> de linha.
+const emojiPorIcone = new Map<LucideIcon, string>([
+  [FilePlus, "🆕"],
+  [Pencil, "✏️"],
+  [Trash2, "🗑️"],
+  [Save, "💾"],
+  [Eraser, "🧹"],
+  [X, "✖️"],
+  [Ban, "🚫"],
+  [Mail, "✉️"],
+  [MessageCircle, "💬"],
+  [CheckCircle2, "✅"],
+  [XCircle, "❌"],
+  [ArrowRightCircle, "➡️"],
+  [RefreshCw, "🔄"],
+])
 
 export type BotaoToolbar =
   | { separator: true }
@@ -53,7 +88,11 @@ export function BarraFerramentas({ botoes, titulo }: Props) {
               varianteCss[btn.variante ?? "default"]
             )}
           >
-            <btn.icon size={16} strokeWidth={2} />
+            {emojiPorIcone.has(btn.icon) ? (
+              <span className="text-base leading-none">{emojiPorIcone.get(btn.icon)}</span>
+            ) : (
+              <btn.icon size={16} strokeWidth={2} />
+            )}
             {btn.label}
           </button>
         )

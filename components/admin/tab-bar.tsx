@@ -5,9 +5,8 @@ import { useRouter, usePathname } from "next/navigation"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAbasAdmin } from "@/lib/abas-admin-store"
 import { rotaAtiva } from "@/lib/rota-ativa"
-import type { LucideIcon } from "lucide-react"
 
-type ItemMenu = { href: string; label: string; icone: LucideIcon }
+type ItemMenu = { href: string; label: string; icone: string }
 
 export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   const router = useRouter()
@@ -92,7 +91,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
       <div ref={conteudoRef} className="flex w-max items-end gap-0">
       {abas.map((aba) => {
         const ativa = rotaAtiva(pathname, aba.path)
-        const Icone = iconeDaAba(aba.path)
+        const icone = iconeDaAba(aba.path)
         const fechavel = aba.path !== "/admin/dashboard"
 
         return (
@@ -108,7 +107,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
                 : "border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white"
             }`}
           >
-            {Icone && <Icone size={13} />}
+            {icone && <span className="text-[13px] leading-none">{icone}</span>}
             <span className="whitespace-nowrap">{aba.titulo}</span>
             {fechavel && (
               <button
