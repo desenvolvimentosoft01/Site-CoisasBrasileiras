@@ -125,17 +125,19 @@ export function AdminShell({
   cores,
   logoUrl,
   nomeLoja,
+  dominioBranco,
   children,
 }: {
   sessao: SessaoAdmin
   cores: Record<string, string>
   logoUrl?: string
   nomeLoja?: string
+  dominioBranco?: string
   children: React.ReactNode
 }) {
   return (
     <ProvedorCores coresIniciais={cores}>
-      <AdminShellInterno sessao={sessao} logoUrl={logoUrl} nomeLoja={nomeLoja}>
+      <AdminShellInterno sessao={sessao} logoUrl={logoUrl} nomeLoja={nomeLoja} dominioBranco={dominioBranco}>
         {children}
       </AdminShellInterno>
     </ProvedorCores>
@@ -146,11 +148,13 @@ function AdminShellInterno({
   sessao,
   logoUrl,
   nomeLoja,
+  dominioBranco,
   children,
 }: {
   sessao: SessaoAdmin
   logoUrl?: string
   nomeLoja?: string
+  dominioBranco?: string
   children: React.ReactNode
 }) {
   const { cores } = useCoresTema()
@@ -199,6 +203,19 @@ function AdminShellInterno({
     .slice(0, 2)
     .join("")
     .toUpperCase()
+
+  // Link do Porcelanas Brancas precisa de URL absoluta (host diferente do
+  // admin) - reaproveita protocolo/porta da aba atual, so troca o host pelo
+  // dominio configurado em DOMINIO_BRANCO. Calculado so no client (useEffect)
+  // pra nao dar mismatch de hidratacao entre servidor (sem "window") e
+  // navegador.
+  const [urlPorcelanasBrancas, setUrlPorcelanasBrancas] = useState<string | null>(null)
+  useEffect(() => {
+    if (!dominioBranco) return
+    const { protocol, port } = window.location
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- le "window", so existe apos montar no client
+    setUrlPorcelanasBrancas(`${protocol}//${dominioBranco}${port ? `:${port}` : ""}`)
+  }, [dominioBranco])
 
   const paginaAtual = planoDeMenu.find((item) => rotaAtiva(pathname, item.href))
 
@@ -348,11 +365,22 @@ function AdminShellInterno({
               href="/"
               target="_blank"
               className="hidden items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 sm:flex"
-              title="Abrir o site em uma nova aba"
+              title="Abrir o site Coisas Brasileiras em uma nova aba"
             >
               <ArrowLeft size={14} />
-              Voltar ao site
+              🎨 Coisas Brasileiras
             </Link>
+            {urlPorcelanasBrancas && (
+              <a
+                href={urlPorcelanasBrancas}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 sm:flex"
+                title="Abrir o site Porcelanas Brancas em uma nova aba"
+              >
+                ⚪ Porcelanas Brancas
+              </a>
+            )}
             <span className="hidden text-xs font-semibold text-slate-500 sm:block">{sessao.nome}</span>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut size={16} className="mr-2" />

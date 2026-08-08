@@ -27,7 +27,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const configuracoes = await getConfiguracoes([...CHAVES_COR_TEMA, "logo_url", "nome_loja"])
 
   return (
-    <AdminShell sessao={sessao} cores={configuracoes} logoUrl={configuracoes.logo_url || undefined} nomeLoja={configuracoes.nome_loja || undefined}>
+    <AdminShell
+      sessao={sessao}
+      cores={configuracoes}
+      logoUrl={configuracoes.logo_url || undefined}
+      nomeLoja={configuracoes.nome_loja || undefined}
+      dominioBranco={process.env.DOMINIO_BRANCO}
+    >
       {children}
     </AdminShell>
   )
