@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS TAB_CONFIGURACAO_MARCA (
   atualizado_em TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (chave, marca)
 );
+ALTER TABLE TAB_CONFIGURACAO_MARCA ENABLE ROW LEVEL SECURITY;
 
 -- Backfill: a loja "colorido" (Coisas Brasileiras) ja tem esses valores em
 -- TAB_CONFIGURACAO - copia pra TAB_CONFIGURACAO_MARCA como marca='colorido',
