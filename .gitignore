@@ -51,3 +51,6 @@ DOCS/*.jpg
 DOCS/*.jpeg
 DOCS/*.png
 
+# anotacoes soltas (ex: codigos de recuperacao) - nunca deveriam ir pro git
+DOCS/*.txt
+
