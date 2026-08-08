@@ -37,4 +37,21 @@ if [ "$FOUND" = "1" ]; then
   exit 1
 fi
 
+# 3) typecheck e lint - trava o commit se algo quebrar
+echo "Rodando typecheck..."
+npx tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Commit cancelado. Corrija os erros de tipo acima antes de commitar."
+  exit 1
+fi
+
+echo "Rodando lint..."
+npm run lint
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Commit cancelado. Corrija os erros de lint acima antes de commitar."
+  exit 1
+fi
+
 exit 0
