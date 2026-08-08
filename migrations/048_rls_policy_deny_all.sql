@@ -33,10 +33,13 @@ BEGIN
     'TAB_TIPO_ENTREGA', 'TAB_USUARIO_ADMIN', 'TAB_CONFIGURACAO_MARCA'
   ]
   LOOP
-    EXECUTE format('DROP POLICY IF EXISTS bloqueia_acesso_api ON %I', tabela);
+    -- lower() pq identificador sem aspas nas migrations anteriores foi
+    -- salvo em minusculo pelo Postgres - %I com o nome em maiusculo geraria
+    -- um identificador entre aspas que nao bate com a tabela de verdade.
+    EXECUTE format('DROP POLICY IF EXISTS bloqueia_acesso_api ON %I', lower(tabela));
     EXECUTE format(
       'CREATE POLICY bloqueia_acesso_api ON %I FOR ALL TO anon, authenticated USING (false) WITH CHECK (false)',
-      tabela
+      lower(tabela)
     );
   END LOOP;
 END $$;
