@@ -45,3 +45,9 @@ next-env.d.ts
 /public/uploads/*
 !/public/uploads/.gitkeep
 
+# prints/imagens de referencia soltas em DOCS (nao entram no git)
+DOCS/*.jfif
+DOCS/*.jpg
+DOCS/*.jpeg
+DOCS/*.png
+
