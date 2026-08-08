@@ -243,7 +243,7 @@ function ConfiguracoesFormulario({
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       <h1 className="text-2xl font-semibold">Configurações da loja</h1>
 
       <form onSubmit={salvar} className="space-y-6">
@@ -284,7 +284,7 @@ function ConfiguracoesFormulario({
               <CardHeader>
                 <CardTitle className="text-sm text-slate-500">Contato</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="grid items-start gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>WhatsApp</Label>
                   <Input
@@ -295,6 +295,14 @@ function ConfiguracoesFormulario({
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>Instagram</Label>
+                  <Input
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    placeholder="@coisasbrasileiras"
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
                   <Label>Mensagem padrão do WhatsApp</Label>
                   <Input
                     value={whatsappMensagem}
@@ -304,14 +312,6 @@ function ConfiguracoesFormulario({
                   <p className="text-xs text-slate-400">
                     Preenchida automaticamente quando o cliente clica no botão de WhatsApp do site.
                   </p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Instagram</Label>
-                  <Input
-                    value={instagram}
-                    onChange={(e) => setInstagram(e.target.value)}
-                    placeholder="@coisasbrasileiras"
-                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Email de contato</Label>
@@ -444,8 +444,8 @@ function ConfiguracoesFormulario({
               <CardHeader>
                 <CardTitle className="text-sm text-slate-500">Aparência do site</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
+              <CardContent className="grid items-start gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label>Logo da loja</Label>
                   <div className="flex items-center gap-4">
                     <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
@@ -499,7 +499,7 @@ function ConfiguracoesFormulario({
                     placeholder="Coisas Brasileiras"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label>Cor principal (botões, links, destaques)</Label>
                   <div className="flex items-center gap-3">
                     <input
