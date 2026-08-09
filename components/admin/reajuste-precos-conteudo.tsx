@@ -52,9 +52,12 @@ export function ReajustePrecosConteudo({
   const [sucesso, setSucesso] = useState("")
   const [linhaSalvando, setLinhaSalvando] = useState<string | null>(null)
   // Preco digitado manualmente na propria grade, por produto - tem
-  // prioridade sobre o calculo por percentual/valor fixo. Permite ajustar
-  // um ou outro produto sem precisar mudar o reajuste em massa.
+  // prioridade sobre o calculo por percentual/valor fixo em massa. Permite
+  // ajustar um ou outro produto sem precisar mudar o reajuste em massa.
   const [precosManuais, setPrecosManuais] = useState<Record<string, string>>({})
+  // Se o valor digitado na grade pra cada produto e um preco final (R$) ou
+  // um percentual de ajuste sobre o preco atual (ex: 10 ou -5).
+  const [tipoLinha, setTipoLinha] = useState<Record<string, "valor" | "percentual">>({})
 
   const produtosFiltrados = useMemo(() => {
     return produtos.filter((p) => {
@@ -88,6 +91,11 @@ export function ReajustePrecosConteudo({
           const { [id]: _removido, ...resto } = manuais
           return resto
         })
+        setTipoLinha((tipos) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure so pra remover a chave do objeto
+          const { [id]: _removido, ...resto } = tipos
+          return resto
+        })
       } else {
         novo.add(id)
       }
@@ -102,17 +110,33 @@ export function ReajustePrecosConteudo({
   function limparSelecao() {
     setSelecionados(new Set())
     setPrecosManuais({})
+    setTipoLinha({})
   }
 
   function editarPrecoManual(id: string, valorDigitado: string) {
     setPrecosManuais((atual) => ({ ...atual, [id]: valorDigitado }))
   }
 
+  function definirTipoLinha(id: string, tipo: "valor" | "percentual") {
+    setTipoLinha((atual) => ({ ...atual, [id]: tipo }))
+    // troca de tipo invalida o valor digitado no outro formato
+    setPrecosManuais((atual) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure so pra remover a chave do objeto
+      const { [id]: _removido, ...resto } = atual
+      return resto
+    })
+  }
+
   function precoFinal(produto: Produto): number {
     const manual = precosManuais[produto.id]
     if (manual !== undefined && manual.trim() !== "") {
       const numero = Number(manual.replace(",", "."))
-      if (!Number.isNaN(numero)) return numero
+      if (!Number.isNaN(numero)) {
+        if ((tipoLinha[produto.id] ?? "valor") === "percentual") {
+          return Math.max(0, arredondar(Number(produto.preco) * (1 + numero / 100)))
+        }
+        return numero
+      }
     }
     return calcularNovoPreco(Number(produto.preco))
   }
@@ -339,7 +363,9 @@ export function ReajustePrecosConteudo({
               <tbody>
                 {produtosFiltrados.map((produto) => {
                   const precoAtual = Number(produto.preco)
-                  const valorCampo = precosManuais[produto.id] ?? String(calcularNovoPreco(precoAtual))
+                  const tipoAtual = tipoLinha[produto.id] ?? "valor"
+                  const valorCampo =
+                    precosManuais[produto.id] ?? (tipoAtual === "valor" ? String(calcularNovoPreco(precoAtual)) : "")
                   const mudou = precoFinal(produto) !== precoAtual
                   return (
                     <tr key={produto.id} className="border-b border-slate-200 last:border-0">
@@ -358,11 +384,39 @@ export function ReajustePrecosConteudo({
                       <td className="p-4 text-slate-500">{produto.custo ? formatarMoeda(Number(produto.custo)) : "-"}</td>
                       <td className="p-4 text-slate-500">{formatarMoeda(precoAtual)}</td>
                       <td className="p-4">
-                        <Input
-                          value={valorCampo}
-                          onChange={(e) => editarPrecoManual(produto.id, e.target.value)}
-                          className={`w-28 ${mudou ? "border-emerald-500 text-emerald-600 font-medium" : ""}`}
-                        />
+                        <div className="flex items-center gap-1.5">
+                          <div className="flex overflow-hidden rounded-md border border-input text-xs">
+                            <button
+                              type="button"
+                              onClick={() => definirTipoLinha(produto.id, "valor")}
+                              className={`px-1.5 py-1 ${
+                                tipoAtual === "valor" ? "bg-primary/15 text-primary" : "text-muted-foreground"
+                              }`}
+                              title="Digitar o preço final em reais"
+                            >
+                              R$
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => definirTipoLinha(produto.id, "percentual")}
+                              className={`px-1.5 py-1 ${
+                                tipoAtual === "percentual" ? "bg-primary/15 text-primary" : "text-muted-foreground"
+                              }`}
+                              title="Digitar um percentual de ajuste sobre o preço atual"
+                            >
+                              %
+                            </button>
+                          </div>
+                          <Input
+                            value={valorCampo}
+                            onChange={(e) => editarPrecoManual(produto.id, e.target.value)}
+                            placeholder={tipoAtual === "percentual" ? "Ex: 10 ou -5" : "Ex: 25,90"}
+                            className={`w-24 ${mudou ? "border-emerald-500 text-emerald-600 font-medium" : ""}`}
+                          />
+                          {tipoAtual === "percentual" && valorCampo.trim() !== "" && (
+                            <span className="text-xs text-slate-400">= {formatarMoeda(precoFinal(produto))}</span>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         <Button
