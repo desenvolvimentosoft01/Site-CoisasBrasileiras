@@ -52,6 +52,13 @@ function PainelCores({
 }) {
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Button onClick={onSalvar} disabled={salvando}>
+          {salvando ? "Salvando..." : "Salvar cores"}
+        </Button>
+        {salvo && <span className="text-sm text-emerald-500">Salvo!</span>}
+      </div>
+
       <div
         className="rounded-xl border border-border bg-background p-6 text-foreground"
         style={styleCoresTema(cores)}
@@ -117,13 +124,6 @@ function PainelCores({
           ))}
         </CardContent>
       </Card>
-
-      <div className="flex items-center gap-3">
-        <Button onClick={onSalvar} disabled={salvando}>
-          {salvando ? "Salvando..." : "Salvar cores"}
-        </Button>
-        {salvo && <span className="text-sm text-emerald-500">Salvo!</span>}
-      </div>
     </div>
   )
 }
