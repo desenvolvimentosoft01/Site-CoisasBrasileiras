@@ -19,6 +19,7 @@ export type SobreNosMidia = {
   url: string
   legenda: string | null
   ordem: number
+  marca: "colorido" | "branco"
 }
 
 const TIPOS = [
@@ -27,6 +28,15 @@ const TIPOS = [
   { valor: "video_arquivo" as const, rotulo: "Vídeo (arquivo)", icone: Video },
 ]
 
+const SITES = [
+  { valor: "colorido" as const, rotulo: "🎨 Coisas Brasileiras" },
+  { valor: "branco" as const, rotulo: "⚪ Porcelanas Brancas" },
+]
+
+function nomeSite(marca: "colorido" | "branco") {
+  return marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras"
+}
+
 export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosMidia[] }) {
   const confirmar = useConfirmar()
   const [midias, setMidias] = useState<SobreNosMidia[]>(midiasIniciais)
@@ -34,11 +44,13 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
   const [editando, setEditando] = useState<SobreNosMidia | null>(null)
   const [selecionada, setSelecionada] = useState<string | null>(null)
   const [detalhe, setDetalhe] = useState<SobreNosMidia | null>(null)
+  const [filtroSite, setFiltroSite] = useState<"todos" | "colorido" | "branco">("todos")
 
   const [tipo, setTipo] = useState<SobreNosMidia["tipo"]>("imagem")
   const [url, setUrl] = useState("")
   const [legenda, setLegenda] = useState("")
   const [ordem, setOrdem] = useState("0")
+  const [marca, setMarca] = useState<SobreNosMidia["marca"]>("colorido")
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
@@ -56,6 +68,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
     setUrl("")
     setLegenda("")
     setOrdem(String(midias.length))
+    setMarca(filtroSite === "branco" ? "branco" : "colorido")
     setErro("")
     setAba("formulario")
   }
@@ -67,6 +80,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
     setUrl(midia.url)
     setLegenda(midia.legenda ?? "")
     setOrdem(String(midia.ordem))
+    setMarca(midia.marca)
     setErro("")
     setAba("formulario")
   }
@@ -77,11 +91,13 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
       setUrl(editando.url)
       setLegenda(editando.legenda ?? "")
       setOrdem(String(editando.ordem))
+      setMarca(editando.marca)
     } else {
       setTipo("imagem")
       setUrl("")
       setLegenda("")
       setOrdem(String(midias.length))
+      setMarca(filtroSite === "branco" ? "branco" : "colorido")
     }
     setErro("")
   }
@@ -120,7 +136,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
 
     const corpo = editando
       ? { legenda: legenda || null, ordem: Number(ordem) || 0 }
-      : { tipo, url: url.trim(), legenda: legenda || null, ordem: Number(ordem) || 0 }
+      : { tipo, url: url.trim(), legenda: legenda || null, ordem: Number(ordem) || 0, marca }
 
     const requisicaoUrl = editando ? `/api/admin/sobre-nos-midia/${editando.id}` : "/api/admin/sobre-nos-midia"
     const method = editando ? "PUT" : "POST"
@@ -168,6 +184,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
   }
 
   const midiaSelecionada = midias.find((m) => m.id === selecionada) ?? null
+  const midiasFiltradas = midias.filter((m) => filtroSite === "todos" || m.marca === filtroSite)
 
   return (
     <div className="space-y-6">
@@ -211,11 +228,19 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
             />
           </div>
 
-          {midias.length === 0 ? (
+          <Tabs value={filtroSite} onValueChange={(v) => setFiltroSite(v as typeof filtroSite)}>
+            <TabsList>
+              <TabsTrigger value="todos">Todos</TabsTrigger>
+              <TabsTrigger value="colorido">🎨 Coisas Brasileiras</TabsTrigger>
+              <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {midiasFiltradas.length === 0 ? (
             <p className="text-sm text-slate-500">Nenhuma foto ou vídeo cadastrado ainda.</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {midias.map((midia) => (
+              {midiasFiltradas.map((midia) => (
                 <Card
                   key={midia.id}
                   onClick={() => setSelecionada((atual) => (atual === midia.id ? null : midia.id))}
@@ -233,8 +258,13 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
                       )}
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-medium">
-                        {midia.legenda || TIPOS.find((t) => t.valor === midia.tipo)?.rotulo}
+                      <p className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium">
+                        <span className="text-sm leading-none" title={nomeSite(midia.marca)}>
+                          {midia.marca === "branco" ? "⚪" : "🎨"}
+                        </span>
+                        <span className="truncate">
+                          {midia.legenda || TIPOS.find((t) => t.valor === midia.tipo)?.rotulo}
+                        </span>
                       </p>
                       <Button
                         variant="ghost"
@@ -270,6 +300,28 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
 
           <Card className="max-w-lg">
             <CardContent className="space-y-4 pt-6">
+              {!editando && (
+                <div className="space-y-2">
+                  <Label>Cadastrar para o site</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {SITES.map((s) => (
+                      <button
+                        key={s.valor}
+                        type="button"
+                        onClick={() => setMarca(s.valor)}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                          marca === s.valor
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-slate-300 bg-white text-slate-500 hover:border-primary/50"
+                        }`}
+                      >
+                        {s.rotulo}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {!editando && (
                 <div className="space-y-2">
                   <Label>Tipo</Label>
@@ -381,6 +433,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
           detalhe
             ? [
                 { label: "Tipo", valor: TIPOS.find((t) => t.valor === detalhe.tipo)?.rotulo },
+                { label: "Site", valor: nomeSite(detalhe.marca) },
                 { label: "Ordem", valor: detalhe.ordem },
               ]
             : []

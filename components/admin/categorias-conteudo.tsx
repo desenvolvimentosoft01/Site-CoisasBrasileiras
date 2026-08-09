@@ -200,9 +200,9 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
         <TabsContent value="lista" className="mt-4 space-y-4">
           <Tabs value={filtroMarca} onValueChange={(v) => setFiltroMarca(v as typeof filtroMarca)}>
             <TabsList>
-              <TabsTrigger value="todas">Todas</TabsTrigger>
-              <TabsTrigger value="colorido">Coloridas</TabsTrigger>
-              <TabsTrigger value="branco">Brancas</TabsTrigger>
+              <TabsTrigger value="todas">Todos</TabsTrigger>
+              <TabsTrigger value="colorido">🎨 Coisas Brasileiras</TabsTrigger>
+              <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -266,7 +266,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                               {categoria.categoria_pai_id && <CornerDownRight size={14} className="text-slate-400" />}
                               <span
                                 className="text-sm leading-none"
-                                title={categoria.marca === "branco" ? "Branco" : "Colorido"}
+                                title={categoria.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras"}
                               >
                                 {categoria.marca === "branco" ? "⚪" : "🎨"}
                               </span>
@@ -346,7 +346,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
               </div>
 
               <div className="space-y-2">
-                <Label>Marca</Label>
+                <Label>Cadastrar para o site</Label>
                 <div className="flex flex-wrap gap-2">
                   {(["colorido", "branco"] as const).map((opcao) => (
                     <button
@@ -358,13 +358,13 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                           setCategoriaPaiId(null)
                         }
                       }}
-                      className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
+                      className={`rounded-full border px-3 py-1 text-sm transition-colors ${
                         marca === opcao
                           ? "border-primary bg-primary/15 text-primary"
                           : "border-input text-muted-foreground hover:border-primary/50"
                       }`}
                     >
-                      {opcao}
+                      {opcao === "branco" ? "⚪ Porcelanas Brancas" : "🎨 Coisas Brasileiras"}
                     </button>
                   ))}
                 </div>
@@ -445,7 +445,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
         campos={
           detalhe
             ? [
-                { label: "Marca", valor: detalhe.marca === "branco" ? "Branco" : "Colorido" },
+                { label: "Site", valor: detalhe.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras" },
                 { label: "Slug", valor: detalhe.slug },
                 {
                   label: "Categoria pai",

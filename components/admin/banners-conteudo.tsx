@@ -215,8 +215,8 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
           <Tabs value={filtroMarca} onValueChange={(v) => setFiltroMarca(v as typeof filtroMarca)}>
             <TabsList>
               <TabsTrigger value="todas">Todos</TabsTrigger>
-              <TabsTrigger value="colorido">Coloridos</TabsTrigger>
-              <TabsTrigger value="branco">Brancos</TabsTrigger>
+              <TabsTrigger value="colorido">🎨 Coisas Brasileiras</TabsTrigger>
+              <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -268,7 +268,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                         <Image src={banner.imagem_url} alt="" fill className="rounded-md object-cover opacity-40" />
                       )}
                       <span className="relative flex items-center gap-1.5">
-                        <span title={banner.marca === "branco" ? "Branco" : "Colorido"}>
+                        <span title={banner.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras"}>
                           {banner.marca === "branco" ? "⚪" : "🎨"}
                         </span>
                         {banner.titulo}
@@ -358,20 +358,20 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
               </div>
 
               <div className="space-y-2">
-                <Label>Marca</Label>
+                <Label>Cadastrar para o site</Label>
                 <div className="flex flex-wrap gap-2">
                   {(["colorido", "branco"] as const).map((opcao) => (
                     <button
                       key={opcao}
                       type="button"
                       onClick={() => setMarca(opcao)}
-                      className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
+                      className={`rounded-full border px-3 py-1 text-sm transition-colors ${
                         marca === opcao
                           ? "border-primary bg-primary/15 text-primary"
                           : "border-input text-muted-foreground hover:border-primary/50"
                       }`}
                     >
-                      {opcao}
+                      {opcao === "branco" ? "⚪ Porcelanas Brancas" : "🎨 Coisas Brasileiras"}
                     </button>
                   ))}
                 </div>
@@ -451,7 +451,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
         campos={
           detalhe
             ? [
-                { label: "Marca", valor: detalhe.marca === "branco" ? "Branco" : "Colorido" },
+                { label: "Site", valor: detalhe.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras" },
                 { label: "Subtítulo", valor: detalhe.subtitulo },
                 { label: "Link", valor: detalhe.link },
                 { label: "Ordem", valor: detalhe.ordem },

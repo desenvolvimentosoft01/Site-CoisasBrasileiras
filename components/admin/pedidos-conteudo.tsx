@@ -21,6 +21,11 @@ export type Pedido = {
   forma_pagamento: string | null
   criado_em: string
   cliente_nome: string
+  marca: "colorido" | "branco"
+}
+
+function nomeSite(marca: "colorido" | "branco") {
+  return marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras"
 }
 
 type PedidoPendenteMarketplace = {
@@ -44,6 +49,7 @@ const ABAS_STATUS = [
 export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[] }) {
   const router = useRouter()
   const [aba, setAba] = useState("todos")
+  const [filtroSite, setFiltroSite] = useState<"todos" | "colorido" | "branco">("todos")
   const pedidos = pedidosIniciais
 
   const [pendentes, setPendentes] = useState<PedidoPendenteMarketplace[]>([])
@@ -83,8 +89,11 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
   }
 
   const pedidosFiltrados = useMemo(
-    () => (aba === "todos" ? pedidos : pedidos.filter((p) => p.status === aba)),
-    [pedidos, aba]
+    () =>
+      pedidos.filter(
+        (p) => (aba === "todos" || p.status === aba) && (filtroSite === "todos" || p.marca === filtroSite)
+      ),
+    [pedidos, aba, filtroSite]
   )
 
   return (
@@ -124,13 +133,22 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
         </Card>
       )}
 
+      <Tabs value={filtroSite} onValueChange={(v) => setFiltroSite(v as typeof filtroSite)}>
+        <TabsList>
+          <TabsTrigger value="todos">Todos</TabsTrigger>
+          <TabsTrigger value="colorido">🎨 Coisas Brasileiras</TabsTrigger>
+          <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">
           {ABAS_STATUS.map((item) => {
+            const pedidosDoSite = pedidos.filter((p) => filtroSite === "todos" || p.marca === filtroSite)
             const quantidade =
               item.valor === "todos"
-                ? pedidos.length
-                : pedidos.filter((p) => p.status === item.valor).length
+                ? pedidosDoSite.length
+                : pedidosDoSite.filter((p) => p.status === item.valor).length
             return (
               <TabsTrigger key={item.valor} value={item.valor} className="flex-none px-3">
                 {item.rotulo}
@@ -158,6 +176,7 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                   <table className="w-full min-w-[520px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="p-4 font-medium">Site</th>
                         <th className="p-4 font-medium">Cliente</th>
                         <th className="p-4 font-medium">Canal</th>
                         <th className="p-4 font-medium">Status</th>
@@ -171,6 +190,13 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                           key={pedido.id}
                           className="cursor-pointer border-b border-slate-200 last:border-0 hover:bg-slate-100"
                         >
+                          <td className="p-0">
+                            <Link href={`/admin/pedidos/${pedido.id}`} className="block p-4">
+                              <span className="text-sm leading-none" title={nomeSite(pedido.marca)}>
+                                {pedido.marca === "branco" ? "⚪" : "🎨"}
+                              </span>
+                            </Link>
+                          </td>
                           <td className="p-0">
                             <Link href={`/admin/pedidos/${pedido.id}`} className="flex items-center gap-2 p-4">
                               {pedido.cliente_nome}

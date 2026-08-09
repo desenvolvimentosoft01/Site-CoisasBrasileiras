@@ -140,9 +140,9 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
           <div className="flex flex-wrap items-center gap-4">
             <Tabs value={filtroMarca} onValueChange={(v) => setFiltroMarca(v as typeof filtroMarca)}>
               <TabsList>
-                <TabsTrigger value="todas">Todas</TabsTrigger>
-                <TabsTrigger value="colorido">Coloridos</TabsTrigger>
-                <TabsTrigger value="branco">Brancos</TabsTrigger>
+                <TabsTrigger value="todas">Todos</TabsTrigger>
+                <TabsTrigger value="colorido">🎨 Coisas Brasileiras</TabsTrigger>
+                <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
               </TabsList>
             </Tabs>
             <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
@@ -208,7 +208,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                             <span className="flex items-center gap-1.5">
                               <span
                                 className="text-sm leading-none"
-                                title={produto.marca === "branco" ? "Branco" : "Colorido"}
+                                title={produto.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras"}
                               >
                                 {produto.marca === "branco" ? "⚪" : "🎨"}
                               </span>
@@ -321,7 +321,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
         campos={
           detalhe
             ? [
-                { label: "Marca", valor: detalhe.marca === "branco" ? "Branco" : "Colorido" },
+                { label: "Site", valor: detalhe.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras" },
                 { label: "SKU", valor: detalhe.sku },
                 { label: "NCM", valor: detalhe.ncm },
                 { label: "Código de barras", valor: detalhe.codigo_barras },

@@ -27,7 +27,10 @@ export default async function SobrePage() {
   const marca = await resolverMarcaAtual()
   const [config, midias] = await Promise.all([
     getConfiguracoesMarca(["nome_loja", "texto_sobre_nos"], marca),
-    query("SELECT id, tipo, url, legenda FROM TAB_SOBRE_NOS_MIDIA ORDER BY ordem") as Promise<SobreNosMidia[]>,
+    query(
+      "SELECT id, tipo, url, legenda FROM TAB_SOBRE_NOS_MIDIA WHERE marca = $1 ORDER BY ordem",
+      [marca]
+    ) as Promise<SobreNosMidia[]>,
   ])
   const nomeLoja = config.nome_loja || "Coisas Brasileiras"
   const paragrafos = (config.texto_sobre_nos || "").split(/\n{2,}/).filter((p) => p.trim())

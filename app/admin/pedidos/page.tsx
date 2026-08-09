@@ -6,7 +6,7 @@ export default async function PedidosPage() {
   // no site vinculado (cliente_id nulo) - nesse caso usa o nome avulso digitado
   // na hora da venda.
   const pedidos = await query(`
-    SELECT p.id, p.status, p.total, p.origem, p.canal, p.forma_pagamento, p.criado_em,
+    SELECT p.id, p.status, p.total, p.origem, p.canal, p.forma_pagamento, p.criado_em, p.marca,
       COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome
     FROM TAB_PEDIDO p
     LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id

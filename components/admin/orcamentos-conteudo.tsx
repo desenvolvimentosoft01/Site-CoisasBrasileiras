@@ -78,6 +78,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   const confirmar = useConfirmar()
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>(orcamentosIniciais)
   const [aba, setAba] = useState("todos")
+  const [filtroSite, setFiltroSite] = useState<"todos" | "colorido" | "branco">("todos")
   const [mostrandoFormulario, setMostrandoFormulario] = useState(false)
   const [editando, setEditando] = useState<OrcamentoExistente | undefined>(undefined)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
@@ -203,7 +204,9 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
     recarregar()
   }
 
-  const orcamentosFiltrados = aba === "todos" ? orcamentos : orcamentos.filter((o) => o.status === aba)
+  const orcamentosFiltrados = orcamentos.filter(
+    (o) => (aba === "todos" || o.status === aba) && (filtroSite === "todos" || o.marca === filtroSite)
+  )
   const orcamentoSelecionado = orcamentos.find((o) => o.id === linhaSelecionada) ?? null
 
   if (mostrandoFormulario) {
@@ -223,11 +226,22 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Orçamentos</h1>
 
+      <Tabs value={filtroSite} onValueChange={(v) => setFiltroSite(v as typeof filtroSite)}>
+        <TabsList>
+          <TabsTrigger value="todos">Todos</TabsTrigger>
+          <TabsTrigger value="colorido">🎨 Coisas Brasileiras</TabsTrigger>
+          <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">
           {ABAS_STATUS.map((item) => {
+            const orcamentosDoSite = orcamentos.filter((o) => filtroSite === "todos" || o.marca === filtroSite)
             const quantidade =
-              item.valor === "todos" ? orcamentos.length : orcamentos.filter((o) => o.status === item.valor).length
+              item.valor === "todos"
+                ? orcamentosDoSite.length
+                : orcamentosDoSite.filter((o) => o.status === item.valor).length
             return (
               <TabsTrigger key={item.valor} value={item.valor} className="flex-none px-3">
                 {item.rotulo}
@@ -322,7 +336,12 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                               <p className="text-xs text-slate-400">{orcamento.titulo}</p>
                             )}
                             {orcamento.cliente_nome}{" "}
-                            <span className="text-xs">{orcamento.marca === "branco" ? "⚪" : "🎨"}</span>
+                            <span
+                              className="text-xs"
+                              title={orcamento.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras"}
+                            >
+                              {orcamento.marca === "branco" ? "⚪" : "🎨"}
+                            </span>
                           </td>
                           <td className="p-4">
                             <span className={`rounded-full px-2 py-1 text-xs ${CORES_STATUS[orcamento.status]}`}>

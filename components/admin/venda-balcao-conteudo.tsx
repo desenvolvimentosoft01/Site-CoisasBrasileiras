@@ -522,13 +522,17 @@ export function VendaBalcaoConteudo({
                     setMarcaAtiva(opcao)
                     setCategoriaAtiva("todas")
                   }}
-                  className={`rounded-full border px-3 py-1 text-sm capitalize transition-colors ${
+                  className={`rounded-full border px-3 py-1 text-sm transition-colors ${
                     marcaAtiva === opcao
                       ? "border-primary bg-primary/15 text-primary"
                       : "border-input text-muted-foreground hover:border-primary/50"
                   }`}
                 >
-                  {opcao === "todas" ? "Todas as marcas" : opcao}
+                  {opcao === "todas"
+                    ? "Todos os sites"
+                    : opcao === "branco"
+                      ? "⚪ Porcelanas Brancas"
+                      : "🎨 Coisas Brasileiras"}
                 </button>
               ))}
               <div className="mx-1 h-6 w-px bg-border" />
@@ -564,7 +568,7 @@ export function VendaBalcaoConteudo({
                         <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-slate-100 text-xs text-slate-400">
                           <span
                             className="absolute left-1 top-1 z-10 text-sm leading-none"
-                            title={produto.marca === "branco" ? "Branco" : "Colorido"}
+                            title={produto.marca === "branco" ? "Porcelanas Brancas" : "Coisas Brasileiras"}
                           >
                             {produto.marca === "branco" ? "⚪" : "🎨"}
                           </span>
