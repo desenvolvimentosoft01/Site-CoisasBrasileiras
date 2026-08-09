@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Plus, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, Eye, Plus, FilePlus, Save, Eraser, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
@@ -261,7 +261,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 setDetalhe(usuario)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Eye size={16} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -271,7 +271,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 abrirEdicao(usuario)
                               }}
                             >
-                              <span className="text-base leading-none">✏️</span>
+                              <Pencil size={16} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -281,7 +281,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 excluir(usuario)
                               }}
                             >
-                              <span className="text-base leading-none">🗑️</span>
+                              <Trash2 size={16} />
                             </Button>
                           </td>
                         </tr>
