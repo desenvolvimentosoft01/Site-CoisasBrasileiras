@@ -20,7 +20,7 @@ export default async function ResponderCotacaoPage({ params }: { params: Promise
   if (!cotacao) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-        <p className="text-slate-500">Cotacao nao encontrada ou link invalido.</p>
+        <p className="text-slate-500">Cotação não encontrada ou link inválido.</p>
       </div>
     )
   }
@@ -38,21 +38,21 @@ export default async function ResponderCotacaoPage({ params }: { params: Promise
     <div className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="border-b border-slate-200 pb-4 text-center">
-          <p className="text-lg font-bold text-slate-800">{config.nome_loja || "Cotacao"}</p>
+          <p className="text-lg font-bold text-slate-800">{config.nome_loja || "Cotação"}</p>
         </div>
 
         <div className="text-center">
-          <h1 className="text-xl font-bold text-slate-800">Cotacao {numeroFormatado(cotacao.numero)}</h1>
+          <h1 className="text-xl font-bold text-slate-800">Cotação {numeroFormatado(cotacao.numero)}</h1>
           <p className="mt-2 text-sm text-slate-700">{cotacao.fornecedor_nome}</p>
         </div>
 
         <p className="text-sm text-slate-600">
-          Informe a quantidade que consegue entregar e o preco de cada item abaixo.
+          Informe a quantidade que consegue entregar e o preço de cada item abaixo.
         </p>
 
         {cotacao.observacao && (
           <div>
-            <h3 className="mb-1 text-sm font-semibold text-slate-700">Observacao</h3>
+            <h3 className="mb-1 text-sm font-semibold text-slate-700">Observação</h3>
             <p className="text-sm whitespace-pre-line text-slate-600">{cotacao.observacao}</p>
           </div>
         )}

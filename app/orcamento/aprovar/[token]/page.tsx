@@ -27,7 +27,7 @@ export default async function AprovarOrcamentoPage({
   if (!orcamento) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-        <p className="text-slate-500">Orcamento nao encontrado ou link invalido.</p>
+        <p className="text-slate-500">Orçamento não encontrado ou link inválido.</p>
       </div>
     )
   }
@@ -45,11 +45,11 @@ export default async function AprovarOrcamentoPage({
     <div className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="border-b border-slate-200 pb-4 text-center">
-          <p className="text-lg font-bold text-slate-800">{config.nome_loja || "Orcamento"}</p>
+          <p className="text-lg font-bold text-slate-800">{config.nome_loja || "Orçamento"}</p>
         </div>
 
         <div className="text-center">
-          <h1 className="text-xl font-bold text-slate-800">{orcamento.titulo || "Orcamento"}</h1>
+          <h1 className="text-xl font-bold text-slate-800">{orcamento.titulo || "Orçamento"}</h1>
           <p className="text-sm text-slate-500">{numeroFormatado(orcamento.numero)}</p>
           <p className="mt-2 text-sm text-slate-700">{orcamento.cliente_nome}</p>
         </div>
@@ -87,7 +87,7 @@ export default async function AprovarOrcamentoPage({
 
         {orcamento.condicoes && (
           <div>
-            <h3 className="mb-1 text-sm font-semibold text-slate-700">Condicoes</h3>
+            <h3 className="mb-1 text-sm font-semibold text-slate-700">Condições</h3>
             <p className="text-sm whitespace-pre-line text-slate-600">{orcamento.condicoes}</p>
           </div>
         )}

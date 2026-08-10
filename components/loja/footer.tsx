@@ -57,6 +57,7 @@ export async function Footer() {
                 config.whatsapp_mensagem ? `?text=${encodeURIComponent(config.whatsapp_mensagem)}` : ""
               }`}
               target="_blank"
+              rel="noopener noreferrer"
               className={clean ? "flex items-center gap-2 hover:text-primary" : "flex items-center gap-2 hover:text-white"}
             >
               <MessageCircle size={18} />
@@ -67,6 +68,7 @@ export async function Footer() {
             <Link
               href={`https://instagram.com/${config.instagram.replace("@", "")}`}
               target="_blank"
+              rel="noopener noreferrer"
               className={clean ? "flex items-center gap-2 hover:text-primary" : "flex items-center gap-2 hover:text-white"}
             >
               <AtSign size={18} />
