@@ -67,7 +67,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <HeroCarousel banners={banners} />
+      <HeroCarousel banners={banners} marca={marca} />
 
       <CategoriaGrid categorias={categorias} />
 

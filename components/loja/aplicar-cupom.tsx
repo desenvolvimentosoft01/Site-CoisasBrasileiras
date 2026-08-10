@@ -42,7 +42,7 @@ export function AplicarCupom({ subtotal }: { subtotal: number }) {
 
   if (cupom) {
     return (
-      <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm">
+      <div className="flex items-center justify-between rounded-md bg-primary/10 px-3 py-2 text-sm">
         <span className="flex items-center gap-2 text-primary">
           <Tag size={14} />
           Cupom {cupom.codigo} aplicado (-{formatarPreco(cupom.desconto)})

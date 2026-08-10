@@ -15,8 +15,9 @@ export type BannerSlide = {
 }
 
 // Slides usados quando nenhum banner foi cadastrado no admin ainda, para o
-// site nunca ficar com a home vazia.
-const slidesPadrao: BannerSlide[] = [
+// site nunca ficar com a home vazia. O Porcelanas (marca "branco") usa tons
+// claros de azul/gelo em vez do verde do site colorido.
+const slidesPadraoColorido: BannerSlide[] = [
   {
     id: "padrao-1",
     titulo: "Porcelanas e itens decorativos para sua casa",
@@ -43,8 +44,36 @@ const slidesPadrao: BannerSlide[] = [
   },
 ]
 
-export function HeroCarousel({ banners }: { banners: BannerSlide[] }) {
-  const slides = banners.length > 0 ? banners : slidesPadrao
+const slidesPadraoBranco: BannerSlide[] = [
+  {
+    id: "padrao-1",
+    titulo: "Porcelanas para sua casa",
+    subtitulo: "Bowls, aparelhos de jantar e travessas em porcelana branca",
+    link: "/produtos",
+    imagem_url: null,
+    cor_fundo: "from-sky-200 to-sky-400",
+  },
+  {
+    id: "padrao-2",
+    titulo: "Imagens religiosas para sua fé",
+    subtitulo: "Nossa Senhora, Sagrada Família e Santos em porcelana",
+    link: "/produtos",
+    imagem_url: null,
+    cor_fundo: "from-blue-200 to-sky-300",
+  },
+  {
+    id: "padrao-3",
+    titulo: "O presente perfeito para cada ocasião",
+    subtitulo: "Presentes com frete para todo o Brasil",
+    link: "/produtos",
+    imagem_url: null,
+    cor_fundo: "from-sky-100 to-blue-300",
+  },
+]
+
+export function HeroCarousel({ banners, marca }: { banners: BannerSlide[]; marca?: "colorido" | "branco" }) {
+  const clean = marca === "branco"
+  const slides = banners.length > 0 ? banners : clean ? slidesPadraoBranco : slidesPadraoColorido
   const [indice, setIndice] = useState(0)
 
   useEffect(() => {
@@ -72,7 +101,9 @@ export function HeroCarousel({ banners }: { banners: BannerSlide[] }) {
           <Link
             key={slide.id}
             href={slide.link || "/produtos"}
-            className={`relative flex h-72 w-full shrink-0 flex-col items-center justify-center gap-3 bg-gradient-to-br px-6 text-center text-white md:h-96 ${slide.cor_fundo}`}
+            className={`relative flex h-72 w-full shrink-0 flex-col items-center justify-center gap-3 bg-gradient-to-br px-6 text-center md:h-96 ${
+              clean ? "text-sky-950" : "text-white"
+            } ${slide.cor_fundo}`}
           >
             {slide.imagem_url && (
               <Image
@@ -88,7 +119,9 @@ export function HeroCarousel({ banners }: { banners: BannerSlide[] }) {
               {slide.titulo}
             </h1>
             {slide.subtitulo && (
-              <p className="relative max-w-lg text-emerald-50/90 md:text-lg">{slide.subtitulo}</p>
+              <p className={`relative max-w-lg md:text-lg ${clean ? "text-sky-950/80" : "text-emerald-50/90"}`}>
+                {slide.subtitulo}
+              </p>
             )}
           </Link>
         ))}
@@ -98,14 +131,22 @@ export function HeroCarousel({ banners }: { banners: BannerSlide[] }) {
         <>
           <button
             onClick={anterior}
-            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-2 text-white backdrop-blur transition-colors hover:bg-white/30"
+            className={`absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 backdrop-blur transition-colors ${
+              clean
+                ? "bg-sky-950/10 text-sky-950 hover:bg-sky-950/20"
+                : "bg-white/20 text-white hover:bg-white/30"
+            }`}
             aria-label="Anterior"
           >
             <ChevronLeft size={22} />
           </button>
           <button
             onClick={proximo}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-2 text-white backdrop-blur transition-colors hover:bg-white/30"
+            className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 backdrop-blur transition-colors ${
+              clean
+                ? "bg-sky-950/10 text-sky-950 hover:bg-sky-950/20"
+                : "bg-white/20 text-white hover:bg-white/30"
+            }`}
             aria-label="Próximo"
           >
             <ChevronRight size={22} />
@@ -117,7 +158,13 @@ export function HeroCarousel({ banners }: { banners: BannerSlide[] }) {
                 key={slide.id}
                 onClick={() => setIndice(i)}
                 className={`h-2 rounded-full transition-all ${
-                  i === indice ? "w-6 bg-white" : "w-2 bg-white/50"
+                  clean
+                    ? i === indice
+                      ? "w-6 bg-sky-950"
+                      : "w-2 bg-sky-950/40"
+                    : i === indice
+                      ? "w-6 bg-white"
+                      : "w-2 bg-white/50"
                 }`}
                 aria-label={`Ir para slide ${i + 1}`}
               />

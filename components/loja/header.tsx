@@ -79,7 +79,7 @@ export function Header({
                     <div key={categoria.id} className="flex flex-col gap-1">
                       <Link
                         href={`/produtos?categoria=${categoria.slug}`}
-                        className="whitespace-nowrap text-sm font-semibold text-emerald-950 hover:text-primary"
+                        className="whitespace-nowrap text-sm font-semibold text-foreground hover:text-primary"
                       >
                         {categoria.nome}
                       </Link>
@@ -126,7 +126,7 @@ export function Header({
             href="/admin/entrar"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden rounded-full p-2 text-neutral-400 hover:bg-emerald-50 hover:text-primary md:block"
+            className="hidden rounded-full p-2 text-neutral-400 hover:bg-primary/10 hover:text-primary md:block"
             aria-label="Área administrativa"
             title="Área administrativa"
           >
@@ -134,28 +134,28 @@ export function Header({
           </Link>
           <Link
             href="/produtos"
-            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
+            className="rounded-full p-2 text-neutral-700 hover:bg-primary/10 hover:text-primary"
             aria-label="Buscar produtos"
           >
             <Search size={22} />
           </Link>
           <Link
             href={logado ? "/favoritos" : "/entrar"}
-            className="hidden rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary md:block"
+            className="hidden rounded-full p-2 text-neutral-700 hover:bg-primary/10 hover:text-primary md:block"
             aria-label="Lista de desejos"
           >
             <Heart size={22} />
           </Link>
           <Link
             href={logado ? "/minha-conta" : "/entrar"}
-            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
+            className="rounded-full p-2 text-neutral-700 hover:bg-primary/10 hover:text-primary"
             aria-label="Minha conta"
           >
             <User size={22} />
           </Link>
           <Link
             href="/carrinho"
-            className="relative rounded-full p-2 text-neutral-700 hover:bg-emerald-50 hover:text-primary"
+            className="relative rounded-full p-2 text-neutral-700 hover:bg-primary/10 hover:text-primary"
             aria-label="Carrinho"
           >
             <ShoppingCart size={22} />
@@ -166,7 +166,7 @@ export function Header({
             )}
           </Link>
           <button
-            className="rounded-full p-2 text-neutral-700 hover:bg-emerald-50 md:hidden"
+            className="rounded-full p-2 text-neutral-700 hover:bg-primary/10 md:hidden"
             onClick={() => setMenuAberto((v) => !v)}
             aria-label="Menu"
           >
@@ -180,7 +180,7 @@ export function Header({
           <Link
             href="/produtos"
             onClick={() => setMenuAberto(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-primary/10"
           >
             Todos os produtos
           </Link>
@@ -189,7 +189,7 @@ export function Header({
               <Link
                 href={`/produtos?categoria=${categoria.slug}`}
                 onClick={() => setMenuAberto(false)}
-                className="block rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+                className="block rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-primary/10"
               >
                 {categoria.nome}
               </Link>
@@ -198,7 +198,7 @@ export function Header({
                   key={sub.id}
                   href={`/produtos?categoria=${sub.slug}`}
                   onClick={() => setMenuAberto(false)}
-                  className="block rounded-md py-2 pl-6 text-sm text-neutral-600 hover:bg-emerald-50"
+                  className="block rounded-md py-2 pl-6 text-sm text-neutral-600 hover:bg-primary/10"
                 >
                   {sub.nome}
                 </Link>
@@ -208,21 +208,21 @@ export function Header({
           <Link
             href="/#destaques"
             onClick={() => setMenuAberto(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-primary/10"
           >
             Destaques
           </Link>
           <Link
             href="/sobre"
             onClick={() => setMenuAberto(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-primary/10"
           >
             Sobre nós
           </Link>
           <Link
             href="/contato"
             onClick={() => setMenuAberto(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-emerald-50"
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-primary/10"
           >
             Contato
           </Link>
@@ -231,7 +231,7 @@ export function Header({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setMenuAberto(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-400 hover:bg-emerald-50"
+            className="rounded-md px-3 py-2 text-sm font-medium text-neutral-400 hover:bg-primary/10"
           >
             Área administrativa
           </Link>

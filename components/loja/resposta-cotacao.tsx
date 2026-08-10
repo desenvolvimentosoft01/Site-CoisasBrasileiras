@@ -89,7 +89,7 @@ export function RespostaCotacao({
 
   if (respondida) {
     return (
-      <div className="flex items-center justify-center gap-2 rounded-md bg-emerald-50 p-4 text-emerald-700">
+      <div className="flex items-center justify-center gap-2 rounded-md bg-primary/10 p-4 text-primary">
         <CheckCircle2 size={18} />
         <span className="text-sm font-medium">
           {status === "enviado" ? "Cotação enviada! Obrigado." : "Essa cotação já foi respondida."}
@@ -162,7 +162,7 @@ export function RespostaCotacao({
       <button
         onClick={enviar}
         disabled={enviando}
-        className="flex h-11 w-full items-center justify-center rounded-md bg-emerald-600 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+        className="flex h-11 w-full items-center justify-center rounded-md bg-primary font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
       >
         {enviando ? "Enviando..." : "Enviar cotação"}
       </button>

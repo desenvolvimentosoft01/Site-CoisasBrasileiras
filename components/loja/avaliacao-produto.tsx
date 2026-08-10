@@ -87,7 +87,7 @@ export function AvaliacaoProduto({ produtoId }: { produtoId: string }) {
 
   if (jaAvaliou || enviado) {
     return (
-      <p className="text-sm text-emerald-700">
+      <p className="text-sm text-primary">
         {enviado
           ? "Avaliação enviada! Ela aparece aqui assim que for aprovada."
           : "Você já avaliou este produto."}

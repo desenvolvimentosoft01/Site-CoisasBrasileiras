@@ -9,7 +9,7 @@ export function ProdutoGaleria({ imagens, nome }: { imagens: string[]; nome: str
 
   if (imagens.length === 0) {
     return (
-      <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-emerald-50 text-emerald-300">
+      <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-primary/5 text-primary/30">
         <ShoppingBag size={64} />
       </div>
     )
@@ -17,7 +17,7 @@ export function ProdutoGaleria({ imagens, nome }: { imagens: string[]; nome: str
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-emerald-50">
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-primary/5">
         <Image src={imagens[indice]} alt={nome} fill className="object-cover" />
       </div>
 

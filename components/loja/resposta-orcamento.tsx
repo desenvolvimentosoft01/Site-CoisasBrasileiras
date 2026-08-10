@@ -50,7 +50,7 @@ export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, ob
     return (
       <div
         className={`flex flex-col gap-2 rounded-md p-4 ${
-          status === "aprovado" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+          status === "aprovado" ? "bg-primary/10 text-primary" : "bg-red-50 text-red-600"
         }`}
       >
         <div className="flex items-center justify-center gap-2">
@@ -108,7 +108,7 @@ export function RespostaOrcamento({ token, canal, statusAtual, canalResposta, ob
         <button
           onClick={() => responder("aprovado")}
           disabled={!!enviando}
-          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-emerald-600 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-primary font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           <CheckCircle2 size={16} /> {enviando === "aprovado" ? "Enviando..." : "Aprovar orçamento"}
         </button>

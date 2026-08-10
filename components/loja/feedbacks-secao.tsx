@@ -14,7 +14,7 @@ export function FeedbacksSecao({ feedbacks }: { feedbacks: Feedback[] }) {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 md:px-6">
-      <h2 className="font-heading mb-6 text-2xl font-semibold text-emerald-950">
+      <h2 className="font-heading mb-6 text-2xl font-semibold text-foreground">
         O que nossos clientes dizem
       </h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -34,12 +34,12 @@ export function FeedbacksSecao({ feedbacks }: { feedbacks: Feedback[] }) {
             </div>
             <p className="flex-1 text-sm text-neutral-600">&ldquo;{feedback.texto}&rdquo;</p>
             <div className="flex items-center gap-2.5">
-              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-emerald-100">
+              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-primary/10">
                 {feedback.imagem_url && (
                   <Image src={feedback.imagem_url} alt="" fill className="object-cover" sizes="36px" />
                 )}
               </div>
-              <span className="text-sm font-medium text-emerald-950">{feedback.nome}</span>
+              <span className="text-sm font-medium text-foreground">{feedback.nome}</span>
             </div>
           </div>
         ))}

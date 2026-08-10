@@ -113,7 +113,7 @@ export function ProdutoCard({
       </button>
 
       <Link href={`/produtos/${produto.slug}`} className="flex flex-1 flex-col">
-        <div className="relative aspect-square w-full overflow-hidden bg-emerald-50">
+        <div className="relative aspect-square w-full overflow-hidden bg-primary/5">
           {produto.imagem_capa ? (
             <Image
               src={produto.imagem_capa}
@@ -123,7 +123,7 @@ export function ProdutoCard({
               className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-emerald-300">
+            <div className="flex h-full items-center justify-center text-primary/30">
               <ShoppingBag size={40} />
             </div>
           )}
@@ -144,7 +144,7 @@ export function ProdutoCard({
                   <span className="text-xs text-neutral-400 line-through">
                     {formatarPreco(produto.preco_promocional ?? produto.preco)}
                   </span>
-                  <span className="text-lg font-bold text-emerald-700">
+                  <span className="text-lg font-bold text-primary">
                     {formatarPreco(clube!.valorFinal)}
                   </span>
                   <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">

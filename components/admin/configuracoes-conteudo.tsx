@@ -66,6 +66,11 @@ function ConfiguracoesFormulario({
   const searchParams = useSearchParams()
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
+  // Campos de identidade/vitrine (contato, paginas, aparencia, anuncio) sao
+  // salvos por marca - "colorido" (Coisas Brasileiras) e "branco" (Porcelanas
+  // Brancas) tem cada um seus proprios valores, igual ja funciona em /admin/cores.
+  const [marca, setMarca] = useState<"colorido" | "branco">("colorido")
+  const [carregandoMarca, setCarregandoMarca] = useState(false)
 
   const [whatsapp, setWhatsapp] = useState(
     configuracoesIniciais.whatsapp ? mascaraTelefone(configuracoesIniciais.whatsapp) : ""
@@ -186,6 +191,27 @@ function ConfiguracoesFormulario({
 
   const mensagemBling = searchParams.get("bling")
 
+  async function trocarMarca(novaMarca: "colorido" | "branco") {
+    if (novaMarca === marca) return
+    setCarregandoMarca(true)
+    const resposta = await fetch(`/api/admin/configuracoes?marca=${novaMarca}`)
+    if (resposta.ok) {
+      const dados = await resposta.json()
+      setWhatsapp(dados.whatsapp ? mascaraTelefone(dados.whatsapp) : "")
+      setWhatsappMensagem(dados.whatsapp_mensagem || "")
+      setInstagram(dados.instagram || "")
+      setEmailContato(dados.email_contato || "")
+      setEnderecoContato(dados.endereco_contato || "")
+      setTextoSobreNos(dados.texto_sobre_nos || "")
+      setBannerTextoTopo(dados.banner_texto_topo || "")
+      setNomeLoja(dados.nome_loja || "")
+      setTextoRodape(dados.texto_rodape || "")
+      setLogoUrl(dados.logo_url || "")
+    }
+    setMarca(novaMarca)
+    setCarregandoMarca(false)
+  }
+
   async function selecionarLogo(evento: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0]
     if (!arquivo) return
@@ -209,7 +235,7 @@ function ConfiguracoesFormulario({
     setSalvando(true)
     setSalvo(false)
 
-    await fetch("/api/admin/configuracoes", {
+    await fetch(`/api/admin/configuracoes?marca=${marca}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -245,6 +271,33 @@ function ConfiguracoesFormulario({
   return (
     <div className="max-w-5xl space-y-6">
       <h1 className="text-2xl font-semibold">Configurações da loja</h1>
+
+      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1 text-sm w-fit">
+        <button
+          type="button"
+          onClick={() => trocarMarca("colorido")}
+          disabled={carregandoMarca}
+          className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
+            marca === "colorido" ? "bg-white text-foreground shadow-sm" : "text-slate-500 hover:text-foreground"
+          }`}
+        >
+          🎨 Coisas Brasileiras
+        </button>
+        <button
+          type="button"
+          onClick={() => trocarMarca("branco")}
+          disabled={carregandoMarca}
+          className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
+            marca === "branco" ? "bg-white text-foreground shadow-sm" : "text-slate-500 hover:text-foreground"
+          }`}
+        >
+          ⚪ Porcelanas Brancas
+        </button>
+      </div>
+      <p className="text-xs text-slate-400">
+        Contato, Páginas, Aparência e Anúncio são salvos separado pra cada site. Frete, Custos e
+        Integrações são compartilhados entre os dois.
+      </p>
 
       <form onSubmit={salvar} className="space-y-6">
         <Tabs defaultValue="contato">

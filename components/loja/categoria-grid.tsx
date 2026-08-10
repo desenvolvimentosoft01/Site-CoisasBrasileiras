@@ -9,7 +9,7 @@ export function CategoriaGrid({ categorias }: { categorias: Categoria[] }) {
 
   return (
     <section id="categorias" className="mx-auto max-w-6xl px-4 py-12 md:px-6">
-      <h2 className="font-heading mb-6 text-2xl font-semibold text-emerald-950">
+      <h2 className="font-heading mb-6 text-2xl font-semibold text-foreground">
         Navegue por categoria
       </h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
@@ -17,7 +17,7 @@ export function CategoriaGrid({ categorias }: { categorias: Categoria[] }) {
           <Link
             key={categoria.id}
             href={`/produtos?categoria=${categoria.slug}`}
-            className="group flex flex-col items-center gap-3 rounded-xl border border-black/5 bg-emerald-50/60 p-6 text-center transition-colors hover:bg-emerald-100"
+            className="group flex flex-col items-center gap-3 rounded-xl border border-black/5 bg-primary/5 p-6 text-center transition-colors hover:bg-primary/10"
           >
             {categoria.imagem_url ? (
               <div className="relative h-12 w-12 overflow-hidden rounded-full transition-transform group-hover:scale-105">
@@ -28,7 +28,7 @@ export function CategoriaGrid({ categorias }: { categorias: Categoria[] }) {
                 <Leaf size={22} />
               </div>
             )}
-            <span className="text-sm font-medium text-emerald-900">{categoria.nome}</span>
+            <span className="text-sm font-medium text-foreground">{categoria.nome}</span>
           </Link>
         ))}
       </div>

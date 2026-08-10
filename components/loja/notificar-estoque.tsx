@@ -32,7 +32,7 @@ export function NotificarEstoque({ produtoId }: { produtoId: string }) {
 
   if (enviado) {
     return (
-      <p className="flex items-center gap-2 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
+      <p className="flex items-center gap-2 rounded-lg bg-primary/10 p-3 text-sm text-primary">
         <BellRing size={16} />
         Pronto! Avisamos por e-mail assim que o produto voltar ao estoque.
       </p>
