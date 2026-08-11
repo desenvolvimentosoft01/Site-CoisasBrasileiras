@@ -19,9 +19,26 @@ const pool = new Pool({
   ssl: ehLocalhost ? undefined : { rejectUnauthorized: false },
 })
 
+// Erros de conexao ociosa (o pooler do Supabase/Neon derruba conexoes idle do
+// lado servidor antes do idleTimeoutMillis do cliente) sao transitorios -
+// uma unica tentativa extra resolve sem precisar propagar o erro pra tela.
+const ERROS_CONEXAO_TRANSITORIOS = ["ECONNRESET", "ETIMEDOUT", "Connection terminated"]
+
+function ehErroTransitorio(erro: unknown): boolean {
+  const mensagem = erro instanceof Error ? erro.message : String(erro)
+  const codigo = (erro as { code?: string })?.code
+  return ERROS_CONEXAO_TRANSITORIOS.some((padrao) => mensagem.includes(padrao) || codigo === padrao)
+}
+
 export async function query(sql: string, params?: unknown[]) {
-  const resultado = await pool.query(sql, params)
-  return resultado.rows
+  try {
+    const resultado = await pool.query(sql, params)
+    return resultado.rows
+  } catch (erro) {
+    if (!ehErroTransitorio(erro)) throw erro
+    const resultado = await pool.query(sql, params)
+    return resultado.rows
+  }
 }
 
 // Para operacoes que precisam de varias queries atomicas (ex: criar pedido +

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -163,6 +163,43 @@ function AdminShellInterno({
   const [sidebarAberta, setSidebarAberta] = useState(false)
   const [notasPendentesBling, setNotasPendentesBling] = useState(0)
 
+  // Gesto de arrastar da borda esquerda pra abrir o menu (e arrastar pra
+  // esquerda pra fechar), igual app nativo de celular. So dispara com o dedo
+  // comecando perto da borda (< 24px) pra nao atrapalhar scroll/swipe normal
+  // do conteudo da tela.
+  const toqueInicioX = useRef<number | null>(null)
+  const toqueInicioY = useRef<number | null>(null)
+
+  function aoTocarInicio(evento: React.TouchEvent) {
+    const x = evento.touches[0].clientX
+    if (!sidebarAberta && x > 24) return
+    toqueInicioX.current = x
+    toqueInicioY.current = evento.touches[0].clientY
+  }
+
+  function aoTocarMover(evento: React.TouchEvent) {
+    if (toqueInicioX.current === null || toqueInicioY.current === null) return
+    const x = evento.touches[0].clientX
+    const y = evento.touches[0].clientY
+    const deltaX = x - toqueInicioX.current
+    const deltaY = y - toqueInicioY.current
+    if (Math.abs(deltaY) > Math.abs(deltaX)) return
+    if (!sidebarAberta && deltaX > 60) {
+      setSidebarAberta(true)
+      toqueInicioX.current = null
+      toqueInicioY.current = null
+    } else if (sidebarAberta && deltaX < -60) {
+      setSidebarAberta(false)
+      toqueInicioX.current = null
+      toqueInicioY.current = null
+    }
+  }
+
+  function aoTocarFim() {
+    toqueInicioX.current = null
+    toqueInicioY.current = null
+  }
+
   // Le do banco (atualizado pelo cron diario) - nao chama o Bling direto,
   // so pra mostrar um badge no menu "Compras" quando tem nota esperando.
   useEffect(() => {
@@ -233,7 +270,13 @@ function AdminShellInterno({
     // tem altura fixa de tela) "acabava" no meio da rolagem, bagunçando o
     // layout.
     <ConfirmProvider>
-    <div className="flex h-screen overflow-hidden bg-slate-100" style={styleCoresTema(cores)}>
+    <div
+      className="flex h-screen overflow-hidden bg-slate-100"
+      style={styleCoresTema(cores)}
+      onTouchStart={aoTocarInicio}
+      onTouchMove={aoTocarMover}
+      onTouchEnd={aoTocarFim}
+    >
       <Toaster position="top-right" richColors />
       {sidebarAberta && (
         <div
