@@ -404,7 +404,7 @@ export function VendaBalcaoConteudo({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Venda Balcão</h1>
         <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
           <TabsList>
@@ -492,7 +492,7 @@ export function VendaBalcaoConteudo({
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="relative max-w-xs flex-1">
+              <div className="relative min-w-[180px] max-w-xs flex-1">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <Input
                   placeholder="Buscar produto..."
@@ -501,7 +501,7 @@ export function VendaBalcaoConteudo({
                   className="pl-9"
                 />
               </div>
-              <div className="relative max-w-56 flex-1">
+              <div className="relative min-w-[160px] max-w-56 flex-1">
                 <Barcode size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <Input
                   placeholder="Ler código de barras..."
