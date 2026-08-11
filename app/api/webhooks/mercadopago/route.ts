@@ -15,10 +15,11 @@ const STATUS_MP_PARA_PEDIDO: Record<string, string> = {
 // Valida o header x-signature que o Mercado Pago envia, provando que a
 // notificacao realmente veio do MP (nao apenas um POST forjado por terceiros).
 // O segredo vem do painel do MP > sua aplicacao > Webhooks > "Assinatura secreta".
-// Se ainda nao foi configurado (ex: em dev local), pula a validacao.
+// Obrigatorio - sem o segredo configurado, rejeita a notificacao (fail-closed)
+// em vez de aceitar sem validar.
 async function assinaturaValida(request: Request, dataId: string): Promise<boolean> {
   const segredo = await getSegredo("mercadopago_webhook_secret")
-  if (!segredo) return true
+  if (!segredo) return false
 
   const signatureHeader = request.headers.get("x-signature")
   const requestId = request.headers.get("x-request-id")
