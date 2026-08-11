@@ -84,7 +84,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative max-w-xs flex-1">
+        <div className="relative min-w-[180px] max-w-xs flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <Input
             placeholder="Buscar por nome ou SKU..."
