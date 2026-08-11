@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import Image from "next/image"
 import { mascaraCpfCnpj, mascaraTelefone, formatarMoeda } from "@/lib/mascaras"
-import { MapPin, Package, LogOut, Sparkles, Heart, X, ShoppingBag } from "lucide-react"
+import { MapPin, Package, LogOut, Sparkles, Heart, X, ShoppingBag, Download, ShieldAlert } from "lucide-react"
 
 type Endereco = {
   id: string
@@ -107,6 +107,9 @@ function MinhaContaConteudo() {
   const [processandoClube, setProcessandoClube] = useState(false)
   const [erroClube, setErroClube] = useState("")
   const [modalCancelarClubeAberto, setModalCancelarClubeAberto] = useState(false)
+  const [modalExcluirContaAberto, setModalExcluirContaAberto] = useState(false)
+  const [exportandoDados, setExportandoDados] = useState(false)
+  const [excluindoConta, setExcluindoConta] = useState(false)
 
   const [nome, setNome] = useState("")
   const [telefone, setTelefone] = useState("")
@@ -225,6 +228,30 @@ function MinhaContaConteudo() {
 
   async function sair() {
     await fetch("/api/cliente/logout", { method: "POST" })
+    router.push("/")
+    router.refresh()
+  }
+
+  // Direito de portabilidade da LGPD - junta tudo que ja carregamos da conta
+  // num arquivo unico, sem precisar de rota nova so pra isso.
+  async function baixarMeusDados() {
+    setExportandoDados(true)
+    const dados = { perfil, pedidos, listaDesejos, assinatura }
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "meus-dados.json"
+    link.click()
+    URL.revokeObjectURL(url)
+    setExportandoDados(false)
+  }
+
+  async function excluirConta() {
+    setExcluindoConta(true)
+    const resposta = await fetch("/api/cliente/perfil", { method: "DELETE" })
+    setExcluindoConta(false)
+    if (!resposta.ok) return
     router.push("/")
     router.refresh()
   }
@@ -477,6 +504,65 @@ function MinhaContaConteudo() {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ShieldAlert size={18} />
+            Privacidade e dados
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-neutral-500">
+            Leia como tratamos seus dados na{" "}
+            <Link href="/politica-de-privacidade" className="font-medium text-emerald-700 hover:underline">
+              Política de Privacidade
+            </Link>
+            .
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="button" variant="outline" size="sm" onClick={baixarMeusDados} disabled={exportandoDados}>
+              <Download size={16} className="mr-2" />
+              Baixar meus dados
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={() => setModalExcluirContaAberto(true)}
+            >
+              Excluir minha conta
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={modalExcluirContaAberto} onOpenChange={setModalExcluirContaAberto}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir sua conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser desfeita. Se você já tiver pedidos, seus dados de identificação
+              (nome, telefone, CPF) serão apagados, mas o histórico de pedidos precisa ser mantido por
+              exigência fiscal - os pedidos deixam de estar vinculados a uma conta acessível.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Manter conta</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={excluindoConta}
+              onClick={() => {
+                setModalExcluirContaAberto(false)
+                excluirConta()
+              }}
+            >
+              {excluindoConta ? "Excluindo..." : "Excluir conta"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

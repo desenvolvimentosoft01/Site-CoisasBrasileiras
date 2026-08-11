@@ -16,18 +16,25 @@ export default function CadastroPage() {
   const [email, setEmail] = useState("")
   const [telefone, setTelefone] = useState("")
   const [senha, setSenha] = useState("")
+  const [aceitouTermos, setAceitouTermos] = useState(false)
   const [erro, setErro] = useState("")
   const [carregando, setCarregando] = useState(false)
 
   async function handleSubmit(evento: React.FormEvent) {
     evento.preventDefault()
     setErro("")
+
+    if (!aceitouTermos) {
+      setErro("É preciso aceitar a Política de Privacidade e os Termos de Uso")
+      return
+    }
+
     setCarregando(true)
 
     const resposta = await fetch("/api/cliente/cadastro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, email, telefone: telefone.replace(/\D/g, ""), senha }),
+      body: JSON.stringify({ nome, email, telefone: telefone.replace(/\D/g, ""), senha, aceitouTermos }),
     })
 
     setCarregando(false)
@@ -74,8 +81,27 @@ export default function CadastroPage() {
               <Label htmlFor="senha">Senha</Label>
               <InputSenha id="senha" value={senha} onChange={(e) => setSenha(e.target.value)} required />
             </div>
+            <label htmlFor="aceitou-termos" className="flex items-start gap-2 text-sm text-neutral-600">
+              <input
+                id="aceitou-termos"
+                type="checkbox"
+                checked={aceitouTermos}
+                onChange={(e) => setAceitouTermos(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300"
+              />
+              <span>
+                Li e aceito a{" "}
+                <Link href="/politica-de-privacidade" target="_blank" className="font-medium text-emerald-700 hover:underline">
+                  Política de Privacidade
+                </Link>{" "}
+                e os{" "}
+                <Link href="/termos-de-uso" target="_blank" className="font-medium text-emerald-700 hover:underline">
+                  Termos de Uso
+                </Link>
+              </span>
+            </label>
             {erro && <p className="text-sm text-red-500">{erro}</p>}
-            <Button type="submit" className="w-full" disabled={carregando}>
+            <Button type="submit" className="w-full" disabled={carregando || !aceitouTermos}>
               {carregando ? "Criando conta..." : "Criar conta"}
             </Button>
           </form>

@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
-  const { nome, email, senha, telefone } = await request.json()
+  const { nome, email, senha, telefone, aceitouTermos } = await request.json()
 
   if (!nome?.trim() || !email?.trim() || !senha) {
     return NextResponse.json({ erro: "Nome, email e senha são obrigatórios" }, { status: 400 })
@@ -12,6 +12,15 @@ export async function POST(request: Request) {
 
   if (senha.length < 6) {
     return NextResponse.json({ erro: "A senha precisa ter pelo menos 6 caracteres" }, { status: 400 })
+  }
+
+  // Exigido pela LGPD (art. 8o) - o aceite precisa ser uma acao explicita do
+  // titular, entao o cadastro so segue com a caixa marcada.
+  if (!aceitouTermos) {
+    return NextResponse.json(
+      { erro: "É preciso aceitar a Política de Privacidade e os Termos de Uso" },
+      { status: 400 }
+    )
   }
 
   const existente = await query("SELECT id FROM TAB_CLIENTE WHERE email = $1", [email.trim()])
@@ -22,7 +31,8 @@ export async function POST(request: Request) {
   const senhaHash = await bcrypt.hash(senha, 10)
 
   const [cliente] = await query(
-    "INSERT INTO TAB_CLIENTE (nome, email, telefone, senha_hash) VALUES ($1, $2, $3, $4) RETURNING id, nome, email",
+    `INSERT INTO TAB_CLIENTE (nome, email, telefone, senha_hash, consentimento_lgpd_em)
+     VALUES ($1, $2, $3, $4, NOW()) RETURNING id, nome, email`,
     [nome.trim(), email.trim(), telefone || null, senhaHash]
   )
 
