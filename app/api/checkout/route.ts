@@ -1,6 +1,6 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
-import { calcularOpcoesFrete } from "@/lib/configuracoes"
+import { calcularOpcoesFrete, getConfiguracoes } from "@/lib/configuracoes"
 import { enviarEmail, templatePedidoCriado } from "@/lib/email"
 import { resolverMarca } from "@/lib/marca"
 import { NextResponse } from "next/server"
@@ -32,11 +32,12 @@ export async function POST(request: Request) {
     estado: string
   }
 
-  const { endereco, itens, cupomCodigo, freteEscolhido } = await request.json() as {
+  const { endereco, itens, cupomCodigo, freteEscolhido, cpfCnpj } = await request.json() as {
     endereco: EnderecoRequisicao
     itens: ItemRequisicao[]
     cupomCodigo?: string
     freteEscolhido?: OpcaoFreteEscolhida
+    cpfCnpj?: string
   }
 
   if (!Array.isArray(itens) || itens.length === 0) {
@@ -52,6 +53,28 @@ export async function POST(request: Request) {
     !endereco?.estado
   ) {
     return NextResponse.json({ erro: "Endereço incompleto" }, { status: 400 })
+  }
+
+  // Regra configuravel em Configuracoes > Regras - quando ligada, o
+  // checkout so segue com CPF/CNPJ preenchido (no pedido ou ja salvo no
+  // cadastro do cliente), pra nao travar a emissao da nota fiscal depois.
+  const regras = await getConfiguracoes(["cpf_obrigatorio_checkout"])
+  if (regras.cpf_obrigatorio_checkout === "true") {
+    const [clienteCpf] = await query("SELECT cpf_cnpj FROM TAB_CLIENTE WHERE id = $1", [cliente.id])
+    if (!cpfCnpj && !clienteCpf?.cpf_cnpj) {
+      return NextResponse.json({ erro: "CPF ou CNPJ é obrigatório para finalizar a compra" }, { status: 400 })
+    }
+  }
+
+  if (cpfCnpj) {
+    try {
+      await query("UPDATE TAB_CLIENTE SET cpf_cnpj = $1 WHERE id = $2", [cpfCnpj, cliente.id])
+    } catch (erro) {
+      // CPF/CNPJ ja cadastrado em outra conta (coluna UNIQUE) - nao trava o
+      // checkout por causa disso, so ignora a atualizacao e segue com o
+      // pedido (a nota fiscal usa o que ja estava salvo, se houver).
+      if (!(erro instanceof Error && "code" in erro && erro.code === "23505")) throw erro
+    }
   }
 
   try {

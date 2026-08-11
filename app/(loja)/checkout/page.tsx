@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCarrinho, totalCarrinho } from "@/lib/carrinho-store"
-import { mascaraCEP } from "@/lib/mascaras"
+import { mascaraCEP, mascaraCpfCnpj } from "@/lib/mascaras"
 import { AplicarCupom } from "@/components/loja/aplicar-cupom"
 import { Loader2 } from "lucide-react"
 
@@ -34,6 +34,8 @@ export default function CheckoutPage() {
   // redirecionar pro Mercado Pago).
   const [pedidoPendente, setPedidoPendente] = useState<{ id: string; total: number } | null>(null)
   const [chavePublicaMP, setChavePublicaMP] = useState<string | null>(null)
+  const [cpfObrigatorio, setCpfObrigatorio] = useState(false)
+  const [cpfCnpj, setCpfCnpj] = useState("")
   const [erroPagamento, setErroPagamento] = useState("")
   const [pixDados, setPixDados] = useState<{ qrCode: string; qrCodeBase64: string } | null>(null)
 
@@ -72,6 +74,7 @@ export default function CheckoutPage() {
           mpInicializado = true
         }
         setChavePublicaMP(dados.publicKey)
+        setCpfObrigatorio(!!dados.cpfObrigatorio)
       })
   }, [])
 
@@ -141,6 +144,7 @@ export default function CheckoutPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         endereco: { cep, logradouro, numero, complemento, bairro, cidade, estado },
+        cpfCnpj: cpfCnpj.replace(/\D/g, "") || undefined,
         itens: itens.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
         cupomCodigo: cupom?.codigo,
         freteEscolhido: opcaoFrete
@@ -301,6 +305,19 @@ export default function CheckoutPage() {
           <CardContent className="pt-6">
             <form onSubmit={finalizarPedido} className="space-y-4">
               <h2 className="font-medium text-neutral-800">Endereço de entrega</h2>
+
+              {cpfObrigatorio && (
+                <div className="space-y-2">
+                  <Label>CPF ou CNPJ</Label>
+                  <Input
+                    value={cpfCnpj}
+                    onChange={(e) => setCpfCnpj(mascaraCpfCnpj(e.target.value))}
+                    inputMode="numeric"
+                    required
+                  />
+                  <p className="text-xs text-neutral-400">Necessário pra emissão da nota fiscal.</p>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
