@@ -43,6 +43,12 @@ export async function Footer() {
           <Link href="/contato" className={clean ? "block hover:text-primary" : "block hover:text-white"}>
             Contato
           </Link>
+          <Link href="/politica-de-privacidade" className={clean ? "block hover:text-primary" : "block hover:text-white"}>
+            Política de Privacidade
+          </Link>
+          <Link href="/termos-de-uso" className={clean ? "block hover:text-primary" : "block hover:text-white"}>
+            Termos de Uso
+          </Link>
           <div className="flex items-center gap-2">
             <Truck size={18} />
             Envio para todo o Brasil
