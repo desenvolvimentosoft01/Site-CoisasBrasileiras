@@ -4,6 +4,13 @@ import { lerTokenSessao, EMAIL_DESENVOLVEDOR } from "@/lib/auth"
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  if (pathname === "/admin") {
+    const sessao = await lerTokenSessao(request.cookies.get("admin_sessao")?.value)
+    const url = request.nextUrl.clone()
+    url.pathname = sessao ? "/admin/dashboard" : "/admin/entrar"
+    return NextResponse.redirect(url)
+  }
+
   if (pathname === "/admin/entrar") {
     const sessao = await lerTokenSessao(request.cookies.get("admin_sessao")?.value)
     if (sessao) {
