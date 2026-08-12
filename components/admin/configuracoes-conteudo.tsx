@@ -197,15 +197,9 @@ function ConfiguracoesFormulario({
     const resposta = await fetch(`/api/admin/configuracoes?marca=${novaMarca}`)
     if (resposta.ok) {
       const dados = await resposta.json()
-      setWhatsapp(dados.whatsapp ? mascaraTelefone(dados.whatsapp) : "")
-      setWhatsappMensagem(dados.whatsapp_mensagem || "")
-      setInstagram(dados.instagram || "")
-      setEmailContato(dados.email_contato || "")
-      setEnderecoContato(dados.endereco_contato || "")
       setTextoSobreNos(dados.texto_sobre_nos || "")
       setBannerTextoTopo(dados.banner_texto_topo || "")
       setNomeLoja(dados.nome_loja || "")
-      setTextoRodape(dados.texto_rodape || "")
       setLogoUrl(dados.logo_url || "")
     }
     setMarca(novaMarca)
@@ -295,8 +289,8 @@ function ConfiguracoesFormulario({
         </button>
       </div>
       <p className="text-xs text-slate-400">
-        Contato, Páginas, Aparência e Anúncio são salvos separado pra cada site. Frete, Custos e
-        Integrações são compartilhados entre os dois.
+        Nome da loja, logo, texto da página &quot;Sobre nós&quot; e o anúncio no topo são salvos
+        separado pra cada site. Contato, Frete, Custos e Integrações são compartilhados entre os dois.
       </p>
 
       <form onSubmit={salvar} className="space-y-6">

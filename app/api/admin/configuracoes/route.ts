@@ -4,22 +4,11 @@ import { getConfiguracoesMarca, salvarConfiguracoesMarca, type Marca } from "@/l
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
-// Campos de identidade/vitrine da loja publica - cada marca (colorido/branco)
-// mantem os proprios valores em TAB_CONFIGURACAO_MARCA, mesma tabela ja usada
-// pelas cores em /admin/cores. O resto (frete, custos, integracoes) e
-// operacional e continua compartilhado entre as duas marcas em TAB_CONFIGURACAO.
-const CHAVES_MARCA = [
-  "whatsapp",
-  "whatsapp_mensagem",
-  "instagram",
-  "email_contato",
-  "endereco_contato",
-  "texto_sobre_nos",
-  "banner_texto_topo",
-  "nome_loja",
-  "texto_rodape",
-  "logo_url",
-]
+// So esses campos de identidade/vitrine continuam por marca (colorido/branco)
+// em TAB_CONFIGURACAO_MARCA - nome, logo, banner e "sobre nos" fazem sentido
+// diferentes pra cada loja. Contato (whatsapp, instagram, email, endereco) e
+// o resto (frete, custos, integracoes) sao compartilhados em TAB_CONFIGURACAO.
+const CHAVES_MARCA = ["nome_loja", "logo_url", "banner_texto_topo", "texto_sobre_nos"]
 
 export async function GET(request: Request) {
   const sessaoOuErro = await exigirSessao()

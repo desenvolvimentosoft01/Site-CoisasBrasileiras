@@ -2,7 +2,7 @@ import { Header } from "@/components/loja/header"
 import { Footer } from "@/components/loja/footer"
 import { CarrinhoDrawer } from "@/components/loja/carrinho-drawer"
 import { WhatsappFlutuante } from "@/components/loja/whatsapp-flutuante"
-import { getConfiguracoesMarca } from "@/lib/configuracoes"
+import { getConfiguracoes, getConfiguracoesMarca } from "@/lib/configuracoes"
 import { resolverMarcaAtual } from "@/lib/marca"
 import { query } from "@/lib/db"
 import { CHAVES_COR_TEMA, styleCoresTema } from "@/lib/cores"
@@ -17,16 +17,15 @@ export const dynamic = "force-dynamic"
 
 export default async function LojaLayout({ children }: { children: React.ReactNode }) {
   const marca = await resolverMarcaAtual()
-  const [config, categorias] = await Promise.all([
-    getConfiguracoesMarca(
-      ["banner_texto_topo", "nome_loja", "logo_url", "whatsapp", "whatsapp_mensagem", ...CHAVES_COR_TEMA],
-      marca
-    ),
+  const [configGlobal, configMarca, categorias] = await Promise.all([
+    getConfiguracoes(["whatsapp", "whatsapp_mensagem"]),
+    getConfiguracoesMarca(["banner_texto_topo", "nome_loja", "logo_url", ...CHAVES_COR_TEMA], marca),
     query(
       "SELECT id, nome, slug, categoria_pai_id FROM TAB_CATEGORIA WHERE ativa = true AND marca = $1 ORDER BY nome",
       [marca]
     ),
   ])
+  const config = { ...configGlobal, ...configMarca }
 
   return (
     // Sobrescreve a paleta do tema (usada em botoes, links, badges, fundos)
