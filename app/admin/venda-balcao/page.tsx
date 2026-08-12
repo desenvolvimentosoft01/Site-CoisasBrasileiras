@@ -24,7 +24,7 @@ export default async function VendaBalcaoPage() {
     // balcao juntos, com a origem marcada, pra quem esta no balcao ver tudo
     // que esta vendendo sem trocar de tela.
     query(`
-      SELECT p.id, p.origem, p.canal, p.status, p.total, p.forma_pagamento, p.criado_em,
+      SELECT p.id, p.origem, p.canal, p.marca, p.status, p.total, p.forma_pagamento, p.criado_em,
         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome
       FROM TAB_PEDIDO p
       LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id

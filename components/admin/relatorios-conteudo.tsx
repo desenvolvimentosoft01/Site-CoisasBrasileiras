@@ -467,6 +467,12 @@ export function RelatoriosConteudo({
                     <SelectItem value="balcao">
                       <LabelCanal canal="balcao" />
                     </SelectItem>
+                    <SelectItem value="mercadolivre">
+                      <LabelCanal canal="mercadolivre" />
+                    </SelectItem>
+                    <SelectItem value="shopee">
+                      <LabelCanal canal="shopee" />
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

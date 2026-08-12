@@ -1,10 +1,13 @@
-import { getConfiguracoesMarca } from "@/lib/configuracoes"
+import { getConfiguracoes, getConfiguracoesMarca } from "@/lib/configuracoes"
 import { resolverMarcaAtual } from "@/lib/marca"
 
 export default async function PoliticaDePrivacidadePage() {
   const marca = await resolverMarcaAtual()
-  const config = await getConfiguracoesMarca(["nome_loja", "email_contato"], marca)
-  const nomeLoja = config.nome_loja || "Coisas Brasileiras"
+  const [config, configMarca] = await Promise.all([
+    getConfiguracoes(["email_contato"]),
+    getConfiguracoesMarca(["nome_loja"], marca),
+  ])
+  const nomeLoja = configMarca.nome_loja || "Coisas Brasileiras"
   const emailContato = config.email_contato || "contato@coisasbrasileiras.com.br"
 
   return (

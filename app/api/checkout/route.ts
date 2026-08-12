@@ -1,6 +1,6 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
-import { calcularOpcoesFrete, getConfiguracoes } from "@/lib/configuracoes"
+import { calcularOpcoesFrete } from "@/lib/configuracoes"
 import { enviarEmail, templatePedidoCriado } from "@/lib/email"
 import { resolverMarca } from "@/lib/marca"
 import { NextResponse } from "next/server"
@@ -55,15 +55,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "Endereço incompleto" }, { status: 400 })
   }
 
-  // Regra configuravel em Configuracoes > Regras - quando ligada, o
-  // checkout so segue com CPF/CNPJ preenchido (no pedido ou ja salvo no
-  // cadastro do cliente), pra nao travar a emissao da nota fiscal depois.
-  const regras = await getConfiguracoes(["cpf_obrigatorio_checkout"])
-  if (regras.cpf_obrigatorio_checkout === "true") {
-    const [clienteCpf] = await query("SELECT cpf_cnpj FROM TAB_CLIENTE WHERE id = $1", [cliente.id])
-    if (!cpfCnpj && !clienteCpf?.cpf_cnpj) {
-      return NextResponse.json({ erro: "CPF ou CNPJ é obrigatório para finalizar a compra" }, { status: 400 })
-    }
+  // CPF/CNPJ e sempre obrigatorio no checkout do site (no pedido ou ja
+  // salvo no cadastro do cliente), pra nao travar a emissao da nota fiscal.
+  const [clienteCpf] = await query("SELECT cpf_cnpj FROM TAB_CLIENTE WHERE id = $1", [cliente.id])
+  if (!cpfCnpj && !clienteCpf?.cpf_cnpj) {
+    return NextResponse.json({ erro: "CPF ou CNPJ é obrigatório para finalizar a compra" }, { status: 400 })
   }
 
   if (cpfCnpj) {
