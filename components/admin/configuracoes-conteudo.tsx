@@ -12,7 +12,7 @@ import { CampoDica } from "@/components/ui/campo-dica"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
-import { Phone, Truck, Megaphone, Palette, Plug, Percent, KeyRound, Check, FileText, ListChecks } from "lucide-react"
+import { Phone, Truck, Megaphone, Palette, Plug, Percent, KeyRound, Check, FileText } from "lucide-react"
 
 export type ConfiguracoesIniciais = {
   whatsapp: string
@@ -36,7 +36,6 @@ export type ConfiguracoesIniciais = {
   texto_sobre_nos: string
   bling_loja_mercadolivre: string
   bling_loja_shopee: string
-  cpf_obrigatorio_checkout: string
 }
 
 export type BlingStatus =
@@ -112,9 +111,6 @@ function ConfiguracoesFormulario({
   const [regimeTributario, setRegimeTributario] = useState(configuracoesIniciais.regime_tributario || "simples_nacional")
   const [blingLojaMercadoLivre, setBlingLojaMercadoLivre] = useState(configuracoesIniciais.bling_loja_mercadolivre)
   const [blingLojaShopee, setBlingLojaShopee] = useState(configuracoesIniciais.bling_loja_shopee)
-  const [cpfObrigatorioCheckout, setCpfObrigatorioCheckout] = useState(
-    configuracoesIniciais.cpf_obrigatorio_checkout === "true"
-  )
   const [clubeMensalidade, setClubeMensalidade] = useState(
     configuracoesIniciais.clube_valor_mensalidade
       ? mascaraMoeda(String(Math.round(Number(configuracoesIniciais.clube_valor_mensalidade) * 100)))
@@ -264,7 +260,6 @@ function ConfiguracoesFormulario({
         clube_valor_mensalidade: String(valorMoedaParaNumero(clubeMensalidade || "0,00")),
         bling_loja_mercadolivre: blingLojaMercadoLivre,
         bling_loja_shopee: blingLojaShopee,
-        cpf_obrigatorio_checkout: String(cpfObrigatorioCheckout),
       }),
     })
 
@@ -334,10 +329,6 @@ function ConfiguracoesFormulario({
             <TabsTrigger value="integracoes">
               <Plug size={14} className="mr-1.5" />
               Integrações
-            </TabsTrigger>
-            <TabsTrigger value="regras">
-              <ListChecks size={14} className="mr-1.5" />
-              Regras
             </TabsTrigger>
           </TabsList>
 
@@ -1050,33 +1041,6 @@ function ConfiguracoesFormulario({
             </Tabs>
           </TabsContent>
 
-          <TabsContent value="regras" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm text-slate-500">Regras do sistema</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-xs text-muted-foreground">
-                  Liga e desliga comportamentos do site sem precisar mexer em código.
-                </p>
-                <label className="flex items-start gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={cpfObrigatorioCheckout}
-                    onChange={(e) => setCpfObrigatorioCheckout(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-input"
-                  />
-                  <span>
-                    <span className="font-medium">Exigir CPF/CNPJ no checkout</span>
-                    <p className="text-xs text-muted-foreground">
-                      Com essa regra ligada, o cliente precisa informar CPF ou CNPJ pra concluir a
-                      compra no site - útil pra evitar problema na hora de emitir a nota fiscal.
-                    </p>
-                  </span>
-                </label>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
 
         <div className="flex items-center gap-3">

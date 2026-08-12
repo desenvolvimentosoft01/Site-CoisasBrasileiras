@@ -16,7 +16,6 @@ const CHAVES = [
   "clube_valor_mensalidade",
   "bling_loja_mercadolivre",
   "bling_loja_shopee",
-  "cpf_obrigatorio_checkout",
 ]
 
 // Campos de identidade/vitrine, salvos por marca (colorido/branco) - a tela
@@ -72,7 +71,6 @@ export default async function ConfiguracoesPage() {
         clube_valor_mensalidade: configuracoes.clube_valor_mensalidade || "",
         bling_loja_mercadolivre: configuracoes.bling_loja_mercadolivre || "",
         bling_loja_shopee: configuracoes.bling_loja_shopee || "",
-        cpf_obrigatorio_checkout: configuracoes.cpf_obrigatorio_checkout || "",
       }}
       blingStatus={blingStatus}
     />

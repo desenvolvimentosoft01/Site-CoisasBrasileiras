@@ -34,7 +34,6 @@ export default function CheckoutPage() {
   // redirecionar pro Mercado Pago).
   const [pedidoPendente, setPedidoPendente] = useState<{ id: string; total: number } | null>(null)
   const [chavePublicaMP, setChavePublicaMP] = useState<string | null>(null)
-  const [cpfObrigatorio, setCpfObrigatorio] = useState(false)
   const [cpfCnpj, setCpfCnpj] = useState("")
   const [erroPagamento, setErroPagamento] = useState("")
   const [pixDados, setPixDados] = useState<{ qrCode: string; qrCodeBase64: string } | null>(null)
@@ -74,7 +73,6 @@ export default function CheckoutPage() {
           mpInicializado = true
         }
         setChavePublicaMP(dados.publicKey)
-        setCpfObrigatorio(!!dados.cpfObrigatorio)
       })
   }, [])
 
@@ -306,18 +304,16 @@ export default function CheckoutPage() {
             <form onSubmit={finalizarPedido} className="space-y-4">
               <h2 className="font-medium text-neutral-800">Endereço de entrega</h2>
 
-              {cpfObrigatorio && (
-                <div className="space-y-2">
-                  <Label>CPF ou CNPJ</Label>
-                  <Input
-                    value={cpfCnpj}
-                    onChange={(e) => setCpfCnpj(mascaraCpfCnpj(e.target.value))}
-                    inputMode="numeric"
-                    required
-                  />
-                  <p className="text-xs text-neutral-400">Necessário pra emissão da nota fiscal.</p>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>CPF ou CNPJ</Label>
+                <Input
+                  value={cpfCnpj}
+                  onChange={(e) => setCpfCnpj(mascaraCpfCnpj(e.target.value))}
+                  inputMode="numeric"
+                  required
+                />
+                <p className="text-xs text-neutral-400">Necessário pra emissão da nota fiscal.</p>
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
