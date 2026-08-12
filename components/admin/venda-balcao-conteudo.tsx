@@ -58,6 +58,7 @@ export type Venda = {
   id: string
   origem: "site" | "balcao"
   canal: CanalPedido | null
+  marca: "colorido" | "branco"
   status: string
   total: string
   forma_pagamento: string | null
@@ -178,6 +179,8 @@ export function VendaBalcaoConteudo({
 
   const [vendas, setVendas] = useState<Venda[]>(vendasIniciais)
   const [filtroOrigem, setFiltroOrigem] = useState<"todas" | "site" | "balcao">("todas")
+  const [filtroMarcaVendas, setFiltroMarcaVendas] = useState<"todas" | "colorido" | "branco">("todas")
+  const [filtroCanalVendas, setFiltroCanalVendas] = useState<"todos" | CanalPedido>("todos")
   const [vendaPreview, setVendaPreview] = useState<PedidoDetalhe | null>(null)
   const [carregandoPreview, setCarregandoPreview] = useState<string | null>(null)
 
@@ -218,7 +221,13 @@ export function VendaBalcaoConteudo({
       )
     : []
 
-  const vendasFiltradas = vendas.filter((v) => filtroOrigem === "todas" || v.origem === filtroOrigem)
+  const vendasFiltradas = vendas.filter((v) => {
+    const bateOrigem = filtroOrigem === "todas" || v.origem === filtroOrigem
+    const bateMarca = filtroMarcaVendas === "todas" || v.marca === filtroMarcaVendas
+    const canalVenda = v.canal ?? (v.origem === "balcao" ? "balcao" : "site")
+    const bateCanal = filtroCanalVendas === "todos" || canalVenda === filtroCanalVendas
+    return bateOrigem && bateMarca && bateCanal
+  })
 
   function adicionarAoCarrinho(produto: Produto) {
     setCarrinho((atual) => {
@@ -422,13 +431,59 @@ export function VendaBalcaoConteudo({
 
       {aba === "vendas" ? (
         <div className="space-y-4">
-          <Tabs value={filtroOrigem} onValueChange={(v) => setFiltroOrigem(v as typeof filtroOrigem)}>
-            <TabsList>
-              <TabsTrigger value="todas">Todas</TabsTrigger>
-              <TabsTrigger value="site">Site</TabsTrigger>
-              <TabsTrigger value="balcao">Balcão</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex flex-wrap items-center gap-3">
+            <Tabs value={filtroOrigem} onValueChange={(v) => setFiltroOrigem(v as typeof filtroOrigem)}>
+              <TabsList>
+                <TabsTrigger value="todas">Todas</TabsTrigger>
+                <TabsTrigger value="site">Site</TabsTrigger>
+                <TabsTrigger value="balcao">Balcão</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <Select
+              value={filtroMarcaVendas}
+              onValueChange={(v) => setFiltroMarcaVendas((v || "todas") as typeof filtroMarcaVendas)}
+            >
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas as lojas</SelectItem>
+                <SelectItem value="colorido">Coisas Brasileiras</SelectItem>
+                <SelectItem value="branco">Porcelanas Brancas</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filtroCanalVendas}
+              onValueChange={(v) => setFiltroCanalVendas((v || "todos") as typeof filtroCanalVendas)}
+            >
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os canais</SelectItem>
+                <SelectItem value="site">
+                  <LabelCanal canal="site" />
+                </SelectItem>
+                <SelectItem value="whatsapp">
+                  <LabelCanal canal="whatsapp" />
+                </SelectItem>
+                <SelectItem value="instagram">
+                  <LabelCanal canal="instagram" />
+                </SelectItem>
+                <SelectItem value="balcao">
+                  <LabelCanal canal="balcao" />
+                </SelectItem>
+                <SelectItem value="mercadolivre">
+                  <LabelCanal canal="mercadolivre" />
+                </SelectItem>
+                <SelectItem value="shopee">
+                  <LabelCanal canal="shopee" />
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <Card>
             <CardContent className="p-0">
