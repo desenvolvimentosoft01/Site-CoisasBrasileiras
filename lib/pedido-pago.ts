@@ -9,16 +9,21 @@ import { getSegredo } from "@/lib/segredos"
 // motivo) - por isso e idempotente: FOR UPDATE trava a linha e so age se o
 // pedido ainda nao estiver "pago", senao dois caminhos confirmando o mesmo
 // pagamento baixariam o estoque em dobro.
-export async function confirmarPedidoPago(pedidoId: string, formaPagamento?: string | null): Promise<void> {
+export async function confirmarPedidoPago(
+  pedidoId: string,
+  formaPagamento?: string | null,
+  paymentId?: string | number | null
+): Promise<void> {
   const virouPago = await transacao(async (q) => {
     const [pedidoAtual] = await q("SELECT status FROM TAB_PEDIDO WHERE id = $1 FOR UPDATE", [pedidoId])
     if (!pedidoAtual || pedidoAtual.status === "pago") return false
 
+    // O payment_id fica salvo pra permitir estorno automatico se esse pedido
+    // for cancelado depois de pago (ver app/api/admin/pedidos/[id]/route.ts).
     await q(
-      formaPagamento
-        ? "UPDATE TAB_PEDIDO SET status = 'pago', forma_pagamento = $2, atualizado_em = NOW() WHERE id = $1"
-        : "UPDATE TAB_PEDIDO SET status = 'pago', atualizado_em = NOW() WHERE id = $1",
-      formaPagamento ? [pedidoId, formaPagamento] : [pedidoId]
+      "UPDATE TAB_PEDIDO SET status = 'pago', forma_pagamento = COALESCE($2, forma_pagamento), " +
+        "mercadopago_payment_id = COALESCE($3, mercadopago_payment_id), atualizado_em = NOW() WHERE id = $1",
+      [pedidoId, formaPagamento ?? null, paymentId != null ? String(paymentId) : null]
     )
 
     const itens = await q("SELECT produto_id, quantidade FROM TAB_PEDIDO_ITEM WHERE pedido_id = $1", [pedidoId])

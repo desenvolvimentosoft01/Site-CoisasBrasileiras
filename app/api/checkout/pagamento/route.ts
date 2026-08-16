@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       await query("UPDATE TAB_PEDIDO SET status = 'aguardando_pagamento' WHERE id = $1", [pedido.id])
     } else if (pagamento.status === "approved") {
       const formaPagamento = codigoFormaPagamentoMP(pagamento.payment_type_id, pagamento.payment_method_id)
-      await confirmarPedidoPago(pedido.id, formaPagamento)
+      await confirmarPedidoPago(pedido.id, formaPagamento, pagamento.id)
     }
 
     // O webhook continua sendo o "backup" pro caso da confirmacao sincrona
