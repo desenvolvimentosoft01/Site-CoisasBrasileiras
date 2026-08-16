@@ -76,7 +76,18 @@ export const useCarrinho = create<CarrinhoState>()(
       fechar: () => set({ aberto: false }),
       setCupom: (cupom) => set({ cupom }),
     }),
-    { name: "coisas-brasileiras-carrinho" }
+    {
+      name: "coisas-brasileiras-carrinho",
+      // "aberto" nao pode ser persistido: se o drawer ficar salvo como aberto
+      // no localStorage, o overlay escuro dele volta a cobrir a tela em
+      // qualquer pagina/recarregamento seguinte e bloqueia clique em tudo por
+      // baixo (ex: botao "Ir para o pagamento" no checkout).
+      partialize: (state) => ({ itens: state.itens, cupom: state.cupom }),
+      // Forca aberto:false na hidratacao mesmo pra quem ja tinha um
+      // localStorage antigo com aberto:true salvo (de antes desse fix) -
+      // sem isso o merge padrao do zustand traria o valor travado de volta.
+      merge: (persistido, atual) => ({ ...atual, ...(persistido as object), aberto: false }),
+    }
   )
 )
 
