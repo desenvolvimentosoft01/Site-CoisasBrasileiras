@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Truck, MessageCircle, FileText, BadgeCheck, ArrowLeft, ShoppingBag, RefreshCw } from "lucide-react"
+import { Truck, MessageCircle, FileText, BadgeCheck, ArrowLeft, RefreshCw } from "lucide-react"
 import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
+import { LabelCanal } from "@/components/admin/label-canal"
 import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
 
 type Pedido = {
@@ -273,15 +274,17 @@ export default function DetalhePedidoPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
-              <ShoppingBag size={16} />
-              Origem: {CANAL_LABEL[pedido.canal]}
+              Origem: <LabelCanal canal={pedido.canal} />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-slate-500">
               Importado automaticamente do Bling.
               {pedido.bling_pedido_id && (
-                <> Pedido {CANAL_LABEL[pedido.canal]} #{pedido.bling_pedido_id} (via Bling).</>
+                <>
+                  {" "}
+                  Pedido {CANAL_LABEL[pedido.canal]} #{pedido.bling_pedido_id} (via Bling).
+                </>
               )}
             </p>
           </CardContent>

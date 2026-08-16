@@ -204,9 +204,9 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos os canais</SelectItem>
-              {Object.entries(CANAL_LABEL).map(([valor, rotulo]) => (
+              {Object.keys(CANAL_LABEL).map((valor) => (
                 <SelectItem key={valor} value={valor}>
-                  {rotulo}
+                  <LabelCanal canal={valor as CanalPedido} />
                 </SelectItem>
               ))}
             </SelectContent>
