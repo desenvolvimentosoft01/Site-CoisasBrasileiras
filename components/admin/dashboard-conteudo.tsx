@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatarMoeda } from "@/lib/mascaras"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { statusExibicao } from "@/lib/status-pedido"
+import { rotuloFormaPagamento } from "@/lib/formas-pagamento"
 import type { CanalPedido } from "@/lib/canal-pedido"
 
 const coresIndicador = {
@@ -110,7 +111,7 @@ function PainelIndicadores({ dados }: { dados: Indicadores }) {
                       >
                         {statusExibicao(pedido.status, pedido.criado_em)}
                       </span>
-                      {pedido.forma_pagamento && <span>· {pedido.forma_pagamento}</span>}
+                      {pedido.forma_pagamento && <span>· {rotuloFormaPagamento(pedido.forma_pagamento)}</span>}
                       <LabelCanal canal={pedido.canal ?? (pedido.origem === "balcao" ? "balcao" : "site")} />
                     </div>
                   </div>

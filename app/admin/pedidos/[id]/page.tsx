@@ -11,6 +11,7 @@ import { Truck, MessageCircle, FileText, BadgeCheck, ArrowLeft, RefreshCw } from
 import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
+import { rotuloFormaPagamento } from "@/lib/formas-pagamento"
 
 type Pedido = {
   id: string
@@ -335,7 +336,7 @@ export default function DetalhePedidoPage() {
           )}
           {pedido.forma_pagamento && (
             <p className="mt-2 text-sm text-slate-500">
-              Forma de pagamento: <span className="font-medium">{pedido.forma_pagamento}</span>
+              Forma de pagamento: <span className="font-medium">{rotuloFormaPagamento(pedido.forma_pagamento)}</span>
             </p>
           )}
         </CardContent>

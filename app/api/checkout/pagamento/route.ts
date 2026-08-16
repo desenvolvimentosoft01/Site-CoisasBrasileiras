@@ -1,6 +1,7 @@
 import { query, transacao } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
-import { getPaymentMP, mensagemErroMercadoPago } from "@/lib/mercadopago"
+import { getPaymentMP, mensagemErroMercadoPago, codigoFormaPagamentoMP } from "@/lib/mercadopago"
+import { confirmarPedidoPago } from "@/lib/pedido-pago"
 import { NextResponse } from "next/server"
 
 // Formato que o Payment Brick devolve no onSubmit - varia por metodo (cartao
@@ -84,15 +85,20 @@ export async function POST(request: Request) {
 
     // Pagamento recusado na hora (cartao) - libera o pedido de volta pra
     // "aguardando_pagamento" pra o cliente poder tentar outro cartao/metodo
-    // sem ficar travado no status intermediario. Aprovado ou pendente (Pix)
-    // fica em "processando_pagamento" ate o webhook confirmar de verdade.
+    // sem ficar travado no status intermediario. Aprovado ja confirma na
+    // hora (a resposta vem direto da API do MP, nao do cliente - da pra
+    // confiar nela tanto quanto no webhook, so chega mais rapido). Pendente
+    // (Pix, boleto) fica em "processando_pagamento" ate o webhook confirmar.
     if (pagamento.status === "rejected") {
       await query("UPDATE TAB_PEDIDO SET status = 'aguardando_pagamento' WHERE id = $1", [pedido.id])
+    } else if (pagamento.status === "approved") {
+      const formaPagamento = codigoFormaPagamentoMP(pagamento.payment_type_id, pagamento.payment_method_id)
+      await confirmarPedidoPago(pedido.id, formaPagamento)
     }
 
-    // O status final (aprovado, recusado, pendente/Pix aguardando) so chega
-    // de verdade pelo webhook, que e a fonte da verdade pro status do pedido.
-    // Aqui devolvemos so o suficiente pra tela mostrar feedback imediato.
+    // O webhook continua sendo o "backup" pro caso da confirmacao sincrona
+    // acima nao rolar (queda de rede entre a resposta do MP e esse UPDATE) -
+    // por isso o handler dele so aplica update se o pedido nao estiver pago.
     return NextResponse.json({
       pedidoId: pedido.id,
       status: pagamento.status,
