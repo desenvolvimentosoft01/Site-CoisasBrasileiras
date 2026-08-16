@@ -1,5 +1,6 @@
 import { transacao } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
+import { enviarEmail, templateStatusAtualizado } from "@/lib/email"
 import { NextResponse } from "next/server"
 
 // Cliente so pode cancelar pedido proprio que ainda nao foi pago - depois
@@ -39,6 +40,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       { status: 409 }
     )
   }
+
+  enviarEmail({
+    to: cliente.email,
+    subject: "Pedido cancelado - Coisas Brasileiras",
+    html: templateStatusAtualizado({
+      nomeCliente: cliente.nome,
+      pedidoId: cancelado.id,
+      status: "cancelado",
+      codigoRastreio: null,
+      transportadora: null,
+    }),
+  })
 
   return NextResponse.json({ sucesso: true })
 }
