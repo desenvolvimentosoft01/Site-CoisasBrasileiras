@@ -55,6 +55,11 @@ export async function POST(request: Request) {
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  // O Mercado Pago rejeita notification_url que nao seja uma URL publica
+  // valida (localhost nunca e alcancavel por eles) - em dev local, omite o
+  // campo em vez de travar a criacao do pagamento; o webhook so funciona
+  // mesmo com o site publicado.
+  const notificationUrl = siteUrl.startsWith("https://") ? `${siteUrl}/api/webhooks/mercadopago` : undefined
 
   try {
     const paymentMP = await getPaymentMP()
@@ -68,7 +73,7 @@ export async function POST(request: Request) {
         description: `Pedido ${pedido.id} - Coisas Brasileiras`,
         payer: formData.payer,
         external_reference: pedido.id,
-        notification_url: `${siteUrl}/api/webhooks/mercadopago`,
+        notification_url: notificationUrl,
       },
       requestOptions: {
         // O MP exige uma chave de idempotencia por tentativa de pagamento -

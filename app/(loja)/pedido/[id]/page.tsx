@@ -1,8 +1,11 @@
 import { query } from "@/lib/db"
+import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { CheckCircle2, Truck, Check, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AcoesPedidoPendente } from "@/components/loja/acoes-pedido-pendente"
+import { lerTokenSessaoCliente } from "@/lib/auth"
 
 function formatarPreco(valor: string) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -30,10 +33,17 @@ export default async function ConfirmacaoPedidoPage({
   const { id } = await params
 
   const [pedido] = await query(
-    "SELECT id, status, total, criado_em, codigo_rastreio, transportadora, bling_link_danfe FROM TAB_PEDIDO WHERE id = $1",
+    "SELECT id, cliente_id, status, total, criado_em, codigo_rastreio, transportadora, bling_link_danfe FROM TAB_PEDIDO WHERE id = $1",
     [id]
   )
   if (!pedido) notFound()
+
+  // "Concluir pagamento"/"Cancelar pedido" so aparecem pro proprio dono do
+  // pedido - se for outra pessoa (ou ninguem logado) vendo o link, essas
+  // acoes ficam escondidas, mesmo o pedido em si continuando visivel.
+  const cookieStore = await cookies()
+  const sessaoCliente = await lerTokenSessaoCliente(cookieStore.get("cliente_sessao")?.value)
+  const podeGerenciar = sessaoCliente?.id === pedido.cliente_id
 
   const etapaAtual = etapasRastreio.indexOf(pedido.status)
 
@@ -96,6 +106,15 @@ export default async function ConfirmacaoPedidoPage({
             <div className="text-emerald-700">Use o código acima no site da transportadora</div>
           </div>
         </div>
+      )}
+
+      {podeGerenciar && (pedido.status === "aguardando_pagamento" || pedido.status === "processando_pagamento") && (
+        <AcoesPedidoPendente
+          pedidoId={pedido.id}
+          status={pedido.status}
+          total={Number(pedido.total)}
+          emailCliente={sessaoCliente!.email}
+        />
       )}
 
       <div className="mb-8 space-y-2 rounded-xl border border-black/5 p-5 text-left">
