@@ -49,6 +49,7 @@ type Pedido = {
 // Todos os status possiveis - usado so pra rotulo/exibicao (rotulosStatus).
 const opcoesStatus = [
   { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento" },
+  { valor: "processando_pagamento", rotulo: "Processando pagamento" },
   { valor: "pago", rotulo: "Pago" },
   { valor: "em_separacao", rotulo: "Em separação" },
   { valor: "enviado", rotulo: "Enviado" },
@@ -63,7 +64,7 @@ const opcoesStatus = [
 // "Aguardando pagamento" tambem fica de fora - nao faz sentido voltar pra
 // esse estado manualmente.
 const opcoesStatusSelecionaveis = opcoesStatus.filter(
-  (opcao) => opcao.valor !== "pago" && opcao.valor !== "aguardando_pagamento"
+  (opcao) => !["pago", "aguardando_pagamento", "processando_pagamento"].includes(opcao.valor)
 )
 
 function formatarPreco(valor: string) {
@@ -297,10 +298,12 @@ export default function DetalhePedidoPage() {
           <CardTitle className="text-sm text-slate-500">Status</CardTitle>
         </CardHeader>
         <CardContent>
-          {pedido.status === "aguardando_pagamento" ? (
+          {pedido.status === "aguardando_pagamento" || pedido.status === "processando_pagamento" ? (
             <div className="space-y-2">
               <span className="inline-block rounded-full bg-amber-500/20 px-3 py-1.5 text-sm text-amber-600">
-                Aguardando pagamento (automático via Mercado Pago)
+                {pedido.status === "processando_pagamento"
+                  ? "Processando pagamento (automático via Mercado Pago)"
+                  : "Aguardando pagamento (automático via Mercado Pago)"}
               </span>
               <p className="text-xs text-muted-foreground">
                 Só vira &quot;Pago&quot; quando o Mercado Pago confirmar - não dá pra marcar manualmente
@@ -505,8 +508,9 @@ export default function DetalhePedidoPage() {
               <Input
                 value={codigoServicoFrenet}
                 onChange={(e) => setCodigoServicoFrenet(e.target.value)}
-                placeholder="Código do serviço Frenet (painel da conta)"
-                className="max-w-56"
+                placeholder="Código do serviço (painel Frenet)"
+                title="Código do serviço de transporte, encontrado no painel da Frenet"
+                className="min-w-56 flex-1"
               />
               <Button
                 type="button"
