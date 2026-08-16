@@ -6,10 +6,12 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { LabelCanal } from "@/components/admin/label-canal"
-import { type CanalPedido } from "@/lib/canal-pedido"
+import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
 import { statusExibicao } from "@/lib/status-pedido"
-import { RefreshCw, X } from "lucide-react"
+import { RefreshCw, X, ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 
 export type Pedido = {
@@ -50,7 +52,24 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
   const router = useRouter()
   const [aba, setAba] = useState("todos")
   const [filtroSite, setFiltroSite] = useState<"todos" | "colorido" | "branco">("todos")
+  const [filtroCanal, setFiltroCanal] = useState<"todos" | CanalPedido>("todos")
+  const [filtroCliente, setFiltroCliente] = useState("")
+  const [listaClientesAberta, setListaClientesAberta] = useState(false)
+  const [filtroDataInicio, setFiltroDataInicio] = useState("")
+  const [filtroDataFim, setFiltroDataFim] = useState("")
   const pedidos = pedidosIniciais
+
+  const nomesClientes = useMemo(
+    () => Array.from(new Set(pedidos.map((p) => p.cliente_nome))).sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [pedidos]
+  )
+  const sugestoesClientes = useMemo(
+    () =>
+      filtroCliente.trim()
+        ? nomesClientes.filter((nome) => nome.toLowerCase().includes(filtroCliente.trim().toLowerCase()))
+        : nomesClientes,
+    [nomesClientes, filtroCliente]
+  )
 
   const [pendentes, setPendentes] = useState<PedidoPendenteMarketplace[]>([])
   const [importando, setImportando] = useState(false)
@@ -88,13 +107,25 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
     })
   }
 
-  const pedidosFiltrados = useMemo(
-    () =>
-      pedidos.filter(
-        (p) => (aba === "todos" || p.status === aba) && (filtroSite === "todos" || p.marca === filtroSite)
-      ),
-    [pedidos, aba, filtroSite]
-  )
+  const pedidosFiltrados = useMemo(() => {
+    const inicio = filtroDataInicio ? new Date(`${filtroDataInicio}T00:00:00`) : null
+    const fim = filtroDataFim ? new Date(`${filtroDataFim}T23:59:59`) : null
+    const clienteBusca = filtroCliente.trim().toLowerCase()
+
+    return pedidos.filter((p) => {
+      const canalPedido = p.canal ?? (p.origem === "balcao" ? "balcao" : "site")
+      const dataPedido = new Date(p.criado_em)
+
+      return (
+        (aba === "todos" || p.status === aba) &&
+        (filtroSite === "todos" || p.marca === filtroSite) &&
+        (filtroCanal === "todos" || canalPedido === filtroCanal) &&
+        (!clienteBusca || p.cliente_nome.toLowerCase().includes(clienteBusca)) &&
+        (!inicio || dataPedido >= inicio) &&
+        (!fim || dataPedido <= fim)
+      )
+    })
+  }, [pedidos, aba, filtroSite, filtroCanal, filtroCliente, filtroDataInicio, filtroDataFim])
 
   return (
     <div className="space-y-6">
@@ -140,6 +171,103 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
           <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <div className="flex flex-wrap items-start gap-3">
+        <fieldset className="flex gap-3 rounded-lg border border-slate-200 p-2 pt-1">
+          <legend className="px-1 text-xs font-medium text-slate-500">Período</legend>
+          <div className="space-y-1">
+            <label className="mb-1 block h-4 text-xs font-medium leading-4 text-slate-500">De</label>
+            <Input
+              type="date"
+              className="w-40"
+              value={filtroDataInicio}
+              onChange={(e) => setFiltroDataInicio(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="mb-1 block h-4 text-xs font-medium leading-4 text-slate-500">Até</label>
+            <Input
+              type="date"
+              className="w-40"
+              value={filtroDataFim}
+              onChange={(e) => setFiltroDataFim(e.target.value)}
+            />
+          </div>
+        </fieldset>
+
+        <div className="space-y-1">
+          <label className="mb-1 block h-4 text-xs font-medium leading-4 text-slate-500">Canal</label>
+          <Select value={filtroCanal} onValueChange={(v) => setFiltroCanal(v as typeof filtroCanal)}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Todos os canais" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os canais</SelectItem>
+              {Object.entries(CANAL_LABEL).map(([valor, rotulo]) => (
+                <SelectItem key={valor} value={valor}>
+                  {rotulo}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="relative space-y-1">
+          <label className="mb-1 block h-4 text-xs font-medium leading-4 text-slate-500">Cliente</label>
+          <div className="relative w-48">
+            <Input
+              className="pr-8"
+              placeholder="Buscar cliente"
+              value={filtroCliente}
+              onChange={(e) => setFiltroCliente(e.target.value)}
+              onFocus={() => setListaClientesAberta(true)}
+              onBlur={() => setTimeout(() => setListaClientesAberta(false), 150)}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
+              onClick={() => setListaClientesAberta((aberta) => !aberta)}
+              tabIndex={-1}
+            >
+              <ChevronDown size={14} />
+            </button>
+            {listaClientesAberta && sugestoesClientes.length > 0 && (
+              <div className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-input bg-popover shadow-md">
+                {sugestoesClientes.map((nome) => (
+                  <button
+                    key={nome}
+                    type="button"
+                    className="block w-full px-3 py-2 text-left text-sm hover:bg-accent"
+                    onClick={() => {
+                      setFiltroCliente(nome)
+                      setListaClientesAberta(false)
+                    }}
+                  >
+                    {nome}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {(filtroCanal !== "todos" || filtroCliente || filtroDataInicio || filtroDataFim) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setFiltroCanal("todos")
+              setFiltroCliente("")
+              setFiltroDataInicio("")
+              setFiltroDataFim("")
+            }}
+          >
+            <X size={14} />
+            Limpar filtros
+          </Button>
+        )}
+      </div>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">
