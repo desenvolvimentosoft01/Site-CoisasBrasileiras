@@ -29,28 +29,28 @@ export async function getMercadoPagoConfig(): Promise<MercadoPagoConfig> {
 }
 
 // Traduz o metodo de pagamento que o Mercado Pago devolve no pagamento
-// aprovado pra um rotulo legivel, salvo em TAB_PEDIDO.forma_pagamento -
-// antes esse campo so era usado pela Venda Balcao, nunca preenchido pra
-// pedido feito pelo site.
-const ROTULOS_METODO_PAGAMENTO_MP: Record<string, string> = {
-  pix: "Pix",
-  bolbradesco: "Boleto",
-  pec: "Boleto",
-  master: "Cartao de credito",
-  visa: "Cartao de credito",
-  elo: "Cartao de credito",
-  amex: "Cartao de credito",
-  hipercard: "Cartao de credito",
-  debmaster: "Cartao de debito",
-  debvisa: "Cartao de debito",
-  debelo: "Cartao de debito",
+// aprovado pro mesmo codigo usado pela Venda Balcao (forma_pagamento),
+// salvo cru em TAB_PEDIDO - a traducao pro rotulo exibido ao usuario
+// acontece so na hora de renderizar, via lib/formas-pagamento.ts.
+const CODIGO_METODO_PAGAMENTO_MP: Record<string, string> = {
+  pix: "pix",
+  bolbradesco: "boleto",
+  pec: "boleto",
+  master: "cartao_credito",
+  visa: "cartao_credito",
+  elo: "cartao_credito",
+  amex: "cartao_credito",
+  hipercard: "cartao_credito",
+  debmaster: "cartao_debito",
+  debvisa: "cartao_debito",
+  debelo: "cartao_debito",
 }
 
-const ROTULOS_TIPO_PAGAMENTO_MP: Record<string, string> = {
-  bank_transfer: "Pix",
-  ticket: "Boleto",
-  credit_card: "Cartao de credito",
-  debit_card: "Cartao de debito",
+const CODIGO_TIPO_PAGAMENTO_MP: Record<string, string> = {
+  bank_transfer: "pix",
+  ticket: "boleto",
+  credit_card: "cartao_credito",
+  debit_card: "cartao_debito",
 }
 
 // O SDK do Mercado Pago faz "throw await response.json()" em erros da API
@@ -67,12 +67,12 @@ export function mensagemErroMercadoPago(erro: unknown, mensagemPadrao: string): 
   return mensagemPadrao
 }
 
-export function rotuloFormaPagamentoMP(paymentTypeId?: string | null, paymentMethodId?: string | null): string {
-  if (paymentMethodId && ROTULOS_METODO_PAGAMENTO_MP[paymentMethodId]) {
-    return ROTULOS_METODO_PAGAMENTO_MP[paymentMethodId]
+export function codigoFormaPagamentoMP(paymentTypeId?: string | null, paymentMethodId?: string | null): string {
+  if (paymentMethodId && CODIGO_METODO_PAGAMENTO_MP[paymentMethodId]) {
+    return CODIGO_METODO_PAGAMENTO_MP[paymentMethodId]
   }
-  if (paymentTypeId && ROTULOS_TIPO_PAGAMENTO_MP[paymentTypeId]) {
-    return ROTULOS_TIPO_PAGAMENTO_MP[paymentTypeId]
+  if (paymentTypeId && CODIGO_TIPO_PAGAMENTO_MP[paymentTypeId]) {
+    return CODIGO_TIPO_PAGAMENTO_MP[paymentTypeId]
   }
-  return "Mercado Pago"
+  return "mercadopago"
 }

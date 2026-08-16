@@ -27,6 +27,7 @@ import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj, mascaraMoeda, valorMoed
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { ROTULOS_STATUS, statusExibicao } from "@/lib/status-pedido"
+import { FORMAS_PAGAMENTO_BALCAO, rotuloFormaPagamento } from "@/lib/formas-pagamento"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { validarCodigoBarras } from "@/lib/codigo-barras"
 
@@ -88,13 +89,6 @@ type ItemCarrinho = {
   estoqueDisponivel: number
 }
 
-const FORMAS_PAGAMENTO = [
-  { valor: "dinheiro", rotulo: "Dinheiro" },
-  { valor: "pix", rotulo: "Pix" },
-  { valor: "boleto", rotulo: "Boleto" },
-  { valor: "cartao_credito", rotulo: "Cartão de crédito" },
-  { valor: "cartao_debito", rotulo: "Cartão de débito" },
-]
 
 function precoEfetivo(produto: Produto) {
   return Number(produto.preco_promocional || produto.preco)
@@ -527,7 +521,9 @@ export function VendaBalcaoConteudo({
                               {statusExibicao(venda.status, venda.criado_em)}
                             </span>
                             {venda.forma_pagamento && (
-                              <span className="ml-1 text-xs text-slate-400">· {venda.forma_pagamento}</span>
+                              <span className="ml-1 text-xs text-slate-400">
+                                · {rotuloFormaPagamento(venda.forma_pagamento)}
+                              </span>
                             )}
                           </td>
                           <td className="p-4">{formatarMoeda(venda.total)}</td>
@@ -847,7 +843,7 @@ export function VendaBalcaoConteudo({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FORMAS_PAGAMENTO.map((forma) => (
+                  {FORMAS_PAGAMENTO_BALCAO.map((forma) => (
                     <SelectItem key={forma.valor} value={forma.valor}>
                       {forma.rotulo}
                     </SelectItem>

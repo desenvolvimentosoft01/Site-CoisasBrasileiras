@@ -1,13 +1,12 @@
-import { transacao, query } from "@/lib/db"
-import { getPaymentMP, rotuloFormaPagamentoMP } from "@/lib/mercadopago"
+import { transacao } from "@/lib/db"
+import { getPaymentMP, codigoFormaPagamentoMP } from "@/lib/mercadopago"
 import { sincronizarAssinaturaClube } from "@/lib/clube"
-import { enviarEmail, templatePedidoPago, templateNovoPedidoAdmin } from "@/lib/email"
+import { confirmarPedidoPago } from "@/lib/pedido-pago"
 import { getSegredo } from "@/lib/segredos"
 import { NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
 
-const STATUS_MP_PARA_PEDIDO: Record<string, string> = {
-  approved: "pago",
+const STATUS_MP_PARA_PEDIDO_NAO_PAGO: Record<string, string> = {
   rejected: "cancelado",
   cancelled: "cancelado",
 }
@@ -75,89 +74,29 @@ export async function POST(request: Request) {
     const paymentMP = await getPaymentMP()
     const pagamento = await paymentMP.get({ id: paymentId })
     const pedidoId = pagamento.external_reference
-    const novoStatus = STATUS_MP_PARA_PEDIDO[pagamento.status ?? ""]
+    const formaPagamento = codigoFormaPagamentoMP(pagamento.payment_type_id, pagamento.payment_method_id)
 
-    if (pedidoId && novoStatus) {
-      const transicionouParaPago = await transacao(async (q) => {
-        // Trava a linha e confere o status atual antes de agir: o MP pode
-        // reenviar a mesma notificacao varias vezes, e sem essa checagem o
-        // estoque seria baixado de novo a cada reenvio.
-        const [pedidoAtual] = await q("SELECT status FROM TAB_PEDIDO WHERE id = $1 FOR UPDATE", [
-          pedidoId,
-        ])
-        if (!pedidoAtual || pedidoAtual.status === novoStatus) return false
+    if (pedidoId && pagamento.status === "approved") {
+      // Idempotente - se o Payment Brick ja confirmou esse mesmo pagamento
+      // na resposta sincrona (cartao aprovado na hora), essa chamada e um
+      // no-op; serve de reforco pro caso da confirmacao sincrona nao ter
+      // rolado, e e o unico caminho pra Pix/boleto (aprovados so depois,
+      // de forma assincrona).
+      await confirmarPedidoPago(pedidoId, formaPagamento)
+    } else if (pedidoId) {
+      const novoStatus = STATUS_MP_PARA_PEDIDO_NAO_PAGO[pagamento.status ?? ""]
+      if (novoStatus) {
+        await transacao(async (q) => {
+          // Trava a linha e confere o status atual antes de agir: o MP pode
+          // reenviar a mesma notificacao varias vezes.
+          const [pedidoAtual] = await q("SELECT status FROM TAB_PEDIDO WHERE id = $1 FOR UPDATE", [pedidoId])
+          if (!pedidoAtual || pedidoAtual.status === novoStatus || pedidoAtual.status === "pago") return
 
-        const formaPagamento = rotuloFormaPagamentoMP(pagamento.payment_type_id, pagamento.payment_method_id)
-        await q(
-          "UPDATE TAB_PEDIDO SET status = $1, forma_pagamento = $2, atualizado_em = NOW() WHERE id = $3",
-          [novoStatus, formaPagamento, pedidoId]
-        )
-
-        const viroPago = novoStatus === "pago" && pedidoAtual.status !== "pago"
-
-        // So baixa estoque na primeira vez que o pedido e confirmado como pago.
-        if (viroPago) {
-          const itens = await q(
-            "SELECT produto_id, quantidade FROM TAB_PEDIDO_ITEM WHERE pedido_id = $1",
-            [pedidoId]
+          await q(
+            "UPDATE TAB_PEDIDO SET status = $1, forma_pagamento = $2, atualizado_em = NOW() WHERE id = $3",
+            [novoStatus, formaPagamento, pedidoId]
           )
-          for (const item of itens) {
-            await q("UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2", [
-              item.quantidade,
-              item.produto_id,
-            ])
-          }
-        }
-
-        return viroPago
-      })
-
-      if (transicionouParaPago) {
-        const [pedido] = await query(
-          `SELECT p.total, c.nome AS cliente_nome, c.email AS cliente_email
-           FROM TAB_PEDIDO p JOIN TAB_CLIENTE c ON c.id = p.cliente_id
-           WHERE p.id = $1`,
-          [pedidoId]
-        )
-        const itens = await query(
-          `SELECT pi.quantidade, pi.preco_unitario, pr.nome
-           FROM TAB_PEDIDO_ITEM pi JOIN TAB_PRODUTO pr ON pr.id = pi.produto_id
-           WHERE pi.pedido_id = $1`,
-          [pedidoId]
-        )
-        const itensEmail = itens.map((i) => ({
-          nome: i.nome,
-          quantidade: i.quantidade,
-          precoUnitario: Number(i.preco_unitario),
-        }))
-
-        enviarEmail({
-          to: pedido.cliente_email,
-          subject: "Pagamento confirmado - Coisas Brasileiras",
-          html: templatePedidoPago({
-            nomeCliente: pedido.cliente_nome,
-            pedidoId,
-            itens: itensEmail,
-            total: Number(pedido.total),
-          }),
         })
-
-        // Sem e-mail pessoal fixo no codigo (projeto revendido pra outros
-        // clientes) - cai pro proprio e-mail de envio configurado.
-        const emailAdmin = (await getSegredo("email_notificacoes_admin")) || (await getSegredo("email_user"))
-        if (emailAdmin) {
-          enviarEmail({
-            to: emailAdmin,
-            subject: `Novo pedido pago - ${pedido.cliente_nome}`,
-            html: templateNovoPedidoAdmin({
-              nomeCliente: pedido.cliente_nome,
-              emailCliente: pedido.cliente_email,
-              pedidoId,
-              itens: itensEmail,
-              total: Number(pedido.total),
-            }),
-          })
-        }
       }
     }
   } catch {

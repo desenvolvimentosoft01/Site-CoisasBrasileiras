@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LabelCanal } from "@/components/admin/label-canal"
 import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
 import { statusExibicao } from "@/lib/status-pedido"
+import { rotuloFormaPagamento } from "@/lib/formas-pagamento"
 import { RefreshCw, X, ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 
@@ -41,6 +42,7 @@ type PedidoPendenteMarketplace = {
 const ABAS_STATUS = [
   { valor: "todos", rotulo: "Todos" },
   { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento" },
+  { valor: "processando_pagamento", rotulo: "Processando pagamento" },
   { valor: "pago", rotulo: "Pago" },
   { valor: "em_separacao", rotulo: "Em separação" },
   { valor: "enviado", rotulo: "Enviado" },
@@ -347,7 +349,9 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                                 {statusExibicao(pedido.status, pedido.criado_em)}
                               </span>
                               {pedido.forma_pagamento && (
-                                <span className="ml-1 text-xs text-slate-400">· {pedido.forma_pagamento}</span>
+                                <span className="ml-1 text-xs text-slate-400">
+                                  · {rotuloFormaPagamento(pedido.forma_pagamento)}
+                                </span>
                               )}
                             </Link>
                           </td>
