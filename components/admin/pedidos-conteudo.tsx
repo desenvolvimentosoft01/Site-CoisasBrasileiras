@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -215,6 +215,22 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
           </Select>
         </div>
 
+        <div className="space-y-1">
+          <label className="mb-1 block h-4 text-xs font-medium leading-4 text-slate-500">Status</label>
+          <Select value={aba} onValueChange={(v) => setAba(v ?? "todos")}>
+            <SelectTrigger className="w-52">
+              <SelectValue placeholder="Todos os status" />
+            </SelectTrigger>
+            <SelectContent>
+              {ABAS_STATUS.map((item) => (
+                <SelectItem key={item.valor} value={item.valor}>
+                  {item.rotulo}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="relative space-y-1">
           <label className="mb-1 block h-4 text-xs font-medium leading-4 text-slate-500">Cliente</label>
           <div className="relative w-48">
@@ -254,11 +270,12 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
           </div>
         </div>
 
-        {(filtroCanal !== "todos" || filtroCliente || filtroDataInicio || filtroDataFim) && (
+        {(aba !== "todos" || filtroCanal !== "todos" || filtroCliente || filtroDataInicio || filtroDataFim) && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
+              setAba("todos")
               setFiltroCanal("todos")
               setFiltroCliente("")
               setFiltroDataInicio("")
@@ -271,31 +288,9 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
         )}
       </div>
 
-      <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
-        <TabsList className="h-auto flex-wrap gap-1 p-1">
-          {ABAS_STATUS.map((item) => {
-            const pedidosDoSite = pedidos.filter((p) => filtroSite === "todos" || p.marca === filtroSite)
-            const quantidade =
-              item.valor === "todos"
-                ? pedidosDoSite.length
-                : pedidosDoSite.filter((p) => p.status === item.valor).length
-            return (
-              <TabsTrigger key={item.valor} value={item.valor} className="flex-none px-3">
-                {item.rotulo}
-                {quantidade > 0 && (
-                  <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 text-xs text-slate-400">
-                    {quantidade}
-                  </span>
-                )}
-              </TabsTrigger>
-            )
-          })}
-        </TabsList>
-
-        <TabsContent value={aba} className="mt-4">
-          <Card>
-            <CardContent className="p-0">
-              {pedidosFiltrados.length === 0 ? (
+      <Card>
+        <CardContent className="p-0">
+          {pedidosFiltrados.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">
                   {pedidos.length === 0
                     ? "Nenhum pedido ainda. Essa tela vai preencher quando o checkout do site estiver pronto."
@@ -377,10 +372,8 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
                   </table>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   )
 }
