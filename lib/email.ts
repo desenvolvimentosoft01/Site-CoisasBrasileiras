@@ -132,9 +132,12 @@ export function templateNovoPedidoAdmin(params: {
   pedidoId: string
   itens: ItemEmail[]
   total: number
+  // "Novo pedido pago" (default, pagamento ja confirmado) ou "Novo pedido
+  // recebido" (aguardando pagamento - ver app/api/checkout/route.ts).
+  titulo?: string
 }): string {
   return envelope(`
-    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">Novo pedido pago</h1>
+    <h1 style="margin:0 0 12px;font-size:20px;color:#065f46;">${escapeHtml(params.titulo ?? "Novo pedido pago")}</h1>
     <p style="margin:0 0 4px;font-size:14px;color:#555;">Cliente: ${escapeHtml(params.nomeCliente)}</p>
     <p style="margin:0 0 20px;font-size:14px;color:#555;">Email: ${escapeHtml(params.emailCliente)}</p>
     ${tabelaItens(params.itens)}

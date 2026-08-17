@@ -1,8 +1,9 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessaoCliente } from "@/lib/auth-servidor"
 import { calcularOpcoesFrete } from "@/lib/configuracoes"
-import { enviarEmail, templatePedidoCriado } from "@/lib/email"
+import { enviarEmail, templatePedidoCriado, templateNovoPedidoAdmin } from "@/lib/email"
 import { resolverMarca } from "@/lib/marca"
+import { getSegredo } from "@/lib/segredos"
 import { NextResponse } from "next/server"
 
 type ItemRequisicao = { produtoId: string; quantidade: number }
@@ -276,6 +277,7 @@ export async function POST(request: Request) {
 
     // Nao usa await de proposito - o email nao deve atrasar a resposta do
     // checkout, e uma falha de envio ja e tratada (logada) dentro de enviarEmail.
+    const totalPedido = pedido.subtotal + pedido.valorFrete - pedido.valorDesconto
     enviarEmail({
       to: cliente.email,
       subject: "Recebemos seu pedido - Coisas Brasileiras",
@@ -283,8 +285,29 @@ export async function POST(request: Request) {
         nomeCliente: cliente.nome,
         pedidoId: pedido.id,
         itens: pedido.itensParaInserir,
-        total: pedido.subtotal + pedido.valorFrete - pedido.valorDesconto,
+        total: totalPedido,
       }),
+    })
+
+    // Avisa a loja assim que o pedido e criado, mesmo antes do pagamento
+    // confirmar - sem isso, um pedido de Pix/boleto que o cliente nunca
+    // termina de pagar passa despercebido, ja que o email pra loja so
+    // dispara de novo quando (e se) o pagamento for aprovado.
+    Promise.all([getSegredo("email_notificacoes_admin"), getSegredo("email_user")]).then(([principal, fallback]) => {
+      const emailAdmin = principal || fallback
+      if (!emailAdmin) return
+      enviarEmail({
+        to: emailAdmin,
+        subject: `Novo pedido recebido - ${cliente.nome}`,
+        html: templateNovoPedidoAdmin({
+          titulo: "Novo pedido recebido (aguardando pagamento)",
+          nomeCliente: cliente.nome,
+          emailCliente: cliente.email,
+          pedidoId: pedido.id,
+          itens: pedido.itensParaInserir,
+          total: totalPedido,
+        }),
+      })
     })
 
     // O pagamento em si (cartao/Pix) acontece na propria tela do checkout via

@@ -40,14 +40,14 @@ type PedidoPendenteMarketplace = {
 }
 
 const ABAS_STATUS = [
-  { valor: "todos", rotulo: "Todos" },
-  { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento" },
-  { valor: "processando_pagamento", rotulo: "Processando pagamento" },
-  { valor: "pago", rotulo: "Pago" },
-  { valor: "em_separacao", rotulo: "Em separação" },
-  { valor: "enviado", rotulo: "Enviado" },
-  { valor: "entregue", rotulo: "Entregue" },
-  { valor: "cancelado", rotulo: "Cancelado" },
+  { valor: "todos", rotulo: "Todos", rotuloCurto: "Todos" },
+  { valor: "aguardando_pagamento", rotulo: "Aguardando pagamento", rotuloCurto: "Aguard. pagto" },
+  { valor: "processando_pagamento", rotulo: "Processando pagamento", rotuloCurto: "Process. pagto" },
+  { valor: "pago", rotulo: "Pago", rotuloCurto: "Pago" },
+  { valor: "em_separacao", rotulo: "Em separação", rotuloCurto: "Em separação" },
+  { valor: "enviado", rotulo: "Enviado", rotuloCurto: "Enviado" },
+  { valor: "entregue", rotulo: "Entregue", rotuloCurto: "Entregue" },
+  { valor: "cancelado", rotulo: "Cancelado", rotuloCurto: "Cancelado" },
 ]
 
 export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[] }) {
@@ -287,6 +287,28 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
           </Button>
         )}
       </div>
+
+      <Tabs value={aba} onValueChange={(v) => setAba(v ?? "todos")}>
+        <TabsList className="h-auto flex-wrap gap-1 p-1">
+          {ABAS_STATUS.map((item) => {
+            const pedidosDoSite = pedidos.filter((p) => filtroSite === "todos" || p.marca === filtroSite)
+            const quantidade =
+              item.valor === "todos"
+                ? pedidosDoSite.length
+                : pedidosDoSite.filter((p) => p.status === item.valor).length
+            return (
+              <TabsTrigger key={item.valor} value={item.valor} className="flex-none px-2 text-xs">
+                {item.rotuloCurto}
+                {quantidade > 0 && (
+                  <span className="ml-1 rounded-full bg-slate-200 px-1.5 text-[10px] text-slate-400">
+                    {quantidade}
+                  </span>
+                )}
+              </TabsTrigger>
+            )
+          })}
+        </TabsList>
+      </Tabs>
 
       <Card>
         <CardContent className="p-0">
