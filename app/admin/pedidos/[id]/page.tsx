@@ -90,6 +90,7 @@ export default function DetalhePedidoPage() {
   const params = useParams<{ id: string }>()
   const [pedido, setPedido] = useState<Pedido | null>(null)
   const [salvandoStatus, setSalvandoStatus] = useState(false)
+  const [erroStatus, setErroStatus] = useState("")
   const [codigoRastreio, setCodigoRastreio] = useState("")
   const [transportadora, setTransportadora] = useState("")
   const [salvandoRastreio, setSalvandoRastreio] = useState(false)
@@ -127,13 +128,25 @@ export default function DetalhePedidoPage() {
 
   async function alterarStatus(novoStatus: string) {
     if (!pedido) return
+    setErroStatus("")
     setSalvandoStatus(true)
-    await fetch(`/api/admin/pedidos/${pedido.id}`, {
+    const resposta = await fetch(`/api/admin/pedidos/${pedido.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: novoStatus }),
     })
     setSalvandoStatus(false)
+
+    const dados = await resposta.json()
+    if (!resposta.ok) {
+      setErroStatus(dados.erro || "Não foi possível atualizar o status")
+      return
+    }
+    if (dados.avisoEstornoManual) {
+      setErroStatus(
+        "Pedido cancelado, mas este pagamento não tem o id do Mercado Pago salvo (pedido antigo) - o estorno precisa ser feito manualmente pelo painel do Mercado Pago."
+      )
+    }
     carregar()
   }
 
@@ -337,6 +350,7 @@ export default function DetalhePedidoPage() {
               ))}
             </select>
           )}
+          {erroStatus && <p className="mt-2 text-xs text-red-500">{erroStatus}</p>}
           {pedido.forma_pagamento && (
             <p className="mt-2 text-sm text-slate-500">
               Forma de pagamento: <span className="font-medium">{rotuloFormaPagamento(pedido.forma_pagamento)}</span>

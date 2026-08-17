@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { enviarEmail, templateStatusAtualizado } from "@/lib/email"
+import { getPaymentRefundMP, mensagemErroMercadoPago } from "@/lib/mercadopago"
 import { NextResponse } from "next/server"
 
 const STATUS_VALIDOS = [
@@ -75,6 +76,46 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     )
   }
 
+  // Cancelar um pedido ja pago precisa estornar o dinheiro de verdade no
+  // Mercado Pago antes de mudar o status - senao o cliente fica cobrado sem
+  // nenhum aviso. So tenta se houver payment_id salvo (pedidos confirmados
+  // antes dessa funcionalidade nao tem); sem ele, cancela mesmo assim mas
+  // sinaliza pro admin que o estorno precisa ser feito manualmente.
+  let estornoAutomatico = false
+  let avisoEstornoManual = false
+  if (status === "cancelado") {
+    const [pedidoAtual] = await query(
+      "SELECT status, mercadopago_payment_id FROM TAB_PEDIDO WHERE id = $1",
+      [id]
+    )
+    if (pedidoAtual?.status === "pago") {
+      if (!pedidoAtual.mercadopago_payment_id) {
+        avisoEstornoManual = true
+      } else {
+        try {
+          const paymentRefund = await getPaymentRefundMP()
+          await paymentRefund.total({
+            payment_id: pedidoAtual.mercadopago_payment_id,
+            // O MP exige uma chave de idempotencia por tentativa de estorno -
+            // sem ela, um retry de rede poderia tentar estornar duas vezes.
+            requestOptions: { idempotencyKey: `refund-${id}-${Date.now()}` },
+          })
+          estornoAutomatico = true
+        } catch (erroEstorno) {
+          return NextResponse.json(
+            {
+              erro: mensagemErroMercadoPago(
+                erroEstorno,
+                "Não foi possível estornar o pagamento no Mercado Pago. O pedido não foi cancelado - tente novamente ou estorne manualmente pelo painel do Mercado Pago."
+              ),
+            },
+            { status: 502 }
+          )
+        }
+      }
+    }
+  }
+
   // Monta o SET dinamicamente para permitir atualizar so o status, so o
   // rastreio, ou os dois juntos, sem precisar de duas rotas separadas.
   const campos: string[] = []
@@ -136,10 +177,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           status: pedido.status,
           codigoRastreio: pedido.codigo_rastreio,
           transportadora: pedido.transportadora,
+          estornoAutomatico,
         }),
       })
     }
   }
 
-  return NextResponse.json(pedido)
+  return NextResponse.json({
+    ...pedido,
+    avisoEstornoManual: avisoEstornoManual || undefined,
+  })
 }

@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       // no-op; serve de reforco pro caso da confirmacao sincrona nao ter
       // rolado, e e o unico caminho pra Pix/boleto (aprovados so depois,
       // de forma assincrona).
-      await confirmarPedidoPago(pedidoId, formaPagamento)
+      await confirmarPedidoPago(pedidoId, formaPagamento, paymentId)
     } else if (pedidoId) {
       const novoStatus = STATUS_MP_PARA_PEDIDO_NAO_PAGO[pagamento.status ?? ""]
       if (novoStatus) {

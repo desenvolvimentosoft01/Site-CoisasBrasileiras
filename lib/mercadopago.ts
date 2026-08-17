@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Preference, Payment } from "mercadopago"
+import { MercadoPagoConfig, Preference, Payment, PaymentRefund } from "mercadopago"
 import { getSegredo } from "@/lib/segredos"
 
 // Token configuravel em Configuracoes > Integracoes (TAB_INTEGRACAO_SEGREDO,
@@ -22,6 +22,10 @@ export async function getPreferenceMP(): Promise<Preference> {
 
 export async function getPaymentMP(): Promise<Payment> {
   return new Payment(await criarClienteMP())
+}
+
+export async function getPaymentRefundMP(): Promise<PaymentRefund> {
+  return new PaymentRefund(await criarClienteMP())
 }
 
 export async function getMercadoPagoConfig(): Promise<MercadoPagoConfig> {

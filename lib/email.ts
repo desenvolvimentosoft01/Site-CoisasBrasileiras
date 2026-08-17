@@ -197,6 +197,11 @@ export function templateStatusAtualizado(params: {
   status: string
   codigoRastreio: string | null
   transportadora: string | null
+  // Preenchido so quando um pedido ja pago e cancelado e o estorno e
+  // disparado automaticamente pela API do Mercado Pago (ver
+  // app/api/admin/pedidos/[id]/route.ts) - avisa o cliente pra ele nao
+  // precisar perguntar sobre o dinheiro.
+  estornoAutomatico?: boolean
 }): string {
   const rotulo = ROTULOS_STATUS[params.status] ?? params.status
   const numeroPedido = params.pedidoId.slice(0, 8).toUpperCase()
@@ -212,6 +217,14 @@ export function templateStatusAtualizado(params: {
         ? `<p style="margin:0;font-size:14px;color:#555;">
             Codigo de rastreio: <strong>${escapeHtml(params.codigoRastreio)}</strong>
             ${params.transportadora ? ` (${escapeHtml(params.transportadora)})` : ""}
+          </p>`
+        : ""
+    }
+    ${
+      params.estornoAutomatico
+        ? `<p style="margin:16px 0 0;font-size:14px;color:#555;">
+            O valor pago foi estornado automaticamente e deve aparecer na sua fatura/extrato em ate alguns dias uteis,
+            conforme o prazo do seu banco ou operadora de cartao.
           </p>`
         : ""
     }
