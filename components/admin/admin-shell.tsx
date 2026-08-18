@@ -384,7 +384,7 @@ function AdminShellInterno({
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 sm:px-6">
-          <nav className="flex min-w-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap text-sm">
+          <nav className="flex min-w-0 items-center gap-1.5 overflow-x-auto overflow-y-hidden whitespace-nowrap text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               className="-ml-1 mr-1 rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700 lg:hidden"
               onClick={() => setSidebarAberta((v) => !v)}
