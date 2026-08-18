@@ -23,8 +23,13 @@ function Tabs({
   )
 }
 
+// "overflow-x-auto" faz o navegador computar overflow-y como "auto" tambem, e
+// como os gatilhos (emoji/icone) as vezes ficam 1px mais altos que a lista,
+// aparecia uma barra de rolagem vertical inutil ao lado das abas em alguns
+// zooms. "overflow-y-hidden" mata isso, e as regras de scrollbar escondem a
+// barra horizontal (a rolagem lateral continua funcionando por toque/trackpad).
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit max-w-full items-center justify-center overflow-x-auto rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:min-h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
+  "group/tabs-list inline-flex w-fit max-w-full items-center justify-center overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:min-h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
   {
     variants: {
       variant: {
