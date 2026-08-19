@@ -78,6 +78,9 @@ const menu: ItemMenu[] = [
     ],
   },
   { tipo: "link", href: "/admin/financeiro", label: "Financeiro", emoji: "💰", somenteAdmin: true },
+  // Fica solto (e nao dentro de Compras) porque junta entrada E saida - e o
+  // lugar de pegar DANFE/XML de qualquer nota sem abrir o Bling.
+  { tipo: "link", href: "/admin/notas-fiscais", label: "Notas Fiscais", emoji: "🧾", somenteAdmin: true },
   {
     tipo: "grupo",
     label: "Compras",
