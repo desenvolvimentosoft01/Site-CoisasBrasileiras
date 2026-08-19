@@ -1,6 +1,7 @@
 import { Document, Page, StyleSheet, Text, View, Image, renderToBuffer } from "@react-pdf/renderer"
 import { toBuffer } from "bwip-js/node"
 import type { DadosDanfe, ItemDanfe, ParticipanteDanfe } from "@/lib/nfe-xml"
+import { NOME_SISTEMA, FABRICANTE_SISTEMA } from "@/lib/constantes"
 
 // DANFE - Documento Auxiliar da Nota Fiscal Eletronica.
 //
@@ -12,10 +13,11 @@ import type { DadosDanfe, ItemDanfe, ParticipanteDanfe } from "@/lib/nfe-xml"
 //   2. Identificacao do emitente + bloco do DANFE + chave de acesso
 //   3. Natureza da operacao / protocolo de autorizacao
 //   4. Destinatario / remetente
-//   5. Calculo do imposto
-//   6. Transportador / volumes transportados
-//   7. Dados do produto / servico
-//   8. Dados adicionais
+//   5. Fatura / duplicatas (so quando a nota tem cobranca)
+//   6. Calculo do imposto
+//   7. Transportador / volumes transportados
+//   8. Dados do produto / servico
+//   9. Dados adicionais
 //
 // O DANFE e so a representacao grafica: quem tem valor fiscal e o XML
 // autorizado. Por isso a nota sem protocolo sai marcada como "SEM VALOR
@@ -54,6 +56,8 @@ const s = StyleSheet.create({
 
   cabecalhoTabela: { fontSize: 5, fontFamily: "Helvetica-Bold", textAlign: "center" },
   celulaTabela: { fontSize: 5.5, paddingHorizontal: 2, paddingVertical: 1.5 },
+
+  assinaturaSistema: { fontSize: 5, textAlign: "right", marginTop: 2, color: "#555555" },
 
   semValorFiscal: {
     fontSize: 8,
@@ -210,7 +214,7 @@ function LinhaItem({ item, ultimo }: { item: ItemDanfe; ultimo: boolean }) {
 
 export async function gerarPdfDanfe(dados: DadosDanfe): Promise<Buffer> {
   const codigoBarras = dados.chaveAcesso ? await gerarCodigoBarrasChave(dados.chaveAcesso) : null
-  const { emitente, destinatario, totais, transporte } = dados
+  const { emitente, destinatario, totais, transporte, fatura } = dados
 
   const documento = (
     <Document title={`DANFE ${dados.numero}`}>
@@ -358,7 +362,53 @@ export async function gerarPdfDanfe(dados: DadosDanfe): Promise<Buffer> {
           </View>
         </View>
 
-        {/* 5. CALCULO DO IMPOSTO */}
+        {/* 5. FATURA / DUPLICATAS - so quando a nota tem cobranca (grupo cobr
+            do XML). Nota a vista nao tem esse quadro. */}
+        {fatura && (
+          <>
+            <Text style={s.tituloBloco}>FATURA / DUPLICATAS</Text>
+            <View style={s.quadro}>
+              {fatura.numero && (
+                <View style={s.linha}>
+                  <Campo rotulo="NÚMERO" valor={fatura.numero} largura="25%" />
+                  <Campo rotulo="VALOR ORIGINAL" valor={formatarMoeda(fatura.valorOriginal)} largura="25%" />
+                  <Campo rotulo="VALOR DO DESCONTO" valor={formatarMoeda(fatura.valorDesconto)} largura="25%" />
+                  <Campo
+                    rotulo="VALOR LÍQUIDO"
+                    valor={formatarMoeda(fatura.valorLiquido)}
+                    largura="25%"
+                    ultimo
+                    forte
+                  />
+                </View>
+              )}
+              {fatura.duplicatas.length > 0 && (
+                <View
+                  style={[
+                    s.linha,
+                    { flexWrap: "wrap" },
+                    fatura.numero ? { borderTopWidth: 0.7, borderColor: PRETO } : {},
+                  ]}
+                >
+                  {/* As parcelas vao lado a lado, 4 por linha, que e como o
+                      manual desenha - nota parcelada em 10x nao pode virar
+                      uma coluna de 10 linhas comendo a pagina. */}
+                  {fatura.duplicatas.map((duplicata, indice) => (
+                    <View key={`${duplicata.numero}-${indice}`} style={[s.celula, { width: "25%" }]}>
+                      <Text style={s.rotulo}>
+                        PARCELA {duplicata.numero}
+                        {duplicata.vencimento ? ` — VENC. ${formatarData(duplicata.vencimento)}` : ""}
+                      </Text>
+                      <Text style={s.valor}>{formatarMoeda(duplicata.valor)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* 6. CALCULO DO IMPOSTO */}
         <Text style={s.tituloBloco}>CÁLCULO DO IMPOSTO</Text>
         <View style={s.quadro}>
           <View style={s.linha}>
@@ -374,15 +424,25 @@ export async function gerarPdfDanfe(dados: DadosDanfe): Promise<Buffer> {
             />
           </View>
           <View style={[s.linha, { borderTopWidth: 0.7, borderColor: PRETO }]}>
-            <Campo rotulo="VALOR DO FRETE" valor={formatarMoeda(totais.valorFrete)} largura="16%" />
-            <Campo rotulo="VALOR DO SEGURO" valor={formatarMoeda(totais.valorSeguro)} largura="16%" />
-            <Campo rotulo="DESCONTO" valor={formatarMoeda(totais.valorDesconto)} largura="16%" />
-            <Campo rotulo="OUTRAS DESPESAS" valor={formatarMoeda(totais.valorOutros)} largura="17%" />
-            <Campo rotulo="VALOR DO IPI" valor={formatarMoeda(totais.valorIpi)} largura="17%" />
+            <Campo rotulo="VALOR DO FRETE" valor={formatarMoeda(totais.valorFrete)} largura="14%" />
+            <Campo rotulo="VALOR DO SEGURO" valor={formatarMoeda(totais.valorSeguro)} largura="14%" />
+            <Campo rotulo="DESCONTO" valor={formatarMoeda(totais.valorDesconto)} largura="14%" />
+            <Campo rotulo="OUTRAS DESPESAS" valor={formatarMoeda(totais.valorOutros)} largura="14%" />
+            <Campo rotulo="VALOR DO IPI" valor={formatarMoeda(totais.valorIpi)} largura="14%" />
+            {/* Valor aproximado dos tributos (Lei 12.741/2012). Fica em
+                branco quando o XML nao informa: imprimir 0,00 diria que a
+                nota nao tem tributo nenhum, que e diferente de "nao informado". */}
+            <Campo
+              rotulo="V. APROX. TRIBUTOS"
+              valor={
+                totais.valorAproximadoTributos ? formatarMoeda(totais.valorAproximadoTributos) : ""
+              }
+              largura="14%"
+            />
             <Campo
               rotulo="VALOR TOTAL DA NOTA"
               valor={formatarMoeda(totais.valorTotal)}
-              largura="18%"
+              largura="16%"
               ultimo
               forte
             />
@@ -463,6 +523,13 @@ export async function gerarPdfDanfe(dados: DadosDanfe): Promise<Buffer> {
             </View>
           </View>
         </View>
+
+        {/* Assinatura do software que gerou a representacao grafica - todo
+            emissor faz isso, e e o que identifica de onde saiu o papel quando
+            alguem cruza dois DANFEs da mesma nota. */}
+        <Text style={s.assinaturaSistema}>
+          {NOME_SISTEMA} — {FABRICANTE_SISTEMA}
+        </Text>
 
         {dados.protocolo ? null : (
           <View style={[s.quadro, { marginTop: 4 }]}>

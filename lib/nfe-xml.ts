@@ -166,7 +166,19 @@ export type DadosDanfe = {
     valorIpi: number
     valorOutros: number
     valorTotal: number
+    // vTotTrib: valor aproximado dos tributos (Lei 12.741/2012). Nao entra em
+    // conta nenhuma - e informativo e o DANFE e obrigado a mostrar.
+    valorAproximadoTributos: number
   }
+  // Quadro FATURA/DUPLICATAS: sai do grupo cobr do XML. Nota a vista nao tem
+  // esse grupo, e ai o quadro simplesmente nao e impresso.
+  fatura: {
+    numero: string | null
+    valorOriginal: number
+    valorDesconto: number
+    valorLiquido: number
+    duplicatas: { numero: string; vencimento: string | null; valor: number }[]
+  } | null
   transporte: {
     modalidadeFrete: string
     transportadora: string | null
@@ -216,6 +228,35 @@ function montarParticipante(no: any, tagEndereco: string): ParticipanteDanfe {
     estado: texto(endereco.UF),
     cep: texto(endereco.CEP),
     telefone: texto(endereco.fone ?? no?.fone),
+  }
+}
+
+// Grupo cobr do XML: fat (a fatura) e dup (as parcelas). Os dois sao
+// opcionais e independentes - existe nota com duplicatas e sem cabecalho de
+// fatura, e vice-versa. Sem nenhum dos dois, devolve null e o quadro nao e
+// impresso (nota a vista).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota
+function montarFatura(cobr: any): DadosDanfe["fatura"] {
+  if (!cobr) return null
+
+  const fat = cobr.fat ?? {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota
+  const duplicatas = paraArray<any>(cobr.dup).map((dup, indice) => ({
+    // O parser de XML converte "001" pro numero 1 - a numeracao de parcela e
+    // escrita com 3 digitos em todo emissor, entao devolve o zero a esquerda.
+    numero: dup?.nDup !== undefined ? String(dup.nDup).padStart(3, "0") : String(indice + 1).padStart(3, "0"),
+    vencimento: dup?.dVenc ? String(dup.dVenc).slice(0, 10) : null,
+    valor: Number(dup?.vDup) || 0,
+  }))
+
+  if (fat.nFat === undefined && duplicatas.length === 0) return null
+
+  return {
+    numero: fat.nFat !== undefined ? String(fat.nFat) : null,
+    valorOriginal: Number(fat.vOrig) || 0,
+    valorDesconto: Number(fat.vDesc) || 0,
+    valorLiquido: Number(fat.vLiq) || 0,
+    duplicatas,
   }
 }
 
@@ -302,7 +343,9 @@ export function parseNfeParaDanfe(xmlTexto: string): DadosDanfe {
       valorIpi: Number(total.vIPI) || 0,
       valorOutros: Number(total.vOutro) || 0,
       valorTotal: Number(total.vNF) || 0,
+      valorAproximadoTributos: Number(total.vTotTrib) || 0,
     },
+    fatura: montarFatura(infNFe.cobr),
     transporte: {
       modalidadeFrete: String(transp.modFrete ?? "9"),
       transportadora: transp.transporta?.xNome ? String(transp.transporta.xNome) : null,
