@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, X, CornerDownRight, FilePlus, Save, Eraser } from "lucide-react"
+import { Trash2, Pencil, ImagePlus, X, CornerDownRight, FilePlus, Save, Eraser } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
@@ -192,7 +192,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <Plus size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">➕</span>
             Cadastro
           </TabsTrigger>
         </TabsList>

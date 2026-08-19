@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, ImagePlus, FilePlus, Save, Eraser, X, Video, Link2, PlayCircle } from "lucide-react"
+import { Trash2, Pencil, ImagePlus, FilePlus, Save, Eraser, X, Video, Link2, PlayCircle } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
@@ -201,7 +201,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
             Galeria
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <Plus size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">➕</span>
             Cadastro
           </TabsTrigger>
         </TabsList>

@@ -14,45 +14,33 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   MousePointerClick,
-  LayoutDashboard,
-  Store,
-  ShoppingCart,
-  FileText,
-  Users,
-  Package,
-  Megaphone,
-  Wallet,
-  Truck,
-  TrendingUp,
-  Settings,
-  Palette,
-  type LucideIcon,
 } from "lucide-react"
 import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
 import { ConfirmProvider } from "@/components/admin/confirm-provider"
 import type { SessaoAdmin } from "@/lib/auth"
-import { EMAIL_DESENVOLVEDOR } from "@/lib/constantes"
+import { EMAIL_DESENVOLVEDOR, NOME_SISTEMA } from "@/lib/constantes"
 import { rotaAtiva } from "@/lib/rota-ativa"
 import { styleCoresTema } from "@/lib/cores"
 import { ProvedorCores, useCoresTema } from "@/lib/contexto-cores"
 
-// Icones de linha (lucide) e nao emoji: com o menu recolhido o icone e a
-// unica coisa visivel, e emoji redimensionado fica borrado e desalinhado
-// entre sistemas operacionais.
+// Cada modulo tem um emoji proprio, no mesmo visual "realista" da barra de
+// ferramentas e dos cards da Visao Geral. Com o menu recolhido o emoji e a
+// unica coisa visivel do item, entao ele vai num quadrado de largura fixa
+// pra nao dancar de um item pro outro.
 type ItemLink = {
   tipo: "link"
   href: string
   label: string
-  icone: LucideIcon
+  emoji: string
   somenteAdmin?: boolean
   somenteDesenvolvedor?: boolean
 }
 type ItemGrupo = {
   tipo: "grupo"
   label: string
-  icone: LucideIcon
+  emoji: string
   filhos: { href: string; label: string; somenteAdmin?: boolean }[]
 }
 type ItemMenu = ItemLink | ItemGrupo
@@ -60,15 +48,15 @@ type ItemMenu = ItemLink | ItemGrupo
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
 const menu: ItemMenu[] = [
-  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", icone: LayoutDashboard },
-  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: Store },
-  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", icone: ShoppingCart },
-  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", icone: FileText },
-  { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: Users },
+  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", emoji: "📊" },
+  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", emoji: "🏪" },
+  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", emoji: "🛒" },
+  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", emoji: "📄" },
+  { tipo: "link", href: "/admin/clientes", label: "Clientes", emoji: "👥" },
   {
     tipo: "grupo",
     label: "Produtos",
-    icone: Package,
+    emoji: "📦",
     filhos: [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
@@ -79,7 +67,7 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Marketing",
-    icone: Megaphone,
+    emoji: "📣",
     filhos: [
       { href: "/admin/cupons", label: "Cupons" },
       { href: "/admin/banners", label: "Banners" },
@@ -89,11 +77,11 @@ const menu: ItemMenu[] = [
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },
     ],
   },
-  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: Wallet, somenteAdmin: true },
+  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", emoji: "💰", somenteAdmin: true },
   {
     tipo: "grupo",
     label: "Compras",
-    icone: Truck,
+    emoji: "🚚",
     filhos: [
       { href: "/admin/cotacoes", label: "Cotação", somenteAdmin: true },
       { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
@@ -104,7 +92,7 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Relatórios",
-    icone: TrendingUp,
+    emoji: "📈",
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
       { href: "/admin/relatorios/lucro", label: "Lucro / DRE", somenteAdmin: true },
@@ -115,29 +103,29 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Configurações",
-    icone: Settings,
+    emoji: "⚙️",
     filhos: [
       { href: "/admin/usuarios", label: "Usuários", somenteAdmin: true },
       { href: "/admin/configuracoes", label: "Configurações da Loja" },
       { href: "/admin/configuracoes/pastas-nf", label: "Pastas das Notas Fiscais" },
     ],
   },
-  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: Palette, somenteDesenvolvedor: true },
+  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", emoji: "🎨", somenteDesenvolvedor: true },
 ]
 
 // Achata o menu (so os itens visiveis pro papel/email da sessao) pra
 // alimentar a TabBar e o breadcrumb, que trabalham com uma lista simples de
 // {href, label}.
-function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: LucideIcon }[] {
-  const resultado: { href: string; label: string; icone: LucideIcon }[] = []
+function itensVisiveis(papel: string, email: string): { href: string; label: string; emoji: string }[] {
+  const resultado: { href: string; label: string; emoji: string }[] = []
   for (const item of menu) {
     if (item.tipo === "link") {
       if (item.somenteDesenvolvedor && email !== EMAIL_DESENVOLVEDOR) continue
-      if (!item.somenteAdmin || papel === "admin") resultado.push({ href: item.href, label: item.label, icone: item.icone })
+      if (!item.somenteAdmin || papel === "admin") resultado.push({ href: item.href, label: item.label, emoji: item.emoji })
     } else {
       for (const filho of item.filhos) {
         if (!filho.somenteAdmin || papel === "admin") {
-          resultado.push({ href: filho.href, label: filho.label, icone: item.icone })
+          resultado.push({ href: filho.href, label: filho.label, emoji: item.emoji })
         }
       }
     }
@@ -386,11 +374,14 @@ function AdminShellInterno({
             <p className="whitespace-nowrap text-sm font-bold leading-tight text-white">
               {nomeLoja || "Coisas Brasileiras"}
             </p>
-            <p className="text-[10px] text-slate-400">Painel Admin</p>
+            <p className="text-[10px] text-slate-400">{NOME_SISTEMA}</p>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
+        {/* Rola quando o menu nao cabe na altura da janela, mas sem desenhar
+            barra por cima dos itens - o mesmo tratamento das abas e da trilha
+            de navegacao. */}
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {menu.map((item) => {
             if (item.tipo === "link") {
               if (item.somenteAdmin && sessao.papel !== "admin") return null
@@ -412,7 +403,7 @@ function AdminShellInterno({
                       : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
-                  <item.icone size={16} className="shrink-0" />
+                  <span className="w-5 shrink-0 text-center text-base leading-none">{item.emoji}</span>
                   <span className={menuExpandido ? "whitespace-nowrap" : "lg:hidden"}>{item.label}</span>
                 </Link>
               )
@@ -436,7 +427,7 @@ function AdminShellInterno({
                   } ${grupoAtivo ? "text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
                 >
                   <span className="relative shrink-0">
-                    <item.icone size={16} />
+                    <span className="block w-5 text-center text-base leading-none">{item.emoji}</span>
                     {/* Recolhido nao ha espaco pro numero, mas some-lo por
                         completo esconderia que ha nota esperando - vira um
                         ponto no canto do icone. */}

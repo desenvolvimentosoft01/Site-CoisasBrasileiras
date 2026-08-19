@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Plus, Pencil, Trash2, AlertTriangle, FilePlus } from "lucide-react"
+import { Pencil, Trash2, AlertTriangle, FilePlus } from "lucide-react"
 import { toast } from "sonner"
 import { ProdutoForm } from "@/components/admin/produto-form"
 import { registrarAuditoria } from "@/lib/auditoria"
@@ -131,7 +131,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <Plus size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">➕</span>
             Cadastro
           </TabsTrigger>
         </TabsList>

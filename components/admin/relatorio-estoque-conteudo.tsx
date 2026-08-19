@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { formatarMoeda } from "@/lib/mascaras"
-import { AlertTriangle, Filter, Search, X } from "lucide-react"
+import { Filter, Search, X } from "lucide-react"
 import { BotaoImprimir } from "@/components/admin/botao-imprimir"
 
 type Produto = {
@@ -174,7 +174,7 @@ export function RelatorioEstoqueConteudo({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
-              <AlertTriangle size={14} className="text-amber-500" />
+              <span className="text-sm leading-none">⚠️</span>
               Abaixo do mínimo
             </CardTitle>
           </CardHeader>
@@ -183,7 +183,7 @@ export function RelatorioEstoqueConteudo({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
-              <AlertTriangle size={14} className="text-red-500" />
+              <span className="text-sm leading-none">⚠️</span>
               Zerados
             </CardTitle>
           </CardHeader>

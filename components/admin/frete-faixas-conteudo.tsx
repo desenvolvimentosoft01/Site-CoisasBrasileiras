@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Plus } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 
 export type Faixa = {
@@ -237,7 +237,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
           </div>
           {erro && <p className="text-sm text-red-500 sm:col-span-5">{erro}</p>}
           <Button onClick={adicionarFaixa} className="sm:col-span-5 sm:w-fit">
-            <Plus size={16} className="mr-2" />
+            <span className="mr-2 text-base leading-none">➕</span>
             Adicionar
           </Button>
         </CardContent>

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatarMoeda } from "@/lib/mascaras"
-import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, Filter, X } from "lucide-react"
+import { ArrowDownAZ, ArrowUpAZ, Filter, X } from "lucide-react"
 import { BotaoImprimir } from "@/components/admin/botao-imprimir"
 import { LabelCanal } from "@/components/admin/label-canal"
 import type { CanalPedido } from "@/lib/canal-pedido"
@@ -388,7 +388,7 @@ export function RelatoriosConteudo({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
-                <AlertTriangle size={14} className="text-amber-500" />
+                <span className="text-sm leading-none">⚠️</span>
                 Em baixa
               </CardTitle>
             </CardHeader>

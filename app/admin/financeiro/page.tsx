@@ -2,7 +2,7 @@ import { query } from "@/lib/db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatarMoeda } from "@/lib/mascaras"
 import Link from "next/link"
-import { AlertTriangle } from "lucide-react"
+import {  } from "lucide-react"
 
 export default async function FinanceiroPage() {
   const [
@@ -93,7 +93,7 @@ export default async function FinanceiroPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
-              <AlertTriangle size={16} className="text-amber-500" />
+              <span className="text-base leading-none">⚠️</span>
               Atrasadas
             </CardTitle>
           </CardHeader>

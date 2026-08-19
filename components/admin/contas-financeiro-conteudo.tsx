@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Plus, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
@@ -211,7 +211,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <Plus size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">➕</span>
             Cadastro
           </TabsTrigger>
         </TabsList>

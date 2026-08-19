@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Printer } from "lucide-react"
+import {  } from "lucide-react"
 import { ModalImpressao, type CampoImpressao } from "@/components/admin/modal-impressao"
 
 export function BotaoImprimir({
@@ -23,7 +23,7 @@ export function BotaoImprimir({
         onClick={() => setAberto(true)}
         className={`flex items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent print:hidden ${className ?? ""}`}
       >
-        <Printer size={14} />
+        <span className="text-sm leading-none">🖨️</span>
         Imprimir
       </button>
       <ModalImpressao
