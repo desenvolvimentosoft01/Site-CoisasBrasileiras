@@ -1,16 +1,26 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Truck, CreditCard, MessageCircle, AtSign, Mail } from "lucide-react"
-import { getConfiguracoes, getConfiguracoesMarca } from "@/lib/configuracoes"
+import { getConfiguracoesMarca } from "@/lib/configuracoes"
 import { resolverMarcaAtual } from "@/lib/marca"
 
 export async function Footer() {
   const marca = await resolverMarcaAtual()
-  const [config, configMarca] = await Promise.all([
-    getConfiguracoes(["whatsapp", "whatsapp_mensagem", "instagram", "email_contato", "texto_rodape"]),
-    getConfiguracoesMarca(["nome_loja", "logo_url"], marca),
+  const [configMarca] = await Promise.all([
+    getConfiguracoesMarca(
+      [
+        "nome_loja",
+        "logo_url",
+        "whatsapp",
+        "whatsapp_mensagem",
+        "instagram",
+        "email_contato",
+        "texto_rodape",
+      ],
+      marca
+    ),
   ])
-  const whatsappDigitos = config.whatsapp?.replace(/\D/g, "")
+  const whatsappDigitos = configMarca.whatsapp?.replace(/\D/g, "")
   const nomeLoja = configMarca.nome_loja || "Coisas Brasileiras"
   // Porcelanas (marca "branco") pede um rodape clean, claro; o site colorido
   // mantem o rodape escuro original.
@@ -31,7 +41,7 @@ export async function Footer() {
             <span className="font-heading text-lg font-semibold">{nomeLoja}</span>
           </div>
           <p className={clean ? "text-sm text-muted-foreground" : "text-sm text-emerald-200"}>
-            {config.texto_rodape ||
+            {configMarca.texto_rodape ||
               "Porcelanas decorativas, presentes, artigos religiosos e perfumaria, direto pra sua casa."}
           </p>
         </div>
@@ -60,7 +70,7 @@ export async function Footer() {
           {whatsappDigitos && (
             <Link
               href={`https://wa.me/55${whatsappDigitos}${
-                config.whatsapp_mensagem ? `?text=${encodeURIComponent(config.whatsapp_mensagem)}` : ""
+                configMarca.whatsapp_mensagem ? `?text=${encodeURIComponent(configMarca.whatsapp_mensagem)}` : ""
               }`}
               target="_blank"
               rel="noopener noreferrer"
@@ -70,24 +80,24 @@ export async function Footer() {
               Atendimento via WhatsApp
             </Link>
           )}
-          {config.instagram && (
+          {configMarca.instagram && (
             <Link
-              href={`https://instagram.com/${config.instagram.replace("@", "")}`}
+              href={`https://instagram.com/${configMarca.instagram.replace("@", "")}`}
               target="_blank"
               rel="noopener noreferrer"
               className={clean ? "flex items-center gap-2 hover:text-primary" : "flex items-center gap-2 hover:text-white"}
             >
               <AtSign size={18} />
-              {config.instagram}
+              {configMarca.instagram}
             </Link>
           )}
-          {config.email_contato && (
+          {configMarca.email_contato && (
             <Link
-              href={`mailto:${config.email_contato}`}
+              href={`mailto:${configMarca.email_contato}`}
               className={clean ? "flex items-center gap-2 hover:text-primary" : "flex items-center gap-2 hover:text-white"}
             >
               <Mail size={18} />
-              {config.email_contato}
+              {configMarca.email_contato}
             </Link>
           )}
         </div>

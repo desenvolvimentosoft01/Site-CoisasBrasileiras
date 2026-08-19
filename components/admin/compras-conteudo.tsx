@@ -15,9 +15,24 @@ import {
   Radio,
   RefreshCw,
   Link2,
+  ClipboardList,
+  Download,
+  FolderDown,
+  Eye,
+  Pencil,
+  Trash2,
+  FileText,
 } from "lucide-react"
 import { toast } from "sonner"
 import { CampoDica } from "@/components/ui/campo-dica"
+import { rotuloFornecedor } from "@/lib/fornecedor"
+import {
+  escolherPasta,
+  garantirPermissaoDeEscrita,
+  gravarArquivoNaPasta,
+  lerPasta,
+  navegadorSuportaPastaPadrao,
+} from "@/lib/pastas-padrao"
 import { formatarMoeda, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
@@ -25,7 +40,12 @@ import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
 import { validarChaveAcesso } from "@/lib/chave-acesso"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
-export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null }
+export type Fornecedor = {
+  id: string
+  razao_social: string
+  nome_fantasia: string | null
+  cnpj_cpf: string | null
+}
 export type ProdutoSelecionavel = {
   id: string
   nome: string
@@ -76,6 +96,8 @@ type DadosNfeXml = {
     estado: string | null
   }
   itens: ItemNfeXml[]
+  // XML cru devolvido pela rota de importacao, guardado no banco no salvar
+  xml: string
   valorFrete: number
   valorTotal: number
 }
@@ -97,6 +119,12 @@ export type Compra = {
   pedido_compra_id: string | null
   pedido_compra_numero: number | null
   valor_itens: string
+  data_emissao: string | null
+  valor_total_nota: string | null
+  serie: string | null
+  // Indica se a entrada veio de importacao de XML - so nesse caso da pra
+  // gerar o DANFE (ver app/api/admin/compras/[id]/danfe).
+  tem_xml: boolean
 }
 
 type ItemCarrinho = { produtoId: string; nome: string; quantidade: number; custoUnitario: string }
@@ -120,6 +148,11 @@ type PedidoCompraParaLancar = {
   qtdItensSemProduto: number
   itens: { produto_id: string; descricao: string; quantidade: string; custo_unitario: string }[]
 }
+
+// Periodo padrao do export: o mes corrente, que e o recorte que o contador
+// pede no fechamento.
+const hojeIso = new Date().toISOString().slice(0, 10)
+const primeiroDiaDoMes = `${hojeIso.slice(0, 7)}-01`
 
 export function ComprasConteudo({
   comprasIniciais,
@@ -149,6 +182,24 @@ export function ComprasConteudo({
   const [fornecedorId, setFornecedorId] = useState("")
   const [numeroNota, setNumeroNota] = useState("")
   const [chaveAcesso, setChaveAcesso] = useState("")
+  // XML cru + dados da nota que so existem quando a entrada veio de
+  // importacao. Ficam no estado ate o salvar, pra so gravar o arquivo se a
+  // compra for de fato confirmada (ver app/api/admin/compras/importar-xml).
+  const [exportandoXmls, setExportandoXmls] = useState(false)
+  const [exportInicio, setExportInicio] = useState(primeiroDiaDoMes)
+  const [exportFim, setExportFim] = useState(hojeIso)
+  const [exportCampoData, setExportCampoData] = useState<"emissao" | "compra">("emissao")
+  const [exportFornecedor, setExportFornecedor] = useState("")
+  const [exportStatus, setExportStatus] = useState("")
+  const [exportNumeroNota, setExportNumeroNota] = useState("")
+  const [exportIncluir, setExportIncluir] = useState<"xml" | "pdf" | "ambos">("ambos")
+  const [xmlImportado, setXmlImportado] = useState<string | null>(null)
+  const [serie, setSerie] = useState("")
+  // Emissao e total da nota agora tambem sao digitaveis: antes so o XML
+  // preenchia, e nota manual ficava sem competencia nenhuma - some de
+  // qualquer relatorio por mes de emissao.
+  const [dataEmissaoNota, setDataEmissaoNota] = useState("")
+  const [valorTotalNota, setValorTotalNota] = useState("")
   const [dataCompra, setDataCompra] = useState(() => new Date().toISOString().slice(0, 10))
   const [dataVencimento, setDataVencimento] = useState("")
   const [valorFrete, setValorFrete] = useState("")
@@ -288,6 +339,10 @@ export function ComprasConteudo({
     setFornecedorId("")
     setNumeroNota("")
     setChaveAcesso("")
+    setXmlImportado(null)
+    setSerie("")
+    setDataEmissaoNota("")
+    setValorTotalNota("")
     setDataCompra(new Date().toISOString().slice(0, 10))
     setDataVencimento("")
     setValorFrete("")
@@ -323,6 +378,12 @@ export function ComprasConteudo({
     setFornecedorId(dados.fornecedor_id)
     setNumeroNota(dados.numero_nota || "")
     setChaveAcesso(dados.chave_acesso || "")
+    setXmlImportado(null)
+    setSerie(dados.serie || "")
+    setDataEmissaoNota(dados.data_emissao ? String(dados.data_emissao).slice(0, 10) : "")
+    setValorTotalNota(
+      dados.valor_total_nota ? mascaraMoeda(String(Math.round(Number(dados.valor_total_nota) * 100))) : ""
+    )
     setDataCompra(String(dados.data_compra).slice(0, 10))
     setDataVencimento(dados.data_vencimento ? String(dados.data_vencimento).slice(0, 10) : "")
     setValorFrete(mascaraMoeda(String(Math.round(Number(dados.valor_frete) * 100))))
@@ -429,6 +490,10 @@ export function ComprasConteudo({
 
     setChaveXmlInvalida(!dados.chaveValida)
     if (dados.chaveAcesso) setChaveAcesso(dados.chaveAcesso)
+    setXmlImportado(dados.xml)
+    if (dados.serie) setSerie(dados.serie)
+    if (dados.dataEmissao) setDataEmissaoNota(dados.dataEmissao)
+    setValorTotalNota(mascaraMoeda(String(Math.round(dados.valorTotal * 100))))
 
     const cnpjEmitente = dados.emitente.cnpj
     const fornecedorExistente = fornecedoresDisponiveis.find(
@@ -560,6 +625,10 @@ export function ComprasConteudo({
       })),
       blingNotaId: blingNotaVinculada?.id || null,
       pedidoCompraId: pedidoCompraVinculado?.id || null,
+      xmlNfe: xmlImportado,
+      serie: serie || null,
+      dataEmissao: dataEmissaoNota || null,
+      valorTotalNota: valorTotalNota ? valorMoedaParaNumero(valorTotalNota) : null,
     }
 
     const resposta = editandoId
@@ -583,6 +652,11 @@ export function ComprasConteudo({
     }
 
     const salva = await resposta.json()
+
+    if (xmlImportado) {
+      await copiarXmlParaPastaPadrao(xmlImportado, chaveAcesso, numeroNota || null)
+    }
+
     registrarAuditoria({
       tela: "Entrada de NF",
       acao: editandoId ? "edicao" : "cadastro",
@@ -593,6 +667,125 @@ export function ComprasConteudo({
 
     setAba("lista")
     recarregar()
+  }
+
+  // Copia automatica do XML na pasta configurada em Configuracoes > Pastas
+  // das Notas Fiscais. Roda depois de a compra ja estar salva no banco, e
+  // qualquer falha aqui e so avisada: a copia em pasta e conveniencia, o
+  // arquivo que vale ja esta guardado no banco. Falhar aqui nunca pode dar a
+  // impressao de que o lancamento nao foi salvo.
+  async function copiarXmlParaPastaPadrao(xml: string, chave: string, numero: string | null) {
+    if (!navegadorSuportaPastaPadrao()) return
+
+    try {
+      const pasta = await lerPasta("salvar")
+      if (!pasta) return
+      if (!(await garantirPermissaoDeEscrita(pasta))) return
+
+      const nome = chave ? `${chave}.xml` : `nota-${(numero || "sem-numero").replace(/\W/g, "")}.xml`
+      await gravarArquivoNaPasta(pasta, nome, xml, false)
+      toast.success(`XML arquivado em "${pasta.name}"`)
+    } catch {
+      toast.error("A compra foi salva, mas não deu para copiar o XML para a pasta configurada")
+    }
+  }
+
+  // Abre o DANFE numa aba nova, no visualizador de PDF do navegador - de la
+  // o operador imprime com Ctrl+P, que e o fluxo que ele ja conhece.
+  function abrirDanfe(compra: Compra) {
+    window.open(`/api/admin/compras/${compra.id}/danfe`, "_blank")
+  }
+
+  // Monta a URL uma vez so - os dois modos de salvar usam o mesmo endpoint,
+  // mudando so o formato (ver app/api/admin/compras/exportar-xml).
+  function urlExport(formato: "zip" | "lista") {
+    const parametros = new URLSearchParams({
+      inicio: exportInicio,
+      fim: exportFim,
+      formato,
+      campoData: exportCampoData,
+      incluir: exportIncluir,
+    })
+    if (exportFornecedor) parametros.set("fornecedorId", exportFornecedor)
+    if (exportStatus) parametros.set("status", exportStatus)
+    if (exportNumeroNota) parametros.set("numeroNota", exportNumeroNota)
+
+    return `/api/admin/compras/exportar-xml?${parametros.toString()}`
+  }
+
+  async function lerErroDoExport(resposta: Response): Promise<string> {
+    const dados = await resposta.json().catch(() => null)
+    return dados?.erro || "Erro ao exportar os XMLs"
+  }
+
+  // Modo "tudo num arquivo": baixa o .zip pela pasta de downloads do
+  // navegador. Usa blob (e nao um link direto pro endpoint) pra conseguir
+  // mostrar a mensagem de erro numa toast em vez de jogar o JSON na tela.
+  async function exportarXmlsZip() {
+    setExportandoXmls(true)
+    try {
+      const resposta = await fetch(urlExport("zip"))
+      if (!resposta.ok) {
+        toast.error(await lerErroDoExport(resposta))
+        return
+      }
+
+      const blob = await resposta.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `notas-entrada-${exportInicio}-a-${exportFim}.zip`
+      link.click()
+      URL.revokeObjectURL(url)
+      toast.success("Download do .zip iniciado")
+    } finally {
+      setExportandoXmls(false)
+    }
+  }
+
+  // Modo "arquivos separados": grava um .xml por nota dentro da pasta que o
+  // operador escolher. So o Chrome/Edge tem a API de escolher pasta - nos
+  // outros navegadores o caminho continua sendo o .zip.
+  async function exportarXmlsParaPasta() {
+    if (!navegadorSuportaPastaPadrao()) {
+      toast.error("Este navegador não permite escolher a pasta. Use o botão \"Baixar .zip\".")
+      return
+    }
+
+    // Usa a pasta padrao de exportacao, se o operador ja configurou em
+    // Configuracoes > Pastas das Notas Fiscais. Sem ela, cai no seletor -
+    // a resolucao vem antes do setExportandoXmls porque cancelar o seletor
+    // nao e erro e nao deve travar o botao nem mostrar mensagem.
+    const pasta = (await lerPasta("exportar")) ?? (await escolherPasta())
+    if (!pasta) return
+
+    if (!(await garantirPermissaoDeEscrita(pasta))) {
+      toast.error("O navegador não liberou permissão de escrita nessa pasta")
+      return
+    }
+
+    setExportandoXmls(true)
+    try {
+      const resposta = await fetch(urlExport("lista"))
+      if (!resposta.ok) {
+        toast.error(await lerErroDoExport(resposta))
+        return
+      }
+
+      const { arquivos } = (await resposta.json()) as {
+        arquivos: { nome: string; conteudo: string; tipo: "xml" | "pdf" }[]
+      }
+
+      for (const arquivo of arquivos) {
+        await gravarArquivoNaPasta(pasta, arquivo.nome, arquivo.conteudo, arquivo.tipo === "pdf")
+      }
+
+      toast.success(`${arquivos.length} arquivo(s) salvos em "${pasta.name}"`)
+    } catch {
+      toast.error("Não foi possível salvar os arquivos na pasta escolhida")
+    } finally {
+      setExportandoXmls(false)
+    }
   }
 
   async function receber(compra: Compra) {
@@ -651,7 +844,7 @@ export function ComprasConteudo({
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="lista">
-              <span className="mr-1.5 text-sm leading-none">📋</span>
+              <ClipboardList size={14} className="mr-1.5" />
               Grade
             </TabsTrigger>
             <TabsTrigger value="formulario">
@@ -684,7 +877,7 @@ export function ComprasConteudo({
                   <option value="">Todos</option>
                   {fornecedoresDisponiveis.map((f) => (
                     <option key={f.id} value={f.id}>
-                      {f.razao_social} {f.cnpj_cpf ? `(${f.cnpj_cpf})` : ""}
+                      {rotuloFornecedor(f)}
                     </option>
                   ))}
                 </select>
@@ -757,6 +950,134 @@ export function ComprasConteudo({
           </Card>
 
           <Card>
+            <CardContent className="space-y-3 pt-6">
+              <div>
+                <h2 className="text-sm font-semibold">Exportar XMLs para a contabilidade</h2>
+                <p className="text-xs text-slate-500">
+                  Baixa os XMLs das notas de entrada do período, para enviar ao contador. O filtro é
+                  pela data de emissão da nota, que é o mês de competência.
+                </p>
+              </div>
+              <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">
+                    Filtrar período por
+                    <CampoDica>
+                      <strong>Data de emissão</strong> é quando o fornecedor emitiu a nota — é o mês
+                      de competência, o recorte que o contador usa no fechamento. Uma nota emitida em
+                      30/06 e lançada aqui em 02/07 pertence a junho.
+                      <br />
+                      <br />
+                      <strong>Data da compra</strong> é quando a entrada foi lançada neste sistema.
+                      Use quando quiser conferir o que foi digitado num período.
+                    </CampoDica>
+                  </Label>
+                  <select
+                    value={exportCampoData}
+                    onChange={(e) => setExportCampoData(e.target.value as "emissao" | "compra")}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                  >
+                    <option value="emissao">Data de emissão da nota</option>
+                    <option value="compra">Data da compra (lançamento)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">De</Label>
+                  <Input type="date" value={exportInicio} onChange={(e) => setExportInicio(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Até</Label>
+                  <Input type="date" value={exportFim} onChange={(e) => setExportFim(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Fornecedor</Label>
+                  <select
+                    value={exportFornecedor}
+                    onChange={(e) => setExportFornecedor(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                  >
+                    <option value="">Todos</option>
+                    {fornecedoresDisponiveis.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {rotuloFornecedor(f)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">
+                    Situação
+                    <CampoDica>
+                      Sem escolher nada, o lote sai com as pendentes e as recebidas, e deixa as
+                      canceladas de fora — nota cancelada no lote do contador só gera confusão. Para
+                      conferir alguma cancelada em específico, escolha aqui.
+                    </CampoDica>
+                  </Label>
+                  <select
+                    value={exportStatus}
+                    onChange={(e) => setExportStatus(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                  >
+                    <option value="">Pendentes e recebidas</option>
+                    <option value="pendente">Só pendentes</option>
+                    <option value="recebida">Só recebidas</option>
+                    <option value="cancelada">Só canceladas</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Número da nota</Label>
+                  <Input
+                    value={exportNumeroNota}
+                    onChange={(e) => setExportNumeroNota(e.target.value)}
+                    placeholder="Todas"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">
+                    O que exportar
+                    <CampoDica>
+                      <strong>XML</strong> é o arquivo que tem valor fiscal — é o que o contador
+                      importa no sistema dele e o que precisa ser guardado por 5 anos.
+                      <br />
+                      <br />
+                      <strong>DANFE em PDF</strong> é a representação para ler e imprimir. É gerado
+                      na hora a partir do XML, então só existe para notas importadas por XML.
+                    </CampoDica>
+                  </Label>
+                  <select
+                    value={exportIncluir}
+                    onChange={(e) => setExportIncluir(e.target.value as "xml" | "pdf" | "ambos")}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                  >
+                    <option value="ambos">XML + DANFE em PDF</option>
+                    <option value="xml">Só o XML</option>
+                    <option value="pdf">Só o DANFE em PDF</option>
+                  </select>
+                </div>
+                <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
+                  <Button type="button" onClick={exportarXmlsZip} disabled={exportandoXmls}>
+                    <Download size={16} className="mr-2" />
+                    Baixar .zip
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={exportarXmlsParaPasta}
+                    disabled={exportandoXmls}
+                  >
+                    <FolderDown size={16} className="mr-2" />
+                    Salvar em uma pasta
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500">
+                Só entram notas importadas por XML. Nota lançada manualmente não tem arquivo, e nota
+                importada antes desta atualização não teve o XML guardado.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
             <CardContent className="p-0">
               {compras.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhuma compra cadastrada ainda.</p>
@@ -811,8 +1132,18 @@ export function ComprasConteudo({
                               onClick={() => setDetalhe(compra)}
                               title="Ver detalhe"
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Eye size={16} />
                             </Button>
+                            {compra.tem_xml && (
+                              <Button
+                                variant="ghost"
+                                size="icon-lg"
+                                onClick={() => abrirDanfe(compra)}
+                                title="Ver/imprimir o DANFE"
+                              >
+                                <FileText size={16} className="text-slate-600" />
+                              </Button>
+                            )}
                             {compra.status === "pendente" && (
                               <>
                                 <Button
@@ -822,7 +1153,7 @@ export function ComprasConteudo({
                                   onClick={() => abrirEdicao(compra)}
                                   title="Editar"
                                 >
-                                  <span className="text-base leading-none">✏️</span>
+                                  <Pencil size={16} />
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -849,7 +1180,7 @@ export function ComprasConteudo({
                                   onClick={() => excluir(compra)}
                                   title="Excluir"
                                 >
-                                  <span className="text-base leading-none">🗑️</span>
+                                  <Trash2 size={16} className="text-red-500" />
                                 </Button>
                               </>
                             )}
@@ -977,7 +1308,7 @@ export function ComprasConteudo({
                   <option value="">Selecione...</option>
                   {fornecedoresDisponiveis.map((f) => (
                     <option key={f.id} value={f.id}>
-                      {f.razao_social}
+                      {rotuloFornecedor(f)}
                     </option>
                   ))}
                 </select>
@@ -1009,6 +1340,45 @@ export function ComprasConteudo({
                     Esses 44 dígitos não formam uma chave válida - confira antes de salvar.
                   </p>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label>
+                  Série
+                  <CampoDica>
+                    A numeração das notas é por série — dois fornecedores podem ter uma nota com o
+                    mesmo número em séries diferentes. O contador confere por série.
+                  </CampoDica>
+                </Label>
+                <Input value={serie} onChange={(e) => setSerie(e.target.value)} placeholder="1" />
+              </div>
+              <div className="space-y-2">
+                <Label>
+                  Data de emissão da nota
+                  <CampoDica>
+                    Data em que o fornecedor emitiu a nota — é o mês de competência, usado no
+                    fechamento contábil. Diferente da data da compra, que é quando você lançou aqui.
+                  </CampoDica>
+                </Label>
+                <Input
+                  type="date"
+                  value={dataEmissaoNota}
+                  onChange={(e) => setDataEmissaoNota(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>
+                  Valor total da nota (R$)
+                  <CampoDica>
+                    O valor que está impresso na nota. Pode ser diferente da soma dos itens mais o
+                    frete quando há ST, IPI ou desconto — e é esse valor que o contador confere.
+                  </CampoDica>
+                </Label>
+                <Input
+                  inputMode="numeric"
+                  value={valorTotalNota}
+                  onChange={(e) => setValorTotalNota(mascaraMoeda(e.target.value))}
+                  placeholder="0,00"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Data da compra</Label>

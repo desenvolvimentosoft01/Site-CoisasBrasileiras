@@ -2,6 +2,21 @@
 
 E-commerce de porcelanas decorativas, presentes, artigos religiosos e perfumaria, com site público para venda e painel administrativo completo para o dono da loja.
 
+O sistema atende **duas lojas no mesmo CNPJ** — Coisas Brasileiras e Porcelanas Brancas — separadas por domínio (ver `DOMINIO_BRANCO` nas variáveis de ambiente). Identidade, contato e cores são configurados por loja; frete, taxas e integrações são compartilhados.
+
+## O que o sistema faz
+
+**Loja (site público)**: catálogo com filtros, carrinho, checkout com frete real por CEP, área do cliente, Clube por assinatura, cupons, avaliações e conformidade com a LGPD (consentimento e autoatendimento de dados).
+
+**Painel administrativo**:
+
+- **Vendas** — Venda Balcão (PDV com leitor de código de barras), Pedido de Venda, Orçamentos e importação de pedidos de Mercado Livre/Shopee vindos do Bling
+- **Produtos** — cadastro, categorias, estoque, reajuste de preços em lote
+- **Compras** — cotação, pedido de compra, entrada de NF (manual ou por importação de XML, com guarda do arquivo e geração do DANFE), fornecedores
+- **Financeiro** — contas a pagar e a receber, geradas automaticamente a partir de compras e pedidos
+- **Relatórios** — vendas, lucro/DRE, estoque e auditoria de alterações
+- **Fiscal** — emissão e cancelamento de NF-e pelo Bling a partir do pedido, acompanhamento da situação da nota e exportação dos XMLs/DANFEs do período para o contador
+
 ## Stack
 
 - **Next.js 16** (App Router) + React 19 + TypeScript
@@ -10,6 +25,9 @@ E-commerce de porcelanas decorativas, presentes, artigos religiosos e perfumaria
 - **Mercado Pago** (Checkout Pro + assinatura recorrente do Clube via PreApproval) para pagamento
 - **Frenet** para cotação real de frete por CEP (várias transportadoras) e validação de código de rastreio
 - **Bling** para emissão/cancelamento de NF-e a partir do pedido (`lib/bling.ts`)
+- **@react-pdf/renderer** para gerar PDF no servidor (orçamento e DANFE)
+- **JSZip** para o lote de XMLs/DANFEs exportado para a contabilidade
+- **bwip-js** para o código de barras Code 128C da chave de acesso no DANFE
 - **Nodemailer** (Gmail) para notificações por e-mail
 - **BrasilAPI** para autopreenchimento de endereço por CEP
 - **Cloudinary** (opcional) para upload de imagem — se não configurado, cai pro
@@ -31,7 +49,7 @@ npm install
 
 ### 3. Configurar o banco de dados
 
-Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `044_compra_chave_acesso.sql`), com `psql` ou outro cliente de sua preferência:
+Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `056_codigo_barras_interno.sql`), com `psql` ou outro cliente de sua preferência:
 
 ```bash
 for f in migrations/0*.sql; do psql -U postgres -d coisas_brasileiras -f "$f"; done
@@ -51,6 +69,7 @@ cp .env.example .env.local
 |---|---|
 | `DATABASE_URL` | String de conexão do PostgreSQL |
 | `NEXT_PUBLIC_SITE_URL` | URL pública do site (usada em callbacks do Mercado Pago) |
+| `DOMINIO_BRANCO` | Domínio que serve a marca Porcelanas Brancas — qualquer outro host cai na marca Coisas Brasileiras. Sem essa variável, o sistema só serve uma das lojas |
 | `AUTH_SECRET` | Valor aleatório para assinar o cookie de sessão do admin |
 | `MERCADOPAGO_ACCESS_TOKEN` / `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` | Credenciais do Mercado Pago (painel de developers) |
 | `MERCADOPAGO_WEBHOOK_SECRET` | Assinatura secreta do webhook do Mercado Pago (opcional em dev) |
@@ -95,6 +114,8 @@ components/loja/  componentes do site público
 components/admin/ componentes do painel
 lib/              banco de dados, autenticação, e-mail, máscaras, integrações
 migrations/       scripts SQL numerados, aplicados manualmente
+scripts/          utilitários de linha de comando (criar admin, backup, disparo dos crons)
+DOCS/             documentação técnica, manual do sistema e guias de integração
 ```
 
 ## Deploy

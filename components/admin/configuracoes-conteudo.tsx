@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useRef, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,9 +50,40 @@ export function ConfiguracoesConteudo({
   blingStatus: BlingStatus
 }) {
   return (
-    <Suspense fallback={<p className="text-sm text-slate-500">Carregando...</p>}>
-      <ConfiguracoesFormulario configuracoesIniciais={configuracoesIniciais} blingStatus={blingStatus} />
-    </Suspense>
+    <ConfiguracoesFormulario configuracoesIniciais={configuracoesIniciais} blingStatus={blingStatus} />
+  )
+}
+
+const MENSAGENS_RETORNO_BLING: Record<string, { texto: string; erro: boolean }> = {
+  conectado: { texto: "Bling conectado com sucesso!", erro: false },
+  erro_state: {
+    texto: "Não foi possível confirmar a conexão (state inválido). Tente novamente.",
+    erro: true,
+  },
+  erro_token: {
+    texto: "O Bling recusou a conexão. Confira o Client ID/Secret abaixo e tente novamente.",
+    erro: true,
+  },
+  erro_nao_configurado: {
+    texto:
+      "Integração com o Bling ainda não configurada. Preencha o Client ID e o Client Secret abaixo (gerados ao registrar o app em developer.bling.com.br).",
+    erro: true,
+  },
+}
+
+// Isolado num componente proprio com Suspense so em volta DELE: useSearchParams
+// obriga o conteudo do Suspense mais proximo a renderizar no cliente. Quando o
+// Suspense envolvia o formulario inteiro, a tela toda virava client-side e o
+// HTML do servidor saia sem nenhum valor preenchido.
+function AvisoRetornoBling() {
+  const searchParams = useSearchParams()
+  const mensagem = MENSAGENS_RETORNO_BLING[searchParams.get("bling") ?? ""]
+  if (!mensagem) return null
+
+  return (
+    <p className={`text-sm ${mensagem.erro ? "text-red-500" : "text-emerald-500"}`}>
+      {mensagem.texto}
+    </p>
   )
 }
 
@@ -63,12 +94,14 @@ function ConfiguracoesFormulario({
   configuracoesIniciais: ConfiguracoesIniciais
   blingStatus: BlingStatus
 }) {
-  const searchParams = useSearchParams()
+  const router = useRouter()
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
-  // Campos de identidade/vitrine (contato, paginas, aparencia, anuncio) sao
-  // salvos por marca - "colorido" (Coisas Brasileiras) e "branco" (Porcelanas
-  // Brancas) tem cada um seus proprios valores, igual ja funciona em /admin/cores.
+  // Campos de identidade/vitrine sao salvos por marca - "colorido" (Coisas
+  // Brasileiras) e "branco" (Porcelanas Brancas) tem cada um seus proprios
+  // valores, igual em /admin/cores. Inclui contato, rodape e cor primaria
+  // desde a migration 055; o que sobrou de global e so operacional (frete,
+  // taxas, integracoes), que e do CNPJ e nao da vitrine.
   const [marca, setMarca] = useState<"colorido" | "branco">("colorido")
   const [carregandoMarca, setCarregandoMarca] = useState(false)
 
@@ -189,8 +222,6 @@ function ConfiguracoesFormulario({
     }
   }
 
-  const mensagemBling = searchParams.get("bling")
-
   async function trocarMarca(novaMarca: "colorido" | "branco") {
     if (novaMarca === marca) return
     setCarregandoMarca(true)
@@ -201,6 +232,16 @@ function ConfiguracoesFormulario({
       setBannerTextoTopo(dados.banner_texto_topo || "")
       setNomeLoja(dados.nome_loja || "")
       setLogoUrl(dados.logo_url || "")
+      // Contato, rodape e cor tambem sao por marca desde a migration 055 -
+      // sem recarregar aqui, a tela mostraria o contato de uma loja com a
+      // outra selecionada, e salvar copiaria os dados de uma pra outra.
+      setWhatsapp(dados.whatsapp ? mascaraTelefone(dados.whatsapp) : "")
+      setWhatsappMensagem(dados.whatsapp_mensagem || "")
+      setInstagram(dados.instagram || "")
+      setEmailContato(dados.email_contato || "")
+      setEnderecoContato(dados.endereco_contato || "")
+      setTextoRodape(dados.texto_rodape || "")
+      setCorPrimaria(dados.cor_primaria || "#047857")
     }
     setMarca(novaMarca)
     setCarregandoMarca(false)
@@ -260,6 +301,12 @@ function ConfiguracoesFormulario({
     setSalvando(false)
     setSalvo(true)
     setTimeout(() => setSalvo(false), 2000)
+
+    // O salvamento vai por rota de API, entao o Next nao tem como saber que os
+    // dados do servidor mudaram - sem isso, sair da tela e voltar dentro da
+    // janela de cache do router (staleTimes em next.config.ts) traz de volta
+    // os valores antigos, como se o salvamento nao tivesse acontecido.
+    router.refresh()
   }
 
   return (
@@ -716,26 +763,9 @@ function ConfiguracoesFormulario({
                       financeiro com o Bling.
                     </p>
 
-                    {mensagemBling === "conectado" && (
-                      <p className="text-sm text-emerald-500">Bling conectado com sucesso!</p>
-                    )}
-                    {mensagemBling === "erro_state" && (
-                      <p className="text-sm text-red-500">
-                        Não foi possível confirmar a conexão (state inválido). Tente novamente.
-                      </p>
-                    )}
-                    {mensagemBling === "erro_token" && (
-                      <p className="text-sm text-red-500">
-                        O Bling recusou a conexão. Confira o Client ID/Secret abaixo e tente
-                        novamente.
-                      </p>
-                    )}
-                    {mensagemBling === "erro_nao_configurado" && (
-                      <p className="text-sm text-red-500">
-                        Integração com o Bling ainda não configurada. Preencha o Client ID e o
-                        Client Secret abaixo (gerados ao registrar o app em developer.bling.com.br).
-                      </p>
-                    )}
+                    <Suspense fallback={null}>
+                      <AvisoRetornoBling />
+                    </Suspense>
 
                     <div className="space-y-2">
                       <Label className="flex items-center gap-1.5">

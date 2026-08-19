@@ -2,13 +2,20 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { rotuloFornecedor } from "@/lib/fornecedor"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Save, Eraser, X } from "lucide-react"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
-export type Fornecedor = { id: string; razao_social: string; cnpj_cpf: string | null; email: string | null }
+export type Fornecedor = {
+  id: string
+  razao_social: string
+  nome_fantasia: string | null
+  cnpj_cpf: string | null
+  email: string | null
+}
 export type ProdutoDisponivel = { id: string; nome: string; sku: string | null }
 
 type ItemForm = { produtoId: string | null; descricao: string; quantidade: string }
@@ -221,7 +228,7 @@ export function CotacaoForm({
               <option value="">Selecione...</option>
               {fornecedores.map((f) => (
                 <option key={f.id} value={f.id}>
-                  {f.razao_social}
+                  {rotuloFornecedor(f)}
                 </option>
               ))}
             </select>

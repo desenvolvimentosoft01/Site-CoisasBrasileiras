@@ -12,7 +12,7 @@ export default async function CotacoesPage() {
        ORDER BY ct.criado_em DESC`
     ),
     query(
-      "SELECT id, razao_social, cnpj_cpf, email FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
+      "SELECT id, razao_social, nome_fantasia, cnpj_cpf, email FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
     ),
     query("SELECT id, nome, sku FROM TAB_PRODUTO WHERE ativo = true ORDER BY nome"),
   ])

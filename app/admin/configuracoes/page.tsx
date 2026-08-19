@@ -8,7 +8,6 @@ const CHAVES = [
   "cep_origem",
   "frete_valor_base",
   "frete_gratis_acima_de",
-  "cor_primaria",
   "taxa_mercadopago_percentual",
   "taxa_mercadopago_fixo",
   "aliquota_imposto_percentual",
@@ -16,19 +15,27 @@ const CHAVES = [
   "clube_valor_mensalidade",
   "bling_loja_mercadolivre",
   "bling_loja_shopee",
-  "whatsapp",
-  "whatsapp_mensagem",
-  "instagram",
-  "email_contato",
-  "endereco_contato",
-  "texto_rodape",
 ]
 
 // So esses campos de identidade/vitrine continuam por marca (colorido/branco)
 // - a tela abre sempre na marca "colorido" (mesmo comportamento de antes); o
 // toggle pra "branco" busca esses campos de novo no client via
 // /api/admin/configuracoes?marca=branco.
-const CHAVES_MARCA = ["nome_loja", "logo_url", "banner_texto_topo", "texto_sobre_nos"]
+const CHAVES_MARCA = [
+  "nome_loja",
+  "logo_url",
+  "banner_texto_topo",
+  "texto_sobre_nos",
+  // Contato, rodape e cor primaria entraram aqui na migration 055: cada site
+  // tem o seu (ver o comentario da migration pra historia completa do bug).
+  "whatsapp",
+  "whatsapp_mensagem",
+  "instagram",
+  "email_contato",
+  "endereco_contato",
+  "texto_rodape",
+  "cor_primaria",
+]
 
 export default async function ConfiguracoesPage() {
   const cookieStore = await cookies()
@@ -46,19 +53,19 @@ export default async function ConfiguracoesPage() {
   return (
     <ConfiguracoesConteudo
       configuracoesIniciais={{
-        whatsapp: configuracoes.whatsapp || "",
-        whatsapp_mensagem: configuracoes.whatsapp_mensagem || "",
-        instagram: configuracoes.instagram || "",
-        email_contato: configuracoes.email_contato || "",
-        endereco_contato: configuracoes.endereco_contato || "",
+        whatsapp: configuracoesMarca.whatsapp || "",
+        whatsapp_mensagem: configuracoesMarca.whatsapp_mensagem || "",
+        instagram: configuracoesMarca.instagram || "",
+        email_contato: configuracoesMarca.email_contato || "",
+        endereco_contato: configuracoesMarca.endereco_contato || "",
         texto_sobre_nos: configuracoesMarca.texto_sobre_nos || "",
         cep_origem: configuracoes.cep_origem || "",
         frete_valor_base: configuracoes.frete_valor_base || "",
         frete_gratis_acima_de: configuracoes.frete_gratis_acima_de || "",
         banner_texto_topo: configuracoesMarca.banner_texto_topo || "",
         nome_loja: configuracoesMarca.nome_loja || "",
-        cor_primaria: configuracoes.cor_primaria || "",
-        texto_rodape: configuracoes.texto_rodape || "",
+        cor_primaria: configuracoesMarca.cor_primaria || "",
+        texto_rodape: configuracoesMarca.texto_rodape || "",
         logo_url: configuracoesMarca.logo_url || "",
         taxa_mercadopago_percentual: configuracoes.taxa_mercadopago_percentual || "",
         taxa_mercadopago_fixo: configuracoes.taxa_mercadopago_fixo || "",

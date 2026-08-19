@@ -6,6 +6,9 @@ const TAMANHO_MAXIMO = 2 * 1024 * 1024 // 2MB - XML de NF-e e texto, nunca dever
 
 // So le e valida o XML (sem gravar nada no banco) - fornecedor/compra so sao
 // criados quando o admin de fato confirma o cadastro da compra na tela.
+// Devolve junto o XML cru pra tela reenviar no salvar: assim o arquivo so e
+// guardado se a compra for de fato confirmada, sem sujar o banco com XML de
+// upload abandonado ou de arquivo trocado por engano.
 export async function POST(request: Request) {
   const sessaoOuErro = await exigirAdmin()
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
   try {
     const texto = await arquivo.text()
     const dados = parseNfeXml(texto)
-    return NextResponse.json(dados)
+    return NextResponse.json({ ...dados, xml: texto })
   } catch (erro) {
     return NextResponse.json(
       { erro: erro instanceof Error ? erro.message : "Erro ao ler o XML" },

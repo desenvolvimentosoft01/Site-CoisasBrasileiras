@@ -39,7 +39,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const { id } = await params
   const dados = await request.json()
-  const { fornecedorId, numeroNota, chaveAcesso, valorFrete, dataCompra, dataVencimento, observacao, itens } = dados
+  const {
+    fornecedorId,
+    numeroNota,
+    chaveAcesso,
+    valorFrete,
+    dataCompra,
+    dataVencimento,
+    observacao,
+    itens,
+    serie,
+    dataEmissao,
+    valorTotalNota,
+  } = dados
 
   if (!fornecedorId) {
     return NextResponse.json({ erro: "Fornecedor é obrigatório" }, { status: 400 })
@@ -65,9 +77,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const [compraAtualizada] = await q(
       `UPDATE TAB_COMPRA
        SET fornecedor_id = $1, numero_nota = $2, chave_acesso = $3, valor_frete = $4,
-           data_compra = $5, data_vencimento = $6, observacao = $7, atualizado_em = NOW()
+           data_compra = $5, data_vencimento = $6, observacao = $7,
+           serie = $9, data_emissao = $10, valor_total_nota = $11, atualizado_em = NOW()
        WHERE id = $8
-       RETURNING id, fornecedor_id, numero_nota, chave_acesso, status, valor_frete, data_compra, data_vencimento, observacao`,
+       RETURNING id, fornecedor_id, numero_nota, chave_acesso, status, valor_frete, data_compra,
+                 data_vencimento, observacao, serie, data_emissao, valor_total_nota`,
       [
         fornecedorId,
         numeroNota || null,
@@ -77,6 +91,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         dataVencimento || null,
         observacao || null,
         id,
+        serie || null,
+        dataEmissao || null,
+        Number(valorTotalNota) > 0 ? Number(valorTotalNota) : null,
       ]
     )
 

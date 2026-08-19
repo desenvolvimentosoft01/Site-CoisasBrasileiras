@@ -56,6 +56,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     comprimentoCm,
     ncm,
     codigoBarras,
+    codigoBarrasInterno,
     precoClube,
     precoClubeTipo,
     marca,
@@ -72,10 +73,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (precoClubeTipo && precoClubeTipo !== "fixo" && precoClubeTipo !== "percentual") {
     return NextResponse.json({ erro: "Tipo do preço do Clube inválido" }, { status: 400 })
   }
-  if (!codigoBarras || !String(codigoBarras).trim()) {
-    return NextResponse.json({ erro: "Código de barras (GTIN/EAN) é obrigatório" }, { status: 400 })
-  }
-  if (!validarCodigoBarras(String(codigoBarras))) {
+  // Codigo de barras deixou de ser obrigatorio (migration 056): produto
+  // artesanal e importado costuma nao ter GTIN do fabricante. Quando vem
+  // preenchido, continua sendo validado - codigo invalido e pior que
+  // nenhum, porque a Sefaz rejeita a nota.
+  if (codigoBarras && String(codigoBarras).trim() && !validarCodigoBarras(String(codigoBarras))) {
     return NextResponse.json({ erro: "Código de barras inválido (precisa ser EAN-13/EAN-8 com dígito verificador correto)" }, { status: 400 })
   }
   if (!ncm || !String(ncm).trim()) {
@@ -98,7 +100,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
          estoque = $5, estoque_minimo = $6, ativo = $7, sku = $8,
          peso_kg = $9, altura_cm = $10, largura_cm = $11, comprimento_cm = $12,
          ncm = $13, preco_clube = $14, codigo_barras = $15, preco_clube_tipo = $16,
-         marca = $17, atualizado_em = NOW()
+         marca = $17, codigo_barras_interno = $19, atualizado_em = NOW()
      WHERE id = $18
      RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, marca`,
     [
@@ -120,6 +122,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       precoClubeTipo || "fixo",
       marca || "colorido",
       id,
+      codigoBarrasInterno === true,
     ]
   )
 

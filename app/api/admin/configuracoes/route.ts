@@ -8,7 +8,21 @@ import { revalidatePath } from "next/cache"
 // em TAB_CONFIGURACAO_MARCA - nome, logo, banner e "sobre nos" fazem sentido
 // diferentes pra cada loja. Contato (whatsapp, instagram, email, endereco) e
 // o resto (frete, custos, integracoes) sao compartilhados em TAB_CONFIGURACAO.
-const CHAVES_MARCA = ["nome_loja", "logo_url", "banner_texto_topo", "texto_sobre_nos"]
+const CHAVES_MARCA = [
+  "nome_loja",
+  "logo_url",
+  "banner_texto_topo",
+  "texto_sobre_nos",
+  // Contato, rodape e cor primaria entraram aqui na migration 055: cada site
+  // tem o seu (ver o comentario da migration pra historia completa do bug).
+  "whatsapp",
+  "whatsapp_mensagem",
+  "instagram",
+  "email_contato",
+  "endereco_contato",
+  "texto_rodape",
+  "cor_primaria",
+]
 
 export async function GET(request: Request) {
   const sessaoOuErro = await exigirSessao()
