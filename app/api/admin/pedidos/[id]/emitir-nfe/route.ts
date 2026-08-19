@@ -39,7 +39,8 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       }
 
       const itens = await q(
-        `SELECT pi.quantidade, pi.preco_unitario, pr.nome, pr.ncm, pr.codigo_barras
+        `SELECT pi.quantidade, pi.preco_unitario, pr.nome, pr.ncm, pr.codigo_barras,
+                pr.codigo_barras_interno
          FROM TAB_PEDIDO_ITEM pi JOIN TAB_PRODUTO pr ON pr.id = pi.produto_id
          WHERE pi.pedido_id = $1`,
         [id]
@@ -65,7 +66,11 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
           quantidade: item.quantidade,
           valorUnitario: Number(item.preco_unitario),
           ncm: item.ncm,
-          gtin: item.codigo_barras,
+          // Codigo de uso interno (gerado por nos, faixa de prefixo 2) NAO e
+          // GTIN e nao pode ir como tal: a Sefaz valida e rejeita. Nesse caso
+          // vai sem gtin, que o Bling traduz pra "SEM GTIN" na nota - o
+          // comportamento correto pra produto sem GTIN de fabricante.
+          gtin: item.codigo_barras_interno ? null : item.codigo_barras,
         })),
         valorFrete: Number(pedido.valor_frete || 0),
         numeroPedidoLoja: String(pedido.id).slice(0, 8).toUpperCase(),

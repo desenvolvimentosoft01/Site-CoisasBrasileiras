@@ -17,7 +17,8 @@ import {
   mascaraDecimal,
   decimalParaNumero,
 } from "@/lib/mascaras"
-import { validarCodigoBarras } from "@/lib/codigo-barras"
+import { ehCodigoDeUsoInterno, gerarEanInterno, validarCodigoBarras } from "@/lib/codigo-barras"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 import { registrarAuditoria } from "@/lib/auditoria"
 
 type Categoria = { id: string; nome: string; categoria_pai_id: string | null; marca: "colorido" | "branco" }
@@ -38,6 +39,7 @@ type ProdutoExistente = {
   sku: string | null
   ncm: string | null
   codigo_barras: string | null
+  codigo_barras_interno?: boolean
   peso_kg: string | null
   altura_cm: string | null
   largura_cm: string | null
@@ -65,6 +67,7 @@ export function ProdutoForm({
   onSalvo: () => void
   onCancelar: () => void
 }) {
+  const confirmar = useConfirmar()
   const [categoriasDisponiveis, setCategoriasDisponiveis] = useState<Categoria[]>([])
   const [marca, setMarca] = useState<"colorido" | "branco">(produto?.marca ?? marcaPadrao ?? "colorido")
 
@@ -86,6 +89,12 @@ export function ProdutoForm({
   const [sku, setSku] = useState(produto?.sku ?? "")
   const [ncm, setNcm] = useState(produto?.ncm ?? "")
   const [codigoBarras, setCodigoBarras] = useState(produto?.codigo_barras ?? "")
+  // Marca se o codigo que esta no campo foi gerado por nos (faixa de uso
+  // interno) em vez de vir do fabricante - a emissao de NF-e precisa saber
+  // disso pra nao mandar como GTIN (ver migration 056).
+  const [codigoBarrasInterno, setCodigoBarrasInterno] = useState(
+    produto?.codigo_barras_interno ?? false
+  )
   const [pesoKg, setPesoKg] = useState((produto?.peso_kg ?? "").replace(".", ","))
   const [alturaCm, setAlturaCm] = useState((produto?.altura_cm ?? "").replace(".", ","))
   const [larguraCm, setLarguraCm] = useState((produto?.largura_cm ?? "").replace(".", ","))
@@ -158,13 +167,40 @@ export function ProdutoForm({
       setErro("Nome e preço são obrigatórios")
       return
     }
-    if (!codigoBarras.trim()) {
-      setErro("Código de barras (GTIN/EAN) é obrigatório")
-      return
-    }
-    if (!validarCodigoBarras(codigoBarras)) {
+    // EAN nao e mais obrigatorio (migration 056): produto artesanal e
+    // importado costuma nao ter GTIN do fabricante. Sem codigo, oferece gerar
+    // um de uso interno a partir do codigo do produto - o operador decide.
+    let codigoParaSalvar = codigoBarras.trim()
+    let internoParaSalvar = codigoBarrasInterno
+
+    if (!codigoParaSalvar) {
+      const gerado = gerarEanInterno(sku || nome)
+      const usarInterno = await confirmar({
+        titulo: "Produto sem código de barras",
+        descricao:
+          `Este produto não tem código de barras (GTIN/EAN) do fabricante. Deseja usar um código interno gerado pelo sistema?
+
+` +
+          `Código sugerido: ${gerado}
+
+` +
+          `Ele serve para bipar no leitor da Venda Balcão e nas etiquetas. Na nota fiscal o produto continua saindo como "SEM GTIN", que é o correto para quem não tem GTIN próprio.`,
+        textoConfirmar: "Gerar código interno",
+      })
+
+      if (usarInterno) {
+        codigoParaSalvar = gerado
+        internoParaSalvar = true
+        setCodigoBarras(gerado)
+        setCodigoBarrasInterno(true)
+      }
+    } else if (!validarCodigoBarras(codigoParaSalvar)) {
       setErro("Código de barras inválido - precisa ter 13 dígitos (EAN-13) com dígito verificador correto")
       return
+    } else {
+      // Codigo digitado na mao na faixa de uso interno tambem nao pode ir
+      // como GTIN na nota - marca do mesmo jeito.
+      internoParaSalvar = ehCodigoDeUsoInterno(codigoParaSalvar)
     }
     if (!ncm.trim()) {
       setErro("NCM é obrigatório")
@@ -197,7 +233,8 @@ export function ProdutoForm({
       marca,
       sku: sku || null,
       ncm: ncm || null,
-      codigoBarras: codigoBarras || null,
+      codigoBarras: codigoParaSalvar || null,
+      codigoBarrasInterno: internoParaSalvar,
       pesoKg: pesoKg ? decimalParaNumero(pesoKg) : null,
       alturaCm: alturaCm ? decimalParaNumero(alturaCm) : null,
       larguraCm: larguraCm ? decimalParaNumero(larguraCm) : null,
@@ -259,6 +296,7 @@ export function ProdutoForm({
     setSku(produto?.sku ?? "")
     setNcm(produto?.ncm ?? "")
     setCodigoBarras(produto?.codigo_barras ?? "")
+    setCodigoBarrasInterno(produto?.codigo_barras_interno ?? false)
     setPesoKg((produto?.peso_kg ?? "").replace(".", ","))
     setAlturaCm((produto?.altura_cm ?? "").replace(".", ","))
     setLarguraCm((produto?.largura_cm ?? "").replace(".", ","))
@@ -336,10 +374,11 @@ export function ProdutoForm({
               </div>
               <div className="space-y-2">
                 <Label>
-                  EAN *
+                  EAN
                   <CampoDica>
                     Código de barras (GTIN/EAN-13), 13 dígitos. Usado no leitor da Venda Balcão e na
-                    importação de XML de compra.
+                    importação de XML de compra. Não é obrigatório: produto sem código de barras do
+                    fabricante pode receber um código interno gerado pelo sistema na hora de salvar.
                   </CampoDica>
                 </Label>
                 <Input
@@ -353,6 +392,8 @@ export function ProdutoForm({
                   <p className="text-xs text-amber-500">Faltam {13 - codigoBarras.length} dígito(s)</p>
                 ) : codigoBarras.length === 13 && !validarCodigoBarras(codigoBarras) ? (
                   <p className="text-xs text-red-500">Dígito verificador não confere - confira o código</p>
+                ) : codigoBarras.length === 13 && codigoBarrasInterno ? (
+                  <p className="text-xs text-sky-600">Código interno (não vai como GTIN na nota)</p>
                 ) : codigoBarras.length === 13 ? (
                   <p className="text-xs text-emerald-500">Código válido</p>
                 ) : null}

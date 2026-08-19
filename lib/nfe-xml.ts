@@ -114,3 +114,211 @@ export function parseNfeXml(xmlTexto: string): DadosNfeXml {
     valorTotal: Number(total.vNF) || 0,
   }
 }
+
+// ============================================================
+// DADOS PARA O DANFE
+// O parse acima extrai so o que a IMPORTACAO precisa (fornecedor, itens,
+// total). O DANFE precisa da nota inteira: destinatario, impostos, CFOP e
+// CST por item, transportador, volumes, protocolo de autorizacao. Fica numa
+// funcao separada de proposito - assim a importacao, que e o caminho
+// critico, nao passa a depender de campos que so a impressao usa.
+// ============================================================
+
+export type ItemDanfe = {
+  codigo: string
+  descricao: string
+  ncm: string
+  cst: string
+  cfop: string
+  unidade: string
+  quantidade: number
+  valorUnitario: number
+  valorTotal: number
+  baseIcms: number
+  valorIcms: number
+  aliquotaIcms: number
+  valorIpi: number
+  aliquotaIpi: number
+}
+
+export type DadosDanfe = {
+  chaveAcesso: string | null
+  numero: string
+  serie: string
+  naturezaOperacao: string
+  // tpNF: 0 = entrada, 1 = saida. Vai impresso no quadrinho do cabecalho.
+  tipoOperacao: "0" | "1"
+  dataEmissao: string | null
+  dataSaidaEntrada: string | null
+  protocolo: string | null
+  emitente: ParticipanteDanfe
+  destinatario: ParticipanteDanfe
+  itens: ItemDanfe[]
+  totais: {
+    baseIcms: number
+    valorIcms: number
+    baseIcmsSt: number
+    valorIcmsSt: number
+    valorProdutos: number
+    valorFrete: number
+    valorSeguro: number
+    valorDesconto: number
+    valorIpi: number
+    valorOutros: number
+    valorTotal: number
+  }
+  transporte: {
+    modalidadeFrete: string
+    transportadora: string | null
+    documentoTransportadora: string | null
+    ufTransportadora: string | null
+    quantidadeVolumes: string | null
+    especie: string | null
+    pesoBruto: string | null
+    pesoLiquido: string | null
+  }
+  informacoesComplementares: string | null
+  // Area "RESERVADO AO FISCO" do quadro de dados adicionais - texto que o
+  // emitente e obrigado a colocar em alguns casos (beneficio fiscal etc).
+  informacoesFisco: string | null
+  // Inscricao estadual do substituto tributario: quadro proprio no cabecalho
+  // do DANFE, preenchido quando o emitente e substituto em outra UF.
+  inscricaoSubstitutoTributario: string | null
+}
+
+export type ParticipanteDanfe = {
+  nome: string
+  documento: string
+  inscricaoEstadual: string | null
+  logradouro: string | null
+  numero: string | null
+  bairro: string | null
+  cidade: string | null
+  estado: string | null
+  cep: string | null
+  telefone: string | null
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota
+function montarParticipante(no: any, tagEndereco: string): ParticipanteDanfe {
+  const endereco = no?.[tagEndereco] ?? {}
+  const texto = (valor: unknown) => (valor === undefined || valor === null ? null : String(valor))
+
+  return {
+    nome: String(no?.xNome ?? ""),
+    // Pessoa juridica tem CNPJ, fisica tem CPF - so uma das duas tags existe.
+    documento: String(no?.CNPJ ?? no?.CPF ?? ""),
+    inscricaoEstadual: texto(no?.IE),
+    logradouro: texto(endereco.xLgr),
+    numero: texto(endereco.nro),
+    bairro: texto(endereco.xBairro),
+    cidade: texto(endereco.xMun),
+    estado: texto(endereco.UF),
+    cep: texto(endereco.CEP),
+    telefone: texto(endereco.fone ?? no?.fone),
+  }
+}
+
+export function parseNfeParaDanfe(xmlTexto: string): DadosDanfe {
+  const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota
+  let doc: any
+  try {
+    doc = parser.parse(xmlTexto)
+  } catch {
+    throw new Error("Arquivo XML inválido ou corrompido")
+  }
+
+  const infNFe = doc?.nfeProc?.NFe?.infNFe ?? doc?.NFe?.infNFe
+  if (!infNFe) {
+    throw new Error("Este arquivo não parece ser uma NF-e válida (tag infNFe não encontrada)")
+  }
+
+  const ide = infNFe.ide ?? {}
+  const total = infNFe.total?.ICMSTot ?? {}
+  const transp = infNFe.transp ?? {}
+  const volume = paraArray(transp.vol)[0] ?? {}
+  const idAttr: string | undefined = infNFe["@_Id"]
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- estrutura vem do parser de XML, formato varia por nota
+  const itens: ItemDanfe[] = paraArray(infNFe.det).map((det: any) => {
+    const prod = det.prod ?? {}
+    // O grupo de ICMS vem com o nome da situacao tributaria (ICMS00, ICMS60,
+    // ICMSSN102...), que muda por regime e por CST - pega o primeiro filho,
+    // qualquer que seja o nome.
+    const grupoIcms = Object.values(det.imposto?.ICMS ?? {})[0] as Record<string, unknown> | undefined
+    const ipi = (det.imposto?.IPI?.IPITrib ?? {}) as Record<string, unknown>
+
+    // Empresa do Simples usa CSOSN no lugar do CST - o DANFE imprime os dois
+    // na mesma coluna, junto da origem da mercadoria.
+    const origem = grupoIcms?.orig !== undefined ? String(grupoIcms.orig) : ""
+    const situacao = grupoIcms?.CST ?? grupoIcms?.CSOSN
+    const cst = situacao !== undefined ? `${origem}${String(situacao)}` : origem
+
+    return {
+      codigo: String(prod.cProd ?? ""),
+      descricao: String(prod.xProd ?? ""),
+      ncm: prod.NCM ? String(prod.NCM) : "",
+      cst,
+      cfop: prod.CFOP ? String(prod.CFOP) : "",
+      unidade: prod.uCom ? String(prod.uCom) : "",
+      quantidade: Number(prod.qCom) || 0,
+      valorUnitario: Number(prod.vUnCom) || 0,
+      valorTotal: Number(prod.vProd) || 0,
+      baseIcms: Number(grupoIcms?.vBC) || 0,
+      valorIcms: Number(grupoIcms?.vICMS) || 0,
+      aliquotaIcms: Number(grupoIcms?.pICMS) || 0,
+      valorIpi: Number(ipi.vIPI) || 0,
+      aliquotaIpi: Number(ipi.pIPI) || 0,
+    }
+  })
+
+  return {
+    chaveAcesso: idAttr ? idAttr.replace(/^NFe/, "") : null,
+    numero: ide.nNF ? String(ide.nNF) : "",
+    serie: ide.serie ? String(ide.serie) : "",
+    naturezaOperacao: String(ide.natOp ?? ""),
+    tipoOperacao: String(ide.tpNF ?? "1") === "0" ? "0" : "1",
+    dataEmissao: ide.dhEmi ? String(ide.dhEmi).slice(0, 10) : null,
+    dataSaidaEntrada: ide.dhSaiEnt ? String(ide.dhSaiEnt).slice(0, 10) : null,
+    // Protocolo so existe em XML processado (nfeProc) - o XML "cru", antes da
+    // autorizacao, nao tem. Sem protocolo o DANFE nao vale como documento.
+    protocolo: doc?.nfeProc?.protNFe?.infProt?.nProt
+      ? String(doc.nfeProc.protNFe.infProt.nProt)
+      : null,
+    emitente: montarParticipante(infNFe.emit, "enderEmit"),
+    destinatario: montarParticipante(infNFe.dest, "enderDest"),
+    itens,
+    totais: {
+      baseIcms: Number(total.vBC) || 0,
+      valorIcms: Number(total.vICMS) || 0,
+      baseIcmsSt: Number(total.vBCST) || 0,
+      valorIcmsSt: Number(total.vST) || 0,
+      valorProdutos: Number(total.vProd) || 0,
+      valorFrete: Number(total.vFrete) || 0,
+      valorSeguro: Number(total.vSeg) || 0,
+      valorDesconto: Number(total.vDesc) || 0,
+      valorIpi: Number(total.vIPI) || 0,
+      valorOutros: Number(total.vOutro) || 0,
+      valorTotal: Number(total.vNF) || 0,
+    },
+    transporte: {
+      modalidadeFrete: String(transp.modFrete ?? "9"),
+      transportadora: transp.transporta?.xNome ? String(transp.transporta.xNome) : null,
+      documentoTransportadora: transp.transporta?.CNPJ
+        ? String(transp.transporta.CNPJ)
+        : transp.transporta?.CPF
+          ? String(transp.transporta.CPF)
+          : null,
+      ufTransportadora: transp.transporta?.UF ? String(transp.transporta.UF) : null,
+      quantidadeVolumes: volume.qVol !== undefined ? String(volume.qVol) : null,
+      especie: volume.esp !== undefined ? String(volume.esp) : null,
+      pesoBruto: volume.pesoB !== undefined ? String(volume.pesoB) : null,
+      pesoLiquido: volume.pesoL !== undefined ? String(volume.pesoL) : null,
+    },
+    informacoesComplementares: infNFe.infAdic?.infCpl ? String(infNFe.infAdic.infCpl) : null,
+    informacoesFisco: infNFe.infAdic?.infAdFisco ? String(infNFe.infAdic.infAdFisco) : null,
+    inscricaoSubstitutoTributario: infNFe.emit?.IEST ? String(infNFe.emit.IEST) : null,
+  }
+}

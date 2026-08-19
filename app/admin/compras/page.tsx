@@ -11,7 +11,9 @@ export default async function ComprasPage({
 
   const [compras, fornecedores, produtos, pedidoCompra] = await Promise.all([
     listarCompras(),
-    query("SELECT id, razao_social, cnpj_cpf FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"),
+    query(
+      "SELECT id, razao_social, nome_fantasia, cnpj_cpf FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
+    ),
     query("SELECT id, nome, sku, codigo_barras, custo, estoque FROM TAB_PRODUTO WHERE ativo = true ORDER BY nome"),
     pedidoCompraId
       ? query(

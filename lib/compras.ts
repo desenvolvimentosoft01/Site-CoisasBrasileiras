@@ -98,6 +98,10 @@ export async function listarCompras() {
   return query(
     `SELECT c.id, c.numero_nota, c.chave_acesso, c.status, c.valor_frete, c.data_compra, c.data_vencimento,
             c.observacao, c.criado_em, c.atualizado_em, c.pedido_compra_id,
+            c.data_emissao, c.valor_total_nota, c.serie,
+            -- So o "tem ou nao tem" - o XML inteiro numa listagem seria
+            -- trafego a toa. A tela usa isso pra habilitar o DANFE.
+            (c.xml_nfe IS NOT NULL) AS tem_xml,
             pc.numero AS pedido_compra_numero,
             f.id AS fornecedor_id, f.razao_social AS fornecedor_nome, f.cnpj_cpf AS fornecedor_cnpj_cpf,
             COALESCE(SUM(ci.quantidade * ci.custo_unitario), 0) AS valor_itens

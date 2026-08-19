@@ -53,6 +53,18 @@ As migrations ficam em `migrations/*.sql`, numeradas e aplicadas manualmente na 
 | `042_cotacao.sql` | Cria `TAB_COTACAO` e `TAB_COTACAO_ITEM` (cotação de preço com fornecedor, etapa anterior ao Pedido de Compra) |
 | `043_pedido_compra_desconto.sql` | `TAB_PEDIDO_COMPRA` ganha `desconto` |
 | `044_compra_chave_acesso.sql` | `TAB_COMPRA` ganha `chave_acesso` (chave de 44 dígitos da NF-e, opcional — preenchida automaticamente ao importar XML ou digitada manualmente) |
+| `045_habilitar_rls.sql` | Habilita RLS em todas as tabelas (fecha a exposição via PostgREST do Supabase; a app conecta direto com role que ignora RLS, então nada muda no site/admin) |
+| `046_marca.sql` | Coluna `marca` (`colorido`/`branco`) em produto, categoria, banner e pedido — unifica Coisas Brasileiras e Porcelanas Brancas num sistema só |
+| `047_marca_feedback_orcamento.sql` | `marca` em feedback e orçamento, completando a separação da 046 |
+| `048_rls_policy_deny_all.sql` | Policy de negação explícita, fechando o aviso do Security Advisor do Supabase |
+| `049_marca_sobre_nos.sql` | `marca` na galeria da página "Sobre nós" (as mídias apareciam nos dois sites) |
+| `050_lgpd_consentimento.sql` | Guarda quando o cliente aceitou a Política de Privacidade (prova do consentimento, art. 8º da LGPD) |
+| `051_unificar_config_contato.sql` | Contato e rodapé deixam de ser por marca e passam a valer para as duas lojas — **revertido pela 055** |
+| `052_status_processando_pagamento.sql` | Adiciona `processando_pagamento` à constraint de status de `TAB_PEDIDO` (usado pelo checkout transparente) |
+| `053_pedido_mercadopago_payment_id.sql` | `TAB_PEDIDO` guarda o id do pagamento no Mercado Pago, para permitir estorno automático ao cancelar |
+| `054_compra_xml_nfe.sql` | `TAB_COMPRA` ganha `xml_nfe`, `data_emissao`, `valor_total_nota` e `serie` — o XML importado passa a ser guardado (guarda fiscal de 5 anos, exportação para o contador e geração do DANFE) |
+| `055_contato_por_marca.sql` | Contato, rodapé e `cor_primaria` voltam a ser por marca, copiando os valores atuais para as duas — **reverte a 051** e corrige a cor primária, que existia nas duas tabelas ao mesmo tempo |
+| `056_codigo_barras_interno.sql` | `TAB_PRODUTO` ganha `codigo_barras_interno`: o EAN deixa de ser obrigatório e o código gerado internamente (faixa de prefixo 2) nunca é enviado como GTIN na NF-e |
 
 ## Módulos do painel admin (`app/admin/*`)
 

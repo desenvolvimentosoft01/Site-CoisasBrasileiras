@@ -4,7 +4,30 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, LogOut, ChevronDown, ChevronRight, Home, ArrowLeft } from "lucide-react"
+import {
+  Menu,
+  LogOut,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  ArrowLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
+  MousePointerClick,
+  LayoutDashboard,
+  Store,
+  ShoppingCart,
+  FileText,
+  Users,
+  Package,
+  Megaphone,
+  Wallet,
+  Truck,
+  TrendingUp,
+  Settings,
+  Palette,
+  type LucideIcon,
+} from "lucide-react"
 import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
@@ -15,20 +38,21 @@ import { rotaAtiva } from "@/lib/rota-ativa"
 import { styleCoresTema } from "@/lib/cores"
 import { ProvedorCores, useCoresTema } from "@/lib/contexto-cores"
 
-// Emoji em vez de icone de linha nos itens de menu - visual "realista",
-// mesmo padrao aplicado no Porcelanas Brancas.
+// Icones de linha (lucide) e nao emoji: com o menu recolhido o icone e a
+// unica coisa visivel, e emoji redimensionado fica borrado e desalinhado
+// entre sistemas operacionais.
 type ItemLink = {
   tipo: "link"
   href: string
   label: string
-  icone: string
+  icone: LucideIcon
   somenteAdmin?: boolean
   somenteDesenvolvedor?: boolean
 }
 type ItemGrupo = {
   tipo: "grupo"
   label: string
-  icone: string
+  icone: LucideIcon
   filhos: { href: string; label: string; somenteAdmin?: boolean }[]
 }
 type ItemMenu = ItemLink | ItemGrupo
@@ -36,15 +60,15 @@ type ItemMenu = ItemLink | ItemGrupo
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
 const menu: ItemMenu[] = [
-  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", icone: "📊" },
-  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: "🏪" },
-  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", icone: "🛒" },
-  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", icone: "📄" },
-  { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: "👥" },
+  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", icone: LayoutDashboard },
+  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: Store },
+  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", icone: ShoppingCart },
+  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", icone: FileText },
+  { tipo: "link", href: "/admin/clientes", label: "Clientes", icone: Users },
   {
     tipo: "grupo",
     label: "Produtos",
-    icone: "📦",
+    icone: Package,
     filhos: [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
@@ -55,7 +79,7 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Marketing",
-    icone: "🏷️",
+    icone: Megaphone,
     filhos: [
       { href: "/admin/cupons", label: "Cupons" },
       { href: "/admin/banners", label: "Banners" },
@@ -65,11 +89,11 @@ const menu: ItemMenu[] = [
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },
     ],
   },
-  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: "💰", somenteAdmin: true },
+  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: Wallet, somenteAdmin: true },
   {
     tipo: "grupo",
     label: "Compras",
-    icone: "🚚",
+    icone: Truck,
     filhos: [
       { href: "/admin/cotacoes", label: "Cotação", somenteAdmin: true },
       { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
@@ -80,7 +104,7 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Relatórios",
-    icone: "📈",
+    icone: TrendingUp,
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
       { href: "/admin/relatorios/lucro", label: "Lucro / DRE", somenteAdmin: true },
@@ -91,20 +115,21 @@ const menu: ItemMenu[] = [
   {
     tipo: "grupo",
     label: "Configurações",
-    icone: "⚙️",
+    icone: Settings,
     filhos: [
       { href: "/admin/usuarios", label: "Usuários", somenteAdmin: true },
       { href: "/admin/configuracoes", label: "Configurações da Loja" },
+      { href: "/admin/configuracoes/pastas-nf", label: "Pastas das Notas Fiscais" },
     ],
   },
-  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: "🎨", somenteDesenvolvedor: true },
+  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: Palette, somenteDesenvolvedor: true },
 ]
 
 // Achata o menu (so os itens visiveis pro papel/email da sessao) pra
 // alimentar a TabBar e o breadcrumb, que trabalham com uma lista simples de
 // {href, label}.
-function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: string }[] {
-  const resultado: { href: string; label: string; icone: string }[] = []
+function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: LucideIcon }[] {
+  const resultado: { href: string; label: string; icone: LucideIcon }[] = []
   for (const item of menu) {
     if (item.tipo === "link") {
       if (item.somenteDesenvolvedor && email !== EMAIL_DESENVOLVEDOR) continue
@@ -161,6 +186,13 @@ function AdminShellInterno({
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarAberta, setSidebarAberta] = useState(false)
+  // Menu recolhido (so icones) e o modo "abrir passando o mouse". Ficam no
+  // localStorage porque sao preferencia de quem usa a maquina, e nao do
+  // cadastro do usuario. Comecam falsos pra que servidor e cliente rendam
+  // igual (evita erro de hidratacao); o valor salvo entra no efeito abaixo.
+  const [menuRecolhido, setMenuRecolhido] = useState(false)
+  const [abrirComHover, setAbrirComHover] = useState(false)
+  const [mouseSobreMenu, setMouseSobreMenu] = useState(false)
   const [notasPendentesBling, setNotasPendentesBling] = useState(0)
 
   // Gesto de arrastar da borda esquerda pra abrir o menu (e arrastar pra
@@ -227,6 +259,46 @@ function AdminShellInterno({
     setGruposAbertos((atual) => (atual.includes(label) ? atual.filter((g) => g !== label) : [...atual, label]))
   }
 
+  useEffect(() => {
+    // A leitura so pode acontecer no cliente (localStorage nao existe no
+    // servidor), e por isso nao da pra usar como valor inicial do useState:
+    // servidor e cliente renderizariam diferente. O microtask antes do
+    // setState evita o render em cascata de mexer no estado ainda dentro do
+    // corpo sincrono do efeito.
+    async function aplicarPreferenciasSalvas() {
+      await Promise.resolve()
+      setMenuRecolhido(localStorage.getItem("admin_menu_recolhido") === "true")
+      setAbrirComHover(localStorage.getItem("admin_menu_hover") === "true")
+    }
+
+    aplicarPreferenciasSalvas()
+  }, [])
+
+  function alternarMenuRecolhido() {
+    setMenuRecolhido((atual) => {
+      localStorage.setItem("admin_menu_recolhido", String(!atual))
+      return !atual
+    })
+  }
+
+  function alternarAberturaPorHover() {
+    setAbrirComHover((atual) => {
+      const novo = !atual
+      localStorage.setItem("admin_menu_hover", String(novo))
+      // Ligar o modo hover so faz sentido com o menu recolhido - senao nao ha
+      // o que "abrir ao passar o mouse".
+      if (novo) {
+        setMenuRecolhido(true)
+        localStorage.setItem("admin_menu_recolhido", "true")
+      }
+      return novo
+    })
+  }
+
+  // O menu aparece expandido quando nao esta recolhido OU quando esta
+  // recolhido, o modo hover esta ligado e o mouse esta sobre ele.
+  const menuExpandido = !menuRecolhido || (abrirComHover && mouseSobreMenu)
+
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" })
     router.push("/admin/entrar")
@@ -285,15 +357,35 @@ function AdminShellInterno({
         />
       )}
 
+      {/* Espaco que o menu ocupa no desktop. Existe separado do <aside>
+          porque, quando o menu abre passando o mouse, ele vira uma camada por
+          CIMA do conteudo - sem esse espaco fixo, a tela inteira andaria pro
+          lado a cada passada de mouse, que e desconfortavel de usar. */}
+      <div
+        className={`hidden shrink-0 transition-[width] duration-200 lg:block ${
+          menuRecolhido ? "w-14" : "w-56"
+        }`}
+      />
+
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-56 shrink-0 flex-col bg-slate-900 transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        onMouseEnter={() => setMouseSobreMenu(true)}
+        onMouseLeave={() => setMouseSobreMenu(false)}
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col bg-slate-900 transition-all duration-200 ease-in-out lg:translate-x-0 ${
           sidebarAberta ? "translate-x-0" : "-translate-x-full"
+        } ${menuExpandido ? "w-56" : "w-56 lg:w-14"} ${
+          menuRecolhido && mouseSobreMenu ? "lg:shadow-2xl lg:shadow-black/40" : ""
         }`}
       >
-        <div className="flex items-center gap-2.5 border-b border-slate-800 px-4 py-5">
+        <div
+          className={`flex items-center gap-2.5 border-b border-slate-800 py-5 ${
+            menuExpandido ? "px-4" : "px-4 lg:justify-center lg:px-0"
+          }`}
+        >
           <Image src={logoUrl || "/logo.webp"} alt="" width={32} height={32} className="shrink-0 rounded-lg" />
-          <div>
-            <p className="text-sm font-bold leading-tight text-white">{nomeLoja || "Coisas Brasileiras"}</p>
+          <div className={menuExpandido ? "" : "lg:hidden"}>
+            <p className="whitespace-nowrap text-sm font-bold leading-tight text-white">
+              {nomeLoja || "Coisas Brasileiras"}
+            </p>
             <p className="text-[10px] text-slate-400">Painel Admin</p>
           </div>
         </div>
@@ -309,14 +401,19 @@ function AdminShellInterno({
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarAberta(false)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
+                  // Com o menu recolhido o rotulo some, entao o title vira a
+                  // unica forma de saber o que e o icone.
+                  title={menuExpandido ? undefined : item.label}
+                  className={`flex w-full items-center gap-2.5 rounded-lg py-2 text-[13px] font-medium transition-all ${
+                    menuExpandido ? "px-3" : "px-3 lg:justify-center lg:px-0"
+                  } ${
                     ativo
                       ? "bg-[var(--primary)] text-white shadow-sm"
                       : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
-                  <span className="text-[15px] leading-none">{item.icone}</span>
-                  {item.label}
+                  <item.icone size={16} className="shrink-0" />
+                  <span className={menuExpandido ? "whitespace-nowrap" : "lg:hidden"}>{item.label}</span>
                 </Link>
               )
             }
@@ -330,22 +427,44 @@ function AdminShellInterno({
             return (
               <div key={item.label}>
                 <button
-                  onClick={() => alternarGrupo(item.label)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
-                    grupoAtivo ? "text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
-                  }`}
+                  // Recolhido, clicar no grupo expande o menu em vez de abrir
+                  // um submenu que ninguem conseguiria ler.
+                  onClick={() => (menuExpandido ? alternarGrupo(item.label) : alternarMenuRecolhido())}
+                  title={menuExpandido ? undefined : item.label}
+                  className={`flex w-full items-center gap-2.5 rounded-lg py-2 text-[13px] font-medium transition-all ${
+                    menuExpandido ? "px-3" : "px-3 lg:justify-center lg:px-0"
+                  } ${grupoAtivo ? "text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
                 >
-                  <span className="text-[15px] leading-none">{item.icone}</span>
-                  <span className="flex-1 text-left">{item.label}</span>
+                  <span className="relative shrink-0">
+                    <item.icone size={16} />
+                    {/* Recolhido nao ha espaco pro numero, mas some-lo por
+                        completo esconderia que ha nota esperando - vira um
+                        ponto no canto do icone. */}
+                    {item.label === "Compras" && notasPendentesBling > 0 && !menuExpandido && (
+                      <span className="absolute -right-1 -top-1 hidden h-2 w-2 rounded-full bg-amber-500 lg:block" />
+                    )}
+                  </span>
+                  <span className={`flex-1 text-left ${menuExpandido ? "whitespace-nowrap" : "lg:hidden"}`}>
+                    {item.label}
+                  </span>
                   {item.label === "Compras" && notasPendentesBling > 0 && (
-                    <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    <span
+                      className={`rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white ${
+                        menuExpandido ? "" : "lg:hidden"
+                      }`}
+                    >
                       {notasPendentesBling}
                     </span>
                   )}
-                  <ChevronDown size={12} className={`text-slate-500 transition-transform ${aberto ? "rotate-180" : ""}`} />
+                  <ChevronDown
+                    size={12}
+                    className={`text-slate-500 transition-transform ${aberto ? "rotate-180" : ""} ${
+                      menuExpandido ? "" : "lg:hidden"
+                    }`}
+                  />
                 </button>
 
-                {aberto && (
+                {aberto && menuExpandido && (
                   <div className="mb-1 ml-6 mt-0.5 space-y-0.5 border-l border-slate-700 pl-3">
                     {filhosVisiveis.map((filho) => {
                       const ativo = rotaAtiva(pathname, filho.href)
@@ -371,11 +490,47 @@ function AdminShellInterno({
           })}
         </nav>
 
-        <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-semibold text-white">
+        {/* Controles do menu: so no desktop - no celular o menu e uma gaveta
+            que abre pelo botao do cabecalho, e hover nao existe em toque. */}
+        <div
+          className={`hidden border-t border-slate-800 py-2 lg:flex lg:items-center ${
+            menuExpandido ? "justify-end gap-1 px-2" : "flex-col gap-1 px-0"
+          }`}
+        >
+          <button
+            onClick={alternarAberturaPorHover}
+            title={
+              abrirComHover
+                ? "Desligar a abertura automática ao passar o mouse"
+                : "Abrir o menu automaticamente ao passar o mouse"
+            }
+            aria-pressed={abrirComHover}
+            className={`rounded-lg p-2 transition-colors ${
+              abrirComHover
+                ? "bg-[var(--primary)] text-white"
+                : "text-slate-500 hover:bg-slate-800 hover:text-white"
+            }`}
+          >
+            <MousePointerClick size={16} />
+          </button>
+          <button
+            onClick={alternarMenuRecolhido}
+            title={menuRecolhido ? "Fixar o menu aberto" : "Recolher o menu"}
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white"
+          >
+            {menuRecolhido ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
+        </div>
+
+        <div
+          className={`flex items-center gap-3 border-t border-slate-800 py-4 ${
+            menuExpandido ? "px-4" : "px-4 lg:justify-center lg:px-0"
+          }`}
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-semibold text-white">
             {iniciais}
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className={`flex-1 overflow-hidden ${menuExpandido ? "" : "lg:hidden"}`}>
             <div className="truncate text-sm font-medium text-white">{sessao.nome}</div>
             <div className="truncate text-xs capitalize text-slate-400">{sessao.papel}</div>
           </div>

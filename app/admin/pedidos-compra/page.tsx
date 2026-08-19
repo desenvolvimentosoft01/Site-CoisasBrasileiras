@@ -12,7 +12,7 @@ export default async function PedidosCompraPage() {
        ORDER BY pc.criado_em DESC`
     ),
     query(
-      "SELECT id, razao_social, cnpj_cpf, email, telefone FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
+      "SELECT id, razao_social, nome_fantasia, cnpj_cpf, email, telefone FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
     ),
     query("SELECT id, nome, sku, custo FROM TAB_PRODUTO WHERE ativo = true ORDER BY nome"),
   ])

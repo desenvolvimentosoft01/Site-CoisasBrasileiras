@@ -17,14 +17,21 @@ Ao ser chamada, siga este fluxo:
    - `test:` testes
 
    Exemplos: `feat: adiciona listagem de produtos no catalogo`, `fix: corrige calculo do total do pedido`, `style: ajusta responsividade do carrinho no mobile`.
-4. Nunca use `git add -A` ou `git add .` — adicione apenas os arquivos relevantes pelo nome.
-5. Não inclua arquivos que pareçam conter segredos (`.env`, `.env.local`, credenciais) sem avisar o usuário.
-6. Crie o commit com a mensagem via heredoc, terminando com:
+4. **Antes de commitar, verifique se a mudança desatualiza o `README.md`** e atualize junto, no mesmo commit. Não é para reescrever o README a cada commit — é para conferir estes pontos, que são os que costumam ficar para trás:
+   - **Migrations**: o README cita o intervalo aplicado (ex: "de `000` até `044`"). Migration nova = atualizar o número.
+   - **Variáveis de ambiente**: variável nova, removida ou que mudou de obrigatória/opcional precisa aparecer na tabela de env vars (e no `.env.example`).
+   - **Funcionalidade ou tela nova**: se o README lista o que o sistema faz, a funcionalidade nova entra lá.
+   - **Deploy, infraestrutura ou dependência nova**: mudou como roda, onde roda ou o que precisa instalar, o README acompanha.
+
+   Vale o mesmo raciocínio para os documentos em `DOCS/` que descrevam o que foi mexido (ex: `tecnico.md` para módulo novo, `bling-descricao-app.md` se a integração com o Bling mudar). Documentação que mente é pior que documentação ausente — já aconteceu de o `vercel.json` descrever crons que nunca rodaram em produção.
+5. Nunca use `git add -A` ou `git add .` — adicione apenas os arquivos relevantes pelo nome.
+6. Não inclua arquivos que pareçam conter segredos (`.env`, `.env.local`, credenciais) sem avisar o usuário.
+7. Crie o commit com a mensagem via heredoc, terminando com:
    ```
    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
    ```
-7. Depois do commit, rode `git push` para a branch escolhida no passo 2 automaticamente — sem perguntar de novo, já que o destino já foi confirmado ali.
-8. Rode `git status` ao final para confirmar que tudo foi commitado e enviado.
+8. Depois do commit, rode `git push` para a branch escolhida no passo 2 automaticamente — sem perguntar de novo, já que o destino já foi confirmado ali.
+9. Rode `git status` ao final para confirmar que tudo foi commitado e enviado.
 
 Regras específicas deste projeto:
 - Se houver mudanças em `migrations/`, confirme que é um arquivo `.sql` novo e numerado (ex: `001_algo.sql`), nunca uma edição de uma migration já aplicada — o usuário roda as migrations manualmente, então a numeração/ordem importa.

@@ -20,7 +20,8 @@ export async function GET() {
 
   const produtos = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.sku, p.ncm, p.codigo_barras, p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
+      p.id, p.nome, p.slug, p.sku, p.ncm, p.codigo_barras, p.codigo_barras_interno,
+      p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
       p.ativo, p.marca, p.criado_em,
       COALESCE(
         json_agg(DISTINCT c.nome) FILTER (WHERE c.id IS NOT NULL),
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
     comprimentoCm,
     ncm,
     codigoBarras,
+    codigoBarrasInterno,
     precoClube,
     precoClubeTipo,
     marca,
@@ -70,10 +72,11 @@ export async function POST(request: Request) {
   if (precoClubeTipo && precoClubeTipo !== "fixo" && precoClubeTipo !== "percentual") {
     return NextResponse.json({ erro: "Tipo do preço do Clube inválido" }, { status: 400 })
   }
-  if (!codigoBarras || !String(codigoBarras).trim()) {
-    return NextResponse.json({ erro: "Código de barras (GTIN/EAN) é obrigatório" }, { status: 400 })
-  }
-  if (!validarCodigoBarras(String(codigoBarras))) {
+  // Codigo de barras deixou de ser obrigatorio (migration 056): produto
+  // artesanal e importado costuma nao ter GTIN do fabricante. Quando vem
+  // preenchido, continua sendo validado - codigo invalido e pior que
+  // nenhum, porque a Sefaz rejeita a nota.
+  if (codigoBarras && String(codigoBarras).trim() && !validarCodigoBarras(String(codigoBarras))) {
     return NextResponse.json({ erro: "Código de barras inválido (precisa ser EAN-13/EAN-8 com dígito verificador correto)" }, { status: 400 })
   }
   if (!ncm || !String(ncm).trim()) {
@@ -91,8 +94,8 @@ export async function POST(request: Request) {
 
   const [produto] = await query(
     `INSERT INTO TAB_PRODUTO
-       (nome, slug, descricao, preco, preco_promocional, preco_clube, preco_clube_tipo, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras, marca)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+       (nome, slug, descricao, preco, preco_promocional, preco_clube, preco_clube_tipo, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras, marca, codigo_barras_interno)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
      RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, marca, criado_em`,
     [
       nome.trim(),
@@ -112,6 +115,7 @@ export async function POST(request: Request) {
       ncm || null,
       codigoBarras || null,
       marca || "colorido",
+      codigoBarrasInterno === true,
     ]
   )
 
