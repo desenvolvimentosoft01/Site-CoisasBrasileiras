@@ -37,7 +37,15 @@ const CHAVES_MARCA = [
   "cor_primaria",
 ]
 
-export default async function ConfiguracoesPage() {
+// A aba ativa vem na query (?aba=integracoes) e e resolvida aqui no servidor,
+// nao no client: assim o HTML ja sai com a aba certa e o F5 mantem o admin
+// onde ele estava, sem piscar na aba "Contato" antes de trocar.
+export default async function ConfiguracoesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ aba?: string }>
+}) {
+  const { aba } = await searchParams
   const cookieStore = await cookies()
   const sessao = await lerTokenSessao(cookieStore.get("admin_sessao")?.value)
 
@@ -76,6 +84,7 @@ export default async function ConfiguracoesPage() {
         bling_loja_shopee: configuracoes.bling_loja_shopee || "",
       }}
       blingStatus={blingStatus}
+      abaInicial={aba}
     />
   )
 }
