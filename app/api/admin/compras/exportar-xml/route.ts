@@ -28,6 +28,13 @@ import JSZip from "jszip"
 // guardado e por isso fica de fora - a consulta filtra por "xml_nfe IS NOT
 // NULL".
 
+// Cada DANFE e uma renderizacao de PDF completa, feita aqui na requisicao.
+// Um periodo grande com PDF ligado poderia segurar o processo por minutos e
+// estourar memoria - com um unico operador clicando, isso derruba o admin
+// inteiro. O limite corta antes disso e explica o que fazer; o XML sozinho e
+// leve e nao precisa de teto.
+const MAXIMO_DANFES_POR_EXPORTACAO = 150
+
 type FiltrosExport = {
   inicio: string
   fim: string
@@ -184,6 +191,17 @@ export async function GET(request: Request) {
     return NextResponse.json(
       { erro: "Nenhuma nota com XML guardado para esses filtros" },
       { status: 404 }
+    )
+  }
+
+  if (incluir !== "xml" && notas.length > MAXIMO_DANFES_POR_EXPORTACAO) {
+    return NextResponse.json(
+      {
+        erro:
+          `Esse período tem ${notas.length} notas, e gerar o DANFE de todas de uma vez é pesado demais ` +
+          `(o limite é ${MAXIMO_DANFES_POR_EXPORTACAO}). Exporte só o XML, que não tem limite, ou divida o período.`,
+      },
+      { status: 413 }
     )
   }
 
