@@ -32,7 +32,10 @@ export async function GET() {
     mapa[chave] = ehTextoVisivel ? { configurado: Boolean(valor), valor: valor || "" } : { configurado: Boolean(valor) }
   })
 
-  return NextResponse.json(mapa)
+  // Sem cache no navegador: a tela pergunta "o que ja esta configurado?" e uma
+  // resposta guardada mente sobre o estado atual - o cliente configura a
+  // integracao e a tela continua dizendo que nao configurou.
+  return NextResponse.json(mapa, { headers: { "Cache-Control": "no-store" } })
 }
 
 export async function PUT(request: Request) {
