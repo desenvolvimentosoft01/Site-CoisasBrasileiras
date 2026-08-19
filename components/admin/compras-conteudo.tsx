@@ -1126,7 +1126,7 @@ export function ComprasConteudo({
                               onClick={() => setDetalhe(compra)}
                               title="Ver detalhe"
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             {compra.tem_xml && (
                               <Button
@@ -1147,7 +1147,7 @@ export function ComprasConteudo({
                                   onClick={() => abrirEdicao(compra)}
                                   title="Editar"
                                 >
-                                  <Pencil size={16} />
+                                  <span className="text-base leading-none">✏️</span>
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -1174,7 +1174,7 @@ export function ComprasConteudo({
                                   onClick={() => excluir(compra)}
                                   title="Excluir"
                                 >
-                                  <Trash2 size={16} className="text-red-500" />
+                                  <span className="text-base leading-none">🗑️</span>
                                 </Button>
                               </>
                             )}

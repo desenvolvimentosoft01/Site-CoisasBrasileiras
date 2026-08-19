@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { X, ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react"
+import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAbasAdmin } from "@/lib/abas-admin-store"
 import { rotaAtiva } from "@/lib/rota-ativa"
 
