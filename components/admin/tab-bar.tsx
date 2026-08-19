@@ -6,7 +6,7 @@ import { X, ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react"
 import { useAbasAdmin } from "@/lib/abas-admin-store"
 import { rotaAtiva } from "@/lib/rota-ativa"
 
-type ItemMenu = { href: string; label: string; icone: LucideIcon }
+type ItemMenu = { href: string; label: string; emoji: string }
 
 export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   const router = useRouter()
@@ -68,8 +68,8 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
     }
   }
 
-  function iconeDaAba(path: string) {
-    return itensMenu.find((i) => i.href === path)?.icone
+  function emojiDaAba(path: string) {
+    return itensMenu.find((i) => i.href === path)?.emoji
   }
 
   return (
@@ -91,7 +91,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
       <div ref={conteudoRef} className="flex w-max items-end gap-0">
       {abas.map((aba) => {
         const ativa = rotaAtiva(pathname, aba.path)
-        const Icone = iconeDaAba(aba.path)
+        const emoji = emojiDaAba(aba.path)
         const fechavel = aba.path !== "/admin/dashboard"
 
         return (
@@ -107,7 +107,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
                 : "border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white"
             }`}
           >
-            {Icone && <Icone size={13} className="shrink-0" />}
+            {emoji && <span className="shrink-0 text-[13px] leading-none">{emoji}</span>}
             <span className="whitespace-nowrap">{aba.titulo}</span>
             {fechavel && (
               <button

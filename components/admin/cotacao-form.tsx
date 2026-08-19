@@ -6,7 +6,7 @@ import { rotuloFornecedor } from "@/lib/fornecedor"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Save, Eraser, X } from "lucide-react"
+import { Save, Eraser, X } from "lucide-react"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
 export type Fornecedor = {
@@ -199,7 +199,7 @@ export function CotacaoForm({
             ))}
 
             <Button variant="outline" size="sm" onClick={adicionarItem}>
-              <Plus size={14} className="mr-1.5" />
+              <span className="mr-1.5 text-sm leading-none">➕</span>
               Adicionar item
             </Button>
 

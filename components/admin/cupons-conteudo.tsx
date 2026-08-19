@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Pencil, Plus, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, FilePlus, Save, Eraser, X } from "lucide-react"
 import { CampoDica } from "@/components/ui/campo-dica"
 import { formatarMoeda } from "@/lib/mascaras"
 import { registrarAuditoria } from "@/lib/auditoria"
@@ -172,7 +172,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <Plus size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">➕</span>
             Cadastro
           </TabsTrigger>
         </TabsList>

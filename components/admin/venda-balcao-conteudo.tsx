@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Minus, ShoppingCart, Search, User, X, Package, Barcode } from "lucide-react"
+import { Minus, ShoppingCart, Search, User, X, Package, Barcode } from "lucide-react"
 import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
@@ -687,7 +687,7 @@ export function VendaBalcaoConteudo({
                           onClick={() => alterarQuantidade(item.produtoId, 1)}
                           disabled={item.quantidade >= item.estoqueDisponivel}
                         >
-                          <Plus size={12} />
+                          <span className="text-xs leading-none">➕</span>
                         </Button>
                         <Button
                           variant="ghost"

@@ -19,6 +19,18 @@ export async function GET(request: Request) {
   const code = searchParams.get("code")
   const state = searchParams.get("state")
 
+  // O Bling volta com "error" (sem "code") quando ele mesmo recusa a
+  // autorizacao - client_id desconhecido, redirect_uri diferente do cadastrado
+  // no app, ou consentimento negado. Isso nao e problema de state: sem separar
+  // os dois casos, o admin ve "state invalido" e vai procurar no lugar errado.
+  const erroBling = searchParams.get("error")
+  if (erroBling) {
+    const detalhe = searchParams.get("error_description") || erroBling
+    return NextResponse.redirect(
+      `${siteUrl}/admin/configuracoes?aba=integracoes&bling=erro_autorizacao&detalhe=${encodeURIComponent(detalhe)}`
+    )
+  }
+
   const cookieHeader = request.headers.get("cookie") || ""
   const stateSalvo = cookieHeader
     .split(";")
@@ -27,13 +39,13 @@ export async function GET(request: Request) {
     ?.split("=")[1]
 
   if (!code || !state || !stateSalvo || state !== stateSalvo) {
-    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?bling=erro_state`)
+    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?aba=integracoes&bling=erro_state`)
   }
 
   try {
     await trocarCodigoPorTokenBling(code, `${siteUrl}/api/admin/bling/callback`)
-    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?bling=conectado`)
+    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?aba=integracoes&bling=conectado`)
   } catch {
-    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?bling=erro_token`)
+    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?aba=integracoes&bling=erro_token`)
   }
 }

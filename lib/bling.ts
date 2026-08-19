@@ -466,3 +466,31 @@ export async function obterPedidoVendaBling(id: string): Promise<PedidoVendaBlin
     linkPdf: dados?.notaFiscal?.linkPDF ?? dados?.notaFiscal?.linkPdf ?? null,
   }
 }
+
+// Baixa o XML autorizado de uma nota fiscal (saida) ja emitida pelo Bling.
+//
+// O campo "xml" do GET /notas-fiscais/{id} vem de dois jeitos dependendo da
+// conta/versao: ora o proprio conteudo do XML, ora uma URL pro arquivo. Trata
+// os dois - sair quebrando por causa disso deixaria o cliente sem o documento
+// que ele e obrigado a guardar por 5 anos.
+//
+// Devolve null (em vez de erro) quando a nota ainda nao tem XML: nota so
+// autorizada na Sefaz tem XML, e uma nota em rascunho/rejeitada nao e um caso
+// de erro, e so um documento que ainda nao existe.
+export async function obterXmlNotaFiscalBling(blingNotaId: string): Promise<string | null> {
+  const resposta = await chamarBling(`/notas-fiscais/${blingNotaId}`)
+  const dadosNota = resposta?.data ?? resposta
+  const xml: string | null = dadosNota?.xml ?? null
+
+  if (!xml || !xml.trim()) return null
+
+  if (/^https?:\/\//i.test(xml.trim())) {
+    const arquivo = await fetch(xml.trim())
+    if (!arquivo.ok) {
+      throw new Error(`Nao foi possivel baixar o XML da nota no Bling (HTTP ${arquivo.status})`)
+    }
+    return await arquivo.text()
+  }
+
+  return xml
+}

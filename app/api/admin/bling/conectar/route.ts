@@ -23,7 +23,7 @@ export async function GET() {
     // Credenciais do Bling ainda nao configuradas (banco ou variavel de
     // ambiente) - volta pra Configuracoes com mensagem amigavel em vez de
     // estourar erro 500.
-    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?bling=erro_nao_configurado`)
+    return NextResponse.redirect(`${siteUrl}/admin/configuracoes?aba=integracoes&bling=erro_nao_configurado`)
   }
 
   const resposta = NextResponse.redirect(url)

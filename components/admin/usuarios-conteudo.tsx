@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Pencil, Eye, Plus, FilePlus, Save, Eraser, X } from "lucide-react"
+import { Trash2, Pencil, FilePlus, Save, Eraser, X } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
@@ -178,7 +178,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <Plus size={14} className="mr-1.5" />
+            <span className="mr-1.5 text-sm leading-none">➕</span>
             Cadastro
           </TabsTrigger>
         </TabsList>
@@ -261,7 +261,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 setDetalhe(usuario)
                               }}
                             >
-                              <Eye size={16} />
+                              <span className="text-base leading-none">👁️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -271,7 +271,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 abrirEdicao(usuario)
                               }}
                             >
-                              <Pencil size={16} />
+                              <span className="text-base leading-none">✏️</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -281,7 +281,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 excluir(usuario)
                               }}
                             >
-                              <Trash2 size={16} />
+                              <span className="text-base leading-none">🗑️</span>
                             </Button>
                           </td>
                         </tr>

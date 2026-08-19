@@ -5,3 +5,10 @@
 // (inclusive a checagem de AUTH_SECRET) pro navegador, que quebra em runtime
 // porque essa variavel de ambiente nao existe no client.
 export const EMAIL_DESENVOLVEDOR = "desenvolvimentosoft01@gmail.com"
+
+// Nome do produto (o sistema), diferente do nome da loja que o cliente
+// configura em Configuracoes. Aparece no rodape do DANFE, no cabecalho do
+// admin e nos e-mails - todo lugar onde a pergunta e "que sistema gerou
+// isso?". Quem assina como fabricante do software e a In Mente Agencia.
+export const NOME_SISTEMA = "In Mente Gestão"
+export const FABRICANTE_SISTEMA = "In Mente Agência"

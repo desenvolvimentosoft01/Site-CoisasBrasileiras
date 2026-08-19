@@ -37,6 +37,7 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/admin/relatorios/lucro") ||
       pathname.startsWith("/admin/compras") ||
       pathname.startsWith("/admin/fornecedores") ||
+      pathname.startsWith("/admin/notas-fiscais") ||
       pathname.startsWith("/admin/clube")
     if (somenteAdmin && sessao.papel !== "admin") {
       const url = request.nextUrl.clone()

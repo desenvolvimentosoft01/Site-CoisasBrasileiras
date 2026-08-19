@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AlertTriangle, Search, X } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { registrarAuditoria } from "@/lib/auditoria"
 
@@ -77,7 +77,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
         <h1 className="text-2xl font-semibold">Controle de estoque</h1>
         {emBaixa > 0 && (
           <span className="flex items-center gap-1.5 rounded-full bg-amber-600/20 px-3 py-1 text-sm text-amber-500">
-            <AlertTriangle size={14} />
+            <span className="text-sm leading-none">⚠️</span>
             {emBaixa} produto(s) com estoque baixo
           </span>
         )}
@@ -153,7 +153,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
                               baixo ? "text-amber-500" : ""
                             }`}
                           >
-                            {baixo && <AlertTriangle size={14} />}
+                            {baixo && <span className="text-sm leading-none">⚠️</span>}
                             {produto.estoque}
                           </span>
                         </td>

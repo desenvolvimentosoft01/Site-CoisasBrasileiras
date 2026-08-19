@@ -16,6 +16,7 @@ O sistema atende **duas lojas no mesmo CNPJ** — Coisas Brasileiras e Porcelana
 - **Financeiro** — contas a pagar e a receber, geradas automaticamente a partir de compras e pedidos
 - **Relatórios** — vendas, lucro/DRE, estoque e auditoria de alterações
 - **Fiscal** — emissão e cancelamento de NF-e pelo Bling a partir do pedido, acompanhamento da situação da nota e exportação dos XMLs/DANFEs do período para o contador
+- **Notas Fiscais** — central com as notas de entrada e de saída na mesma lista, imprimindo o DANFE e baixando o XML de qualquer uma sem abrir o Bling
 
 ## Stack
 
@@ -49,7 +50,7 @@ npm install
 
 ### 3. Configurar o banco de dados
 
-Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `056_codigo_barras_interno.sql`), com `psql` ou outro cliente de sua preferência:
+Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `057_pedido_xml_nfe.sql`), com `psql` ou outro cliente de sua preferência:
 
 ```bash
 for f in migrations/0*.sql; do psql -U postgres -d coisas_brasileiras -f "$f"; done

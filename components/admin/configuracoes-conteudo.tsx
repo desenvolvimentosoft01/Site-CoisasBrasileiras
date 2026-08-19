@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -45,19 +46,30 @@ export type BlingStatus =
 export function ConfiguracoesConteudo({
   configuracoesIniciais,
   blingStatus,
+  abaInicial,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
   blingStatus: BlingStatus
+  abaInicial?: string
 }) {
   return (
-    <ConfiguracoesFormulario configuracoesIniciais={configuracoesIniciais} blingStatus={blingStatus} />
+    <ConfiguracoesFormulario
+      configuracoesIniciais={configuracoesIniciais}
+      blingStatus={blingStatus}
+      abaInicial={abaInicial}
+    />
   )
 }
 
 const MENSAGENS_RETORNO_BLING: Record<string, { texto: string; erro: boolean }> = {
   conectado: { texto: "Bling conectado com sucesso!", erro: false },
   erro_state: {
-    texto: "Não foi possível confirmar a conexão (state inválido). Tente novamente.",
+    texto:
+      "Não foi possível confirmar a conexão: o navegador não devolveu o código de segurança da tentativa. Clique em \"Conectar com o Bling\" e conclua a autorização na mesma aba, sem demorar mais de 10 minutos.",
+    erro: true,
+  },
+  erro_autorizacao: {
+    texto: "O Bling não autorizou a conexão.",
     erro: true,
   },
   erro_token: {
@@ -80,19 +92,26 @@ function AvisoRetornoBling() {
   const mensagem = MENSAGENS_RETORNO_BLING[searchParams.get("bling") ?? ""]
   if (!mensagem) return null
 
+  // Detalhe vem do proprio Bling (error_description do OAuth) - so aparece
+  // quando ele recusa a autorizacao, pra o admin saber o que corrigir no app.
+  const detalhe = searchParams.get("detalhe")
+
   return (
-    <p className={`text-sm ${mensagem.erro ? "text-red-500" : "text-emerald-500"}`}>
-      {mensagem.texto}
-    </p>
+    <div className={`text-sm ${mensagem.erro ? "text-red-500" : "text-emerald-500"}`}>
+      <p>{mensagem.texto}</p>
+      {detalhe && <p className="mt-1 text-xs">Resposta do Bling: {detalhe}</p>}
+    </div>
   )
 }
 
 function ConfiguracoesFormulario({
   configuracoesIniciais,
   blingStatus,
+  abaInicial,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
   blingStatus: BlingStatus
+  abaInicial?: string
 }) {
   const router = useRouter()
   const [salvando, setSalvando] = useState(false)
@@ -163,13 +182,38 @@ function ConfiguracoesFormulario({
   const [emailPass, setEmailPass] = useState("")
   const [emailNotificacoesAdmin, setEmailNotificacoesAdmin] = useState("")
   const [salvandoSegredos, setSalvandoSegredos] = useState(false)
+
+  // Aba ativa espelhada na URL (?aba=integracoes) pra sobreviver ao F5 - sem
+  // isso, qualquer refresh joga o admin de volta pra "Contato" e ele perde o
+  // lugar onde estava (o retorno do OAuth do Bling cai justamente aqui). O
+  // valor inicial vem do servidor (abaInicial), nao de window.location, pra
+  // nao divergir do HTML renderizado la.
+  const [abaAtiva, setAbaAtiva] = useState(abaInicial || "contato")
+
+  // replaceState em vez de router.replace: troca a aba sem recarregar dado do
+  // servidor nem empilhar uma entrada de historico por clique de aba.
+  function trocarAba(aba: string) {
+    setAbaAtiva(aba)
+    const url = new URL(window.location.href)
+    url.searchParams.set("aba", aba)
+    window.history.replaceState(null, "", url)
+  }
   const [segredosSalvos, setSegredosSalvos] = useState(false)
 
+  // "no-store" e obrigatorio aqui: sem isso o navegador pode responder essa
+  // GET do proprio cache, e uma resposta guardada de ANTES de configurar a
+  // integracao faz a tela abrir dizendo "nao configurado" mesmo com o dado
+  // certo no banco - so o F5 (que revalida) mostrava o estado real.
+  //
+  // O erro tambem nao pode ser engolido: falhar em silencio deixa a tela
+  // parecendo que nada esta configurado, que e pior do que avisar.
   useEffect(() => {
-    fetch("/api/admin/segredos")
-      .then((r) => (r.ok ? r.json() : null))
+    fetch("/api/admin/segredos", { cache: "no-store" })
+      .then(async (resposta) => {
+        if (!resposta.ok) throw new Error("Não foi possível carregar as integrações")
+        return resposta.json()
+      })
       .then((dados) => {
-        if (!dados) return
         setSegredosStatus(
           Object.fromEntries(
             Object.entries(dados).map(([chave, info]) => [chave, (info as { configurado: boolean }).configurado])
@@ -178,6 +222,9 @@ function ConfiguracoesFormulario({
         setEmailUser(dados.email_user?.valor || "")
         setEmailNotificacoesAdmin(dados.email_notificacoes_admin?.valor || "")
         setMpPublicKey(dados.mercadopago_public_key?.valor || "")
+      })
+      .catch((erro) => {
+        toast.error(erro instanceof Error ? erro.message : "Erro ao carregar as integrações")
       })
   }, [])
 
@@ -211,7 +258,7 @@ function ConfiguracoesFormulario({
     setBlingClientSecret("")
     setTimeout(() => setSegredosSalvos(false), 2500)
 
-    const resposta = await fetch("/api/admin/segredos")
+    const resposta = await fetch("/api/admin/segredos", { cache: "no-store" })
     if (resposta.ok) {
       const dados = await resposta.json()
       setSegredosStatus(
@@ -341,7 +388,7 @@ function ConfiguracoesFormulario({
       </p>
 
       <form onSubmit={salvar} className="space-y-6">
-        <Tabs defaultValue="contato">
+        <Tabs value={abaAtiva} onValueChange={trocarAba}>
           <TabsList>
             <TabsTrigger value="contato">
               <Phone size={14} className="mr-1.5" />

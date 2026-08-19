@@ -7,20 +7,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
-  Plus,
   PackageCheck,
   Ban,
   FileUp,
-  AlertTriangle,
   Radio,
   RefreshCw,
   Link2,
   ClipboardList,
-  Download,
   FolderDown,
-  Eye,
-  Pencil,
-  Trash2,
   FileText,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -848,7 +842,7 @@ export function ComprasConteudo({
               Grade
             </TabsTrigger>
             <TabsTrigger value="formulario">
-              <Plus size={14} className="mr-1.5" />
+              <span className="mr-1.5 text-sm leading-none">➕</span>
               Cadastro
             </TabsTrigger>
             <TabsTrigger value="notas-bling" onClick={() => notasBling.length === 0 && buscarNotasBling()}>
@@ -858,7 +852,7 @@ export function ComprasConteudo({
           </TabsList>
           {aba === "lista" && (
             <Button onClick={abrirNova}>
-              <Plus size={16} className="mr-2" />
+              <span className="mr-2 text-base leading-none">➕</span>
               Nova compra
             </Button>
           )}
@@ -1056,7 +1050,7 @@ export function ComprasConteudo({
                 </div>
                 <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
                   <Button type="button" onClick={exportarXmlsZip} disabled={exportandoXmls}>
-                    <Download size={16} className="mr-2" />
+                    <span className="mr-2 text-base leading-none">📥</span>
                     Baixar .zip
                   </Button>
                   <Button
@@ -1288,7 +1282,7 @@ export function ComprasConteudo({
               {erroXml && <p className="text-sm text-red-500">{erroXml}</p>}
               {chaveXmlInvalida && (
                 <p className="flex items-center gap-1.5 text-sm text-amber-500">
-                  <AlertTriangle size={14} />
+                  <span className="text-sm leading-none">⚠️</span>
                   A chave de acesso deste XML não bateu na validação (dados podem estar
                   incompletos ou o arquivo alterado) - confira os valores antes de salvar.
                 </p>
@@ -1336,7 +1330,7 @@ export function ComprasConteudo({
                 />
                 {chaveAcesso.length === 44 && !validarChaveAcesso(chaveAcesso) && (
                   <p className="flex items-center gap-1.5 text-xs text-amber-500">
-                    <AlertTriangle size={12} />
+                    <span className="text-xs leading-none">⚠️</span>
                     Esses 44 dígitos não formam uma chave válida - confira antes de salvar.
                   </p>
                 )}

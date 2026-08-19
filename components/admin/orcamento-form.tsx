@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, User, X, Save, Eraser, RefreshCw } from "lucide-react"
+import { User, X, Save, Eraser, RefreshCw } from "lucide-react"
 import { formatarMoeda, mascaraTelefone } from "@/lib/mascaras"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 
@@ -375,7 +375,7 @@ export function OrcamentoForm({
             ))}
 
             <Button variant="outline" size="sm" onClick={adicionarItem}>
-              <Plus size={14} className="mr-1.5" />
+              <span className="mr-1.5 text-sm leading-none">➕</span>
               Adicionar item
             </Button>
 
