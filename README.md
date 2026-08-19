@@ -59,7 +59,7 @@ cp .env.example .env.local
 | `FRENET_TOKEN` / `FRENET_API_URL` | Cotação real de frete e validação de rastreio (opcional — sem isso, cai na tabela de faixas por região/peso) |
 | `BLING_CLIENT_ID` / `BLING_CLIENT_SECRET` | Credenciais OAuth do app Bling (emissão/cancelamento de NF-e) |
 | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Upload de imagem em ambiente serverless (opcional em VPS com disco persistente) |
-| `CRON_SECRET` | Autentica as chamadas dos crons (`/api/cron/*`) feitas pelo agendador externo (opcional — sem ele, as rotas ficam sem checagem de autorização) |
+| `CRON_SECRET` | Autentica as chamadas dos crons (`/api/cron/*`) feitas pelo crontab da VPS. **Obrigatório**: sem ele as rotas de cron recusam qualquer chamada (401) |
 
 Frenet, Mercado Pago e Email também podem ser configurados direto pelo painel admin (Configurações > Integrações), sem precisar mexer em variável de ambiente — as variáveis acima servem de fallback/bootstrap inicial.
 
@@ -99,9 +99,9 @@ migrations/       scripts SQL numerados, aplicados manualmente
 
 ## Deploy
 
-Plano de **produção**: **VPS na Hostinger**, com PostgreSQL rodando no mesmo
-servidor (self-hosted) e o Next.js como processo contínuo (`npm run build` +
-`npm run start`), não serverless. Nesse cenário o disco é persistente de
+**Produção**: **VPS na Hostinger**, com o Next.js como processo contínuo
+(`npm run build` + `npm run start`), não serverless. O banco é PostgreSQL no
+Supabase (acessado pelo pooler). Nesse cenário o disco é persistente de
 verdade — o upload de imagem de produto em `public/uploads/` (comportamento
 padrão, sem configuração extra) funciona sem custo adicional, e o Cloudinary
 (`lib/cloudinary.ts`) fica **desligado por padrão**, só necessário se algum
@@ -114,21 +114,7 @@ disponível nesse momento, o que quebra se o build rodar numa máquina sem
 acesso direto ao Postgres de produção (ex: pipeline de deploy separado do
 servidor final).
 
-Hoje existe também um ambiente de **homologação na Vercel + Neon**
-(Postgres gerenciado), usado para testes antes da produção final:
-
-- `vercel.json` fixa a região das funções em `gru1` (São Paulo) — perto do
-  Neon (`sa-east-1`), evitando a latência cruzada de rodar as funções nos
-  EUA (`iad1`, região padrão da Vercel) enquanto o banco fica no Brasil.
-- Todas as migrations em `migrations/` precisam ser aplicadas manualmente
-  contra a `DATABASE_URL` do Neon (mesmo processo do setup local).
-- O primeiro usuário admin também precisa ser criado rodando
-  `node scripts/criar-admin.js` com a `DATABASE_URL` do Neon — não existe
-  seed automático (ver seção "Login do admin").
-- **Upload de imagem não persiste** nesse ambiente (Vercel é serverless,
-  disco efêmero) — o Cloudinary ainda não foi ligado aqui; é uma limitação
-  conhecida do ambiente de homologação, não um requisito da produção final.
-- O Neon (plano free) hiberna depois de ficar ocioso — a primeira query após
-  um tempo parado pode ter um atraso de 1-3s pra "acordar" o banco.
+As tarefas agendadas (`/api/cron/*`) são disparadas pelo **crontab da própria
+VPS**, via `scripts/cron-vps.sh` — ver `DOCS/cron-vps.md` para a configuração.
 
 Ver `DOCS/tecnico.md` para o modelo de dados e os módulos completos.

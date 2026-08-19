@@ -1,17 +1,14 @@
 import { statusConexaoBling } from "@/lib/bling"
 import { importarPedidosMarketplace } from "@/lib/bling-marketplace"
+import { segredoCronValido } from "@/lib/cron-auth"
 import { NextResponse } from "next/server"
 
-// Chamado por um agendador externo (Vercel Cron, ver vercel.json) - importa
-// pedidos novos de Mercado Livre/Shopee que chegaram no Bling desde a ultima
-// execucao. Mesmo esqueleto de app/api/cron/notas-bling-pendentes.
+// Chamado pelo crontab da VPS (scripts/cron-vps.sh, ver DOCS/cron-vps.md) -
+// importa pedidos novos de Mercado Livre/Shopee que chegaram no Bling desde
+// a ultima execucao. Mesmo esqueleto de app/api/cron/notas-bling-pendentes.
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret) {
-    const auth = request.headers.get("authorization")
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ erro: "Não autorizado" }, { status: 401 })
-    }
+  if (!segredoCronValido(request)) {
+    return NextResponse.json({ erro: "Não autorizado" }, { status: 401 })
   }
 
   const status = await statusConexaoBling()

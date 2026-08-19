@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
   const bytes = Buffer.from(await arquivo.arrayBuffer())
 
-  // Em producao (Vercel) nao ha disco persistente - o Cloudinary e
+  // Em ambiente serverless nao ha disco persistente - o Cloudinary e
   // obrigatorio la. Em dev local sem as credenciais configuradas, cai pro
   // disco local mesmo, pra nao exigir conta no Cloudinary so pra testar.
   if (cloudinaryConfigurado()) {
