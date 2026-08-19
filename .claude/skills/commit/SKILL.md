@@ -25,6 +25,9 @@ Ao ser chamada, siga este fluxo:
 
    Vale o mesmo raciocínio para os documentos em `DOCS/` que descrevam o que foi mexido (ex: `tecnico.md` para módulo novo, `bling-descricao-app.md` se a integração com o Bling mudar). Documentação que mente é pior que documentação ausente — já aconteceu de o `vercel.json` descrever crons que nunca rodaram em produção.
 5. Nunca use `git add -A` ou `git add .` — adicione apenas os arquivos relevantes pelo nome.
+5.1. **Sempre commitar por módulo, um commit por assunto** — nunca juntar várias mudanças sem relação num commit só. Se a pendência mexeu em Notas Fiscais, no DANFE e na tela de Configurações, são três commits, cada um com sua mensagem explicando o *porquê* daquele módulo. Isso vale mesmo quando o usuário só disse "commita tudo": "tudo" significa não deixar nada de fora, não amontoar num commit só.
+   - Se um mesmo arquivo carrega mudanças de dois módulos (ex: `admin-shell.tsx` com o ícone de um módulo e o item de menu de outro), separe as partes — dá pra desfazer temporariamente a parte do segundo módulo, commitar a primeira e recolocar — em vez de misturar os dois assuntos.
+   - Mudanças que o usuário fez em paralelo (não suas) também entram como commit próprio, com mensagem que descreva o que elas fazem.
 6. Não inclua arquivos que pareçam conter segredos (`.env`, `.env.local`, credenciais) sem avisar o usuário.
 7. Crie o commit com a mensagem via heredoc, terminando com:
    ```
