@@ -4,9 +4,10 @@ import { cotarFreteFrenet, frenetConfigurado } from "@/lib/frenet"
 export type Marca = "colorido" | "branco"
 
 // Le configuracoes da loja (TAB_CONFIGURACAO, chave/valor) de uma vez so.
-// Usado tanto no calculo de frete quanto nas telas publicas (contato, etc.).
-// Sao chaves OPERACIONAIS (frete, integracoes) - compartilhadas pelos dois
-// sites, sem distincao de marca.
+// Aqui ficam so as chaves OPERACIONAIS - frete, taxas e integracoes: sao do
+// CNPJ, e nao da vitrine, entao valem pros dois sites. Contato, rodape e
+// cores nao estao mais aqui (migration 055): sao identidade de cada loja e
+// vivem em TAB_CONFIGURACAO_MARCA.
 export async function getConfiguracoes(chaves: string[]): Promise<Record<string, string>> {
   const linhas = await query(
     "SELECT chave, valor FROM TAB_CONFIGURACAO WHERE chave = ANY($1)",

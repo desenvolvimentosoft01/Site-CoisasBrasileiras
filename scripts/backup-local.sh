@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 # ============================================================
-# BACKUP LOCAL DO BANCO — COISAS BRASILEIRAS
-# Para o cenario de producao real: Hostinger VPS com Postgres LOCAL.
-# Roda dentro da propria VPS (via cron), faz o dump e guarda em disco,
-# mantendo os ultimos N backups e apagando os mais antigos.
+# BACKUP DO BANCO EM ARQUIVO — COISAS BRASILEIRAS
+# Roda na VPS (via cron), faz o dump do banco e guarda em disco, mantendo os
+# ultimos N e apagando os mais antigos. Funciona com qualquer Postgres
+# alcancavel pela DATABASE_URL - hoje o banco e o Supabase.
+#
+# A Hostinger ja faz backup do servidor, entao isto NAO e a unica protecao
+# contra desastre. O que este script resolve e outra coisa: dump versionado
+# em arquivo, que da pra copiar pra fora do servidor. Importa porque o
+# sistema guarda XML de NF-e no banco (migration 054) e XML tem guarda
+# obrigatoria de 5 anos - prazo maior que a retencao de qualquer snapshot
+# de VPS.
 #
 # COMO ATIVAR QUANDO VIRAR UM CLIENTE (na VPS, uma vez so):
 #   1. Ajuste as variaveis abaixo (DATABASE_URL e PASTA_BACKUP).
@@ -17,8 +24,8 @@
 
 set -euo pipefail
 
-# String de conexao do Postgres local da VPS. Em producao, prefira ler de uma
-# variavel de ambiente do servidor a deixar a senha hardcoded aqui.
+# String de conexao do banco. Prefira definir como variavel de ambiente do
+# servidor a deixar a senha escrita aqui - este arquivo vai pro git.
 DATABASE_URL="${DATABASE_URL:-postgresql://postgres:senha@localhost:5432/coisas_brasileiras}"
 
 # Onde guardar os backups (crie a pasta antes: mkdir -p /var/backups/coisas).
