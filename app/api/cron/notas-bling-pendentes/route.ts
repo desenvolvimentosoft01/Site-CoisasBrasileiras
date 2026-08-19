@@ -2,23 +2,21 @@ import { query } from "@/lib/db"
 import { listarNotasEntradaBling, statusConexaoBling } from "@/lib/bling"
 import { getSegredo } from "@/lib/segredos"
 import { enviarEmail, templateNotasBlingPendentes } from "@/lib/email"
+import { segredoCronValido } from "@/lib/cron-auth"
 import { NextResponse } from "next/server"
 
 // SITUACAO_CANCELADA: 2 Cancelada, 4 Rejeitada, 9 Denegada, 11 Bloqueada -
 // nao ha o que lancar nesses casos (mesma lista de app/api/admin/bling/notas-entrada).
 const SITUACOES_SEM_LANCAMENTO = [2, 4, 9, 11]
 
-// Chamado por um agendador externo (Vercel Cron, ver vercel.json) - avisa o
-// admin por e-mail quando aparece nota de entrada nova (fornecedor) esperando
-// ser lancada em Compras, sem precisar entrar no painel "Notas do Bling" pra
-// descobrir sozinho. So notifica cada nota uma vez (TAB_BLING_NOTA_NOTIFICADA).
+// Chamado pelo crontab da VPS (scripts/cron-vps.sh, ver DOCS/cron-vps.md) -
+// avisa o admin por e-mail quando aparece nota de entrada nova (fornecedor)
+// esperando ser lancada em Compras, sem precisar entrar no painel "Notas do
+// Bling" pra descobrir sozinho. So notifica cada nota uma vez
+// (TAB_BLING_NOTA_NOTIFICADA).
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret) {
-    const auth = request.headers.get("authorization")
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ erro: "Não autorizado" }, { status: 401 })
-    }
+  if (!segredoCronValido(request)) {
+    return NextResponse.json({ erro: "Não autorizado" }, { status: 401 })
   }
 
   const status = await statusConexaoBling()

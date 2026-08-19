@@ -4,8 +4,8 @@ import { createHash } from "crypto"
 // oficial (evita mais uma dependencia pesada so pra um upload simples).
 // So e usado quando as credenciais existem - em dev local sem elas, o
 // upload cai pro disco local (ver app/api/admin/upload/route.ts), porque em
-// producao na Vercel (serverless, sem disco persistente) o Cloudinary passa
-// a ser obrigatorio.
+// ambiente serverless (sem disco persistente) o Cloudinary passa a ser
+// obrigatorio.
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
 const API_KEY = process.env.CLOUDINARY_API_KEY
 const API_SECRET = process.env.CLOUDINARY_API_SECRET

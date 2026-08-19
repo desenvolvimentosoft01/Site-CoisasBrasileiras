@@ -1,0 +1,4 @@
+# Scripts de shell rodam na VPS (Linux) - CRLF quebra o shebang
+# ("bad interpreter: /bin/bash^M"), entao forca LF independente do
+# core.autocrlf da maquina de quem commita.
+*.sh text eol=lf

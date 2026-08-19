@@ -31,8 +31,8 @@ Pedido explícito do cliente: replicar o padrão visual do InMenteGestao (`C:\In
 ## 2026-07-28 — Notificação de notas de fornecedor pendentes no Bling
 
 - [x] Migration `032_bling_nota_notificada.sql`: `TAB_BLING_NOTA_NOTIFICADA` marca quais notas já geraram aviso, pra não notificar a mesma nota todo dia. Aplicada em local e Neon.
-- [x] `app/api/cron/notas-bling-pendentes/route.ts`: verifica notas de entrada dos últimos 30 dias no Bling, cruza com o que já foi lançado (`TAB_COMPRA.bling_nota_id`) e com o que já foi notificado, e manda e-mail pro admin com as pendentes novas. Protegida por `CRON_SECRET` (env var opcional — sem ela, aceita qualquer chamada, então configurar em produção).
-- [x] `vercel.json`: cron diário às 12h UTC (09h BRT) chamando essa rota — respeita o limite do plano Hobby (1x/dia).
+- [x] `app/api/cron/notas-bling-pendentes/route.ts`: verifica notas de entrada dos últimos 30 dias no Bling, cruza com o que já foi lançado (`TAB_COMPRA.bling_nota_id`) e com o que já foi notificado, e manda e-mail pro admin com as pendentes novas. Protegida por `CRON_SECRET` (obrigatório desde 2026-08-18 — sem a variável, a rota responde 401).
+- [x] `vercel.json`: cron diário às 12h UTC (09h BRT) chamando essa rota. **Substituído em 2026-08-18** pelo crontab da VPS (`scripts/cron-vps.sh`, ver `DOCS/cron-vps.md`) — o `vercel.json` foi removido, já que a produção é Hostinger e o Vercel Cron nunca chegou a rodar lá.
 
 ## Correção: limite de estoque no carrinho não valia pro botão "Adicionar ao carrinho" da grade
 
@@ -80,13 +80,13 @@ Pedido explícito do cliente: replicar o padrão visual do InMenteGestao (`C:\In
 
 Marcar conforme for resolvendo. Levantado em 2026-07-27.
 
-- [ ] **Banco de dados**: confirmar se a Vercel usa o Neon de produção (`DATABASE_URL` do projeto na Vercel) — nunca foi confirmado, ver seção "Infraestrutura" mais abaixo. Todas as migrations (`000` até a mais recente) aplicadas nesse banco.
-- [ ] **Bling**: trocar do app de teste pro app de produção no painel Bling (se for o caso). Reconectar em Configurações > Integrações > Bling com a conta real da loja (fluxo OAuth já pronto). `BLING_CLIENT_ID`/`BLING_CLIENT_SECRET` do app de produção como variável de ambiente na Vercel.
+- [ ] **Banco de dados**: produção usa Postgres no Supabase, configurado na `DATABASE_URL` da VPS. Confirmar que todas as migrations (`000` até a mais recente) estão aplicadas nesse banco.
+- [ ] **Bling**: trocar do app de teste pro app de produção no painel Bling (se for o caso). Reconectar em Configurações > Integrações > Bling com a conta real da loja (fluxo OAuth já pronto). `BLING_CLIENT_ID`/`BLING_CLIENT_SECRET` do app de produção no `.env` da VPS.
 - [ ] **Mercado Pago**: token de acesso e chave pública **de produção** (não `TEST-...`) em Configurações > Integrações > Mercado Pago. Cadastrar a URL do webhook (`https://seudominio.com/api/webhooks/mercadopago`) no painel do Mercado Pago e colocar a "assinatura secreta" gerada em Configurações > Integrações > Mercado Pago (já é configurável pelo admin desde 2026-07-28, não precisa mais mexer em variável de ambiente).
 - [ ] **Frenet**: token real da conta em Integrações > Frenet. CEP de origem configurado em Configurações > Frete. `ShippingServiceCode` reais das transportadoras usadas, pra validação automática de rastreio funcionar (pendente).
 - [ ] **Email**: credenciais reais (Gmail com senha de app, ou outro provedor) em Integrações > Email.
-- [ ] **Infraestrutura**: `AUTH_SECRET` de produção gerado (valor aleatório longo). Domínio próprio apontado pro host escolhido (`NEXT_PUBLIC_SITE_URL` correto). Cloudinary configurado (`CLOUDINARY_*`) — só necessário se o host final for serverless (Vercel); em VPS com disco persistente (Hostinger) não é obrigatório.
-- [ ] **Cron das notas do Bling** (`app/api/cron/notas-bling-pendentes`): hoje disparado via `vercel.json` (Vercel Cron, só funciona hospedado na Vercel). **Ao migrar pra Hostinger (VPS), trocar o mecanismo de disparo** — crontab do próprio servidor chamando a rota via `curl` (com o header `Authorization: Bearer $CRON_SECRET`) é o caminho mais direto, já que a rota em si não muda.
+- [ ] **Infraestrutura**: `AUTH_SECRET` de produção gerado (valor aleatório longo). Domínio próprio apontado pro host escolhido (`NEXT_PUBLIC_SITE_URL` correto). Cloudinary configurado (`CLOUDINARY_*`) — não é necessário: a produção é VPS na Hostinger, com disco persistente.
+- [x] **Cron das notas do Bling** (`app/api/cron/notas-bling-pendentes`): resolvido em 2026-08-18. Disparo agora é pelo crontab da VPS chamando `scripts/cron-vps.sh`, que faz o `curl` com o header `Authorization: Bearer $CRON_SECRET`. Passo manual pendente no servidor: instalar as linhas do crontab e definir `CRON_SECRET` no `.env` (ver `DOCS/cron-vps.md`).
 
 ## Fronteiras decididas (não fazer)
 
@@ -481,7 +481,7 @@ TAB_COMPRA_ITEM
 ## Infraestrutura
 
 - [x] Banco de produção **Neon** identificado e confirmado com as migrations `000`–`019` já aplicadas; `020_fornecedores_compras.sql` aplicada em 2026-07-25. **A string de conexão do Neon não fica neste documento nem em nenhum arquivo versionado** — guardar só em `.env.local`/variável de ambiente do deploy (gitignored), nunca commitada.
-- [ ] Confirmar se o Neon é o banco que a Vercel usa em produção (`DATABASE_URL` do projeto na Vercel) ou se é um banco à parte — definir isso antes do próximo deploy.
+- [x] Definido: a produção roda em VPS na Hostinger com o banco no Supabase (o Neon era do ambiente antigo). A `DATABASE_URL` fica só no `.env` da VPS, nunca versionada.
 
 ## Para replicar no outro sistema
 

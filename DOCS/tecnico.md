@@ -85,10 +85,10 @@ PagBank foi removido — todo pagamento hoje é só Mercado Pago.
 - **`lib/mercadopago.ts`** — Checkout Pro (compra avulsa) + `PreApproval` (assinatura recorrente do Clube). Usado no checkout, no webhook (consulta pagamento/assinatura) e na tela de configurações do Clube.
 - **`lib/frenet.ts`** — cotação real de frete por CEP (múltiplas transportadoras) e validação de código de rastreio (`/tracking/trackinginfo`). Sem token configurado, o frete cai automaticamente na tabela de faixas por região/peso (`TAB_FRETE_FAIXA`).
 - **`lib/bling.ts`** — OAuth2, emissão **e cancelamento** de NF-e (não sincroniza estoque/financeiro, não sincroniza cadastro de produto — NCM e GTIN vão por item na hora de emitir). `BLING_CLIENT_ID`/`BLING_CLIENT_SECRET` são credenciais do app (env, nível de deploy); token de acesso da loja fica em `TAB_INTEGRACAO_BLING` e renova sozinho via refresh_token quando expira em <60s.
-- **`lib/bling-marketplace.ts`** — importa pedidos de Mercado Livre/Shopee que chegaram no Bling (canal `marketplace` em `TAB_PEDIDO`, cruzado por `bling_pedido_id`). Chamado pelo cron `app/api/cron/importar-pedidos-marketplace` 1x/dia (limite do plano Hobby da Vercel). Outro cron, `app/api/cron/notas-bling-pendentes`, atualiza o contador de notas de entrada pendentes no Bling. Ambos aceitam `CRON_SECRET` opcional (header `Authorization: Bearer`) pra autenticar o agendador externo.
+- **`lib/bling-marketplace.ts`** — importa pedidos de Mercado Livre/Shopee que chegaram no Bling (canal `marketplace` em `TAB_PEDIDO`, cruzado por `bling_pedido_id`). Chamado pelo cron `app/api/cron/importar-pedidos-marketplace` 1x/dia. Outro cron, `app/api/cron/notas-bling-pendentes`, atualiza o contador de notas de entrada pendentes no Bling. Ambos exigem `CRON_SECRET` (header `Authorization: Bearer`) pra autenticar o agendador — sem a variável definida, respondem 401. Quem dispara é o crontab da VPS via `scripts/cron-vps.sh` (ver `DOCS/cron-vps.md`).
 - **`lib/nfe-xml.ts`** — leitura (não emissão) de XML de NF-e de entrada: extrai fornecedor, itens e chave de acesso, valida o dígito verificador da chave (módulo 11) sem consultar a Sefaz. Usado na Entrada de NF pra pré-preencher o lançamento a partir do XML que o fornecedor manda.
 - **`lib/email.ts`** — Nodemailer/Gmail. Templates: pedido criado, pedido pago, novo pedido (aviso ao admin), status atualizado, rastreio salvo, "voltou ao estoque".
-- **`lib/cloudinary.ts`** — upload assinado via API REST (sem SDK). Só necessário em ambiente serverless (Vercel) sem disco persistente; em VPS cai pro disco local.
+- **`lib/cloudinary.ts`** — upload assinado via API REST (sem SDK). Só necessário em ambiente serverless sem disco persistente; na VPS (ambiente atual) cai pro disco local.
 
 ### Segredos configuráveis pelo admin (`lib/segredos.ts`)
 
@@ -134,4 +134,4 @@ Também trata o tópico `subscription_preapproval` (assinatura do Clube), sincro
 
 ## Deploy
 
-Ver seção "Deploy" do `README.md` para o estado atual (VPS Hostinger planejada como produção; ambiente Vercel + Neon usado hoje como homologação, com região `gru1` configurada em `vercel.json` para ficar perto do banco).
+Ver seção "Deploy" do `README.md` para o estado atual (produção em VPS na Hostinger, banco no Supabase, crons pelo crontab do servidor).
