@@ -97,7 +97,7 @@ Racional:
 - Assim cada tela responde uma pergunta diferente: "quero vender agora" e "quero achar um pedido". Hoje as duas respondem as duas, e por isso parecem iguais.
 
 **4. Carregamento e desempenho** *(prioridade alta — o cliente comparou com o InMenteGestao, que "está bem mais ágil")*
-- [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
+- [x] Indicador de carregamento ao abrir tela — barra fina no topo, acionada pelo menu e pelas abas. *(feito 2026-08-20)*
 - [ ] Lentidão ao **abrir as telas** e ao **entrar** (o clique em "Entrar" demora).
 
 **Suspeita principal, a checar antes de qualquer otimização:** o banco está em `aws-1-us-west-2` (Oregon, EUA) e a VPS é da Hostinger. Se a VPS estiver no Brasil ou na Europa, **cada ida ao banco custa 150–250ms só de viagem**. A Visão Geral faz 7 consultas e o layout faz mais algumas — mesmo em paralelo, esse custo fixo aparece em toda tela. O InMenteGestao roda na Vercel, provavelmente perto do banco dele, o que explicaria a diferença sem que o código daqui seja pior.
