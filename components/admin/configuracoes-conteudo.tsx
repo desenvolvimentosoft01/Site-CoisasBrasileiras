@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
 import { Phone, Truck, Megaphone, Palette, Plug, Percent, KeyRound, Check, FileText } from "lucide-react"
-import type { Recursos } from "@/lib/recursos"
+import { CATALOGO_RECURSOS, type Recursos } from "@/lib/recursos"
+import { FABRICANTE_SISTEMA } from "@/lib/constantes"
 
 export type ConfiguracoesIniciais = {
   whatsapp: string
@@ -49,6 +50,7 @@ export function ConfiguracoesConteudo({
   blingStatus,
   abaInicial,
   recursos,
+  rotuloPlano,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
   blingStatus: BlingStatus
@@ -56,6 +58,8 @@ export function ConfiguracoesConteudo({
   // O que o plano desta instalacao libera - controla os campos de integracao
   // que aparecem aqui (ver lib/recursos.ts).
   recursos: Recursos
+  // Rotulo pronto do plano ("Avançado (personalizado)"), montado no servidor.
+  rotuloPlano: string
 }) {
   return (
     <ConfiguracoesFormulario
@@ -63,6 +67,7 @@ export function ConfiguracoesConteudo({
       blingStatus={blingStatus}
       abaInicial={abaInicial}
       recursos={recursos}
+      rotuloPlano={rotuloPlano}
     />
   )
 }
@@ -115,6 +120,7 @@ function ConfiguracoesFormulario({
   blingStatus,
   abaInicial,
   recursos,
+  rotuloPlano,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
   blingStatus: BlingStatus
@@ -122,8 +128,14 @@ function ConfiguracoesFormulario({
   // O que o plano desta instalacao libera - controla os campos de integracao
   // que aparecem aqui (ver lib/recursos.ts).
   recursos: Recursos
+  // Rotulo pronto do plano ("Avançado (personalizado)"), montado no servidor.
+  rotuloPlano: string
 }) {
   const router = useRouter()
+  // Rotulo do plano e lista de integracoes liberadas, so pra exibicao.
+  const integracoesLiberadas = CATALOGO_RECURSOS.filter(
+    (recurso) => recurso.grupo === "Integrações" && recursos[recurso.chave]
+  ).map((recurso) => recurso.nome)
   const [salvando, setSalvando] = useState(false)
   const [salvo, setSalvo] = useState(false)
   // Campos de identidade/vitrine sao salvos por marca - "colorido" (Coisas
@@ -801,6 +813,26 @@ function ConfiguracoesFormulario({
           </TabsContent>
 
           <TabsContent value="integracoes" className="mt-4">
+            {/* O cliente ve aqui o que o plano dele libera, e por que uma
+                integracao que ele ouviu falar nao aparece na tela. Quem muda
+                isso e o desenvolvedor, em Plano e Recursos. */}
+            <Card className="mb-4 border-amber-200 bg-amber-50/60">
+              <CardContent className="pt-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-amber-900">Plano contratado:</span>
+                  <span className="rounded-full bg-amber-200/70 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                    {rotuloPlano}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-amber-800">
+                  O plano define quais módulos e integrações aparecem no sistema. As integrações
+                  liberadas para esta loja são:{" "}
+                  <strong>{integracoesLiberadas.join(", ") || "nenhuma"}</strong>. Para liberar outra
+                  integração, fale com a {FABRICANTE_SISTEMA}.
+                </p>
+              </CardContent>
+            </Card>
+
             <Tabs defaultValue="bling">
               <TabsList>
                 <TabsTrigger value="bling">Bling</TabsTrigger>

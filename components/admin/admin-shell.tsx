@@ -52,7 +52,7 @@ const menu: ItemMenu[] = [
   // Venda Balcao fica solta, e nao dentro de Vendas: e a tela que o operador
   // abre dezenas de vezes por dia, e cada clique a mais pra chegar nela custa
   // tempo no atendimento.
-  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: "venda_balcao" },
+  { tipo: "link", href: "/admin/venda-balcao", label: "Pedido de Venda Balcão", icone: "venda_balcao" },
   {
     tipo: "grupo",
     label: "Vendas",
@@ -128,6 +128,7 @@ const menu: ItemMenu[] = [
     ],
   },
   { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: "cores", somenteDesenvolvedor: true },
+  { tipo: "link", href: "/admin/plano", label: "Plano e Recursos", icone: "configuracoes", somenteDesenvolvedor: true },
 ]
 
 // Achata o menu (so os itens visiveis pro papel/email da sessao) pra
@@ -153,7 +154,6 @@ function itensVisiveis(papel: string, email: string): { href: string; label: str
 export function AdminShell({
   sessao,
   cores,
-  logoUrl,
   nomeLoja,
   dominioBranco,
   plano,
@@ -161,7 +161,6 @@ export function AdminShell({
 }: {
   sessao: SessaoAdmin
   cores: Record<string, string>
-  logoUrl?: string
   nomeLoja?: string
   dominioBranco?: string
   // Rotulo do plano contratado, so pra exibicao no cabecalho.
@@ -172,7 +171,6 @@ export function AdminShell({
     <ProvedorCores coresIniciais={cores}>
       <AdminShellInterno
         sessao={sessao}
-        logoUrl={logoUrl}
         nomeLoja={nomeLoja}
         dominioBranco={dominioBranco}
         plano={plano}
@@ -185,14 +183,12 @@ export function AdminShell({
 
 function AdminShellInterno({
   sessao,
-  logoUrl,
   nomeLoja,
   dominioBranco,
   plano,
   children,
 }: {
   sessao: SessaoAdmin
-  logoUrl?: string
   nomeLoja?: string
   dominioBranco?: string
   // Rotulo do plano contratado, so pra exibicao no cabecalho.
@@ -398,12 +394,13 @@ function AdminShellInterno({
             menuExpandido ? "px-4" : "px-4 lg:justify-center lg:px-0"
           }`}
         >
-          <Image src={logoUrl || "/logo.webp"} alt="" width={32} height={32} className="shrink-0 rounded-lg" />
+          {/* Logo do SISTEMA, e nao da loja: quem esta no painel precisa saber
+              em qual sistema esta trabalhando (a logo da loja ja aparece no
+              site publico e nos documentos que ela emite). */}
+          <Image src="/logo-sistema.svg" alt="" width={32} height={32} className="shrink-0" />
           <div className={menuExpandido ? "" : "lg:hidden"}>
-            <p className="whitespace-nowrap text-sm font-bold leading-tight text-white">
-              {nomeLoja || "Coisas Brasileiras"}
-            </p>
-            <p className="text-[10px] text-slate-400">{NOME_SISTEMA}</p>
+            <p className="whitespace-nowrap text-sm font-bold leading-tight text-white">{NOME_SISTEMA}</p>
+            <p className="text-[10px] text-slate-400">{nomeLoja || "Coisas Brasileiras"}</p>
           </div>
         </div>
 

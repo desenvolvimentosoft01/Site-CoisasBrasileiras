@@ -1,4 +1,3 @@
-import { query } from "@/lib/db"
 
 // Recursos que o plano contratado libera ou não nesta instalação.
 //
@@ -105,25 +104,6 @@ export const ROTULO_PLANO: Record<Plano, string> = {
 }
 
 export type Recursos = Record<ChaveRecurso, boolean>
-
-// Le a tabela de excecoes e devolve o mapa completo, ja com o padrao "ligado"
-// pros recursos que ninguem desligou.
-export async function carregarRecursos(): Promise<Recursos> {
-  const linhas = await query("SELECT chave, habilitado FROM TAB_RECURSO")
-  const excecoes = new Map(linhas.map((linha) => [String(linha.chave), Boolean(linha.habilitado)]))
-
-  const recursos = {} as Recursos
-  for (const recurso of CATALOGO_RECURSOS) {
-    recursos[recurso.chave] = excecoes.get(recurso.chave) ?? true
-  }
-  return recursos
-}
-
-export async function recursoLigado(chave: ChaveRecurso): Promise<boolean> {
-  const [linha] = await query("SELECT habilitado FROM TAB_RECURSO WHERE chave = $1", [chave])
-  return linha ? Boolean(linha.habilitado) : true
-}
-
 // O plano so e "avancado"/"intermediario"/"basico" enquanto o conjunto de
 // recursos ligados bate exatamente com o do plano. Assim o cliente nunca ve
 // "Plano Avançado" numa instalacao onde alguma coisa foi desligada na mao -

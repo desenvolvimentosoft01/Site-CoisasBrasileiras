@@ -12,3 +12,12 @@ export const EMAIL_DESENVOLVEDOR = "desenvolvimentosoft01@gmail.com"
 // isso?". Quem assina como fabricante do software e a In Mente Agencia.
 export const NOME_SISTEMA = "In Mente Gestão"
 export const FABRICANTE_SISTEMA = "In Mente Agência"
+
+// Contato da agencia, exibido na tela de entrada do sistema. Fica aqui (e nao
+// em Configuracoes) de proposito: e o contato de quem faz o sistema, nao da
+// loja que usa - o cliente nao deve poder trocar por engano.
+export const CONTATO_FABRICANTE = {
+  email: "desenvolvimentosoft01@gmail.com",
+  telefone: "(18) 99669-2266",
+  cidade: "Araçatuba-SP",
+}
