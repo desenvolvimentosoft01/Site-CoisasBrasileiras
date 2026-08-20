@@ -60,6 +60,11 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - [ ] Botão "Duplicar" na barra das telas de cadastro (existe lá, não existe aqui).
 - [ ] Tela de Plano e Recursos no mesmo padrão das demais: barra com Gravar/Cancelar em vez de salvar a cada clique. Hoje cada marcação já grava sozinha (PUT em `/api/admin/recursos`), o que é seguro mas foge do padrão do sistema — o cliente pediu o CRUD explícito.
 
+**3.1. Tela de Cores do Sistema — separar site e sistema**
+- [ ] Hoje a tela de Cores altera um conjunto só, e o admin herda a cor da loja. O cliente quer **dois conjuntos separados**: cores do site público e cores do painel.
+- [ ] Abrir para alteração **tudo o que pode ser alterado** (fundo, cabeçalho da grade, barra de ferramentas, botões por variante, selos de status, menu lateral), e não só a cor primária.
+- [ ] Lembrar que a cor é por marca desde a migration 055 (Coisas Brasileiras e Porcelanas Brancas têm valores próprios).
+
 **4. Carregamento e desempenho**
 - [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
 - [ ] **Investigar a lentidão ao abrir as telas** (relatada pelo cliente em 2026-08-20). Suspeitas a checar antes de otimizar: consultas sem índice nas telas de grade, `staleTimes.dynamic` do router, e o pool do banco reduzido para 3 conexões na correção do `EMAXCONNSESSION` (pode estar enfileirando requisição).
