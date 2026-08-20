@@ -245,7 +245,6 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
                         <th className="p-4 font-medium">Cód.</th>
-                        <th className="p-4 font-medium">Cód.</th>
                         <th className="p-4 font-medium">Razão social</th>
                         <th className="p-4 font-medium">CNPJ/CPF</th>
                         <th className="p-4 font-medium">Telefone</th>
