@@ -58,6 +58,7 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - [ ] Linha de filtros padronizada: campos + botão "Pesquisar" + "Limpar filtros" + selo "N registro(s) encontrado(s)".
 - [ ] Subtítulo nas telas de cadastro: "Duplo clique na linha para editar · Selecione para habilitar ações na barra".
 - [ ] Botão "Duplicar" na barra das telas de cadastro (existe lá, não existe aqui).
+- [ ] Tela de Plano e Recursos no mesmo padrão das demais: barra com Gravar/Cancelar em vez de salvar a cada clique. Hoje cada marcação já grava sozinha (PUT em `/api/admin/recursos`), o que é seguro mas foge do padrão do sistema — o cliente pediu o CRUD explícito.
 
 **4. Carregamento e desempenho**
 - [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
