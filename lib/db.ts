@@ -10,9 +10,20 @@ setDefaultResultOrder("ipv4first")
 
 const ehLocalhost = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL ?? "")
 
+// Quantas conexoes ESTE processo abre. O limite que importa nao e o do
+// processo e sim o do pooler do Supabase (15 em session mode): a Hostinger
+// sobe varias instancias do app, cada uma com o seu pool, entao o total e
+// max x numero de instancias. Com 10 aqui, 2 instancias ja estouram e toda
+// query passa a falhar com EMAXCONNSESSION.
+//
+// 3 e um teto conservador de proposito - cabem 5 instancias dentro dos 15. Se
+// a maquina crescer (ou o plano do banco aumentar o limite), ajuste por
+// DB_POOL_MAX em vez de mexer no codigo.
+const MAX_CONEXOES = Number(process.env.DB_POOL_MAX) || 3
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 10,
+  max: MAX_CONEXOES,
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
   // Supabase (e Neon) exigem SSL; banco local nao tem certificado, entao so liga fora de localhost.
@@ -24,10 +35,20 @@ const pool = new Pool({
 // uma unica tentativa extra resolve sem precisar propagar o erro pra tela.
 const ERROS_CONEXAO_TRANSITORIOS = ["ECONNRESET", "ETIMEDOUT", "Connection terminated"]
 
+// Pooler lotado (todas as instancias do app somadas passaram do limite do
+// plano). Tambem passa, mas so depois de esperar: repetir na hora com o
+// pooler cheio so aumenta a fila.
+const ERRO_POOLER_LOTADO = "EMAXCONNSESSION"
+
 function ehErroTransitorio(erro: unknown): boolean {
   const mensagem = erro instanceof Error ? erro.message : String(erro)
   const codigo = (erro as { code?: string })?.code
   return ERROS_CONEXAO_TRANSITORIOS.some((padrao) => mensagem.includes(padrao) || codigo === padrao)
+}
+
+function ehPoolerLotado(erro: unknown): boolean {
+  const mensagem = erro instanceof Error ? erro.message : String(erro)
+  return mensagem.includes(ERRO_POOLER_LOTADO) || mensagem.includes("max clients reached")
 }
 
 export async function query(sql: string, params?: unknown[]) {
@@ -35,6 +56,13 @@ export async function query(sql: string, params?: unknown[]) {
     const resultado = await pool.query(sql, params)
     return resultado.rows
   } catch (erro) {
+    if (ehPoolerLotado(erro)) {
+      // Meio segundo costuma bastar: a conexao que estourou o limite e de
+      // outra requisicao que ja esta terminando.
+      await new Promise((resolver) => setTimeout(resolver, 500))
+      const resultado = await pool.query(sql, params)
+      return resultado.rows
+    }
     if (!ehErroTransitorio(erro)) throw erro
     const resultado = await pool.query(sql, params)
     return resultado.rows
