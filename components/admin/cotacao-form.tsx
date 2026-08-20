@@ -17,7 +17,7 @@ export type Fornecedor = {
   cnpj_cpf: string | null
   email: string | null
 }
-export type ProdutoDisponivel = { id: string; nome: string; sku: string | null }
+export type ProdutoDisponivel = { id: string; codigo: number; nome: string; sku: string | null }
 
 type ItemForm = { produtoId: string | null; descricao: string; quantidade: string }
 
@@ -172,7 +172,7 @@ export function CotacaoForm({
                     <option value="">Selecione um produto...</option>
                     {produtosDisponiveis.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.nome} {p.sku ? `(${p.sku})` : ""}
+                        {p.codigo} - {p.nome}
                       </option>
                     ))}
                   </select>

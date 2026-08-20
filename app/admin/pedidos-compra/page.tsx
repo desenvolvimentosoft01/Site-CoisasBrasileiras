@@ -14,7 +14,7 @@ export default async function PedidosCompraPage() {
     query(
       "SELECT id, razao_social, nome_fantasia, cnpj_cpf, email, telefone FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
     ),
-    query("SELECT id, nome, sku, custo FROM TAB_PRODUTO WHERE ativo = true ORDER BY nome"),
+    query("SELECT id, codigo, nome, sku, custo FROM TAB_PRODUTO WHERE ativo = true ORDER BY codigo"),
   ])
 
   return <PedidosCompraConteudo pedidosIniciais={pedidos} fornecedores={fornecedores} produtos={produtos} />

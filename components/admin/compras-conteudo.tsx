@@ -88,6 +88,9 @@ function StatusVinculoItem({ item, origem }: { item: ItemNfeXml; origem?: Origem
 
 export type ProdutoSelecionavel = {
   id: string
+  // Codigo interno do cadastro (migration 058): e por ele que os seletores
+  // identificam o produto, no mesmo padrao do resto do sistema.
+  codigo: number
   nome: string
   sku: string | null
   codigo_barras: string | null
@@ -681,9 +684,10 @@ export function ComprasConteudo({
     // sem sku/codigo_barras/custo - entao monta o item do seletor com o que a
     // gente acabou de enviar. Sem isso, dois itens da MESMA nota com o mesmo
     // codigo nao se reconheceriam entre si.
-    const criado: { id: string; nome: string } = await resposta.json()
+    const criado: { id: string; codigo: number; nome: string } = await resposta.json()
     const novoProduto: ProdutoSelecionavel = {
       id: criado.id,
+      codigo: criado.codigo,
       nome: criado.nome,
       sku: itemXml.codigoFornecedor || null,
       codigo_barras: itemXml.codigoBarras || null,
@@ -1613,7 +1617,7 @@ export function ComprasConteudo({
                             <option value="">Vincular a qual produto?</option>
                             {produtosDisponiveis.map((p) => (
                               <option key={p.id} value={p.id}>
-                                {p.nome} {p.sku ? `(${p.sku})` : ""}
+                                {p.codigo} - {p.nome}
                               </option>
                             ))}
                           </select>
@@ -1664,7 +1668,7 @@ export function ComprasConteudo({
                   <option value="">Selecione o produto...</option>
                   {produtosDisponiveis.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.nome} {p.sku ? `(${p.sku})` : ""} - estoque atual: {p.estoque}
+                      {p.codigo} - {p.nome} - estoque atual: {p.estoque}
                     </option>
                   ))}
                 </select>
