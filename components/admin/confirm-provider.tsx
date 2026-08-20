@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Icone } from "@/components/admin/icone"
 
 type OpcoesConfirmacao = {
   titulo?: string
@@ -73,7 +74,11 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                     : "border-amber-200 bg-amber-50 text-amber-700"
                 }`}
               >
-                <span className="mr-1">{opcoes?.destrutivo ? "🚫" : "⚠️"}</span>
+                <Icone
+                  nome={opcoes?.destrutivo ? "bloquear" : "alerta"}
+                  tamanho={14}
+                  className="mr-1.5 inline-block align-text-bottom"
+                />
                 {opcoes?.consequencia ?? AVISO_PADRAO_DESTRUTIVO}
               </div>
             )}

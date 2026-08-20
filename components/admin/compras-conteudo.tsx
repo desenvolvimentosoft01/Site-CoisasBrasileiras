@@ -33,6 +33,7 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
 import { validarChaveAcesso } from "@/lib/chave-acesso"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Fornecedor = {
   id: string
@@ -990,7 +991,7 @@ export function ComprasConteudo({
               Grade
             </TabsTrigger>
             <TabsTrigger value="formulario">
-              <span className="mr-1.5 text-sm leading-none">➕</span>
+              <Icone nome="novo" tamanho={15} className="mr-1.5" />
               Cadastro
             </TabsTrigger>
             <TabsTrigger value="notas-bling" onClick={() => notasBling.length === 0 && buscarNotasBling()}>
@@ -1000,7 +1001,7 @@ export function ComprasConteudo({
           </TabsList>
           {aba === "lista" && (
             <Button onClick={abrirNova}>
-              <span className="mr-2 text-base leading-none">➕</span>
+              <Icone nome="novo" tamanho={17} className="mr-2" />
               Nova compra
             </Button>
           )}
@@ -1198,7 +1199,7 @@ export function ComprasConteudo({
                 </div>
                 <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
                   <Button type="button" onClick={exportarXmlsZip} disabled={exportandoXmls}>
-                    <span className="mr-2 text-base leading-none">📥</span>
+                    <Icone nome="baixar" tamanho={17} className="mr-2" />
                     Baixar .zip
                   </Button>
                   <Button
@@ -1274,7 +1275,7 @@ export function ComprasConteudo({
                               onClick={() => setDetalhe(compra)}
                               title="Ver detalhe"
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             {compra.tem_xml && (
                               <Button
@@ -1295,7 +1296,7 @@ export function ComprasConteudo({
                                   onClick={() => abrirEdicao(compra)}
                                   title="Editar"
                                 >
-                                  <span className="text-base leading-none">✏️</span>
+                                  <Icone nome="editar" tamanho={18} />
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -1322,7 +1323,7 @@ export function ComprasConteudo({
                                   onClick={() => excluir(compra)}
                                   title="Excluir"
                                 >
-                                  <span className="text-base leading-none">🗑️</span>
+                                  <Icone nome="excluir" tamanho={18} />
                                 </Button>
                               </>
                             )}
@@ -1430,7 +1431,7 @@ export function ComprasConteudo({
               {erroXml && <p className="text-sm text-red-500">{erroXml}</p>}
               {chaveXmlInvalida && (
                 <p className="flex items-center gap-1.5 text-sm text-amber-500">
-                  <span className="text-sm leading-none">⚠️</span>
+                  <Icone nome="alerta" tamanho={15} />
                   A chave de acesso deste XML não bateu na validação (dados podem estar
                   incompletos ou o arquivo alterado) - confira os valores antes de salvar.
                 </p>
@@ -1460,7 +1461,7 @@ export function ComprasConteudo({
                     ninguem descobre ate precisar de um desses campos. */}
                 {fornecedorCriadoPeloXml && (
                   <p className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs text-amber-700">
-                    <span className="mr-1">⚠️</span>
+                    <Icone nome="alerta" tamanho={14} className="mr-1 inline-block align-text-bottom" />
                     <strong>{fornecedorCriadoPeloXml}</strong> foi cadastrado automaticamente com os
                     dados da nota. Confira o cadastro depois em Compras &gt; Fornecedores — a nota não
                     traz inscrição estadual, e-mail, contato nem condição de pagamento.
@@ -1490,7 +1491,7 @@ export function ComprasConteudo({
                 />
                 {chaveAcesso.length === 44 && !validarChaveAcesso(chaveAcesso) && (
                   <p className="flex items-center gap-1.5 text-xs text-amber-500">
-                    <span className="text-xs leading-none">⚠️</span>
+                    <Icone nome="alerta" tamanho={13} />
                     Esses 44 dígitos não formam uma chave válida - confira antes de salvar.
                   </p>
                 )}
@@ -1708,7 +1709,7 @@ export function ComprasConteudo({
                           </td>
                           <td className="p-3 text-right">
                             <Button variant="ghost" size="icon-lg" onClick={() => removerItem(item.produtoId)}>
-                              <span className="text-base leading-none">🗑️</span>
+                              <Icone nome="excluir" tamanho={18} />
                             </Button>
                           </td>
                         </tr>

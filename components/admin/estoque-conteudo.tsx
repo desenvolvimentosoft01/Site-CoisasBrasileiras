@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { registrarAuditoria } from "@/lib/auditoria"
+import { Icone } from "@/components/admin/icone"
 
 export type ProdutoEstoque = {
   id: string
@@ -77,7 +78,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
         <h1 className="text-2xl font-semibold">Controle de estoque</h1>
         {emBaixa > 0 && (
           <span className="flex items-center gap-1.5 rounded-full bg-amber-600/20 px-3 py-1 text-sm text-amber-500">
-            <span className="text-sm leading-none">⚠️</span>
+            <Icone nome="alerta" tamanho={15} />
             {emBaixa} produto(s) com estoque baixo
           </span>
         )}
@@ -153,7 +154,7 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
                               baixo ? "text-amber-500" : ""
                             }`}
                           >
-                            {baixo && <span className="text-sm leading-none">⚠️</span>}
+                            {baixo && <Icone nome="alerta" tamanho={15} />}
                             {produto.estoque}
                           </span>
                         </td>

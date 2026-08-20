@@ -5,8 +5,9 @@ import { useRouter, usePathname } from "next/navigation"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAbasAdmin } from "@/lib/abas-admin-store"
 import { rotaAtiva } from "@/lib/rota-ativa"
+import { Icone, type NomeIcone } from "@/components/admin/icone"
 
-type ItemMenu = { href: string; label: string; emoji: string }
+type ItemMenu = { href: string; label: string; icone: NomeIcone }
 
 export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   const router = useRouter()
@@ -68,8 +69,8 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
     }
   }
 
-  function emojiDaAba(path: string) {
-    return itensMenu.find((i) => i.href === path)?.emoji
+  function iconeDaAba(path: string) {
+    return itensMenu.find((i) => i.href === path)?.icone
   }
 
   return (
@@ -91,7 +92,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
       <div ref={conteudoRef} className="flex w-max items-end gap-0">
       {abas.map((aba) => {
         const ativa = rotaAtiva(pathname, aba.path)
-        const emoji = emojiDaAba(aba.path)
+        const icone = iconeDaAba(aba.path)
         const fechavel = aba.path !== "/admin/dashboard"
 
         return (
@@ -107,19 +108,21 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
                 : "border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white"
             }`}
           >
-            {emoji && <span className="shrink-0 text-[13px] leading-none">{emoji}</span>}
+            {icone && <Icone nome={icone} tamanho={14} className="shrink-0" />}
             <span className="whitespace-nowrap">{aba.titulo}</span>
             {fechavel && (
               <button
                 onClick={(e) => handleFechar(e, aba.path)}
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded transition-colors sm:h-5 sm:w-5 ${
                   ativa
                     ? "text-slate-400 hover:bg-slate-200 hover:text-slate-700"
-                    : "text-slate-500 opacity-0 hover:bg-slate-500 hover:text-white group-hover:opacity-100"
+                    : // No celular nao existe hover: se o X so aparecesse ao
+                      // passar o mouse, nao haveria como fechar aba nenhuma.
+                      "text-slate-500 hover:bg-slate-500 hover:text-white sm:opacity-0 sm:group-hover:opacity-100"
                 }`}
                 aria-label={`Fechar aba ${aba.titulo}`}
               >
-                <X size={10} strokeWidth={2.5} />
+                <X size={12} strokeWidth={2.5} />
               </button>
             )}
           </div>

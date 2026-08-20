@@ -21,6 +21,7 @@ import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Conta = {
   id: string
@@ -207,11 +208,11 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <span className="mr-1.5 text-sm leading-none">➕</span>
+            <Icone nome="novo" tamanho={15} className="mr-1.5" />
             Cadastro
           </TabsTrigger>
         </TabsList>
@@ -299,7 +300,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                                 setDetalhe(conta)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -309,7 +310,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                                 abrirEdicao(conta)
                               }}
                             >
-                              <span className="text-base leading-none">✏️</span>
+                              <Icone nome="editar" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -319,7 +320,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                                 excluir(conta)
                               }}
                             >
-                              <span className="text-base leading-none">🗑️</span>
+                              <Icone nome="excluir" tamanho={18} />
                             </Button>
                           </td>
                         </tr>

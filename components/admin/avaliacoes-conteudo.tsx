@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Star, Check } from "lucide-react"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { Icone } from "@/components/admin/icone"
 
 export type Avaliacao = {
   id: string
@@ -123,7 +124,7 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
                       </Button>
                     )}
                     <Button variant="ghost" size="icon-lg" onClick={() => excluir(avaliacao)} title="Excluir">
-                      <span className="text-base leading-none">🗑️</span>
+                      <Icone nome="excluir" tamanho={18} />
                     </Button>
                   </div>
                 </div>

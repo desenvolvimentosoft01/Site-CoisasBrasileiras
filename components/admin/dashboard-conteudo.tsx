@@ -9,6 +9,7 @@ import { LabelCanal } from "@/components/admin/label-canal"
 import { statusExibicao } from "@/lib/status-pedido"
 import { rotuloFormaPagamento } from "@/lib/formas-pagamento"
 import type { CanalPedido } from "@/lib/canal-pedido"
+import { Icone, type NomeIcone } from "@/components/admin/icone"
 
 const coresIndicador = {
   verde: "bg-emerald-50 text-emerald-600",
@@ -25,7 +26,7 @@ function CardIndicador({
   children,
 }: {
   titulo: string
-  icone: string
+  icone: NomeIcone
   cor: keyof typeof coresIndicador
   children: React.ReactNode
 }) {
@@ -66,20 +67,20 @@ function PainelIndicadores({ dados }: { dados: Indicadores }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <CardIndicador titulo="Produtos ativos" icone="📦" cor="verde">
+        <CardIndicador titulo="Produtos ativos" icone="produtos" cor="verde">
           <div className="text-3xl font-semibold">{dados.produtosAtivos}</div>
         </CardIndicador>
-        <CardIndicador titulo="Pedidos hoje (site)" icone="🛒" cor="azul">
+        <CardIndicador titulo="Pedidos hoje (site)" icone="pedido_venda" cor="azul">
           <div className="text-3xl font-semibold">{dados.pedidosHoje}</div>
         </CardIndicador>
-        <CardIndicador titulo="Vendas balcão hoje" icone="🏪" cor="roxo">
+        <CardIndicador titulo="Vendas balcão hoje" icone="venda_balcao" cor="roxo">
           <div className="text-3xl font-semibold">{dados.vendasBalcaoHoje}</div>
           <div className="text-xs text-slate-400">{formatarMoeda(dados.faturamentoBalcaoHoje)}</div>
         </CardIndicador>
-        <CardIndicador titulo="Faturamento do mês" icone="💰" cor="verde">
+        <CardIndicador titulo="Faturamento do mês" icone="financeiro" cor="verde">
           <div className="text-3xl font-semibold">{formatarMoeda(dados.faturamentoMes)}</div>
         </CardIndicador>
-        <CardIndicador titulo="Aguardando pagamento" icone="⏳" cor="ambar">
+        <CardIndicador titulo="Aguardando pagamento" icone="alerta" cor="ambar">
           <div className="text-3xl font-semibold">{dados.pedidosPendentes}</div>
         </CardIndicador>
       </div>
@@ -125,7 +126,7 @@ function PainelIndicadores({ dados }: { dados: Indicadores }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
-              <span className="text-base leading-none">⚠️</span>
+              <Icone nome="alerta" tamanho={17} />
               Estoque baixo
             </CardTitle>
           </CardHeader>

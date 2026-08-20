@@ -8,7 +8,7 @@ Este manual explica, em linguagem simples, como funciona o site da loja (o que o
 Cabeçalho e rodapé · Home · Catálogo · Página de produto · Carrinho · Checkout · Criar conta e login · Minha conta · Favoritos · Confirmação do pedido · Sobre nós · Contato · Aprovação de orçamento por link
 
 **Parte 2 — Painel administrativo**
-Visão Geral · Grupo Vendas (Venda Balcão, Pedido de Venda, Orçamentos, Clientes) · Grupo Produtos (Cadastro de Produtos, Categorias, Estoque, Reajuste de Preços) · Grupo Marketing (Cupons, Banners, Sobre Nós, Feedbacks, Avaliações, Clube) · Grupo Financeiro · Grupo Compras (Cotação, Pedido de Compra, Entrada de NF, Fornecedores) · Grupo Relatórios (Vendas, Lucro/DRE, Estoque, Auditoria) · Grupo Configurações (Usuários, Configurações da Loja)
+Visão Geral · Venda Balcão · Grupo Vendas (Pedido de Venda, Orçamentos, Clientes) · Grupo Produtos (Cadastro de Produtos, Categorias, Estoque, Reajuste de Preços) · Grupo Compras (Cotação, Pedido de Compra, Entrada de NF, Fornecedores) · Notas Fiscais · Financeiro · Grupo Marketing (Cupons, Banners, Sobre Nós, Feedbacks, Avaliações, Clube) · Grupo Relatórios (Vendas, Lucro/DRE, Estoque) · Grupo Configurações (Usuários, Configurações da Loja, Pastas das Notas Fiscais, Auditoria) · Trocar minha senha
 
 **Parte 3 — Perguntas frequentes e avisos gerais**
 
@@ -321,7 +321,11 @@ Existe uma página semelhante em formato (`/cotacao/responder/[token]`), mas ela
 Área de uso exclusivo do dono da loja e da equipe autorizada, acessada em `/admin`. Existem dois tipos de usuário:
 
 - **admin** — acesso total, sem restrição.
-- **operador** — acesso ao dia a dia operacional, mas **sem acesso** a: Financeiro, Reajuste de Preços, Cotação, Pedido de Compra, Entrada de NF, Fornecedores, Relatório de Lucro/DRE, Auditoria, Usuários e Configurações da Loja. Essas telas nem aparecem no menu para o operador.
+- **operador** — acesso ao dia a dia operacional, mas **sem acesso** a: Financeiro, Notas Fiscais, Reajuste de Preços, Cotação, Pedido de Compra, Entrada de NF, Fornecedores, Relatório de Lucro/DRE, Auditoria, Usuários e Configurações da Loja. Essas telas nem aparecem no menu para o operador.
+
+**Senha de primeiro acesso.** Quando o administrador cria um usuário (ou troca a senha de alguém), essa senha vale só até o primeiro acesso: ao entrar, a pessoa é levada direto para a tela de troca e o painel fica bloqueado até ela criar uma senha própria. Depois disso, ninguém além dela sabe a senha. Qualquer pessoa pode trocar a própria senha quando quiser, pelo link **"Trocar minha senha"**, no rodapé do menu lateral, embaixo do nome do usuário.
+
+**Código dos cadastros.** Produtos, fornecedores, clientes e categorias têm um código próprio (1, 2, 3...), gerado automaticamente pelo sistema ao salvar e mostrado na primeira coluna da grade. Ele serve pra localizar o registro rapidamente e pode ser copiado, mas não pode ser digitado nem alterado — quem numera é o sistema.
 
 A seguir, cada tela do menu lateral, agrupada da mesma forma que aparece no painel.
 
@@ -1072,12 +1076,19 @@ No topo, uma barra fixa mostra "Nova compra" ou "Editando compra", com os botõe
 - Botão "Importar XML da NF-e": abre o seletor de arquivo (só aceita `.xml`). Texto explicativo: "Lê o XML que o fornecedor enviou e preenche fornecedor, número e itens automaticamente. Não precisa de certificado digital - só leitura."
 - Ao importar, o sistema:
   - Lê e valida a chave de acesso do XML. Se a chave não bater na validação, mostra o aviso "A chave de acesso deste XML não bateu na validação (dados podem estar incompletos ou o arquivo alterado) - confira os valores antes de salvar."
-  - Procura um fornecedor já cadastrado com o mesmo CNPJ do emitente da nota; se não encontrar, **cadastra automaticamente** um novo fornecedor com os dados do emitente (razão social, nome fantasia, CNPJ, telefone e endereço).
+  - Procura um fornecedor já cadastrado com o mesmo CNPJ do emitente da nota; se não encontrar, **cadastra automaticamente** um novo fornecedor com os dados do emitente (razão social, nome fantasia, CNPJ, telefone e endereço). Nesse caso aparece um aviso lembrando de conferir o cadastro depois: a nota não traz inscrição estadual, e-mail nem condição de pagamento.
   - Preenche automaticamente número da nota, data de emissão, valor do frete (se houver) e a chave de acesso.
-  - Lista os itens da nota como "pendentes de mapeamento": cada item precisa ser associado manualmente a um produto do catálogo antes de entrar na compra (o sistema tenta pré-selecionar o produto certo pelo código de barras ou pelo SKU, mas o usuário deve conferir e clicar em "Adicionar" para cada item).
+  - Lista os itens da nota para você vincular a produtos do catálogo (ver abaixo).
   - Se algo der errado na leitura do arquivo, mostra a mensagem de erro retornada.
 
-**Itens do XML pendentes de mapeamento** (só aparece se houver itens não mapeados): para cada item mostra descrição, código do fornecedor, quantidade e valor unitário; uma lista suspensa "Mapear pra qual produto?" para escolher o produto do catálogo; e um botão "Adicionar" (só habilita depois de escolher o produto) que move o item para a lista de itens da compra e o remove da lista pendente.
+**Itens da nota a vincular** (só aparece se houver itens ainda não vinculados): uma grade com Item da nota (descrição, código do produto no fornecedor e NCM), Quantidade, Custo unitário, o produto do catálogo e as ações.
+
+Embaixo de cada item, o sistema diz **como ele foi reconhecido** — "Vinculado pelo código de barras", "Vinculado pelo código do fornecedor" — ou, quando não achou, explica o motivo: se a nota não trouxe código de barras, se o código de barras não está em nenhum produto, se nenhum produto tem aquele SKU. Assim dá pra saber o que corrigir sem conferir produto por produto.
+
+- **Vincular** — usa o produto escolhido na lista e move o item para os itens da compra.
+- **Cadastrar produto** (aparece só nos itens sem produto) — cria um produto novo já com descrição, NCM, código de barras e custo vindos da nota, e vincula o item na hora. O preço de venda nasce igual ao custo, de propósito: preço é decisão comercial e não vem no XML — defina depois em Produtos ou em Reajuste de Preços. É o caminho recomendado na primeira importação, quando o catálogo ainda está vazio.
+
+Item não vinculado **não entra na compra** e não movimenta estoque.
 
 **Campos principais do formulário:**
 - **Fornecedor** (obrigatório): lista suspensa com os fornecedores cadastrados.
@@ -1311,35 +1322,35 @@ Colunas: Produto, Categoria, Estoque (quantidade atual), Mínimo (quantidade mí
 
 Acesso: todo usuário do admin.
 
-### Auditoria
+---
 
-Mostra o histórico de tudo que foi cadastrado, editado ou excluído no painel administrativo, com quem fez e quando. Serve pra rastrear alterações — por exemplo, descobrir quem mudou o preço de um produto ou quem excluiu um cadastro. Guarda até 500 registros no período escolhido.
+## Notas Fiscais
 
-#### Filtro de período
+Central de documentos fiscais: reúne numa lista só as notas de **entrada** (as que os fornecedores emitiram e você importou em Compras > Entrada de NF) e as de **saída** (as que a loja emitiu pelos pedidos). Serve pra imprimir o DANFE e baixar o XML de qualquer nota sem precisar abrir o Bling.
 
-- **De** / **Até** — datas do período.
-- **Botão "Aplicar período"** — recarrega a tela com o novo período.
+### Abas
 
-#### Filtros adicionais
+- **Todas** — entradas e saídas juntas, da mais recente para a mais antiga.
+- **Entradas** — só notas de fornecedor.
+- **Saídas** — só notas emitidas pela loja.
 
-- **Tela** — filtra pelo nome da tela onde a ação aconteceu (lista é montada automaticamente com as telas que aparecem nos registros), ou Todas as telas.
-- **Ação** — filtra pelo tipo de ação: Todas as ações, Cadastro, Edição, Exclusão, Inativação ou Ativação.
-- **Usuário** — filtra por quem fez a ação, ou Todos os usuários.
-- **Buscar** — campo de texto livre que procura em usuário, tela, tabela, ação e código do registro. A busca só é aplicada ao clicar em "Pesquisar" ou apertar Enter — não filtra a cada letra digitada.
-- **Botão "Pesquisar"** — aplica o texto digitado no campo Buscar.
-- **Botão "Limpar"** — remove todos os filtros (tela, ação, usuário, busca), inclusive o que ainda não tinha sido pesquisado.
+### Filtros
 
-#### Botão "Imprimir"
+- **Buscar** — procura por número da nota, nome do fornecedor/cliente ou chave de acesso.
+- **Emissão de / até** — período de emissão da nota (é por emissão que o contador fecha o mês).
+- **Este mês / Mês passado** — atalhos que preenchem o período.
+- **Só sem XML guardado** — mostra as notas que ainda não têm o arquivo salvo. Serve pra saber o que falta antes de mandar o lote pro contador.
+- **Limpar filtros** — volta a lista ao estado inicial. Ao lado, o sistema mostra quantas notas foram encontradas.
 
-Gera impressão/PDF da lista filtrada.
+### Tabela
 
-#### Tabela de registros
+Colunas: Tipo (Entrada em azul, Saída em verde), Número/Série, Emissão, Fornecedor/Cliente, Valor e Ações.
 
-Colunas: Data, Usuário (ou "-" se a ação foi automática do sistema), Tela, Ação (com selo colorido: verde para cadastro/ativação, azul para edição, vermelho para exclusão, cinza para inativação) e Tabela (nome técnico do que foi alterado).
+- **Ver detalhes** — abre uma janela com tipo, emissão, participante, valor, chave de acesso (formatada em grupos de 4) e se o XML já está guardado.
+- **Imprimir DANFE** — gera o documento e abre no visualizador de PDF, pronto pra imprimir.
+- **Baixar XML** — salva o arquivo XML autorizado, com a chave de acesso no nome (é o formato que o contador espera).
 
-- **Clicar numa linha** — abre uma janela com o detalhe completo do registro: tela, ação, quem fez, quando, e os dados "Antes" e "Depois" da alteração (quando existirem), em formato bruto.
-
-Aviso: a senha do usuário nunca aparece no log de auditoria, mesmo quando é alterada.
+**Primeiro acesso a uma nota de saída:** o XML dela é buscado no Bling na primeira vez que você clica em DANFE ou XML, e fica guardado a partir daí. Por isso, notas de saída recém-emitidas podem aparecer sem número e sem data até o primeiro clique.
 
 **Acesso restrito a "admin".**
 
@@ -1488,6 +1499,40 @@ Usada pro envio de e-mails/notificações da loja via Gmail.
 #### Botão "Salvar configurações" (rodapé da tela)
 
 Salva de uma vez todos os campos das abas Contato, Páginas, Frete, Aparência, Anúncio, Custos e os campos de código de loja do Bling (Mercado Livre/Shopee). Mostra "Salvando..." durante o envio e "Salvo!" por alguns segundos ao concluir. Não inclui as senhas/tokens da aba Integrações — essas têm seus próprios botões, conforme descrito acima.
+
+**Acesso restrito a "admin".**
+
+---
+
+### Auditoria
+
+Mostra o histórico de tudo que foi cadastrado, editado ou excluído no painel administrativo, com quem fez e quando. Serve pra rastrear alterações — por exemplo, descobrir quem mudou o preço de um produto ou quem excluiu um cadastro. Guarda até 500 registros no período escolhido.
+
+#### Filtro de período
+
+- **De** / **Até** — datas do período.
+- **Botão "Aplicar período"** — recarrega a tela com o novo período.
+
+#### Filtros adicionais
+
+- **Tela** — filtra pelo nome da tela onde a ação aconteceu (lista é montada automaticamente com as telas que aparecem nos registros), ou Todas as telas.
+- **Ação** — filtra pelo tipo de ação: Todas as ações, Cadastro, Edição, Exclusão, Inativação ou Ativação.
+- **Usuário** — filtra por quem fez a ação, ou Todos os usuários.
+- **Buscar** — campo de texto livre que procura em usuário, tela, tabela, ação e código do registro. A busca só é aplicada ao clicar em "Pesquisar" ou apertar Enter — não filtra a cada letra digitada.
+- **Botão "Pesquisar"** — aplica o texto digitado no campo Buscar.
+- **Botão "Limpar"** — remove todos os filtros (tela, ação, usuário, busca), inclusive o que ainda não tinha sido pesquisado.
+
+#### Botão "Imprimir"
+
+Gera impressão/PDF da lista filtrada.
+
+#### Tabela de registros
+
+Colunas: Data, Usuário (ou "-" se a ação foi automática do sistema), Tela, Ação (com selo colorido: verde para cadastro/ativação, azul para edição, vermelho para exclusão, cinza para inativação) e Registro (o tipo de cadastro alterado — Produto, Fornecedor, Entrada de NF etc.).
+
+- **Clicar numa linha** — abre uma janela com o detalhe do registro: tela, ação, quem fez, quando, e uma tabela mostrando campo a campo o que mudou, com o valor antigo riscado ao lado do novo. Em edição, aparecem só os campos que realmente mudaram de valor.
+
+Aviso: a senha do usuário nunca aparece no log de auditoria, mesmo quando é alterada.
 
 **Acesso restrito a "admin".**
 

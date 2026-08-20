@@ -13,6 +13,7 @@ import { LabelCanal } from "@/components/admin/label-canal"
 import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
 import { rotuloFormaPagamento } from "@/lib/formas-pagamento"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { Icone } from "@/components/admin/icone"
 
 type Pedido = {
   id: string
@@ -438,7 +439,7 @@ export default function DetalhePedidoPage() {
               )}
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="sm" variant="outline" onClick={imprimirDanfe}>
-                  <span className="mr-1.5 text-sm leading-none">🖨️</span>
+                  <Icone nome="imprimir" tamanho={15} className="mr-1.5" />
                   Imprimir DANFE
                 </Button>
                 {/* Os links do Bling continuam como alternativa: eles abrem o

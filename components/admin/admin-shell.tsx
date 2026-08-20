@@ -19,6 +19,7 @@ import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
 import { ConfirmProvider } from "@/components/admin/confirm-provider"
+import { Icone, type NomeIcone } from "@/components/admin/icone"
 import type { SessaoAdmin } from "@/lib/auth"
 import { EMAIL_DESENVOLVEDOR, NOME_SISTEMA } from "@/lib/constantes"
 import { rotaAtiva } from "@/lib/rota-ativa"
@@ -33,14 +34,14 @@ type ItemLink = {
   tipo: "link"
   href: string
   label: string
-  emoji: string
+  icone: NomeIcone
   somenteAdmin?: boolean
   somenteDesenvolvedor?: boolean
 }
 type ItemGrupo = {
   tipo: "grupo"
   label: string
-  emoji: string
+  icone: NomeIcone
   filhos: { href: string; label: string; somenteAdmin?: boolean }[]
 }
 type ItemMenu = ItemLink | ItemGrupo
@@ -48,15 +49,25 @@ type ItemMenu = ItemLink | ItemGrupo
 // Estrutura de menu igual ao InMenteGestao: itens soltos pras secoes mais
 // usadas no dia a dia, agrupados em categorias colapsaveis pro resto.
 const menu: ItemMenu[] = [
-  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", emoji: "📊" },
-  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", emoji: "🏪" },
-  { tipo: "link", href: "/admin/pedidos", label: "Pedido de Venda", emoji: "🛒" },
-  { tipo: "link", href: "/admin/orcamentos", label: "Orçamentos", emoji: "📄" },
-  { tipo: "link", href: "/admin/clientes", label: "Clientes", emoji: "👥" },
+  { tipo: "link", href: "/admin/dashboard", label: "Visão Geral", icone: "visao_geral" },
+  // Venda Balcao fica solta, e nao dentro de Vendas: e a tela que o operador
+  // abre dezenas de vezes por dia, e cada clique a mais pra chegar nela custa
+  // tempo no atendimento.
+  { tipo: "link", href: "/admin/venda-balcao", label: "Venda Balcão", icone: "venda_balcao" },
+  {
+    tipo: "grupo",
+    label: "Vendas",
+    icone: "pedido_venda",
+    filhos: [
+      { href: "/admin/pedidos", label: "Pedido de Venda" },
+      { href: "/admin/orcamentos", label: "Orçamentos" },
+      { href: "/admin/clientes", label: "Clientes" },
+    ],
+  },
   {
     tipo: "grupo",
     label: "Produtos",
-    emoji: "📦",
+    icone: "produtos",
     filhos: [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
@@ -64,10 +75,27 @@ const menu: ItemMenu[] = [
       { href: "/admin/precos", label: "Reajuste de Preços", somenteAdmin: true },
     ],
   },
+  // Compras espelha Vendas: cada lado da operacao com os seus documentos e o
+  // seu cadastro de parceiro (Clientes de um lado, Fornecedores do outro).
+  {
+    tipo: "grupo",
+    label: "Compras",
+    icone: "compras",
+    filhos: [
+      { href: "/admin/cotacoes", label: "Cotação", somenteAdmin: true },
+      { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
+      { href: "/admin/compras", label: "Entrada de NF", somenteAdmin: true },
+      { href: "/admin/fornecedores", label: "Fornecedores", somenteAdmin: true },
+    ],
+  },
+  // Fica solto (e nao dentro de Compras) porque junta entrada E saida - e o
+  // lugar de pegar DANFE/XML de qualquer nota sem abrir o Bling.
+  { tipo: "link", href: "/admin/notas-fiscais", label: "Notas Fiscais", icone: "notas_fiscais", somenteAdmin: true },
+  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: "financeiro", somenteAdmin: true },
   {
     tipo: "grupo",
     label: "Marketing",
-    emoji: "📣",
+    icone: "marketing",
     filhos: [
       { href: "/admin/cupons", label: "Cupons" },
       { href: "/admin/banners", label: "Banners" },
@@ -77,58 +105,45 @@ const menu: ItemMenu[] = [
       { href: "/admin/clube", label: "Clube", somenteAdmin: true },
     ],
   },
-  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", emoji: "💰", somenteAdmin: true },
-  // Fica solto (e nao dentro de Compras) porque junta entrada E saida - e o
-  // lugar de pegar DANFE/XML de qualquer nota sem abrir o Bling.
-  { tipo: "link", href: "/admin/notas-fiscais", label: "Notas Fiscais", emoji: "🧾", somenteAdmin: true },
-  {
-    tipo: "grupo",
-    label: "Compras",
-    emoji: "🚚",
-    filhos: [
-      { href: "/admin/cotacoes", label: "Cotação", somenteAdmin: true },
-      { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
-      { href: "/admin/compras", label: "Entrada de NF", somenteAdmin: true },
-      { href: "/admin/fornecedores", label: "Fornecedores", somenteAdmin: true },
-    ],
-  },
   {
     tipo: "grupo",
     label: "Relatórios",
-    emoji: "📈",
+    icone: "relatorios",
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
       { href: "/admin/relatorios/lucro", label: "Lucro / DRE", somenteAdmin: true },
       { href: "/admin/relatorios/estoque", label: "Estoque" },
-      { href: "/admin/auditoria", label: "Auditoria", somenteAdmin: true },
     ],
   },
+  // Auditoria saiu de Relatorios: ela nao e relatorio de negocio, e
+  // administracao do sistema - o lugar dela e junto de Usuarios.
   {
     tipo: "grupo",
     label: "Configurações",
-    emoji: "⚙️",
+    icone: "configuracoes",
     filhos: [
       { href: "/admin/usuarios", label: "Usuários", somenteAdmin: true },
       { href: "/admin/configuracoes", label: "Configurações da Loja" },
       { href: "/admin/configuracoes/pastas-nf", label: "Pastas das Notas Fiscais" },
+      { href: "/admin/auditoria", label: "Auditoria", somenteAdmin: true },
     ],
   },
-  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", emoji: "🎨", somenteDesenvolvedor: true },
+  { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: "cores", somenteDesenvolvedor: true },
 ]
 
 // Achata o menu (so os itens visiveis pro papel/email da sessao) pra
 // alimentar a TabBar e o breadcrumb, que trabalham com uma lista simples de
 // {href, label}.
-function itensVisiveis(papel: string, email: string): { href: string; label: string; emoji: string }[] {
-  const resultado: { href: string; label: string; emoji: string }[] = []
+function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: NomeIcone }[] {
+  const resultado: { href: string; label: string; icone: NomeIcone }[] = []
   for (const item of menu) {
     if (item.tipo === "link") {
       if (item.somenteDesenvolvedor && email !== EMAIL_DESENVOLVEDOR) continue
-      if (!item.somenteAdmin || papel === "admin") resultado.push({ href: item.href, label: item.label, emoji: item.emoji })
+      if (!item.somenteAdmin || papel === "admin") resultado.push({ href: item.href, label: item.label, icone: item.icone })
     } else {
       for (const filho of item.filhos) {
         if (!filho.somenteAdmin || papel === "admin") {
-          resultado.push({ href: filho.href, label: filho.label, emoji: item.emoji })
+          resultado.push({ href: filho.href, label: filho.label, icone: item.icone })
         }
       }
     }
@@ -406,7 +421,9 @@ function AdminShellInterno({
                       : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
-                  <span className="w-5 shrink-0 text-center text-base leading-none">{item.emoji}</span>
+                  <span className="flex w-5 shrink-0 justify-center">
+                    <Icone nome={item.icone} tamanho={18} />
+                  </span>
                   <span className={menuExpandido ? "whitespace-nowrap" : "lg:hidden"}>{item.label}</span>
                 </Link>
               )
@@ -430,7 +447,9 @@ function AdminShellInterno({
                   } ${grupoAtivo ? "text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
                 >
                   <span className="relative shrink-0">
-                    <span className="block w-5 text-center text-base leading-none">{item.emoji}</span>
+                    <span className="flex w-5 justify-center">
+                      <Icone nome={item.icone} tamanho={18} />
+                    </span>
                     {/* Recolhido nao ha espaco pro numero, mas some-lo por
                         completo esconderia que ha nota esperando - vira um
                         ponto no canto do icone. */}

@@ -13,6 +13,7 @@ import { mascaraTelefone, mascaraCpfCnpj, mascaraCEP } from "@/lib/mascaras"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Cliente = {
   id: string
@@ -300,12 +301,12 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
       <Tabs value={aba} onValueChange={setAba}>
         <TabsList>
           <TabsTrigger value="lista">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Lista
           </TabsTrigger>
           {(aba === "formulario" || clienteEditando) && (
             <TabsTrigger value="formulario">
-              <span className="mr-1.5 text-sm leading-none">✏️</span>
+              <Icone nome="editar" tamanho={15} className="mr-1.5" />
               {clienteEditando ? "Editando" : "Novo cliente"}
             </TabsTrigger>
           )}
@@ -432,7 +433,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                                 setDetalhe(cliente)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -442,7 +443,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                                 abrirEdicao(cliente)
                               }}
                             >
-                              <span className="text-base leading-none">✏️</span>
+                              <Icone nome="editar" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -468,7 +469,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                               }}
                               title="Excluir cliente (só se nunca teve pedido)"
                             >
-                              <span className="text-base leading-none">🗑️</span>
+                              <Icone nome="excluir" tamanho={18} />
                             </Button>
                           </td>
                         </tr>

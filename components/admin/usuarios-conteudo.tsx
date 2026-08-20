@@ -21,6 +21,7 @@ import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Usuario = {
   id: string
@@ -174,11 +175,11 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <span className="mr-1.5 text-sm leading-none">➕</span>
+            <Icone nome="novo" tamanho={15} className="mr-1.5" />
             Cadastro
           </TabsTrigger>
         </TabsList>
@@ -261,7 +262,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 setDetalhe(usuario)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -271,7 +272,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 abrirEdicao(usuario)
                               }}
                             >
-                              <span className="text-base leading-none">✏️</span>
+                              <Icone nome="editar" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -281,7 +282,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                                 excluir(usuario)
                               }}
                             >
-                              <span className="text-base leading-none">🗑️</span>
+                              <Icone nome="excluir" tamanho={18} />
                             </Button>
                           </td>
                         </tr>

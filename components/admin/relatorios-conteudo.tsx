@@ -28,6 +28,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts"
+import { Icone } from "@/components/admin/icone"
 
 export type Relatorio = {
   vendasPorDia: { dia: string; total: string }[]
@@ -388,7 +389,7 @@ export function RelatoriosConteudo({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
-                <span className="text-sm leading-none">⚠️</span>
+                <Icone nome="alerta" tamanho={15} />
                 Em baixa
               </CardTitle>
             </CardHeader>
