@@ -14,6 +14,7 @@ import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Fornecedor = {
   id: string
@@ -206,11 +207,11 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <span className="mr-1.5 text-sm leading-none">➕</span>
+            <Icone nome="novo" tamanho={15} className="mr-1.5" />
             Cadastro
           </TabsTrigger>
         </TabsList>
@@ -297,7 +298,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                                 setDetalhe(fornecedor)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -307,7 +308,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                                 abrirEdicao(fornecedor)
                               }}
                             >
-                              <span className="text-base leading-none">✏️</span>
+                              <Icone nome="editar" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -317,7 +318,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                                 excluir(fornecedor)
                               }}
                             >
-                              <span className="text-base leading-none">🗑️</span>
+                              <Icone nome="excluir" tamanho={18} />
                             </Button>
                           </td>
                         </tr>

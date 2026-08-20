@@ -11,6 +11,7 @@ import { Trash2, Pencil, ArrowLeft, FilePlus, Save, Eraser, X } from "lucide-rea
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type TipoEntrega = {
   id: string
@@ -181,7 +182,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                             setDetalhe(tipo)
                           }}
                         >
-                          <span className="text-base leading-none">👁️</span>
+                          <Icone nome="ver" tamanho={18} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -191,7 +192,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                             abrirEdicao(tipo)
                           }}
                         >
-                          <span className="text-base leading-none">✏️</span>
+                          <Icone nome="editar" tamanho={18} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -201,7 +202,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                             excluir(tipo)
                           }}
                         >
-                          <span className="text-base leading-none">🗑️</span>
+                          <Icone nome="excluir" tamanho={18} />
                         </Button>
                       </td>
                     </tr>

@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Minus, ShoppingCart, Search, User, X, Package, Barcode } from "lucide-react"
+import { ShoppingCart, Search, User, X, Package, Barcode } from "lucide-react"
 import { formatarMoeda, mascaraTelefone, mascaraCpfCnpj, mascaraMoeda, valorMoedaParaNumero } from "@/lib/mascaras"
 import { CANAIS_VENDA_BALCAO, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
@@ -30,6 +30,7 @@ import { ROTULOS_STATUS, statusExibicao } from "@/lib/status-pedido"
 import { FORMAS_PAGAMENTO_BALCAO, rotuloFormaPagamento } from "@/lib/formas-pagamento"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { validarCodigoBarras } from "@/lib/codigo-barras"
+import { Icone } from "@/components/admin/icone"
 
 export type Produto = {
   id: string
@@ -416,7 +417,7 @@ export function VendaBalcaoConteudo({
               Produtos
             </TabsTrigger>
             <TabsTrigger value="vendas">
-              <span className="mr-1.5 text-sm leading-none">📋</span>
+              <Icone nome="grade" tamanho={15} className="mr-1.5" />
               Vendas
             </TabsTrigger>
           </TabsList>
@@ -674,28 +675,28 @@ export function VendaBalcaoConteudo({
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-10 w-10 sm:h-7 sm:w-7"
                           onClick={() => alterarQuantidade(item.produtoId, -1)}
                         >
-                          <Minus size={12} />
+                          <Icone nome="menos" tamanho={15} />
                         </Button>
                         <span className="w-5 text-center">{item.quantidade}</span>
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-10 w-10 sm:h-7 sm:w-7"
                           onClick={() => alterarQuantidade(item.produtoId, 1)}
                           disabled={item.quantidade >= item.estoqueDisponivel}
                         >
-                          <span className="text-xs leading-none">➕</span>
+                          <Icone nome="mais" tamanho={15} />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-10 w-10 sm:h-7 sm:w-7"
                           onClick={() => removerItem(item.produtoId)}
                         >
-                          <span className="text-sm leading-none">🗑️</span>
+                          <Icone nome="excluir" tamanho={16} />
                         </Button>
                       </div>
                     </div>

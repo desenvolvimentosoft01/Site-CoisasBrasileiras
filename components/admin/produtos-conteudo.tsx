@@ -11,6 +11,7 @@ import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Produto = {
   id: string
@@ -130,11 +131,11 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <span className="mr-1.5 text-sm leading-none">➕</span>
+            <Icone nome="novo" tamanho={15} className="mr-1.5" />
             Cadastro
           </TabsTrigger>
         </TabsList>
@@ -271,7 +272,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                                 setDetalhe(produto)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -281,7 +282,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                                 abrirEdicao(produto)
                               }}
                             >
-                              <span className="text-base leading-none">✏️</span>
+                              <Icone nome="editar" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -291,7 +292,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                                 excluir(produto)
                               }}
                             >
-                              <span className="text-base leading-none">🗑️</span>
+                              <Icone nome="excluir" tamanho={18} />
                             </Button>
                           </td>
                         </tr>

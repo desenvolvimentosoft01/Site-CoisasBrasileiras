@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select"
 import { ArrowLeft } from "lucide-react"
 import { useConfirmar } from "@/components/admin/confirm-provider"
+import { Icone } from "@/components/admin/icone"
 
 export type Faixa = {
   id: string
@@ -189,7 +190,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
                           {salvandoId === faixa.id ? "Salvando..." : "Salvar"}
                         </Button>
                         <Button variant="ghost" size="icon-lg" onClick={() => excluir(faixa)}>
-                          <span className="text-base leading-none">🗑️</span>
+                          <Icone nome="excluir" tamanho={18} />
                         </Button>
                       </td>
                     </tr>
@@ -239,7 +240,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
           </div>
           {erro && <p className="text-sm text-red-500 sm:col-span-5">{erro}</p>}
           <Button onClick={adicionarFaixa} className="sm:col-span-5 sm:w-fit">
-            <span className="mr-2 text-base leading-none">➕</span>
+            <Icone nome="novo" tamanho={17} className="mr-2" />
             Adicionar
           </Button>
         </CardContent>

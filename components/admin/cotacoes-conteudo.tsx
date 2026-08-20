@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Cotacao = {
   id: string
@@ -364,7 +365,7 @@ export function CotacoesConteudo({
                                 verDetalhe(cotacao)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             {cotacao.status === "respondida" && (
                               <Button
@@ -389,7 +390,7 @@ export function CotacoesConteudo({
                                   excluir(cotacao)
                                 }}
                               >
-                                <span className="text-base leading-none">🗑️</span>
+                                <Icone nome="excluir" tamanho={18} />
                               </Button>
                             )}
                           </td>

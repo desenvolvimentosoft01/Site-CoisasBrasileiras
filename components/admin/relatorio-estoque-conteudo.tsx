@@ -15,6 +15,7 @@ import {
 import { formatarMoeda } from "@/lib/mascaras"
 import { Filter, Search, X } from "lucide-react"
 import { BotaoImprimir } from "@/components/admin/botao-imprimir"
+import { Icone } from "@/components/admin/icone"
 
 type Produto = {
   id: string
@@ -174,7 +175,7 @@ export function RelatorioEstoqueConteudo({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
-              <span className="text-sm leading-none">⚠️</span>
+              <Icone nome="alerta" tamanho={15} />
               Abaixo do mínimo
             </CardTitle>
           </CardHeader>
@@ -183,7 +184,7 @@ export function RelatorioEstoqueConteudo({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-sm text-slate-500">
-              <span className="text-sm leading-none">⚠️</span>
+              <Icone nome="alerta" tamanho={15} />
               Zerados
             </CardTitle>
           </CardHeader>

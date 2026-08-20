@@ -13,6 +13,7 @@ import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Feedback = {
   id: string
@@ -200,11 +201,11 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <span className="mr-1.5 text-sm leading-none">➕</span>
+            <Icone nome="novo" tamanho={15} className="mr-1.5" />
             Cadastro
           </TabsTrigger>
         </TabsList>
@@ -287,7 +288,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                             setDetalhe(feedback)
                           }}
                         >
-                          <span className="text-base leading-none">👁️</span>
+                          <Icone nome="ver" tamanho={18} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -297,7 +298,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                             abrirEdicao(feedback)
                           }}
                         >
-                          <span className="text-base leading-none">✏️</span>
+                          <Icone nome="editar" tamanho={18} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -307,7 +308,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                             excluir(feedback)
                           }}
                         >
-                          <span className="text-base leading-none">🗑️</span>
+                          <Icone nome="excluir" tamanho={18} />
                         </Button>
                       </div>
                     </div>
@@ -388,7 +389,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
                       onClick={() => setImagemUrl("")}
                       className="absolute right-0 top-0 rounded-full bg-black/70 p-1 text-white"
                     >
-                      <span className="text-xs leading-none">🗑️</span>
+                      <Icone nome="excluir" tamanho={14} />
                     </button>
                   </div>
                 ) : (

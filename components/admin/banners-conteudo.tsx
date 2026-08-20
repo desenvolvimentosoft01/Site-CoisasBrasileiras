@@ -13,6 +13,7 @@ import { registrarAuditoria } from "@/lib/auditoria"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Banner = {
   id: string
@@ -202,11 +203,11 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>
           <TabsTrigger value="lista">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Grade
           </TabsTrigger>
           <TabsTrigger value="formulario">
-            <span className="mr-1.5 text-sm leading-none">➕</span>
+            <Icone nome="novo" tamanho={15} className="mr-1.5" />
             Cadastro
           </TabsTrigger>
         </TabsList>
@@ -293,7 +294,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                             setDetalhe(banner)
                           }}
                         >
-                          <span className="text-base leading-none">👁️</span>
+                          <Icone nome="ver" tamanho={18} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -303,7 +304,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                             abrirEdicao(banner)
                           }}
                         >
-                          <span className="text-base leading-none">✏️</span>
+                          <Icone nome="editar" tamanho={18} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -313,7 +314,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                             excluir(banner)
                           }}
                         >
-                          <span className="text-base leading-none">🗑️</span>
+                          <Icone nome="excluir" tamanho={18} />
                         </Button>
                       </div>
                     </div>
@@ -404,7 +405,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                       onClick={() => setImagemUrl("")}
                       className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white"
                     >
-                      <span className="text-xs leading-none">🗑️</span>
+                      <Icone nome="excluir" tamanho={14} />
                     </button>
                   </div>
                 ) : (

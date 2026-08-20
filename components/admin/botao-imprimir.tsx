@@ -3,6 +3,7 @@
 import { useState } from "react"
 import {  } from "lucide-react"
 import { ModalImpressao, type CampoImpressao } from "@/components/admin/modal-impressao"
+import { Icone } from "@/components/admin/icone"
 
 export function BotaoImprimir({
   campos,
@@ -23,7 +24,7 @@ export function BotaoImprimir({
         onClick={() => setAberto(true)}
         className={`flex items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent print:hidden ${className ?? ""}`}
       >
-        <span className="text-sm leading-none">🖨️</span>
+        <Icone nome="imprimir" tamanho={16} />
         Imprimir
       </button>
       <ModalImpressao

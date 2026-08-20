@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatarMoeda } from "@/lib/mascaras"
 import Link from "next/link"
 import {  } from "lucide-react"
+import { Icone } from "@/components/admin/icone"
 
 export default async function FinanceiroPage() {
   const [
@@ -93,7 +94,7 @@ export default async function FinanceiroPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm text-slate-500">
-              <span className="text-base leading-none">⚠️</span>
+              <Icone nome="alerta" tamanho={17} />
               Atrasadas
             </CardTitle>
           </CardHeader>

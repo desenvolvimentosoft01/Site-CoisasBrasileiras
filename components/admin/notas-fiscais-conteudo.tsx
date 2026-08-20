@@ -11,6 +11,7 @@ import { Printer, FileDown, RefreshCw } from "lucide-react"
 import { formatarMoeda } from "@/lib/mascaras"
 import { toast } from "sonner"
 import type { NotaFiscalListada } from "@/lib/notas-fiscais"
+import { Icone } from "@/components/admin/icone"
 
 // Central de Notas Fiscais: entrada (compras) e saida (vendas) na mesma
 // grade, cada linha com DANFE e XML. O ponto da tela e o cliente nao precisar
@@ -148,15 +149,15 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
       <Tabs value={aba} onValueChange={setAba}>
         <TabsList>
           <TabsTrigger value="todas">
-            <span className="mr-1.5 text-sm leading-none">📋</span>
+            <Icone nome="grade" tamanho={15} className="mr-1.5" />
             Todas
           </TabsTrigger>
           <TabsTrigger value="entrada">
-            <span className="mr-1.5 text-sm leading-none">📥</span>
+            <Icone nome="baixar" tamanho={15} className="mr-1.5" />
             Entradas
           </TabsTrigger>
           <TabsTrigger value="saida">
-            <span className="mr-1.5 text-sm leading-none">📤</span>
+            <Icone nome="enviar" tamanho={15} className="mr-1.5" />
             Saídas
           </TabsTrigger>
         </TabsList>
@@ -317,7 +318,7 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
                                 setDetalhe(nota)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -328,7 +329,7 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
                                 abrirDanfe(nota)
                               }}
                             >
-                              <span className="text-base leading-none">🖨️</span>
+                              <Icone nome="imprimir" tamanho={18} />
                             </Button>
                             <Button
                               variant="ghost"
@@ -339,7 +340,7 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
                                 baixarXml(nota)
                               }}
                             >
-                              <span className="text-base leading-none">📥</span>
+                              <Icone nome="baixar" tamanho={18} />
                             </Button>
                           </td>
                         </tr>

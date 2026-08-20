@@ -14,26 +14,27 @@ import {
   RefreshCw,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Icone, type NomeIcone } from "@/components/admin/icone"
 import type { LucideIcon } from "lucide-react"
 
-// Emoji em vez de icone de linha nos botoes da barra, mapeado pelo
-// componente lucide que a tela passa (identidade, nao label) - assim as 25
-// telas de cadastro ganham o visual "realista" sem precisar editar cada
-// uma. Icone sem mapeamento aqui continua caindo no <btn.icon> de linha.
-const emojiPorIcone = new Map<LucideIcon, string>([
-  [FilePlus, "🆕"],
-  [Pencil, "✏️"],
-  [Trash2, "🗑️"],
-  [Save, "💾"],
-  [Eraser, "🧹"],
-  [X, "✖️"],
-  [Ban, "🚫"],
-  [Mail, "✉️"],
-  [MessageCircle, "💬"],
-  [CheckCircle2, "✅"],
-  [XCircle, "❌"],
-  [ArrowRightCircle, "➡️"],
-  [RefreshCw, "🔄"],
+// Icone proprio do sistema (public/icones) no lugar do icone de linha,
+// mapeado pelo componente lucide que a tela passa - assim as 25 telas de
+// cadastro trocam de visual sem precisar editar uma por uma. Icone sem
+// mapeamento aqui continua caindo no <btn.icon> de linha.
+const iconePorLucide = new Map<LucideIcon, NomeIcone>([
+  [FilePlus, "novo"],
+  [Pencil, "editar"],
+  [Trash2, "excluir"],
+  [Save, "salvar"],
+  [Eraser, "limpar"],
+  [X, "cancelar"],
+  [Ban, "bloquear"],
+  [Mail, "email"],
+  [MessageCircle, "mensagem"],
+  [CheckCircle2, "confirmar"],
+  [XCircle, "recusar"],
+  [ArrowRightCircle, "enviar"],
+  [RefreshCw, "atualizar"],
 ])
 
 export type BotaoToolbar =
@@ -89,8 +90,8 @@ export function BarraFerramentas({ botoes, titulo, extra }: Props) {
               varianteCss[btn.variante ?? "default"]
             )}
           >
-            {emojiPorIcone.has(btn.icon) ? (
-              <span className="text-base leading-none">{emojiPorIcone.get(btn.icon)}</span>
+            {iconePorLucide.has(btn.icon) ? (
+              <Icone nome={iconePorLucide.get(btn.icon)!} tamanho={18} />
             ) : (
               <btn.icon size={16} strokeWidth={2} />
             )}

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { User, X, Save, Eraser, RefreshCw } from "lucide-react"
 import { formatarMoeda, mascaraTelefone } from "@/lib/mascaras"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { Icone } from "@/components/admin/icone"
 
 type Cliente = { id: string; nome: string; email: string | null; telefone: string | null }
 type ProdutoDisponivel = {
@@ -368,14 +369,14 @@ export function OrcamentoForm({
                 </div>
                 <div className="col-span-1 flex items-end justify-end">
                   <Button variant="ghost" size="icon" onClick={() => removerItem(indice)}>
-                    <span className="text-base leading-none">🗑️</span>
+                    <Icone nome="excluir" tamanho={18} />
                   </Button>
                 </div>
               </div>
             ))}
 
             <Button variant="outline" size="sm" onClick={adicionarItem}>
-              <span className="mr-1.5 text-sm leading-none">➕</span>
+              <Icone nome="novo" tamanho={15} className="mr-1.5" />
               Adicionar item
             </Button>
 

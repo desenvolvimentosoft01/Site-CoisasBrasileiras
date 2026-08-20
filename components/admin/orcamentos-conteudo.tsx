@@ -26,6 +26,7 @@ import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type Orcamento = {
   id: string
@@ -361,7 +362,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                 setDetalhe(orcamento)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             {orcamento.status === "aberto" && (
                               <>
@@ -396,7 +397,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                     abrirEdicao(orcamento)
                                   }}
                                 >
-                                  <span className="text-base leading-none">✏️</span>
+                                  <Icone nome="editar" tamanho={18} />
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -444,7 +445,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
                                   excluir(orcamento)
                                 }}
                               >
-                                <span className="text-base leading-none">🗑️</span>
+                                <Icone nome="excluir" tamanho={18} />
                               </Button>
                             )}
                           </td>

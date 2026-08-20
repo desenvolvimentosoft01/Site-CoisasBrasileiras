@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { Icone } from "@/components/admin/icone"
 
 export type PedidoCompra = {
   id: string
@@ -337,7 +338,7 @@ export function PedidosCompraConteudo({
                                 setDetalhe(pedido)
                               }}
                             >
-                              <span className="text-base leading-none">👁️</span>
+                              <Icone nome="ver" tamanho={18} />
                             </Button>
                             {pedido.status === "aberto" && (
                               <Button
@@ -348,7 +349,7 @@ export function PedidosCompraConteudo({
                                   abrirEdicao(pedido)
                                 }}
                               >
-                                <span className="text-base leading-none">✏️</span>
+                                <Icone nome="editar" tamanho={18} />
                               </Button>
                             )}
                             {(pedido.status === "aberto" || pedido.status === "enviado") && (
@@ -400,7 +401,7 @@ export function PedidosCompraConteudo({
                                   excluir(pedido)
                                 }}
                               >
-                                <span className="text-base leading-none">🗑️</span>
+                                <Icone nome="excluir" tamanho={18} />
                               </Button>
                             )}
                           </td>
