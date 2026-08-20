@@ -170,7 +170,7 @@ export function OrcamentosConteudo({ orcamentosIniciais }: { orcamentosIniciais:
   }
 
   async function excluir(orcamento: Orcamento) {
-    if (!(await confirmar({ descricao: `Excluir o orçamento #${orcamento.numero}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o orçamento #${orcamento.numero}?`, destrutivo: true, consequencia: "O orçamento e os itens dele são apagados, e o link enviado ao cliente para de funcionar." }))) return
     const resposta = await fetch(`/api/admin/orcamentos/${orcamento.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()

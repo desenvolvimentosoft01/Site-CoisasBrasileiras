@@ -921,7 +921,17 @@ export function ComprasConteudo({
   }
 
   async function receber(compra: Compra) {
-    if (!(await confirmar(`Confirmar o recebimento da compra de "${compra.fornecedor_nome}"? Isso vai dar alta no estoque, atualizar o custo dos produtos e gerar uma conta a pagar.`))) return
+    if (
+      !(await confirmar({
+        titulo: "Receber a compra",
+        descricao: `Confirmar o recebimento da compra de "${compra.fornecedor_nome}"?`,
+        textoConfirmar: "Receber",
+        consequencia:
+          "O estoque dos itens entra na hora, o custo dos produtos é atualizado e uma conta a pagar é gerada no financeiro. Depois de recebida, a compra não pode mais ser cancelada.",
+        aoCancelar: "a compra continua lançada, sem mexer no estoque nem no financeiro.",
+      }))
+    )
+      return
 
     setProcessandoId(compra.id)
     const resposta = await fetch(`/api/admin/compras/${compra.id}/receber`, { method: "POST" })
@@ -945,7 +955,7 @@ export function ComprasConteudo({
   }
 
   async function cancelar(compra: Compra) {
-    if (!(await confirmar({ descricao: `Cancelar a compra de "${compra.fornecedor_nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Cancelar a compra de "${compra.fornecedor_nome}"?`, destrutivo: true, consequencia: "A entrada fica cancelada. Compra que já foi recebida não pode ser cancelada, porque já mexeu em estoque, custo e financeiro." }))) return
 
     setProcessandoId(compra.id)
     const resposta = await fetch(`/api/admin/compras/${compra.id}/cancelar`, { method: "POST" })

@@ -74,6 +74,8 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
       !(await confirmar({
         descricao: `Excluir a faixa ${ROTULOS_REGIAO[faixa.regiao]} (${faixa.peso_min_kg}-${faixa.peso_max_kg}kg)?`,
         destrutivo: true,
+        consequencia:
+          "Pedidos com peso nessa faixa ficam sem valor de frete para essa região até você cadastrar outra faixa que cubra o peso.",
       }))
     )
       return

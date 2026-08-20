@@ -177,7 +177,7 @@ export function CotacoesConteudo({
   }
 
   async function recusar(cotacao: Cotacao) {
-    if (!(await confirmar({ descricao: `Recusar a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Recusar a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true, consequencia: "A cotação fica marcada como recusada e sai da lista de pendentes. O fornecedor não é avisado automaticamente." }))) return
     const resposta = await fetch(`/api/admin/cotacoes/${cotacao.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -192,7 +192,7 @@ export function CotacoesConteudo({
   }
 
   async function cancelar(cotacao: Cotacao) {
-    if (!(await confirmar({ descricao: `Cancelar a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Cancelar a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true, consequencia: "A cotação fica marcada como cancelada e o link de resposta para de funcionar." }))) return
     const resposta = await fetch(`/api/admin/cotacoes/${cotacao.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -207,7 +207,7 @@ export function CotacoesConteudo({
   }
 
   async function excluir(cotacao: Cotacao) {
-    if (!(await confirmar({ descricao: `Excluir a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir a cotação ${numeroFormatado(cotacao.numero)}?`, destrutivo: true, consequencia: "A cotação e as respostas dos fornecedores são apagadas, e o link enviado a eles para de funcionar." }))) return
     const resposta = await fetch(`/api/admin/cotacoes/${cotacao.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()

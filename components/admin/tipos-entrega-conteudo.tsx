@@ -96,7 +96,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
   }
 
   async function excluir(tipo: TipoEntrega) {
-    if (!(await confirmar({ descricao: `Excluir o tipo de entrega "${tipo.nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o tipo de entrega "${tipo.nome}"?`, destrutivo: true, consequencia: "Essa opção deixa de aparecer no checkout. Pedidos antigos que a usaram continuam como estão." }))) return
     await fetch(`/api/admin/tipos-entrega/${tipo.id}`, { method: "DELETE" })
     setLinhaSelecionada(null)
     recarregar()

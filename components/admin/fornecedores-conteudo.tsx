@@ -179,7 +179,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
   }
 
   async function excluir(fornecedor: Fornecedor) {
-    if (!(await confirmar({ descricao: `Excluir o fornecedor "${fornecedor.razao_social}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o fornecedor "${fornecedor.razao_social}"?`, destrutivo: true, consequencia: "Só é possível excluir fornecedor sem nenhuma compra lançada. Se já houver histórico, inative em vez de excluir." }))) return
     const resposta = await fetch(`/api/admin/fornecedores/${fornecedor.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()

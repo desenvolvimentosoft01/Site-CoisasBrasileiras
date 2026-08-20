@@ -103,7 +103,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
   }
 
   async function excluir(produto: Produto) {
-    if (!(await confirmar({ descricao: `Excluir o produto "${produto.nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o produto "${produto.nome}"?`, destrutivo: true, consequencia: "O produto sai da loja junto com as imagens dele. Produto que já foi vendido não pode ser excluído — nesse caso, desative." }))) return
     const resposta = await fetch(`/api/admin/produtos/${produto.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()

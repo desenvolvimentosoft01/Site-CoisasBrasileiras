@@ -218,7 +218,15 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
   async function alternarAtivo(cliente: Cliente) {
     const novoStatus = !cliente.ativo
     const acao = novoStatus ? "reativar" : "inativar"
-    if (!(await confirmar(`Quer mesmo ${acao} o cliente "${cliente.nome}"?`))) return
+    if (
+      !(await confirmar({
+        descricao: `Quer mesmo ${acao} o cliente "${cliente.nome}"?`,
+        consequencia: cliente.ativo
+          ? "O cliente perde o acesso à conta na loja e não consegue mais comprar. O histórico de pedidos dele é mantido."
+          : "O cliente volta a acessar a conta e a comprar normalmente.",
+      }))
+    )
+      return
 
     const resposta = await fetch(`/api/admin/clientes/${cliente.id}`, {
       method: "PUT",
@@ -253,7 +261,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
   // historico de venda vinculado, a API recusa (23503) e pede pra inativar
   // em vez de excluir, pra nao perder o vinculo do pedido com o cliente.
   async function excluir(cliente: Cliente) {
-    if (!(await confirmar({ descricao: `Excluir o cliente "${cliente.nome}"? Só funciona se ele nunca tiver feito nenhum pedido.`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o cliente "${cliente.nome}"?`, destrutivo: true, consequencia: "O cadastro e os endereços dele são apagados. Só funciona se ele nunca tiver feito nenhum pedido — se já tiver, prefira inativar." }))) return
 
     const resposta = await fetch(`/api/admin/clientes/${cliente.id}`, { method: "DELETE" })
     if (!resposta.ok) {

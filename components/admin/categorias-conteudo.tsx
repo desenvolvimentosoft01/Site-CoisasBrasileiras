@@ -157,7 +157,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
   }
 
   async function excluir(categoria: Categoria) {
-    if (!(await confirmar({ descricao: `Excluir a categoria "${categoria.nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir a categoria "${categoria.nome}"?`, destrutivo: true, consequencia: "Os produtos dela continuam cadastrados, mas ficam sem essa categoria e somem dos filtros da loja." }))) return
     await fetch(`/api/admin/categorias/${categoria.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Categorias",
