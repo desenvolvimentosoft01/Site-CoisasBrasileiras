@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs"
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { criarTokenSessao } from "@/lib/auth"
+import { enviarEmail } from "@/lib/email"
 import { NextResponse } from "next/server"
 
 const TAMANHO_MINIMO_SENHA = 8
@@ -29,9 +30,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "A nova senha precisa ser diferente da atual" }, { status: 400 })
   }
 
-  const [usuario] = await query("SELECT senha_hash FROM TAB_USUARIO_ADMIN WHERE id = $1 AND ativo = true", [
-    sessao.id,
-  ])
+  const [usuario] = await query(
+    "SELECT senha_hash, nome, email FROM TAB_USUARIO_ADMIN WHERE id = $1 AND ativo = true",
+    [sessao.id]
+  )
   if (!usuario) {
     return NextResponse.json({ erro: "Usuário não encontrado" }, { status: 404 })
   }
@@ -47,6 +49,24 @@ export async function POST(request: Request) {
      WHERE id = $2`,
     [await bcrypt.hash(novaSenha, 10), sessao.id]
   )
+
+  // Avisa por e-mail que a senha mudou. Vai SEMPRE pro e-mail do cadastro, e
+  // nunca pra um endereco informado na hora: se a pessoa que trocou a senha
+  // pudesse escolher pra onde vai o aviso, quem invadisse a conta mandaria o
+  // aviso pra si mesmo e o dono nunca ficaria sabendo. O objetivo do aviso e
+  // exatamente esse - o dono descobrir uma troca que nao foi ele.
+  //
+  // Nao bloqueia a resposta: a senha ja foi trocada, e falha de e-mail nao
+  // pode fazer a tela dizer que nao deu certo.
+  if (usuario.email) {
+    enviarEmail({
+      to: usuario.email,
+      subject: "Sua senha do painel foi alterada",
+      html: `<p>Olá, ${usuario.nome}.</p>
+             <p>A senha de acesso ao painel administrativo foi alterada em ${new Date().toLocaleString("pt-BR")}.</p>
+             <p><strong>Se foi você, pode ignorar este aviso.</strong> Se não foi, procure o administrador do sistema imediatamente — alguém pode ter acesso à sua conta.</p>`,
+    }).catch(() => {})
+  }
 
   // Reemite o cookie sem a marca de senha provisoria - sem isso o middleware
   // continuaria mandando a pessoa pra tela de troca de senha ate ela sair e
