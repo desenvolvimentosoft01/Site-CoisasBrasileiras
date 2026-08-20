@@ -38,6 +38,51 @@ Ausências mapeadas, em ordem de importância (nenhuma feita ainda):
 - [ ] **Transportadoras como cadastro** — hoje é texto livre no pedido.
 - [ ] **Permissão por tela** — só existe admin e operador; o operador do balcão enxerga custo de compra.
 
+## Checklist pra retomar (sessão de 2026-08-19/20 parou aqui)
+
+Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é só executar.
+
+**1. Custo real na entrada de NF** *(aprovado, é o próximo)*
+- [ ] Ler ICMS-ST, IPI, desconto e frete por item do XML (`lib/nfe-xml.ts` já lê o resto).
+- [ ] Compor o custo: valor unitário + ST + IPI + frete rateado, e usar esse custo no recebimento (`lib/compras.ts`, custo médio ponderado).
+- [ ] Guardar a composição por item (migration nova em `TAB_COMPRA_ITEM`), pra auditoria: hoje só existe `custo_unitario`.
+- [ ] Exibir o detalhamento na tela de lançamento — o cliente quer ver imposto na hora de lançar, tanto na entrada manual quanto na importação por XML.
+- **Por que importa:** hoje o custo ignora ST e IPI, e o Lucro/DRE mostra margem melhor que a real.
+
+**2. Foto do produto** *(aprovado)*
+- [ ] Foto no cadastro de produto e na Venda Balcão, como no InMenteGestao.
+
+**3. Visual do InMenteGestao — continuação** *(decisão: opção B, adotar o visual de lá; feito: ícones de linha, grade escura, barra de ferramentas clara, login)*
+- [ ] `ModalDetalhe` com navegação anterior/próximo entre os registros da grade ("1 de 3") e botão Editar no rodapé.
+- [ ] Barra de status no rodapé da grade: "X de Y registro(s)" à esquerda e "Pronto" à direita.
+- [ ] Linha de filtros padronizada: campos + botão "Pesquisar" + "Limpar filtros" + selo "N registro(s) encontrado(s)".
+- [ ] Subtítulo nas telas de cadastro: "Duplo clique na linha para editar · Selecione para habilitar ações na barra".
+- [ ] Botão "Duplicar" na barra das telas de cadastro (existe lá, não existe aqui).
+
+**4. Carregamento e desempenho**
+- [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
+- [ ] **Investigar a lentidão ao abrir as telas** (relatada pelo cliente em 2026-08-20). Suspeitas a checar antes de otimizar: consultas sem índice nas telas de grade, `staleTimes.dynamic` do router, e o pool do banco reduzido para 3 conexões na correção do `EMAXCONNSESSION` (pode estar enfileirando requisição).
+
+**5. Favicon**
+- [ ] A aba do navegador mostra o ícone genérico de globo no sistema e no site; deveria mostrar a logo da loja. Existe `app/icon.webp` — verificar por que não está sendo usado (formato/rota).
+
+**6. Módulos que faltam pra ser ERP** *(mapeados, não iniciados)*
+- [ ] Movimentação de estoque (kardex) — a lacuna mais séria.
+- [ ] Ajuste de estoque com motivo (quebra, perda, contagem).
+- [ ] Fluxo de caixa (projeção de saldo por período).
+- [ ] Transportadoras como cadastro (hoje é texto livre no pedido).
+- [ ] Permissão por tela (hoje só admin/operador; operador enxerga custo de compra).
+
+**7. Fiscal — próximos passos**
+- [ ] CT-e / DACTE.
+- [ ] Consulta direta à Sefaz (`NFeDistribuicaoDFe`) pra puxar nota de entrada sem depender do Bling — exige certificado A1 no servidor, SOAP com assinatura e manifestação do destinatário. Mesma infraestrutura do CT-e; fazer os dois juntos.
+
+**Pendências operacionais**
+- [ ] Aplicar em produção as migrations **059** (senha provisória) e **060** (plano e recursos). A 057 e a 058 já foram aplicadas.
+- [ ] Validar se o 404 do Bling sumiu com o fallback `/notas-fiscais` → `/nfe`; se aparecer a mensagem nova, é permissão do app em developer.bling.com.br.
+- [ ] Conferir no GitHub se o repositório está **privado** (não deu pra checar do ambiente de desenvolvimento).
+- [ ] Testar a emissão de NF-e em homologação pelo Bling, ponta a ponta.
+
 ## Pendências pra retomar (sessão de 2026-07-28 parou aqui)
 
 - [x] **Cadastro de Produtos**: formulário compacto + rótulos encurtados. Validado visualmente com o cliente em 2026-07-28.

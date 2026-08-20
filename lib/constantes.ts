@@ -18,6 +18,6 @@ export const FABRICANTE_SISTEMA = "In Mente Agência"
 // loja que usa - o cliente nao deve poder trocar por engano.
 export const CONTATO_FABRICANTE = {
   email: "desenvolvimentosoft01@gmail.com",
-  telefone: "(18) 99669-2266",
+  telefone: "(18) 99804-8714",
   cidade: "Araçatuba-SP",
 }

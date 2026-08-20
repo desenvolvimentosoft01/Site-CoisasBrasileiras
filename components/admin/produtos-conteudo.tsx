@@ -186,7 +186,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[760px] text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-left text-slate-500">
+                      <tr className="border-b border-slate-700 bg-slate-800 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-200">
                         <th className="p-4 font-medium">Cód.</th>
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">SKU</th>
