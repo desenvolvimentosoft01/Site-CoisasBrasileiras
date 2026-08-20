@@ -94,9 +94,17 @@ Racional:
 - **Pedido de Venda** vira **"Pedidos"**: a listagem única de tudo, de qualquer canal, com o filtro de canal em evidência e respeitando o plano.
 - Assim cada tela responde uma pergunta diferente: "quero vender agora" e "quero achar um pedido". Hoje as duas respondem as duas, e por isso parecem iguais.
 
-**4. Carregamento e desempenho**
+**4. Carregamento e desempenho** *(prioridade alta — o cliente comparou com o InMenteGestao, que "está bem mais ágil")*
 - [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
-- [ ] **Investigar a lentidão ao abrir as telas** (relatada pelo cliente em 2026-08-20). Suspeitas a checar antes de otimizar: consultas sem índice nas telas de grade, `staleTimes.dynamic` do router, e o pool do banco reduzido para 3 conexões na correção do `EMAXCONNSESSION` (pode estar enfileirando requisição).
+- [ ] Lentidão ao **abrir as telas** e ao **entrar** (o clique em "Entrar" demora).
+
+**Suspeita principal, a checar antes de qualquer otimização:** o banco está em `aws-1-us-west-2` (Oregon, EUA) e a VPS é da Hostinger. Se a VPS estiver no Brasil ou na Europa, **cada ida ao banco custa 150–250ms só de viagem**. A Visão Geral faz 7 consultas e o layout faz mais algumas — mesmo em paralelo, esse custo fixo aparece em toda tela. O InMenteGestao roda na Vercel, provavelmente perto do banco dele, o que explicaria a diferença sem que o código daqui seja pior.
+
+- [ ] **Medir antes de mexer**: cronometrar um `SELECT 1` a partir da VPS. Acima de 100ms, o problema é distância, e nenhuma otimização de SQL resolve.
+- [ ] Se confirmar: mover o banco para uma região próxima da VPS (ou a VPS para perto do banco). É a correção de verdade.
+- [ ] Checar junto: `DB_POOL_MAX` em 3 por instância (reduzido na correção do `EMAXCONNSESSION`) pode estar enfileirando requisição, e o pooler em *session mode* aceita bem menos conexões que o *transaction mode* (porta 6543).
+- [ ] No login: além das consultas, há o `bcrypt.compare` (custo proposital) e o carregamento da Visão Geral logo depois. Medir os dois separados antes de concluir.
+- [ ] Descartar também: consultas sem índice nas grades e o `staleTimes.dynamic` do router.
 
 **5. Favicon**
 - [ ] A aba do navegador mostra o ícone genérico de globo no sistema e no site; deveria mostrar a logo da loja. Existe `app/icon.webp` — verificar por que não está sendo usado (formato/rota).
