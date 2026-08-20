@@ -68,6 +68,18 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 **3.2. Ajustes vistos em tela (2026-08-20)**
 - [ ] **Canais de venda desligados no plano continuam aparecendo nos filtros** — o seletor de canal (Pedido de Venda, Venda Balcão, relatórios) mostra Mercado Livre e Shopee mesmo com a integração desligada. Filtrar a lista de canais pelos recursos ligados **em todas as telas**, do mesmo jeito que já foi feito nas Configurações.
 - [ ] **Campo "Ler código de barras" cortado** na tela de Venda Balcão: o placeholder não cabe na largura do campo.
+- [ ] **Botão "Importar do Mercado Livre / Shopee"** aparece no Pedido de Venda mesmo com as integrações desligadas — mesmo tratamento dos filtros de canal.
+
+**3.3. Repensar a divisão entre Pedido de Venda e Venda Balcão** *(dúvida levantada pelo cliente em 2026-08-20)*
+
+Como está hoje: **Pedido de Venda Balcão** é a tela de *lançar* a venda presencial (PDV com carrinho), e **Pedido de Venda** é a *listagem de todos os pedidos*, de qualquer canal — site, WhatsApp, Instagram, balcão, Mercado Livre e Shopee (`TAB_PEDIDO.canal`, ver `lib/canal-pedido.ts`). Ou seja, a venda lançada no balcão aparece nas duas telas, o que confunde.
+
+Opções a discutir com o cliente antes de mexer:
+- **(a) Manter uma listagem só, com o filtro de canal em evidência.** É o modelo de ERP mais comum ("todo pedido é pedido, o canal é um atributo") e não duplica tela. Só precisa deixar o filtro de canal óbvio e tirar do filtro os canais que o plano não libera.
+- **(b) Separar em duas listagens**: "Pedidos da loja" (site, WhatsApp, Instagram, balcão) e "Pedidos de marketplace" (Mercado Livre, Shopee, iFood). Faz sentido se a operação de marketplace for diferente — prazo de envio, etiqueta, regras próprias.
+- **(c) Renomear pra desfazer a ambiguidade**: a tela de listagem vira "Pedidos" e a de lançamento continua "Pedido de Venda Balcão".
+
+Recomendação: **(a) + (c)** — uma listagem só, com filtro de canal respeitando o plano, e o nome "Pedidos" na listagem. Separar só quando a operação de marketplace realmente existir aqui (hoje as três integrações estão desligadas).
 
 **4. Carregamento e desempenho**
 - [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
