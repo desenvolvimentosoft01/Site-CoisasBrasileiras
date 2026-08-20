@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { lerTokenSessao } from "@/lib/auth"
 import { getConfiguracoes } from "@/lib/configuracoes"
+import { carregarRecursos, rotuloPlanoParaCliente } from "@/lib/recursos"
 import { CHAVES_COR_TEMA } from "@/lib/cores"
 import { AdminShell } from "@/components/admin/admin-shell"
 
@@ -24,7 +25,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Mesma paleta configurada em Configuracoes > Aparencia / Cores do Sistema
   // (a que o site publico usa) - o admin usa as cores de verdade da loja em
   // vez de cores fixas proprias, pra nao destoar visualmente do site.
-  const configuracoes = await getConfiguracoes([...CHAVES_COR_TEMA, "logo_url", "nome_loja"])
+  const configuracoes = await getConfiguracoes([...CHAVES_COR_TEMA, "logo_url", "nome_loja", "plano"])
+  const recursos = await carregarRecursos()
 
   return (
     <AdminShell
@@ -33,6 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       logoUrl={configuracoes.logo_url || undefined}
       nomeLoja={configuracoes.nome_loja || undefined}
       dominioBranco={process.env.DOMINIO_BRANCO}
+      plano={rotuloPlanoParaCliente(configuracoes.plano || "avancado", recursos)}
     >
       {children}
     </AdminShell>
