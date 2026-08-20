@@ -70,7 +70,7 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - [ ] **Campo "Ler código de barras" cortado** na tela de Venda Balcão: o placeholder não cabe na largura do campo.
 - [ ] **Botão "Importar do Mercado Livre / Shopee"** aparece no Pedido de Venda mesmo com as integrações desligadas — mesmo tratamento dos filtros de canal.
 
-**3.3. Repensar a divisão entre Pedido de Venda e Venda Balcão** *(dúvida levantada pelo cliente em 2026-08-20)*
+**3.3. Separar o que cada tela responde: Pedido de Venda x Venda Balcão** *(APROVADO pelo cliente em 2026-08-20 — executar a recomendação abaixo)*
 
 Como está hoje: **Pedido de Venda Balcão** é a tela de *lançar* a venda presencial (PDV com carrinho), e **Pedido de Venda** é a *listagem de todos os pedidos*, de qualquer canal — site, WhatsApp, Instagram, balcão, Mercado Livre e Shopee (`TAB_PEDIDO.canal`, ver `lib/canal-pedido.ts`). Ou seja, a venda lançada no balcão aparece nas duas telas, o que confunde.
 
@@ -83,7 +83,13 @@ Dois fatos que pesam na decisão (levantados pelo cliente):
 - A tela de Venda Balcão **deixa escolher o canal** da venda (Balcão presencial, WhatsApp, Instagram — `CANAIS_VENDA_BALCAO`), ou seja, ela não é só "presencial": é o lançamento manual de qualquer venda que não veio do site.
 - Ela também tem uma **aba "Vendas" com histórico**, que mostra praticamente o mesmo que a listagem de Pedido de Venda, com filtros parecidos. É essa duplicação que incomoda.
 
-Recomendação revista: **uma listagem só**.
+Decisão: **uma listagem só** — executar assim:
+- [ ] Renomear a tela de listagem para **"Pedidos"** (menu, título, aba e trilha de navegação).
+- [ ] Deixar o filtro de canal em evidência nela, escondendo os canais que o plano não libera.
+- [ ] Reduzir a aba "Vendas" da Venda Balcão às vendas lançadas ali recentemente (dia/sessão), em vez de repetir a listagem geral — e deixar um link para "Pedidos" para quem quiser a busca completa.
+- [ ] Conferir se algum lugar do sistema aponta para a listagem esperando o nome antigo.
+
+Racional:
 - **Venda Balcão** fica sendo apenas o *lançamento* (PDV com carrinho e escolha de canal). A aba "Vendas" dela deixa de ser uma segunda listagem geral e passa a mostrar só **o que foi lançado ali recentemente** (as vendas do dia/da sessão), que é o uso real: conferir o que acabei de vender.
 - **Pedido de Venda** vira **"Pedidos"**: a listagem única de tudo, de qualquer canal, com o filtro de canal em evidência e respeitando o plano.
 - Assim cada tela responde uma pergunta diferente: "quero vender agora" e "quero achar um pedido". Hoje as duas respondem as duas, e por isso parecem iguais.
