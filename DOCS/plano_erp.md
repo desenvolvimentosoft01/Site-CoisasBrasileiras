@@ -103,8 +103,8 @@ Racional:
 **Suspeita principal, a checar antes de qualquer otimização:** o banco está em `aws-1-us-west-2` (Oregon, EUA) e a VPS é da Hostinger. Se a VPS estiver no Brasil ou na Europa, **cada ida ao banco custa 150–250ms só de viagem**. A Visão Geral faz 7 consultas e o layout faz mais algumas — mesmo em paralelo, esse custo fixo aparece em toda tela. O InMenteGestao roda na Vercel, provavelmente perto do banco dele, o que explicaria a diferença sem que o código daqui seja pior.
 
 - [ ] **Medir antes de mexer**: cronometrar um `SELECT 1` a partir da VPS. Acima de 100ms, o problema é distância, e nenhuma otimização de SQL resolve.
-- [ ] Se confirmar: mover o banco para uma região próxima da VPS (ou a VPS para perto do banco). É a correção de verdade.
-- [ ] Checar junto: `DB_POOL_MAX` em 3 por instância (reduzido na correção do `EMAXCONNSESSION`) pode estar enfileirando requisição, e o pooler em *session mode* aceita bem menos conexões que o *transaction mode* (porta 6543).
+- [x] **Decidido em 2026-08-20: mover o banco para São Paulo.** Roteiro passo a passo em `DOCS/migracao-banco-sao-paulo.md` (o Supabase não muda a região de um projeto existente — é criar novo em `sa-east-1` e migrar os dados).
+- [ ] Depois da migração: usar o pooler em **transaction mode** (porta 6543) e subir o `DB_POOL_MAX` de 3 para 5–10 — o teto baixo foi remendo para o `EMAXCONNSESSION` do session mode.
 - [ ] No login: além das consultas, há o `bcrypt.compare` (custo proposital) e o carregamento da Visão Geral logo depois. Medir os dois separados antes de concluir.
 - [ ] Descartar também: consultas sem índice nas grades e o `staleTimes.dynamic` do router.
 
