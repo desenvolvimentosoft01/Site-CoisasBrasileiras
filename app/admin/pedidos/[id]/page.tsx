@@ -12,6 +12,7 @@ import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { SITUACAO_NFE_BLING_LABEL } from "@/lib/bling-situacao-nfe"
 import { rotuloFormaPagamento } from "@/lib/formas-pagamento"
+import { useConfirmar } from "@/components/admin/confirm-provider"
 
 type Pedido = {
   id: string
@@ -102,6 +103,7 @@ export default function DetalhePedidoPage() {
     eventos: { data: string | null; status: string; local: string | null }[]
   } | null>(null)
   const [erroValidacao, setErroValidacao] = useState("")
+  const confirmar = useConfirmar()
   const [emitindoNfe, setEmitindoNfe] = useState(false)
   const [erroNfe, setErroNfe] = useState("")
   const [justificativaCancelamento, setJustificativaCancelamento] = useState("")
@@ -210,6 +212,27 @@ export default function DetalhePedidoPage() {
     carregar()
   }
 
+  // Abre o DANFE gerado pelo proprio sistema (a partir do XML autorizado que
+  // baixamos do Bling), e nao o link do Bling - assim quem imprime nao precisa
+  // estar logado la. Checa a resposta antes de abrir a aba: logo apos emitir a
+  // nota pode ainda nao ter XML, e ai a rota devolve JSON de erro em vez do
+  // PDF, que numa aba nova viraria um texto cru na cara do operador.
+  async function imprimirDanfe() {
+    if (!pedido) return
+    setErroNfe("")
+    const resposta = await fetch(`/api/admin/pedidos/${pedido.id}/danfe`)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json().catch(() => null)
+      setErroNfe(dados?.erro || "Não foi possível gerar o DANFE")
+      return
+    }
+
+    const url = URL.createObjectURL(await resposta.blob())
+    window.open(url, "_blank")
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  }
+
   async function emitirNfe() {
     if (!pedido) return
     setErroNfe("")
@@ -223,6 +246,16 @@ export default function DetalhePedidoPage() {
       return
     }
     carregar()
+
+    // Emitiu, o proximo passo quase sempre e imprimir pra ir junto com a
+    // mercadoria - entao pergunta na hora, em vez de deixar o operador
+    // procurar o botao.
+    const querImprimir = await confirmar({
+      titulo: "NF-e emitida",
+      descricao: "Deseja imprimir o DANFE agora?",
+      textoConfirmar: "Imprimir DANFE",
+    })
+    if (querImprimir) await imprimirDanfe()
   }
 
   async function marcarWhatsappEnviado() {
@@ -403,25 +436,22 @@ export default function DetalhePedidoPage() {
                   )}
                 </p>
               )}
-              <div className="flex gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button size="sm" variant="outline" onClick={imprimirDanfe}>
+                  <span className="mr-1.5 text-sm leading-none">🖨️</span>
+                  Imprimir DANFE
+                </Button>
+                {/* Os links do Bling continuam como alternativa: eles abrem o
+                    documento no servidor deles, util se um dia o nosso DANFE
+                    divergir e o operador precisar conferir com o original. */}
                 {pedido.bling_link_danfe && (
                   <a
                     href={pedido.bling_link_danfe}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline"
+                    className="text-xs text-slate-400 hover:underline"
                   >
-                    Ver DANFE
-                  </a>
-                )}
-                {pedido.bling_link_pdf && (
-                  <a
-                    href={pedido.bling_link_pdf}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    Ver PDF
+                    Ver no Bling
                   </a>
                 )}
               </div>
