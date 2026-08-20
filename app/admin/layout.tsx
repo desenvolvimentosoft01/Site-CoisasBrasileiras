@@ -2,7 +2,8 @@ import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { lerTokenSessao } from "@/lib/auth"
 import { getConfiguracoes } from "@/lib/configuracoes"
-import { carregarRecursos, rotuloPlanoParaCliente } from "@/lib/recursos"
+import { carregarRecursos } from "@/lib/recursos-servidor"
+import { rotuloPlanoParaCliente } from "@/lib/recursos"
 import { CHAVES_COR_TEMA } from "@/lib/cores"
 import { AdminShell } from "@/components/admin/admin-shell"
 
@@ -32,7 +33,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <AdminShell
       sessao={sessao}
       cores={configuracoes}
-      logoUrl={configuracoes.logo_url || undefined}
       nomeLoja={configuracoes.nome_loja || undefined}
       dominioBranco={process.env.DOMINIO_BRANCO}
       plano={rotuloPlanoParaCliente(configuracoes.plano || "avancado", recursos)}

@@ -143,3 +143,52 @@
     background: white !important;
   }
 }
+/* Movimento lento das formas de fundo da tela de entrada. Ciclos longos (20s
+   a 32s) e deslocamento pequeno de proposito: a ideia e a tela "respirar", nao
+   chamar atencao - quem esta ali quer digitar a senha.
+
+   Tudo para quando o sistema operacional pede menos movimento (a preferencia
+   de acessibilidade prefers-reduced-motion), inclusive a entrada dos itens. */
+@keyframes flutuar {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(24px, -18px) scale(1.06); }
+}
+
+@keyframes onda {
+  0%, 100% { transform: rotate(-8deg) translateX(0); }
+  50%      { transform: rotate(-6deg) translateX(-28px); }
+}
+
+@keyframes entrada-item {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animar-flutuar {
+  animation: flutuar 24s ease-in-out infinite;
+}
+
+.animar-flutuar-inverso {
+  animation: flutuar 32s ease-in-out infinite reverse;
+}
+
+.animar-onda {
+  animation: onda 28s ease-in-out infinite;
+}
+
+.animar-entrada-item {
+  /* "both" mantem o item invisivel ate a vez dele e o deixa parado no final -
+     sem isso ele apareceria antes da hora e sumiria depois. */
+  opacity: 0;
+  animation: entrada-item 700ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animar-flutuar,
+  .animar-flutuar-inverso,
+  .animar-onda,
+  .animar-entrada-item {
+    animation: none;
+    opacity: 1;
+  }
+}

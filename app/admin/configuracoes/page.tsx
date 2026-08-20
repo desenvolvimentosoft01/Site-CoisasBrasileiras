@@ -1,5 +1,6 @@
 import { cookies } from "next/headers"
-import { carregarRecursos } from "@/lib/recursos"
+import { carregarRecursos } from "@/lib/recursos-servidor"
+import { rotuloPlanoParaCliente } from "@/lib/recursos"
 import { lerTokenSessao } from "@/lib/auth"
 import { getConfiguracoes, getConfiguracoesMarca } from "@/lib/configuracoes"
 import { statusConexaoBling } from "@/lib/bling"
@@ -88,6 +89,7 @@ export default async function ConfiguracoesPage({
       blingStatus={blingStatus}
       abaInicial={aba}
       recursos={recursos}
+      rotuloPlano={rotuloPlanoParaCliente(configuracoes.plano || "avancado", recursos)}
     />
   )
 }

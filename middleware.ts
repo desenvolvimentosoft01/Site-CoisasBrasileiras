@@ -55,7 +55,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    if (pathname.startsWith("/admin/cores") && sessao.email !== EMAIL_DESENVOLVEDOR) {
+    // Plano e Cores sao telas de quem mantem o sistema, nao do cliente: quem
+    // define o que a instalacao enxerga nao pode ser quem usa a instalacao.
+    if (
+      (pathname.startsWith("/admin/cores") || pathname.startsWith("/admin/plano")) &&
+      sessao.email !== EMAIL_DESENVOLVEDOR
+    ) {
       const url = request.nextUrl.clone()
       url.pathname = "/admin/dashboard"
       return NextResponse.redirect(url)
