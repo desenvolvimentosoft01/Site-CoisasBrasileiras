@@ -148,6 +148,9 @@ export type DadosDanfe = {
   naturezaOperacao: string
   // tpNF: 0 = entrada, 1 = saida. Vai impresso no quadrinho do cabecalho.
   tipoOperacao: "0" | "1"
+  // tpAmb: 1 = producao, 2 = homologacao. Nota de homologacao e autorizada e
+  // tem protocolo, mas NAO vale como documento - o DANFE precisa avisar.
+  ambiente: "1" | "2"
   dataEmissao: string | null
   dataSaidaEntrada: string | null
   protocolo: string | null
@@ -321,6 +324,7 @@ export function parseNfeParaDanfe(xmlTexto: string): DadosDanfe {
     serie: ide.serie ? String(ide.serie) : "",
     naturezaOperacao: String(ide.natOp ?? ""),
     tipoOperacao: String(ide.tpNF ?? "1") === "0" ? "0" : "1",
+    ambiente: String(ide.tpAmb ?? "1") === "2" ? "2" : "1",
     dataEmissao: ide.dhEmi ? String(ide.dhEmi).slice(0, 10) : null,
     dataSaidaEntrada: ide.dhSaiEnt ? String(ide.dhSaiEnt).slice(0, 10) : null,
     // Protocolo so existe em XML processado (nfeProc) - o XML "cru", antes da
