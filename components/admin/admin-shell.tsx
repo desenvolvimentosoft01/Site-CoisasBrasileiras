@@ -21,15 +21,14 @@ import { TabBarAdmin } from "@/components/admin/tab-bar"
 import { ConfirmProvider } from "@/components/admin/confirm-provider"
 import { Icone, type NomeIcone } from "@/components/admin/icone"
 import type { SessaoAdmin } from "@/lib/auth"
-import { EMAIL_DESENVOLVEDOR, NOME_SISTEMA } from "@/lib/constantes"
+import { EMAIL_DESENVOLVEDOR, NOME_SISTEMA, FABRICANTE_SISTEMA } from "@/lib/constantes"
 import { rotaAtiva } from "@/lib/rota-ativa"
 import { styleCoresTema } from "@/lib/cores"
 import { ProvedorCores, useCoresTema } from "@/lib/contexto-cores"
 
-// Cada modulo tem um emoji proprio, no mesmo visual "realista" da barra de
-// ferramentas e dos cards da Visao Geral. Com o menu recolhido o emoji e a
-// unica coisa visivel do item, entao ele vai num quadrado de largura fixa
-// pra nao dancar de um item pro outro.
+// Cada modulo tem o seu icone proprio (public/icones - ver icone.tsx). Com o
+// menu recolhido o icone e a unica coisa visivel do item, entao ele vai num
+// quadrado de largura fixa pra nao dancar de um item pro outro.
 type ItemLink = {
   tipo: "link"
   href: string
@@ -611,7 +610,16 @@ function AdminShellInterno({
 
         <TabBarAdmin itensMenu={planoDeMenu} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
+          {children}
+          {/* So na impressao: qualquer papel que sai do sistema (relatorio,
+              auditoria, lista) diz de onde veio e quando foi impresso - a
+              mesma assinatura que vai no rodape do DANFE e do orcamento. */}
+          <p className="mt-6 hidden text-right text-[9px] text-slate-500 print:block">
+            {NOME_SISTEMA} — {FABRICANTE_SISTEMA} · impresso em{" "}
+            {new Date().toLocaleString("pt-BR")}
+          </p>
+        </main>
       </div>
     </div>
     </ConfirmProvider>
