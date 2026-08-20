@@ -12,6 +12,7 @@ import { formatarMoeda, mascaraCpfCnpj } from "@/lib/mascaras"
 import { toast } from "sonner"
 import type { NotaFiscalListada } from "@/lib/notas-fiscais"
 import { Icone } from "@/components/admin/icone"
+import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
 // Central de Notas Fiscais: entrada (compras) e saida (vendas) na mesma
 // grade, cada linha com DANFE e XML. O ponto da tela e o cliente nao precisar
@@ -460,6 +461,7 @@ export function NotasFiscaisConteudo({
                       ))}
                     </tbody>
                   </table>
+                  <BarraStatusGrade exibidos={notasFiltradas.length} total={notas.length} />
                 </div>
               )}
             </CardContent>

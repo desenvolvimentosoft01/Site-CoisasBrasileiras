@@ -22,6 +22,8 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
+import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
 export type Usuario = {
   id: string
@@ -289,6 +291,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                       ))}
                     </tbody>
                   </table>
+                  <BarraStatusGrade exibidos={usuarios.length} total={usuarios.length} />
                 </div>
               )}
             </CardContent>
@@ -373,6 +376,8 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
       </Tabs>
 
       <ModalDetalhe
+        navegacao={montarNavegacaoDetalhe(usuarios, detalhe, setDetalhe, (a, b) => a.id === b.id)}
+        aoEditar={detalhe ? () => { const alvo = detalhe; setDetalhe(null); abrirEdicao(alvo) } : undefined}
         aberto={!!detalhe}
         onOpenChange={(aberto) => !aberto && setDetalhe(null)}
         titulo={detalhe?.nome ?? ""}
