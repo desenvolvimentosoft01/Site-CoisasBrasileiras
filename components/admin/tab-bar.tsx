@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAbasAdmin } from "@/lib/abas-admin-store"
 import { rotaAtiva } from "@/lib/rota-ativa"
+import { useIniciarCarregamento } from "@/components/admin/barra-carregamento"
 import { Icone, type NomeIcone } from "@/components/admin/icone"
 
 type ItemMenu = { href: string; label: string; icone: NomeIcone }
@@ -13,6 +14,7 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
   const router = useRouter()
   const pathname = usePathname()
   const { abas, abrirAba, fecharAba } = useAbasAdmin()
+  const iniciarCarregamento = useIniciarCarregamento()
   const scrollRef = useRef<HTMLDivElement>(null)
   const conteudoRef = useRef<HTMLDivElement>(null)
   const [podeRolarEsquerda, setPodeRolarEsquerda] = useState(false)
@@ -100,8 +102,17 @@ export function TabBarAdmin({ itensMenu }: { itensMenu: ItemMenu[] }) {
             key={aba.path}
             role="button"
             tabIndex={0}
-            onClick={() => router.push(aba.path)}
-            onKeyDown={(e) => e.key === "Enter" && router.push(aba.path)}
+            // Clicar numa aba tambem e navegacao. So marca carregamento se a
+            // aba nao for a atual - clicar na aba aberta nao carrega nada.
+            onClick={() => {
+              if (!ativa) iniciarCarregamento()
+              router.push(aba.path)
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return
+              if (!ativa) iniciarCarregamento()
+              router.push(aba.path)
+            }}
             className={`group flex shrink-0 cursor-pointer select-none items-center gap-1.5 rounded-t-md border-x border-t px-3 py-1.5 text-[12px] font-medium transition-all ${
               ativa
                 ? "-mb-px border-slate-300 bg-slate-100 text-slate-800"

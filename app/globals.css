@@ -214,3 +214,24 @@
     opacity: 1;
   }
 }
+
+/* Barra de carregamento da troca de tela no admin. A faixa atravessa a tela
+   em vez de "encher" ate 100%: o tempo real da navegacao e desconhecido, e uma
+   barra que para nos 90% esperando e pior que nenhuma - parece travada. */
+@keyframes progresso-atravessa {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.animar-progresso {
+  animation: progresso-atravessa 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animar-progresso {
+    /* Sem movimento, mas ainda visivel: some a animacao, fica a faixa. */
+    animation: none;
+    width: 100%;
+    opacity: 0.6;
+  }
+}

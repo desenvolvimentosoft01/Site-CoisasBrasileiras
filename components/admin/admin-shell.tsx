@@ -19,6 +19,7 @@ import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TabBarAdmin } from "@/components/admin/tab-bar"
 import { ConfirmProvider } from "@/components/admin/confirm-provider"
+import { ProvedorCarregamento, useIniciarCarregamento } from "@/components/admin/barra-carregamento"
 import { Icone, type NomeIcone } from "@/components/admin/icone"
 import type { SessaoAdmin } from "@/lib/auth"
 import { EMAIL_DESENVOLVEDOR, NOME_SISTEMA, FABRICANTE_SISTEMA } from "@/lib/constantes"
@@ -169,14 +170,19 @@ export function AdminShell({
 }) {
   return (
     <ProvedorCores coresIniciais={cores}>
-      <AdminShellInterno
-        sessao={sessao}
-        nomeLoja={nomeLoja}
-        dominioBranco={dominioBranco}
-        plano={plano}
-      >
-        {children}
-      </AdminShellInterno>
+      {/* Fora do AdminShellInterno de proposito: e ele que chama
+          useIniciarCarregamento(), e um componente nao enxerga o provedor que
+          ele mesmo renderiza. */}
+      <ProvedorCarregamento>
+        <AdminShellInterno
+          sessao={sessao}
+          nomeLoja={nomeLoja}
+          dominioBranco={dominioBranco}
+          plano={plano}
+        >
+          {children}
+        </AdminShellInterno>
+      </ProvedorCarregamento>
     </ProvedorCores>
   )
 }
@@ -196,6 +202,7 @@ function AdminShellInterno({
   children: React.ReactNode
 }) {
   const { cores } = useCoresTema()
+  const iniciarCarregamento = useIniciarCarregamento()
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarAberta, setSidebarAberta] = useState(false)
@@ -417,7 +424,7 @@ function AdminShellInterno({
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setSidebarAberta(false)}
+                  onClick={() => { setSidebarAberta(false); iniciarCarregamento() }}
                   // Com o menu recolhido o rotulo some, entao o title vira a
                   // unica forma de saber o que e o icone.
                   title={menuExpandido ? undefined : item.label}
@@ -493,7 +500,7 @@ function AdminShellInterno({
                         <Link
                           key={filho.href}
                           href={filho.href}
-                          onClick={() => setSidebarAberta(false)}
+                          onClick={() => { setSidebarAberta(false); iniciarCarregamento() }}
                           className={`block rounded-md px-2 py-1.5 text-left text-[12px] font-medium transition-all ${
                             ativo
                               ? "bg-slate-800 text-[var(--primary)]"
