@@ -16,6 +16,8 @@ import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Cliente = {
   id: string
+  // Numero curto do cadastro, gerado pelo banco (migration 058).
+  codigo: number
   nome: string
   email: string | null
   telefone: string | null
@@ -364,6 +366,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                   <table className="w-full min-w-[780px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="p-4 font-medium">Cód.</th>
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">Origem</th>
                         <th className="p-4 font-medium">Email</th>
@@ -385,6 +388,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                             linhaSelecionada === cliente.id ? "bg-amber-50" : "hover:bg-slate-50"
                           }`}
                         >
+                          <td className="p-4 font-mono text-slate-500">{cliente.codigo}</td>
                           <td className="p-4">{cliente.nome}</td>
                           <td className="p-4">
                             <span

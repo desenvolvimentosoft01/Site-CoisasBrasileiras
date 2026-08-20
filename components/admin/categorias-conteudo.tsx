@@ -16,6 +16,8 @@ import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Categoria = {
   id: string
+  // Numero curto do cadastro, gerado pelo banco (migration 058).
+  codigo: number
   nome: string
   slug: string
   imagem_url: string | null
@@ -233,6 +235,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                   <table className="w-full min-w-[480px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="p-4 font-medium">Cód.</th>
                         <th className="p-4 font-medium">Imagem</th>
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">Slug</th>
@@ -252,6 +255,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                             linhaSelecionada === categoria.id ? "bg-amber-50" : "hover:bg-slate-50"
                           }`}
                         >
+                          <td className="p-4 font-mono text-slate-500">{categoria.codigo}</td>
                           <td className="p-4">
                             {categoria.imagem_url ? (
                               <div className="relative h-10 w-10 overflow-hidden rounded-md">

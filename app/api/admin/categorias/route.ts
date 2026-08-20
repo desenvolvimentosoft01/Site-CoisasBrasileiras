@@ -18,7 +18,7 @@ export async function GET() {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const categorias = await query(
-    "SELECT id, nome, slug, imagem_url, ativa, categoria_pai_id, marca, criado_em FROM TAB_CATEGORIA ORDER BY nome"
+    "SELECT id, codigo, nome, slug, imagem_url, ativa, categoria_pai_id, marca, criado_em FROM TAB_CATEGORIA ORDER BY nome"
   )
   return NextResponse.json(categorias)
 }

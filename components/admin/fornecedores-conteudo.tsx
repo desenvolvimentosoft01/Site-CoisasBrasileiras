@@ -17,6 +17,9 @@ import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Fornecedor = {
   id: string
+  // Numero curto do cadastro, gerado pelo banco (migration 058) - e por ele
+  // que o cliente procura o fornecedor no dia a dia.
+  codigo: number
   razao_social: string
   nome_fantasia: string | null
   cnpj_cpf: string | null
@@ -240,6 +243,8 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                   <table className="w-full min-w-[560px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="p-4 font-medium">Cód.</th>
+                        <th className="p-4 font-medium">Cód.</th>
                         <th className="p-4 font-medium">Razão social</th>
                         <th className="p-4 font-medium">CNPJ/CPF</th>
                         <th className="p-4 font-medium">Telefone</th>
@@ -259,6 +264,7 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                             linhaSelecionada === fornecedor.id ? "bg-amber-50" : "hover:bg-slate-50"
                           }`}
                         >
+                          <td className="p-4 font-mono text-slate-500">{fornecedor.codigo}</td>
                           <td className="p-4">
                             <span className="font-medium">{fornecedor.razao_social}</span>
                             {fornecedor.nome_fantasia && (
@@ -346,6 +352,19 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
 
           <Card>
             <CardContent className="grid items-start gap-4 pt-6 sm:grid-cols-2">
+              {/* readOnly e nao disabled: o codigo e gerado pelo sistema e nao
+                  se edita, mas precisa dar pra selecionar e copiar - campo
+                  desabilitado nem sempre deixa marcar o texto. No cadastro
+                  novo ainda nao existe numero: quem gera e o banco, ao salvar. */}
+              <div className="space-y-2">
+                <Label>Código</Label>
+                <Input
+                  value={editando ? String(editando.codigo) : "Gerado ao salvar"}
+                  readOnly
+                  className="bg-slate-50 text-slate-500"
+                  title="Código do cadastro, gerado pelo sistema"
+                />
+              </div>
               <div className="space-y-2">
                 <Label>Razão social</Label>
                 <Input value={form.razaoSocial} onChange={(e) => campo("razaoSocial", e.target.value)} autoFocus />

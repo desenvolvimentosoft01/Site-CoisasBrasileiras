@@ -20,7 +20,7 @@ export async function GET() {
 
   const produtos = await query(`
     SELECT
-      p.id, p.nome, p.slug, p.sku, p.ncm, p.codigo_barras, p.codigo_barras_interno,
+      p.id, p.codigo, p.nome, p.slug, p.sku, p.ncm, p.codigo_barras, p.codigo_barras_interno,
       p.preco, p.preco_promocional, p.estoque, p.estoque_minimo,
       p.ativo, p.marca, p.criado_em,
       COALESCE(
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     `INSERT INTO TAB_PRODUTO
        (nome, slug, descricao, preco, preco_promocional, preco_clube, preco_clube_tipo, estoque, estoque_minimo, sku, peso_kg, altura_cm, largura_cm, comprimento_cm, ncm, codigo_barras, marca, codigo_barras_interno)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-     RETURNING id, nome, slug, preco, preco_promocional, estoque, ativo, marca, criado_em`,
+     RETURNING id, codigo, nome, slug, preco, preco_promocional, estoque, ativo, marca, criado_em`,
     [
       nome.trim(),
       slug,

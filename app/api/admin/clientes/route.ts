@@ -10,7 +10,7 @@ export async function GET() {
   // faz login no site. Clientes criados pelo admin (contatos de balcao) nao
   // tem senha, entao aparecem como cadastrados no balcao.
   const clientes = await query(
-    `SELECT id, nome, email, telefone, cpf_cnpj, ativo, criado_em,
+    `SELECT id, codigo, nome, email, telefone, cpf_cnpj, ativo, criado_em,
        (senha_hash IS NOT NULL) AS veio_do_site
      FROM TAB_CLIENTE ORDER BY nome`
   )
