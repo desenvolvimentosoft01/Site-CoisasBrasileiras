@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import type { NotaFiscalListada } from "@/lib/notas-fiscais"
 import { Icone } from "@/components/admin/icone"
 import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
+import { LinhaFiltros, CampoFiltro } from "@/components/admin/linha-filtros"
 
 // Central de Notas Fiscais: entrada (compras) e saida (vendas) na mesma
 // grade, cada linha com DANFE e XML. O ponto da tela e o cliente nao precisar
@@ -268,44 +269,39 @@ export function NotasFiscaisConteudo({
               ]}
             />
 
-            {/* Linha propria pros filtros: dentro da barra de ferramentas o
-                campo de busca ficava espremido e cortava o texto. */}
-            <div className="flex flex-wrap items-end gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2.5">
-              <div className="min-w-[240px] flex-1">
-                <label className="text-[11px] font-medium text-slate-500">Buscar</label>
+            <LinhaFiltros aoLimpar={limparFiltros} temFiltro={temFiltro} encontrados={notasFiltradas.length}>
+              <CampoFiltro rotulo="Buscar" largura="min-w-[240px] flex-1">
                 <Input
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   placeholder="Número, fornecedor/cliente ou chave de acesso"
                   className="h-9"
                 />
-              </div>
+              </CampoFiltro>
 
-              <div>
-                <label className="text-[11px] font-medium text-slate-500">Emissão de</label>
+              <CampoFiltro rotulo="Emissão de">
                 <Input
                   type="date"
                   value={dataInicial}
                   onChange={(e) => setDataInicial(e.target.value)}
                   className="h-9 w-[150px]"
                 />
-              </div>
+              </CampoFiltro>
 
-              <div>
-                <label className="text-[11px] font-medium text-slate-500">até</label>
+              <CampoFiltro rotulo="até">
                 <Input
                   type="date"
                   value={dataFinal}
                   onChange={(e) => setDataFinal(e.target.value)}
                   className="h-9 w-[150px]"
                 />
-              </div>
+              </CampoFiltro>
 
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => aplicarMes(0)}>
+                <Button variant="outline" size="sm" className="h-9" onClick={() => aplicarMes(0)}>
                   Este mês
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => aplicarMes(1)}>
+                <Button variant="outline" size="sm" className="h-9" onClick={() => aplicarMes(1)}>
                   Mês passado
                 </Button>
               </div>
@@ -314,8 +310,7 @@ export function NotasFiscaisConteudo({
                   aparece quando a aba correspondente pode mostrar aquele tipo
                   de nota, pra nao oferecer filtro que nunca vai casar. */}
               {aba !== "saida" && (
-                <div>
-                  <label className="text-[11px] font-medium text-slate-500">Fornecedor</label>
+                <CampoFiltro rotulo="Fornecedor">
                   <select
                     value={fornecedorId}
                     onChange={(e) => setFornecedorId(e.target.value)}
@@ -329,12 +324,11 @@ export function NotasFiscaisConteudo({
                       </option>
                     ))}
                   </select>
-                </div>
+                </CampoFiltro>
               )}
 
               {aba !== "entrada" && (
-                <div>
-                  <label className="text-[11px] font-medium text-slate-500">Loja</label>
+                <CampoFiltro rotulo="Loja">
                   <select
                     value={marca}
                     onChange={(e) => setMarca(e.target.value)}
@@ -344,10 +338,10 @@ export function NotasFiscaisConteudo({
                     <option value="colorido">Coisas Brasileiras</option>
                     <option value="branco">Porcelanas Brancas</option>
                   </select>
-                </div>
+                </CampoFiltro>
               )}
 
-              <label className="flex items-center gap-1.5 text-xs text-slate-600">
+              <label className="flex h-9 items-center gap-1.5 text-xs text-slate-600">
                 <input
                   type="checkbox"
                   checked={semXml}
@@ -356,18 +350,7 @@ export function NotasFiscaisConteudo({
                 />
                 Só sem XML guardado
               </label>
-
-              {temFiltro && (
-                <Button variant="ghost" size="sm" onClick={limparFiltros} className="text-slate-500">
-                  Limpar filtros
-                </Button>
-              )}
-
-              <span className="ml-auto text-xs text-slate-500">
-                {notasFiltradas.length}{" "}
-                {notasFiltradas.length === 1 ? "nota encontrada" : "notas encontradas"}
-              </span>
-            </div>
+            </LinhaFiltros>
             <CardContent className="p-0">
               {notasFiltradas.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">
