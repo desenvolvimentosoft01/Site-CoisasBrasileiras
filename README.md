@@ -50,7 +50,7 @@ npm install
 
 ### 3. Configurar o banco de dados
 
-Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `058_codigo_sequencial_cadastros.sql`), com `psql` ou outro cliente de sua preferência:
+Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `059_senha_provisoria.sql`), com `psql` ou outro cliente de sua preferência:
 
 ```bash
 for f in migrations/0*.sql; do psql -U postgres -d coisas_brasileiras -f "$f"; done
@@ -115,6 +115,7 @@ app/api/          rotas de API (públicas e do admin)
 components/loja/  componentes do site público
 components/admin/ componentes do painel
 lib/              banco de dados, autenticação, e-mail, máscaras, integrações
+public/icones/    ícones do sistema em SVG, um arquivo por função (ver components/admin/icone.tsx)
 migrations/       scripts SQL numerados, aplicados manualmente
 scripts/          utilitários de linha de comando (criar admin, backup, disparo dos crons)
 DOCS/             documentação técnica, manual do sistema e guias de integração

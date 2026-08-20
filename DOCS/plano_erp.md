@@ -4,6 +4,40 @@ Documento de acompanhamento da expansão do sistema em direção a um ERP comple
 
 Para decisões de arquitetura e o "porquê" por trás de cada escolha, ver a memória `projeto_coisas_brasileiras_erp.md`. Este documento é o "o quê" e "como está", não o "porquê".
 
+## 2026-08-19 — Módulo fiscal: guarda do XML de saída, central de Notas Fiscais e DANFE completo
+
+Objetivo do cliente, dito com essas palavras: *"o cliente precisa imprimir e salvar DANFE e XML tanto de entradas ou saídas, qualquer uma, sem precisar abrir o Bling"*.
+
+- [x] **Migration 057** — `TAB_PEDIDO` ganha `xml_nfe`, `nfe_numero`, `nfe_serie`, `nfe_chave_acesso`, `nfe_data_emissao`. Mesma decisão da 054 (entrada): XML como TEXT no banco, pra entrar no backup — NF-e tem guarda obrigatória de 5 anos e o PDF do DANFE não substitui o arquivo.
+- [x] `obterXmlNotaFiscalBling()` em `lib/bling.ts` — o campo `xml` do `GET /notas-fiscais/{id}` vem ora como conteúdo, ora como URL, dependendo da conta; trata os dois.
+- [x] `lib/notas-fiscais.ts` — `listarNotasFiscais()` une entrada (`TAB_COMPRA`) e saída (`TAB_PEDIDO`) na leitura, e `garantirXmlNotaSaida()` baixa o XML do Bling na primeira vez e guarda. XML de nota autorizada é imutável, então as chamadas seguintes saem do banco.
+- [x] Tela `/admin/notas-fiscais` — abas Todas/Entradas/Saídas, busca por número/nome/chave, filtro por período de emissão com atalhos de mês, filtro "só sem XML guardado", DANFE e XML por linha.
+- [x] Rotas: `pedidos/[id]/danfe`, `pedidos/[id]/xml`, `compras/[id]/xml` (avulso; o lote pro contador continua em `compras/exportar-xml`) e `notas-fiscais` (listagem).
+- [x] Botão **Imprimir DANFE** no detalhe do pedido, e pergunta "Deseja imprimir o DANFE agora?" logo após emitir. O DANFE sai do nosso gerador, não do link do Bling (que exige estar logado lá).
+- [x] **DANFE**: quadro FATURA/DUPLICATAS (grupo `cobr` do XML, escondido em nota à vista) e **V. APROX. TRIBUTOS** (`vTotTrib`, exigido pela Lei 12.741/2012). Comparação feita contra uma DANFE real que o cliente emite hoje no sistema antigo.
+- [x] DANFE de **homologação** (`tpAmb = 2`) sai carimbado "SEM VALOR FISCAL": a nota é autorizada e tem protocolo, então sem o carimbo o papel sairia idêntico ao de uma nota real.
+- [x] Assinatura do software no rodapé do DANFE (`NOME_SISTEMA` / `FABRICANTE_SISTEMA` em `lib/constantes.ts`).
+
+**Decisões de escopo registradas:**
+- O certificado digital continua **só no Bling** — é ele que assina e transmite pra Sefaz. Nosso sistema nunca fala com a Sefaz; na entrada, só lê XML já autorizado (não precisa de certificado nenhum).
+- Consultar a Sefaz direto (webservice `NFeDistribuicaoDFe`, pra puxar nota de entrada sem depender do Bling) foi avaliado e **adiado**: exige certificado A1 no nosso servidor, SOAP com assinatura XML e o fluxo de manifestação do destinatário. Mesma infraestrutura que o CT-e vai precisar — vale fazer os dois juntos.
+- O lançamento da entrada guarda **quantidade e custo unitário**, sem ICMS/ST/IPI. Em nota com substituição tributária o custo real é maior que o registrado, e isso aparece no Lucro/DRE como margem melhor que a verdadeira. **Pendente de decisão do cliente**: só exibir os impostos na conferência, ou compor o custo real (custo + ST + IPI + frete rateado).
+
+## 2026-08-19 — Coerência de módulos e o que falta pra ser ERP
+
+Reorganização do menu (feita):
+- [x] Grupo **Vendas** (Pedido de Venda, Orçamentos, Clientes) espelhando **Compras** (Cotação, Pedido de Compra, Entrada de NF, Fornecedores) — antes Clientes ficava solto enquanto Fornecedores estava dentro de Compras.
+- [x] **Venda Balcão** continua fora do grupo, de propósito: é a tela mais aberta no dia a dia e cada clique a mais custa tempo de atendimento.
+- [x] **Auditoria** saiu de Relatórios e foi pra Configurações — não é relatório de negócio, é administração do sistema.
+- [x] **Notas Fiscais** e **Financeiro** ficam soltos, entre Compras e Marketing.
+
+Ausências mapeadas, em ordem de importância (nenhuma feita ainda):
+- [ ] **Movimentação de estoque (kardex)** — hoje o estoque é um número que sobe e desce, sem histórico de por que mudou. Sem isso, divergência de inventário não tem como ser investigada. É a lacuna mais séria.
+- [ ] **Ajuste de estoque com motivo** (quebra, perda, contagem) — a tela de Estoque deixa editar a quantidade direto, sem registrar o porquê.
+- [ ] **Fluxo de caixa** — existe contas a pagar/receber, falta a projeção de saldo por período.
+- [ ] **Transportadoras como cadastro** — hoje é texto livre no pedido.
+- [ ] **Permissão por tela** — só existe admin e operador; o operador do balcão enxerga custo de compra.
+
 ## Pendências pra retomar (sessão de 2026-07-28 parou aqui)
 
 - [x] **Cadastro de Produtos**: formulário compacto + rótulos encurtados. Validado visualmente com o cliente em 2026-07-28.
