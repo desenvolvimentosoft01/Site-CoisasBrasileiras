@@ -40,6 +40,51 @@ export type Fornecedor = {
   nome_fantasia: string | null
   cnpj_cpf: string | null
 }
+// Por onde o item da nota foi reconhecido no catalogo. "cadastrado_agora" e o
+// produto criado na hora a partir do proprio item.
+type OrigemMapeamento = "codigo_barras" | "sku" | "cadastrado_agora" | "nao_encontrado"
+
+// Explica, item a item, por que ele veio vinculado ou por que nao veio. Sem
+// isso o operador so ve "nao achou" e precisa conferir produto por produto pra
+// descobrir se o problema e o codigo de barras, o codigo do fornecedor, ou se
+// o produto realmente nao existe no catalogo.
+function StatusVinculoItem({ item, origem }: { item: ItemNfeXml; origem?: OrigemMapeamento }) {
+  if (origem === "codigo_barras") {
+    return (
+      <p className="mt-1 text-xs text-emerald-600">
+        Vinculado pelo código de barras ({item.codigoBarras})
+      </p>
+    )
+  }
+
+  if (origem === "sku") {
+    return (
+      <p className="mt-1 text-xs text-emerald-600">
+        Vinculado pelo código do fornecedor ({item.codigoFornecedor})
+      </p>
+    )
+  }
+
+  if (origem === "cadastrado_agora") {
+    return <p className="mt-1 text-xs text-emerald-600">Produto cadastrado agora a partir desta nota</p>
+  }
+
+  const motivos = [
+    item.codigoBarras
+      ? `o código de barras ${item.codigoBarras} não está em nenhum produto`
+      : "a nota não traz código de barras para este item",
+    item.codigoFornecedor
+      ? `nenhum produto tem o SKU ${item.codigoFornecedor}`
+      : "a nota não traz código do fornecedor",
+  ]
+
+  return (
+    <p className="mt-1 text-xs text-amber-600">
+      Não encontrado no catálogo — {motivos.join(" e ")}.
+    </p>
+  )
+}
+
 export type ProdutoSelecionavel = {
   id: string
   nome: string
@@ -162,6 +207,9 @@ export function ComprasConteudo({
   const confirmar = useConfirmar()
   const [compras, setCompras] = useState<Compra[]>(comprasIniciais)
   const [fornecedoresDisponiveis, setFornecedoresDisponiveis] = useState<Fornecedor[]>(fornecedores)
+  // Catalogo em estado, e nao so a prop: o cadastro de produto a partir de um
+  // item do XML precisa aparecer na hora nos seletores, sem recarregar a tela.
+  const [produtosDisponiveis, setProdutosDisponiveis] = useState<ProdutoSelecionavel[]>(produtos)
   const [aba, setAba] = useState(pedidoCompraParaLancar ? "formulario" : "lista")
   const [pedidoCompraVinculado, setPedidoCompraVinculado] = useState<{ id: string; numero: number } | null>(null)
   const [pedidosCompraSugeridos, setPedidosCompraSugeridos] = useState<{ id: string; numero: number }[]>([])
@@ -171,9 +219,17 @@ export function ComprasConteudo({
   const [chaveXmlInvalida, setChaveXmlInvalida] = useState(false)
   const [itensXmlPendentes, setItensXmlPendentes] = useState<ItemNfeXml[]>([])
   const [mapeamentoXml, setMapeamentoXml] = useState<Record<number, string>>({})
+  // Como cada item da nota foi (ou nao foi) reconhecido no catalogo. Fica
+  // visivel no item pra o operador entender por que aquele nao veio vinculado
+  // - "nao achou" sem motivo obriga a conferir produto por produto na mao.
+  const [origemMapeamento, setOrigemMapeamento] = useState<Record<number, OrigemMapeamento>>({})
+  const [cadastrandoProdutoIndice, setCadastrandoProdutoIndice] = useState<number | null>(null)
   const inputXmlRef = useRef<HTMLInputElement>(null)
 
   const [fornecedorId, setFornecedorId] = useState("")
+  // Nome do fornecedor que a importacao acabou de criar - usado so pro aviso
+  // de "confira o cadastro"; limpo quando o fornecedor da nota ja existia.
+  const [fornecedorCriadoPeloXml, setFornecedorCriadoPeloXml] = useState<string | null>(null)
   const [numeroNota, setNumeroNota] = useState("")
   const [chaveAcesso, setChaveAcesso] = useState("")
   // XML cru + dados da nota que so existem quando a entrada veio de
@@ -221,7 +277,7 @@ export function ComprasConteudo({
     setFornecedorId(pedidoCompraParaLancar.fornecedor_id)
     setItens(
       pedidoCompraParaLancar.itens.map((i) => {
-        const produto = produtos.find((p) => p.id === i.produto_id)
+        const produto = produtosDisponiveis.find((p) => p.id === i.produto_id)
         return {
           produtoId: i.produto_id,
           nome: produto?.nome ?? i.descricao,
@@ -435,7 +491,7 @@ export function ComprasConteudo({
   }
 
   function adicionarItem() {
-    const produto = produtos.find((p) => p.id === produtoId)
+    const produto = produtosDisponiveis.find((p) => p.id === produtoId)
     if (!produto) return
     const qtd = Number(quantidade)
     if (!(qtd > 0)) return
@@ -497,6 +553,7 @@ export function ComprasConteudo({
     let fornecedorIdResolvido: string | null = null
 
     if (fornecedorExistente) {
+      setFornecedorCriadoPeloXml(null)
       setFornecedorId(fornecedorExistente.id)
       fornecedorIdResolvido = fornecedorExistente.id
     } else {
@@ -521,6 +578,11 @@ export function ComprasConteudo({
         setFornecedoresDisponiveis((atual) => [...atual, novoFornecedor])
         setFornecedorId(novoFornecedor.id)
         fornecedorIdResolvido = novoFornecedor.id
+        setFornecedorCriadoPeloXml(novoFornecedor.razao_social)
+        toast.warning(
+          `Fornecedor "${novoFornecedor.razao_social}" foi cadastrado automaticamente pelo XML. Confira o cadastro depois — a nota não traz inscrição estadual, e-mail nem condição de pagamento.`,
+          { duration: 10000 }
+        )
         registrarAuditoria({
           tela: "Entrada de NF (importação XML)",
           acao: "cadastro",
@@ -554,20 +616,96 @@ export function ComprasConteudo({
     // em qualquer lugar) e cai pro SKU se nao achar - o admin ainda confirma
     // (ou troca) cada item antes de adicionar.
     const mapeamentoInicial: Record<number, string> = {}
+    const origemInicial: Record<number, OrigemMapeamento> = {}
     dados.itens.forEach((item, indice) => {
       const produtoPorCodigoBarras =
-        item.codigoBarras && produtos.find((p) => p.codigo_barras && p.codigo_barras === item.codigoBarras)
-      const produtoPorSku = produtos.find((p) => p.sku && p.sku === item.codigoFornecedor)
-      const encontrado = produtoPorCodigoBarras || produtoPorSku
-      if (encontrado) mapeamentoInicial[indice] = encontrado.id
+        item.codigoBarras && produtosDisponiveis.find((p) => p.codigo_barras && p.codigo_barras === item.codigoBarras)
+      const produtoPorSku = produtosDisponiveis.find((p) => p.sku && p.sku === item.codigoFornecedor)
+
+      if (produtoPorCodigoBarras) {
+        mapeamentoInicial[indice] = produtoPorCodigoBarras.id
+        origemInicial[indice] = "codigo_barras"
+      } else if (produtoPorSku) {
+        mapeamentoInicial[indice] = produtoPorSku.id
+        origemInicial[indice] = "sku"
+      } else {
+        origemInicial[indice] = "nao_encontrado"
+      }
     })
     setMapeamentoXml(mapeamentoInicial)
+    setOrigemMapeamento(origemInicial)
+  }
+
+  // Cria o produto direto do item da nota. O objetivo e a virada de sistema:
+  // a primeira nota importada tem o catalogo inteiro do fornecedor dentro, e
+  // cadastrar item por item na mao seria horas de digitacao.
+  //
+  // O preco de venda nasce igual ao custo de proposito - preco e decisao
+  // comercial, nao tem no XML, e chutar margem aqui sairia errado em silencio.
+  // Melhor o produto nascer visivelmente sem margem e o cliente precificar
+  // depois em Produtos > Reajuste de Precos.
+  async function cadastrarProdutoDoItem(indice: number) {
+    const itemXml = itensXmlPendentes[indice]
+    if (!itemXml) return
+
+    if (!itemXml.ncm) {
+      toast.error("Esse item não tem NCM no XML, e o NCM é obrigatório no cadastro. Cadastre o produto manualmente.")
+      return
+    }
+
+    setCadastrandoProdutoIndice(indice)
+    const resposta = await fetch("/api/admin/produtos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome: itemXml.descricao,
+        preco: itemXml.valorUnitario,
+        estoque: 0,
+        // O codigo do fornecedor vira SKU: e o que faz a proxima nota desse
+        // mesmo fornecedor vincular sozinha.
+        sku: itemXml.codigoFornecedor || null,
+        codigoBarras: itemXml.codigoBarras || null,
+        ncm: itemXml.ncm,
+      }),
+    })
+    setCadastrandoProdutoIndice(null)
+
+    if (!resposta.ok) {
+      const dados = await resposta.json().catch(() => null)
+      toast.error(dados?.erro ?? "Não foi possível cadastrar o produto")
+      return
+    }
+
+    // A rota de produtos devolve so os campos da grade (id, nome, preco...),
+    // sem sku/codigo_barras/custo - entao monta o item do seletor com o que a
+    // gente acabou de enviar. Sem isso, dois itens da MESMA nota com o mesmo
+    // codigo nao se reconheceriam entre si.
+    const criado: { id: string; nome: string } = await resposta.json()
+    const novoProduto: ProdutoSelecionavel = {
+      id: criado.id,
+      nome: criado.nome,
+      sku: itemXml.codigoFornecedor || null,
+      codigo_barras: itemXml.codigoBarras || null,
+      custo: String(itemXml.valorUnitario),
+      estoque: 0,
+    }
+    setProdutosDisponiveis((atual) => [...atual, novoProduto])
+    setMapeamentoXml((atual) => ({ ...atual, [indice]: novoProduto.id }))
+    setOrigemMapeamento((atual) => ({ ...atual, [indice]: "cadastrado_agora" }))
+    registrarAuditoria({
+      tela: "Entrada de NF (importação XML)",
+      acao: "cadastro",
+      tabela: "TAB_PRODUTO",
+      registroId: novoProduto.id,
+      depois: { nome: novoProduto.nome, sku: novoProduto.sku },
+    })
+    toast.success(`Produto "${novoProduto.nome}" cadastrado. Defina o preço de venda depois em Produtos.`)
   }
 
   function adicionarItemMapeado(indice: number) {
     const itemXml = itensXmlPendentes[indice]
     const produtoIdSelecionado = mapeamentoXml[indice]
-    const produto = produtos.find((p) => p.id === produtoIdSelecionado)
+    const produto = produtosDisponiveis.find((p) => p.id === produtoIdSelecionado)
     if (!itemXml || !produto) return
 
     setItens((atual) => [
@@ -1306,6 +1444,18 @@ export function ComprasConteudo({
                     </option>
                   ))}
                 </select>
+                {/* O cadastro criado pelo XML nasce so com o que a nota traz -
+                    falta inscricao estadual, e-mail, contato e condicao de
+                    pagamento. Sem esse aviso o fornecedor fica pela metade e
+                    ninguem descobre ate precisar de um desses campos. */}
+                {fornecedorCriadoPeloXml && (
+                  <p className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs text-amber-700">
+                    <span className="mr-1">⚠️</span>
+                    <strong>{fornecedorCriadoPeloXml}</strong> foi cadastrado automaticamente com os
+                    dados da nota. Confira o cadastro depois em Compras &gt; Fornecedores — a nota não
+                    traz inscrição estadual, e-mail, contato nem condição de pagamento.
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>
@@ -1404,55 +1554,89 @@ export function ComprasConteudo({
           </Card>
 
           {itensXmlPendentes.length > 0 && (
-            <Card className="border-amber-500/40">
-              <CardContent className="space-y-3 pt-6">
+            <Card className="overflow-hidden border-amber-500/40 py-0">
+              <div className="space-y-1 border-b border-slate-200 bg-amber-50 px-4 py-3">
                 <p className="text-sm font-medium">
-                  Itens do XML pendentes de mapeamento ({itensXmlPendentes.length})
+                  Itens da nota a vincular ({itensXmlPendentes.length})
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Associe cada item da nota a um produto do catálogo e clique em &quot;Adicionar&quot; -
-                  itens não mapeados não entram na compra.
+                  Cada item precisa apontar para um produto do catálogo. O que não for vinculado não
+                  entra na compra e não move estoque.
                 </p>
-                <div className="space-y-2">
-                  {itensXmlPendentes.map((item, indice) => (
-                    <div
-                      key={`${item.codigoFornecedor}-${indice}`}
-                      className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-center"
-                    >
-                      <div className="text-sm">
-                        <p className="font-medium">{item.descricao}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Cod. fornecedor: {item.codigoFornecedor || "-"} · Qtd: {item.quantidade} ·{" "}
-                          {formatarMoeda(item.valorUnitario)}/un
-                        </p>
-                      </div>
-                      <select
-                        value={mapeamentoXml[indice] ?? ""}
-                        onChange={(e) =>
-                          setMapeamentoXml((atual) => ({ ...atual, [indice]: e.target.value }))
-                        }
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[900px] text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-slate-500">
+                      <th className="p-3 font-medium">Item da nota</th>
+                      <th className="p-3 font-medium text-right">Qtd</th>
+                      <th className="p-3 font-medium text-right">Custo un.</th>
+                      <th className="p-3 font-medium">Produto no catálogo</th>
+                      <th className="p-3 font-medium text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {itensXmlPendentes.map((item, indice) => (
+                      <tr
+                        key={`${item.codigoFornecedor}-${indice}`}
+                        className="border-b border-slate-200 align-top last:border-0"
                       >
-                        <option value="">Mapear pra qual produto?</option>
-                        {produtos.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.nome} {p.sku ? `(${p.sku})` : ""}
-                          </option>
-                        ))}
-                      </select>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={!mapeamentoXml[indice]}
-                        onClick={() => adicionarItemMapeado(indice)}
-                      >
-                        Adicionar
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
+                        <td className="p-3">
+                          <p className="font-medium">{item.descricao}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Cód. no fornecedor: {item.codigoFornecedor || "-"}
+                            {item.ncm ? ` · NCM ${item.ncm}` : ""}
+                          </p>
+                          <StatusVinculoItem item={item} origem={origemMapeamento[indice]} />
+                        </td>
+                        <td className="p-3 text-right">{item.quantidade}</td>
+                        <td className="p-3 text-right">{formatarMoeda(item.valorUnitario)}</td>
+                        <td className="p-3">
+                          <select
+                            value={mapeamentoXml[indice] ?? ""}
+                            onChange={(e) =>
+                              setMapeamentoXml((atual) => ({ ...atual, [indice]: e.target.value }))
+                            }
+                            className="flex h-9 w-full min-w-[220px] rounded-md border border-input bg-transparent px-3 text-sm"
+                          >
+                            <option value="">Vincular a qual produto?</option>
+                            {produtosDisponiveis.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.nome} {p.sku ? `(${p.sku})` : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex justify-end gap-2">
+                            {!mapeamentoXml[indice] && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={cadastrandoProdutoIndice === indice}
+                                onClick={() => cadastrarProdutoDoItem(indice)}
+                                title="Cadastra um produto novo com a descrição, NCM, código de barras e custo desta nota"
+                              >
+                                {cadastrandoProdutoIndice === indice ? "Cadastrando..." : "Cadastrar produto"}
+                              </Button>
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={!mapeamentoXml[indice]}
+                              onClick={() => adicionarItemMapeado(indice)}
+                            >
+                              Vincular
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           )}
 
@@ -1467,7 +1651,7 @@ export function ComprasConteudo({
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                 >
                   <option value="">Selecione o produto...</option>
-                  {produtos.map((p) => (
+                  {produtosDisponiveis.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.nome} {p.sku ? `(${p.sku})` : ""} - estoque atual: {p.estoque}
                     </option>
