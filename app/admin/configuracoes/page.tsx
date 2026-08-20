@@ -1,4 +1,5 @@
 import { cookies } from "next/headers"
+import { carregarRecursos } from "@/lib/recursos"
 import { lerTokenSessao } from "@/lib/auth"
 import { getConfiguracoes, getConfiguracoesMarca } from "@/lib/configuracoes"
 import { statusConexaoBling } from "@/lib/bling"
@@ -49,13 +50,14 @@ export default async function ConfiguracoesPage({
   const cookieStore = await cookies()
   const sessao = await lerTokenSessao(cookieStore.get("admin_sessao")?.value)
 
-  const [configuracoes, configuracoesMarca, blingStatus] = await Promise.all([
+  const [configuracoes, configuracoesMarca, blingStatus, recursos] = await Promise.all([
     getConfiguracoes(CHAVES),
     getConfiguracoesMarca(CHAVES_MARCA, "colorido"),
     // So admin pode ver/gerenciar a conexao do Bling - operador enxerga a aba,
     // mas sem status (mesmo comportamento de antes, quando o fetch client-side
     // batia num 403 da rota /api/admin/bling/status).
     sessao?.papel === "admin" ? statusConexaoBling() : Promise.resolve(null),
+    carregarRecursos(),
   ])
 
   return (
@@ -85,6 +87,7 @@ export default async function ConfiguracoesPage({
       }}
       blingStatus={blingStatus}
       abaInicial={aba}
+      recursos={recursos}
     />
   )
 }

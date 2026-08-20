@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { mascaraMoeda, valorMoedaParaNumero, mascaraTelefone, mascaraCEP } from "@/lib/mascaras"
 import { Phone, Truck, Megaphone, Palette, Plug, Percent, KeyRound, Check, FileText } from "lucide-react"
+import type { Recursos } from "@/lib/recursos"
 
 export type ConfiguracoesIniciais = {
   whatsapp: string
@@ -47,16 +48,21 @@ export function ConfiguracoesConteudo({
   configuracoesIniciais,
   blingStatus,
   abaInicial,
+  recursos,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
   blingStatus: BlingStatus
   abaInicial?: string
+  // O que o plano desta instalacao libera - controla os campos de integracao
+  // que aparecem aqui (ver lib/recursos.ts).
+  recursos: Recursos
 }) {
   return (
     <ConfiguracoesFormulario
       configuracoesIniciais={configuracoesIniciais}
       blingStatus={blingStatus}
       abaInicial={abaInicial}
+      recursos={recursos}
     />
   )
 }
@@ -108,10 +114,14 @@ function ConfiguracoesFormulario({
   configuracoesIniciais,
   blingStatus,
   abaInicial,
+  recursos,
 }: {
   configuracoesIniciais: ConfiguracoesIniciais
   blingStatus: BlingStatus
   abaInicial?: string
+  // O que o plano desta instalacao libera - controla os campos de integracao
+  // que aparecem aqui (ver lib/recursos.ts).
+  recursos: Recursos
 }) {
   const router = useRouter()
   const [salvando, setSalvando] = useState(false)
@@ -898,6 +908,10 @@ function ConfiguracoesFormulario({
                   </CardContent>
                 </Card>
 
+                {/* Marketplace que o plano nao libera nao aparece: campo de
+                    integracao que a loja nao usa so gera duvida sobre o que
+                    ela deveria preencher. */}
+                {(recursos.integracao_mercado_livre || recursos.integracao_shopee) && (
                 <Card className="mt-4">
                   <CardHeader>
                     <CardTitle className="text-sm text-slate-500">Pedidos de Mercado Livre e Shopee</CardTitle>
@@ -909,26 +923,31 @@ function ConfiguracoesFormulario({
                       sistema importar automaticamente os pedidos como pedidos de verdade,
                       com baixa de estoque. Canal sem código preenchido não é importado.
                     </p>
-                    <div className="space-y-2">
-                      <Label>Código da loja Bling - Mercado Livre</Label>
-                      <Input
-                        value={blingLojaMercadoLivre}
-                        onChange={(e) => setBlingLojaMercadoLivre(e.target.value)}
-                        placeholder="Ex: 204050607"
-                        className="max-w-48"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Código da loja Bling - Shopee</Label>
-                      <Input
-                        value={blingLojaShopee}
-                        onChange={(e) => setBlingLojaShopee(e.target.value)}
-                        placeholder="Ex: 204050608"
-                        className="max-w-48"
-                      />
-                    </div>
+                    {recursos.integracao_mercado_livre && (
+                      <div className="space-y-2">
+                        <Label>Código da loja Bling - Mercado Livre</Label>
+                        <Input
+                          value={blingLojaMercadoLivre}
+                          onChange={(e) => setBlingLojaMercadoLivre(e.target.value)}
+                          placeholder="Ex: 204050607"
+                          className="max-w-48"
+                        />
+                      </div>
+                    )}
+                    {recursos.integracao_shopee && (
+                      <div className="space-y-2">
+                        <Label>Código da loja Bling - Shopee</Label>
+                        <Input
+                          value={blingLojaShopee}
+                          onChange={(e) => setBlingLojaShopee(e.target.value)}
+                          placeholder="Ex: 204050608"
+                          className="max-w-48"
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
+                )}
               </TabsContent>
 
               <TabsContent value="mercadopago" className="mt-4">

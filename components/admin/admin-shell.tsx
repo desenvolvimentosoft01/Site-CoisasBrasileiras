@@ -156,6 +156,7 @@ export function AdminShell({
   logoUrl,
   nomeLoja,
   dominioBranco,
+  plano,
   children,
 }: {
   sessao: SessaoAdmin
@@ -163,11 +164,19 @@ export function AdminShell({
   logoUrl?: string
   nomeLoja?: string
   dominioBranco?: string
+  // Rotulo do plano contratado, so pra exibicao no cabecalho.
+  plano?: string
   children: React.ReactNode
 }) {
   return (
     <ProvedorCores coresIniciais={cores}>
-      <AdminShellInterno sessao={sessao} logoUrl={logoUrl} nomeLoja={nomeLoja} dominioBranco={dominioBranco}>
+      <AdminShellInterno
+        sessao={sessao}
+        logoUrl={logoUrl}
+        nomeLoja={nomeLoja}
+        dominioBranco={dominioBranco}
+        plano={plano}
+      >
         {children}
       </AdminShellInterno>
     </ProvedorCores>
@@ -179,12 +188,15 @@ function AdminShellInterno({
   logoUrl,
   nomeLoja,
   dominioBranco,
+  plano,
   children,
 }: {
   sessao: SessaoAdmin
   logoUrl?: string
   nomeLoja?: string
   dominioBranco?: string
+  // Rotulo do plano contratado, so pra exibicao no cabecalho.
+  plano?: string
   children: React.ReactNode
 }) {
   const { cores } = useCoresTema()
@@ -599,6 +611,18 @@ function AdminShellInterno({
               >
                 ⚪ Porcelanas Brancas
               </a>
+            )}
+            {/* Selo do plano, como no InMenteGestao: o cliente ve o que ele
+                tem contratado sem precisar perguntar, e a gente descobre na
+                hora do suporte em que plano aquela instalacao esta. */}
+            {plano && (
+              <span
+                className="hidden items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 lg:inline-flex"
+                title="Plano contratado desta instalação"
+              >
+                {nomeLoja || "Loja"}
+                <span className="rounded-full bg-amber-200/70 px-1.5 py-0.5 text-[10px]">{plano}</span>
+              </span>
             )}
             <span className="hidden text-xs font-semibold text-slate-500 sm:block">{sessao.nome}</span>
             <Button variant="outline" size="sm" onClick={handleLogout}>
