@@ -40,7 +40,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const [usuarioAtualizado] = senha
     ? await query(
-        `UPDATE TAB_USUARIO_ADMIN SET nome = $1, papel = $2, ativo = $3, usuario = $4, senha_hash = $5
+        // Admin trocando a senha de outra pessoa e sempre provisorio: ele
+        // passa a saber a senha, e so deixa de saber quando o dono trocar.
+        `UPDATE TAB_USUARIO_ADMIN SET nome = $1, papel = $2, ativo = $3, usuario = $4, senha_hash = $5,
+                senha_provisoria = true
          WHERE id = $6
          RETURNING id, nome, email, usuario, papel, ativo, criado_em, ultimo_login`,
         [nome.trim(), papel, ativo ?? true, usuarioLogin, await bcrypt.hash(senha, 10), id]

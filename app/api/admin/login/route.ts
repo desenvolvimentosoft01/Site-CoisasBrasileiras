@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   // exigir e-mail completo quando "usuario" nao foi cadastrado, sem inferir
   // prefixo (evita ambiguidade entre dois e-mails com o mesmo prefixo).
   const usuarios = await query(
-    "SELECT id, nome, email, senha_hash, papel FROM TAB_USUARIO_ADMIN WHERE (email = $1 OR usuario = $1) AND ativo = true",
+    "SELECT id, nome, email, senha_hash, papel, senha_provisoria FROM TAB_USUARIO_ADMIN WHERE (email = $1 OR usuario = $1) AND ativo = true",
     [login]
   )
 
@@ -52,12 +52,16 @@ export async function POST(request: Request) {
     nome: usuario.nome,
     email: usuario.email,
     papel: usuario.papel,
+    senhaProvisoria: Boolean(usuario.senha_provisoria),
   })
 
   const response = NextResponse.json({
     sucesso: true,
     nome: usuario.nome,
     papel: usuario.papel,
+    // A tela de login usa isso pra ir direto pra troca de senha, em vez de
+    // cair na Visao Geral e ser redirecionada logo em seguida.
+    senhaProvisoria: Boolean(usuario.senha_provisoria),
   })
 
   response.cookies.set("admin_sessao", token, {
