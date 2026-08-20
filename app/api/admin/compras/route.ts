@@ -90,9 +90,33 @@ export async function POST(request: Request) {
     )
 
     for (const item of itens) {
+      // custo_unitario e o custo REAL (produto + ST + IPI + frete rateado -
+      // desconto): e ele que move o custo medio do produto no recebimento. Os
+      // demais campos guardam a composicao, pra que a tela possa abrir a conta
+      // e bater com a nota linha por linha (migration 061).
+      //
+      // Lancamento manual nao tem composicao nenhuma: o valor digitado e o
+      // proprio custo real, e os acrescimos ficam zerados.
+      const valorProduto = Number(item.valorProduto ?? item.custoUnitario)
+
       await q(
-        "INSERT INTO TAB_COMPRA_ITEM (compra_id, produto_id, quantidade, custo_unitario) VALUES ($1, $2, $3, $4)",
-        [novaCompra.id, item.produtoId, Number(item.quantidade), Number(item.custoUnitario)]
+        `INSERT INTO TAB_COMPRA_ITEM
+           (compra_id, produto_id, quantidade, custo_unitario, valor_produto,
+            valor_icms_st, valor_ipi, valor_frete, valor_seguro, valor_outros, valor_desconto)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          novaCompra.id,
+          item.produtoId,
+          Number(item.quantidade),
+          Number(item.custoUnitario),
+          valorProduto,
+          Number(item.valorIcmsSt ?? 0),
+          Number(item.valorIpi ?? 0),
+          Number(item.valorFrete ?? 0),
+          Number(item.valorSeguro ?? 0),
+          Number(item.valorOutros ?? 0),
+          Number(item.valorDesconto ?? 0),
+        ]
       )
     }
 
