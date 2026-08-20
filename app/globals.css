@@ -143,20 +143,37 @@
     background: white !important;
   }
 }
-/* Movimento lento das formas de fundo da tela de entrada. Ciclos longos (20s
-   a 32s) e deslocamento pequeno de proposito: a ideia e a tela "respirar", nao
-   chamar atencao - quem esta ali quer digitar a senha.
+/* Movimento do fundo da tela de entrada.
+
+   Ciclos longos (18s a 30s) com deslocamento e escala grandes o bastante pra
+   se perceber, mas sem nada rapido: o movimento tem que ser notado de canto de
+   olho, nunca disputar atencao com o campo de senha. Cada forma tem duracao
+   diferente e nenhuma e multiplo da outra, entao elas nunca voltam a se
+   alinhar - e o que evita o efeito de "loop" que denuncia a animacao.
 
    Tudo para quando o sistema operacional pede menos movimento (a preferencia
    de acessibilidade prefers-reduced-motion), inclusive a entrada dos itens. */
 @keyframes flutuar {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(24px, -18px) scale(1.06); }
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(70px, 40px) scale(1.14); }
+  66%  { transform: translate(30px, -55px) scale(0.94); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
 @keyframes onda {
-  0%, 100% { transform: rotate(-8deg) translateX(0); }
-  50%      { transform: rotate(-6deg) translateX(-28px); }
+  0%   { transform: rotate(-8deg) translateX(0) translateY(0); }
+  50%  { transform: rotate(-4deg) translateX(-90px) translateY(-22px); }
+  100% { transform: rotate(-8deg) translateX(0) translateY(0); }
+}
+
+/* Brilho que atravessa a metade escura de ponta a ponta, bem devagar - e o que
+   da a sensacao de que a tela esta "viva" mesmo quando as formas estao no meio
+   do ciclo delas. */
+@keyframes brilho-atravessa {
+  0%   { transform: translateX(-60%) rotate(12deg); opacity: 0; }
+  15%  { opacity: 0.5; }
+  85%  { opacity: 0.5; }
+  100% { transform: translateX(160%) rotate(12deg); opacity: 0; }
 }
 
 @keyframes entrada-item {
@@ -165,15 +182,19 @@
 }
 
 .animar-flutuar {
-  animation: flutuar 24s ease-in-out infinite;
+  animation: flutuar 22s ease-in-out infinite;
 }
 
 .animar-flutuar-inverso {
-  animation: flutuar 32s ease-in-out infinite reverse;
+  animation: flutuar 30s ease-in-out infinite reverse;
 }
 
 .animar-onda {
-  animation: onda 28s ease-in-out infinite;
+  animation: onda 18s ease-in-out infinite;
+}
+
+.animar-brilho {
+  animation: brilho-atravessa 26s linear infinite;
 }
 
 .animar-entrada-item {
@@ -187,6 +208,7 @@
   .animar-flutuar,
   .animar-flutuar-inverso,
   .animar-onda,
+  .animar-brilho,
   .animar-entrada-item {
     animation: none;
     opacity: 1;

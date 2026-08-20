@@ -86,6 +86,8 @@ export function EntrarForm({
           <div className="animar-flutuar absolute -left-24 -top-24 h-80 w-80 rounded-full bg-slate-800/60 blur-2xl" />
           <div className="animar-flutuar-inverso absolute right-0 top-0 h-96 w-96 rounded-full bg-[var(--primary)] opacity-20 blur-3xl" />
           <div className="animar-onda absolute -bottom-32 -left-16 h-[28rem] w-[140%] rotate-[-8deg] rounded-[50%] bg-gradient-to-r from-[var(--primary)] to-slate-800 opacity-70" />
+          <div className="animar-flutuar absolute bottom-1/3 right-10 h-56 w-56 rounded-full bg-slate-700/50 blur-2xl [animation-duration:26s]" />
+          <div className="animar-brilho absolute -top-1/4 left-0 h-[150%] w-40 bg-gradient-to-r from-transparent via-white/10 to-transparent blur-2xl" />
         </div>
 
         <div className="relative">
