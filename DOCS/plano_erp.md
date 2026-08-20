@@ -65,6 +65,10 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - [ ] Abrir para alteração **tudo o que pode ser alterado** (fundo, cabeçalho da grade, barra de ferramentas, botões por variante, selos de status, menu lateral), e não só a cor primária.
 - [ ] Lembrar que a cor é por marca desde a migration 055 (Coisas Brasileiras e Porcelanas Brancas têm valores próprios).
 
+**3.2. Ajustes vistos em tela (2026-08-20)**
+- [ ] **Canais de venda desligados no plano continuam aparecendo nos filtros** — o seletor de canal (Pedido de Venda, Venda Balcão, relatórios) mostra Mercado Livre e Shopee mesmo com a integração desligada. Filtrar a lista de canais pelos recursos ligados **em todas as telas**, do mesmo jeito que já foi feito nas Configurações.
+- [ ] **Campo "Ler código de barras" cortado** na tela de Venda Balcão: o placeholder não cabe na largura do campo.
+
 **4. Carregamento e desempenho**
 - [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
 - [ ] **Investigar a lentidão ao abrir as telas** (relatada pelo cliente em 2026-08-20). Suspeitas a checar antes de otimizar: consultas sem índice nas telas de grade, `staleTimes.dynamic` do router, e o pool do banco reduzido para 3 conexões na correção do `EMAXCONNSESSION` (pode estar enfileirando requisição).
