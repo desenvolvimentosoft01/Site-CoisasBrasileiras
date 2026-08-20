@@ -1,6 +1,7 @@
 import {
   FilePlus,
   Pencil,
+  Copy,
   Trash2,
   Save,
   Eraser,
@@ -17,13 +18,14 @@ import { cn } from "@/lib/utils"
 import { Icone, type NomeIcone } from "@/components/admin/icone"
 import type { LucideIcon } from "lucide-react"
 
-// Icone proprio do sistema (public/icones) no lugar do icone de linha,
-// mapeado pelo componente lucide que a tela passa - assim as 25 telas de
-// cadastro trocam de visual sem precisar editar uma por uma. Icone sem
-// mapeamento aqui continua caindo no <btn.icon> de linha.
+// Traduz o componente lucide que a tela passa pro nome da ACAO no nosso
+// catalogo de icones (components/admin/icone.tsx) - e o que da a cor certa a
+// cada botao sem que as 25 telas de cadastro precisem saber disso. Icone sem
+// mapeamento aqui continua caindo no <btn.icon> cru.
 const iconePorLucide = new Map<LucideIcon, NomeIcone>([
   [FilePlus, "novo"],
   [Pencil, "editar"],
+  [Copy, "duplicar"],
   [Trash2, "excluir"],
   [Save, "salvar"],
   [Eraser, "limpar"],
