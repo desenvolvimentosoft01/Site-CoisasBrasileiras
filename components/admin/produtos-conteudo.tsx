@@ -14,6 +14,9 @@ import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 
 export type Produto = {
   id: string
+  // Numero curto do cadastro, gerado pelo banco (migration 058). Diferente do
+  // SKU, que e do fornecedor/fabricante e pode nem existir.
+  codigo: number
   nome: string
   sku: string | null
   ncm: string | null
@@ -183,6 +186,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                   <table className="w-full min-w-[760px] text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <th className="p-4 font-medium">Cód.</th>
                         <th className="p-4 font-medium">Nome</th>
                         <th className="p-4 font-medium">SKU</th>
                         <th className="p-4 font-medium">Categorias</th>
@@ -204,6 +208,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                             linhaSelecionada === produto.id ? "bg-amber-50" : "hover:bg-slate-50"
                           }`}
                         >
+                          <td className="p-4 font-mono text-slate-500">{produto.codigo}</td>
                           <td className="p-4">
                             <span className="flex items-center gap-1.5">
                               <span

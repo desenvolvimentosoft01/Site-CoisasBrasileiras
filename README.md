@@ -50,7 +50,7 @@ npm install
 
 ### 3. Configurar o banco de dados
 
-Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `057_pedido_xml_nfe.sql`), com `psql` ou outro cliente de sua preferência:
+Crie um banco chamado `coisas_brasileiras` e rode **todas** as migrations em `migrations/`, na ordem numérica (hoje vai de `000_schema_inicial.sql` até `058_codigo_sequencial_cadastros.sql`), com `psql` ou outro cliente de sua preferência:
 
 ```bash
 for f in migrations/0*.sql; do psql -U postgres -d coisas_brasileiras -f "$f"; done

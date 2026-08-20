@@ -43,6 +43,119 @@ const ROTULOS_ACAO: Record<RegistroAuditoria["acao"], string> = {
   ativacao: "Ativação",
 }
 
+// Nome da tabela do banco -> nome que a pessoa conhece. Quem abre a auditoria
+// e o dono da loja, nao quem escreveu o banco: "TAB_SOBRE_NOS_MIDIA" nao
+// significa nada pra ele.
+const ROTULOS_TABELA: Record<string, string> = {
+  TAB_AVALIACAO_PRODUTO: "Avaliação de produto",
+  TAB_BANNER: "Banner",
+  TAB_CATEGORIA: "Categoria",
+  TAB_CLIENTE: "Cliente",
+  TAB_COMPRA: "Entrada de NF",
+  TAB_CONFIGURACAO: "Configuração da loja",
+  TAB_CONFIGURACAO_MARCA: "Configuração da loja",
+  TAB_CONTA: "Conta do financeiro",
+  TAB_CUPOM: "Cupom",
+  TAB_FEEDBACK: "Feedback",
+  TAB_FORNECEDOR: "Fornecedor",
+  TAB_PRODUTO: "Produto",
+  TAB_SOBRE_NOS_MIDIA: "Mídia do Sobre Nós",
+  TAB_USUARIO_ADMIN: "Usuário do sistema",
+}
+
+// Tabela sem rotulo cadastrado cai pra uma versao legivel do proprio nome
+// (TAB_ALGUMA_COISA -> "Alguma coisa") em vez de aparecer crua.
+function rotuloTabela(tabela: string): string {
+  if (ROTULOS_TABELA[tabela]) return ROTULOS_TABELA[tabela]
+  const texto = tabela.replace(/^TAB_/, "").replace(/_/g, " ").toLowerCase()
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+// Nome da coluna do banco -> nome do campo na tela. Sem isso o detalhe da
+// auditoria mostra "razao_social" e "preco_promocional" pra quem so conhece
+// "Razão social" e "Preço promocional".
+const ROTULOS_CAMPO: Record<string, string> = {
+  razao_social: "Razão social",
+  nome_fantasia: "Nome fantasia",
+  cnpj_cpf: "CNPJ/CPF",
+  preco_promocional: "Preço promocional",
+  codigo_barras: "Código de barras",
+  estoque_minimo: "Estoque mínimo",
+  numero_nota: "Número da nota",
+  chave_acesso: "Chave de acesso",
+  forma_pagamento: "Forma de pagamento",
+  data_vencimento: "Vencimento",
+  valor: "Valor",
+  preco: "Preço",
+  custo: "Custo",
+  nome: "Nome",
+  sku: "Código (SKU)",
+  ativo: "Ativo",
+  codigo: "Código",
+  itens: "Quantidade de itens",
+}
+
+function rotuloCampo(campo: string): string {
+  if (ROTULOS_CAMPO[campo]) return ROTULOS_CAMPO[campo]
+  const texto = campo.replace(/_/g, " ")
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+function valorLegivel(valor: unknown): string {
+  if (valor === null || valor === undefined || valor === "") return "—"
+  if (typeof valor === "boolean") return valor ? "Sim" : "Não"
+  if (typeof valor === "object") return JSON.stringify(valor)
+  return String(valor)
+}
+
+// Mostra o que mudou em vez de despejar o JSON do registro. Na edicao, so os
+// campos que realmente mudaram: numa tela com 20 campos, listar os 20 esconde
+// justamente a alteracao que a pessoa foi procurar.
+function AlteracoesDoRegistro({
+  antes,
+  depois,
+}: {
+  antes: Record<string, unknown> | null
+  depois: Record<string, unknown> | null
+}) {
+  const campos = Array.from(new Set([...Object.keys(antes ?? {}), ...Object.keys(depois ?? {})]))
+  if (campos.length === 0) {
+    return <p className="text-sm text-muted-foreground">Sem detalhes guardados para este registro.</p>
+  }
+
+  const ehEdicao = Boolean(antes && depois)
+  const visiveis = ehEdicao
+    ? campos.filter((campo) => valorLegivel(antes?.[campo]) !== valorLegivel(depois?.[campo]))
+    : campos
+
+  if (visiveis.length === 0) {
+    return <p className="text-sm text-muted-foreground">Nenhum campo mudou de valor.</p>
+  }
+
+  return (
+    <div className="overflow-hidden rounded-md border border-slate-200">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
+            <th className="p-2 font-medium">Campo</th>
+            {ehEdicao && <th className="p-2 font-medium">Antes</th>}
+            <th className="p-2 font-medium">{ehEdicao ? "Depois" : "Valor"}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {visiveis.map((campo) => (
+            <tr key={campo} className="border-b border-slate-100 last:border-0">
+              <td className="p-2 text-slate-500">{rotuloCampo(campo)}</td>
+              {ehEdicao && <td className="p-2 text-slate-400 line-through">{valorLegivel(antes?.[campo])}</td>}
+              <td className="p-2">{valorLegivel((depois ?? antes)?.[campo])}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 const TODOS = "__todos__"
 
 type FiltroAuditoria = { tela: string; acao: string; usuario: string; texto: string }
@@ -229,7 +342,7 @@ export function AuditoriaConteudo({
                     <th className="p-4 font-medium">Usuário</th>
                     <th className="p-4 font-medium">Tela</th>
                     <th className="p-4 font-medium">Ação</th>
-                    <th className="p-4 font-medium">Tabela</th>
+                    <th className="p-4 font-medium">Registro</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -246,10 +359,10 @@ export function AuditoriaConteudo({
                       <td className="p-4 text-slate-500">{registro.tela}</td>
                       <td className="p-4">
                         <span className={`rounded-full px-2 py-1 text-xs ${corAcao[registro.acao]}`}>
-                          {registro.acao}
+                          {ROTULOS_ACAO[registro.acao] ?? registro.acao}
                         </span>
                       </td>
-                      <td className="p-4 text-slate-500">{registro.tabela}</td>
+                      <td className="p-4 text-slate-500">{rotuloTabela(registro.tabela)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -267,29 +380,14 @@ export function AuditoriaConteudo({
           <Card className="w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
             <CardContent className="max-h-[80vh] space-y-4 overflow-y-auto pt-6">
               <h2 className="text-lg font-semibold">
-                {detalhe.tela} — {detalhe.acao}
+                {detalhe.tela} — {ROTULOS_ACAO[detalhe.acao] ?? detalhe.acao}
               </h2>
               <p className="text-sm text-muted-foreground">
                 {detalhe.usuario_nome || "Sistema"} em{" "}
                 {new Date(detalhe.criado_em).toLocaleString("pt-BR")}
               </p>
 
-              {detalhe.dados_antes && (
-                <div>
-                  <p className="mb-1 text-xs font-medium text-slate-500">Antes</p>
-                  <pre className="overflow-x-auto rounded-md bg-slate-100 p-3 text-xs">
-                    {JSON.stringify(detalhe.dados_antes, null, 2)}
-                  </pre>
-                </div>
-              )}
-              {detalhe.dados_depois && (
-                <div>
-                  <p className="mb-1 text-xs font-medium text-slate-500">Depois</p>
-                  <pre className="overflow-x-auto rounded-md bg-slate-100 p-3 text-xs">
-                    {JSON.stringify(detalhe.dados_depois, null, 2)}
-                  </pre>
-                </div>
-              )}
+              <AlteracoesDoRegistro antes={detalhe.dados_antes} depois={detalhe.dados_depois} />
             </CardContent>
           </Card>
         </div>

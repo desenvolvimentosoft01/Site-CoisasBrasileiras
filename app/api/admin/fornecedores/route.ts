@@ -7,7 +7,7 @@ export async function GET() {
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const fornecedores = await query(
-    `SELECT id, razao_social, nome_fantasia, cnpj_cpf, inscricao_estadual, telefone, email,
+    `SELECT id, codigo, razao_social, nome_fantasia, cnpj_cpf, inscricao_estadual, telefone, email,
             cep, logradouro, numero, complemento, bairro, cidade, estado,
             observacao, ativo, criado_em
      FROM TAB_FORNECEDOR ORDER BY razao_social`
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     `INSERT INTO TAB_FORNECEDOR
        (razao_social, nome_fantasia, cnpj_cpf, inscricao_estadual, telefone, email, cep, logradouro, numero, complemento, bairro, cidade, estado, observacao)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-     RETURNING id, razao_social, nome_fantasia, cnpj_cpf, inscricao_estadual, telefone, email, cep, logradouro, numero, complemento, bairro, cidade, estado, observacao, ativo, criado_em`,
+     RETURNING id, codigo, razao_social, nome_fantasia, cnpj_cpf, inscricao_estadual, telefone, email, cep, logradouro, numero, complemento, bairro, cidade, estado, observacao, ativo, criado_em`,
     [
       dados.razaoSocial.trim(),
       dados.nomeFantasia || null,
