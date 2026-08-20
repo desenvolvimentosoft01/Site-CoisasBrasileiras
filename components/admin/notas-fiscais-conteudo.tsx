@@ -40,7 +40,13 @@ function formatarChave(chave: string | null) {
   return chave.replace(/(\d{4})(?=\d)/g, "$1 ").trim()
 }
 
-export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFiscalListada[] }) {
+export function NotasFiscaisConteudo({
+  notasIniciais,
+  fornecedores,
+}: {
+  notasIniciais: NotaFiscalListada[]
+  fornecedores: { id: string; razaoSocial: string }[]
+}) {
   const [notas, setNotas] = useState(notasIniciais)
   const [aba, setAba] = useState("todas")
   const [busca, setBusca] = useState("")
@@ -50,6 +56,9 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
   // lancamento antigo de entrada que entrou na mao, sem arquivo - que sao
   // justamente as notas que faltam pro lote do contador ficar completo.
   const [semXml, setSemXml] = useState(false)
+  const [fornecedorId, setFornecedorId] = useState("")
+  const [marca, setMarca] = useState("")
+  const [exportando, setExportando] = useState(false)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [detalhe, setDetalhe] = useState<NotaFiscalListada | null>(null)
   const [atualizando, setAtualizando] = useState(false)
@@ -59,6 +68,8 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
     return notas.filter((nota) => {
       if (aba !== "todas" && nota.tipo !== aba) return false
       if (semXml && nota.temXml) return false
+      if (fornecedorId && nota.fornecedorId !== fornecedorId) return false
+      if (marca && nota.marca !== marca) return false
 
       // Comparacao de data como texto ("2026-08-19"), que e o formato que vem
       // do banco - evita fuso horario, que em data sem hora so atrapalha.
@@ -72,7 +83,7 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
         (nota.chaveAcesso ?? "").includes(termo.replace(/\s/g, ""))
       )
     })
-  }, [notas, aba, busca, dataInicial, dataFinal, semXml])
+  }, [notas, aba, busca, dataInicial, dataFinal, semXml, fornecedorId, marca])
 
   // Atalho de competencia: e assim que o contador pensa o periodo ("agosto"),
   // e digitar duas datas so pra dizer "este mes" e trabalho a toa.
@@ -91,12 +102,66 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
     setSemXml(false)
   }
 
-  const temFiltro = Boolean(busca || dataInicial || dataFinal || semXml)
+  const temFiltro = Boolean(busca || dataInicial || dataFinal || semXml || fornecedorId || marca)
 
   // A linha e identificada por tipo+id: entrada e saida vem de tabelas
   // diferentes e nada impede que um id se repita entre elas.
   const chaveLinha = (nota: NotaFiscalListada) => `${nota.tipo}:${nota.id}`
   const notaSelecionada = notasFiltradas.find((nota) => chaveLinha(nota) === linhaSelecionada) ?? null
+
+  // Lote do contador: entrada e saida do periodo, em pastas separadas dentro
+  // do zip. Usa o periodo e os filtros que ja estao na tela - o que o operador
+  // ve na grade e o que vai no arquivo, sem segunda janela de filtros pra
+  // preencher de novo (e divergir).
+  async function exportarParaContador() {
+    if (!dataInicial || !dataFinal) {
+      toast.error("Escolha o período de emissão antes de exportar (use \"Este mês\" ou \"Mês passado\").")
+      return
+    }
+
+    setExportando(true)
+    try {
+      const resposta = await fetch("/api/admin/notas-fiscais/exportar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inicio: dataInicial,
+          fim: dataFinal,
+          tipo: aba === "todas" ? "ambos" : aba,
+          incluir: "xml",
+          fornecedorId: fornecedorId || null,
+          marca: marca || null,
+        }),
+      })
+
+      if (!resposta.ok) {
+        const dados = await resposta.json().catch(() => null)
+        toast.error(dados?.erro ?? "Não foi possível gerar o lote")
+        return
+      }
+
+      const semXmlNoLote = Number(resposta.headers.get("X-Notas-Sem-Xml") ?? 0)
+      const exportadas = resposta.headers.get("X-Notas-Exportadas") ?? "?"
+
+      const url = URL.createObjectURL(await resposta.blob())
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `notas-fiscais-${dataInicial}-a-${dataFinal}.zip`
+      link.click()
+      URL.revokeObjectURL(url)
+
+      if (semXmlNoLote > 0) {
+        toast.warning(
+          `${exportadas} nota(s) no arquivo. ${semXmlNoLote} nota(s) de saída ficaram de fora porque o XML ainda não foi baixado do Bling — exporte de novo em alguns instantes para trazer o restante.`,
+          { duration: 12000 }
+        )
+      } else {
+        toast.success(`${exportadas} nota(s) no arquivo.`)
+      }
+    } finally {
+      setExportando(false)
+    }
+  }
 
   async function recarregar() {
     setAtualizando(true)
@@ -183,6 +248,15 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
                 },
                 { separator: true },
                 {
+                  label: exportando ? "Gerando..." : "Contador",
+                  icon: FileDown,
+                  onClick: exportarParaContador,
+                  disabled: exportando,
+                  variante: "success",
+                  title: "Baixar o lote de XMLs do período (entradas e saídas) para enviar ao contador",
+                },
+                { separator: true },
+                {
                   label: "Atualizar",
                   icon: RefreshCw,
                   onClick: recarregar,
@@ -233,12 +307,48 @@ export function NotasFiscaisConteudo({ notasIniciais }: { notasIniciais: NotaFis
                 </Button>
               </div>
 
+              {/* Fornecedor so existe na entrada e loja so na saida - cada um
+                  aparece quando a aba correspondente pode mostrar aquele tipo
+                  de nota, pra nao oferecer filtro que nunca vai casar. */}
+              {aba !== "saida" && (
+                <div>
+                  <label className="text-[11px] font-medium text-slate-500">Fornecedor</label>
+                  <select
+                    value={fornecedorId}
+                    onChange={(e) => setFornecedorId(e.target.value)}
+                    className="flex h-9 w-[190px] rounded-md border border-input bg-transparent px-2 text-sm"
+                  >
+                    <option value="">Todos</option>
+                    {fornecedores.map((fornecedor) => (
+                      <option key={fornecedor.id} value={fornecedor.id}>
+                        {fornecedor.razaoSocial}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {aba !== "entrada" && (
+                <div>
+                  <label className="text-[11px] font-medium text-slate-500">Loja</label>
+                  <select
+                    value={marca}
+                    onChange={(e) => setMarca(e.target.value)}
+                    className="flex h-9 w-[170px] rounded-md border border-input bg-transparent px-2 text-sm"
+                  >
+                    <option value="">Todas</option>
+                    <option value="colorido">Coisas Brasileiras</option>
+                    <option value="branco">Porcelanas Brancas</option>
+                  </select>
+                </div>
+              )}
+
               <label className="flex items-center gap-1.5 text-xs text-slate-600">
                 <input
                   type="checkbox"
                   checked={semXml}
                   onChange={(e) => setSemXml(e.target.checked)}
-                  className="h-3.5 w-3.5"
+                  className="h-4 w-4"
                 />
                 Só sem XML guardado
               </label>

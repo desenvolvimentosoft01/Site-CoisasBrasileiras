@@ -23,6 +23,10 @@ export type NotaFiscalListada = {
   valorTotal: string | null
   // Fornecedor na entrada, cliente na saida - a tela mostra numa coluna so.
   participante: string | null
+  // Id do fornecedor (so na entrada): a tela filtra o lote do contador por ele.
+  fornecedorId: string | null
+  // Marca da loja (so na saida): a entrada e do CNPJ, nao da vitrine.
+  marca: string | null
   temXml: boolean
 }
 
@@ -34,7 +38,7 @@ export async function listarNotasFiscais(): Promise<NotaFiscalListada[]> {
     query(
       `SELECT c.id, c.numero_nota, c.serie, c.chave_acesso, c.data_emissao,
               COALESCE(c.valor_total_nota, 0) AS valor_total,
-              f.razao_social AS participante,
+              f.razao_social AS participante, f.id AS fornecedor_id,
               (c.xml_nfe IS NOT NULL) AS tem_xml
        FROM TAB_COMPRA c
        JOIN TAB_FORNECEDOR f ON f.id = c.fornecedor_id
@@ -43,7 +47,7 @@ export async function listarNotasFiscais(): Promise<NotaFiscalListada[]> {
     query(
       `SELECT p.id, p.nfe_numero, p.nfe_serie, p.nfe_chave_acesso, p.nfe_data_emissao,
               p.total AS valor_total,
-              COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS participante,
+              COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS participante, p.marca,
               (p.xml_nfe IS NOT NULL) AS tem_xml
        FROM TAB_PEDIDO p
        LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
@@ -62,6 +66,8 @@ export async function listarNotasFiscais(): Promise<NotaFiscalListada[]> {
       dataEmissao: linha.data_emissao ? String(linha.data_emissao) : null,
       valorTotal: linha.valor_total !== null ? String(linha.valor_total) : null,
       participante: linha.participante ?? null,
+      fornecedorId: linha.fornecedor_id ? String(linha.fornecedor_id) : null,
+      marca: null,
       temXml: Boolean(linha.tem_xml),
     })),
     ...saidas.map((linha) => ({
@@ -73,6 +79,8 @@ export async function listarNotasFiscais(): Promise<NotaFiscalListada[]> {
       dataEmissao: linha.nfe_data_emissao ? String(linha.nfe_data_emissao) : null,
       valorTotal: linha.valor_total !== null ? String(linha.valor_total) : null,
       participante: linha.participante ?? null,
+      fornecedorId: null,
+      marca: linha.marca ?? null,
       temXml: Boolean(linha.tem_xml),
     })),
   ]
