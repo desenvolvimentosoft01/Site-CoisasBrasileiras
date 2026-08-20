@@ -617,8 +617,7 @@ function AdminShellInterno({
                 className="hidden items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 lg:inline-flex"
                 title="Plano contratado desta instalação"
               >
-                {nomeLoja || "Loja"}
-                <span className="rounded-full bg-amber-200/70 px-1.5 py-0.5 text-[10px]">{plano}</span>
+                Plano {plano}
               </span>
             )}
             <span className="hidden text-xs font-semibold text-slate-500 sm:block">{sessao.nome}</span>
