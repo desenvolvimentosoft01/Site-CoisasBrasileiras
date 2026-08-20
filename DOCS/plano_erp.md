@@ -49,8 +49,10 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - [ ] Exibir o detalhamento na tela de lançamento — o cliente quer ver imposto na hora de lançar, tanto na entrada manual quanto na importação por XML.
 - **Por que importa:** hoje o custo ignora ST e IPI, e o Lucro/DRE mostra margem melhor que a real.
 
-**2. Foto do produto** *(aprovado)*
-- [ ] Foto no cadastro de produto e na Venda Balcão, como no InMenteGestao.
+**2. Foto do produto** *(JÁ EXISTIA — conferido em 2026-08-20)*
+- [x] O cadastro de produto aceita várias fotos, e o input usa `capture="environment"`: no celular abre a câmera direto (`components/admin/produto-form.tsx`).
+- [x] A Venda Balcão mostra a foto na grade de busca de produto, com "Sem imagem" quando não há (`components/admin/venda-balcao-conteudo.tsx`).
+- Nada a fazer aqui. Se o cliente achar que falta algo, é ajuste de tamanho/posição, não funcionalidade.
 
 **3. Visual do InMenteGestao — continuação** *(decisão: opção B, adotar o visual de lá; feito: ícones de linha, grade escura, barra de ferramentas clara, login)*
 - [ ] `ModalDetalhe` com navegação anterior/próximo entre os registros da grade ("1 de 3") e botão Editar no rodapé.

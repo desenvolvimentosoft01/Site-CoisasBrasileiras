@@ -14,6 +14,8 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
+import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
 export type Categoria = {
   id: string
@@ -326,6 +328,7 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
                       ))}
                     </tbody>
                   </table>
+                  <BarraStatusGrade exibidos={categoriasOrdenadas.length} total={categorias.length} />
                 </div>
               )}
             </CardContent>
@@ -444,6 +447,8 @@ export function CategoriasConteudo({ categoriasIniciais }: { categoriasIniciais:
       </Tabs>
 
       <ModalDetalhe
+        navegacao={montarNavegacaoDetalhe(categoriasOrdenadas, detalhe, setDetalhe, (a, b) => a.id === b.id)}
+        aoEditar={detalhe ? () => { const alvo = detalhe; setDetalhe(null); abrirEdicao(alvo) } : undefined}
         aberto={!!detalhe}
         onOpenChange={(aberto) => !aberto && setDetalhe(null)}
         titulo={detalhe?.nome ?? ""}

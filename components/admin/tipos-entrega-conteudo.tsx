@@ -12,6 +12,8 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
+import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
 export type TipoEntrega = {
   id: string
@@ -209,6 +211,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
                   ))}
                 </tbody>
               </table>
+                  <BarraStatusGrade exibidos={tipos.length} total={tipos.length} />
             </div>
           )}
         </CardContent>
@@ -255,6 +258,8 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
       )}
 
       <ModalDetalhe
+        navegacao={montarNavegacaoDetalhe(tipos, detalhe, setDetalhe, (a, b) => a.id === b.id)}
+        aoEditar={detalhe ? () => { const alvo = detalhe; setDetalhe(null); abrirEdicao(alvo) } : undefined}
         aberto={!!detalhe}
         onOpenChange={(aberto) => !aberto && setDetalhe(null)}
         titulo={detalhe?.nome ?? ""}

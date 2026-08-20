@@ -12,6 +12,8 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
+import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
 export type Produto = {
   id: string
@@ -299,6 +301,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                       ))}
                     </tbody>
                   </table>
+                  <BarraStatusGrade exibidos={produtosFiltrados.length} total={produtos.length} />
                 </div>
               )}
             </CardContent>
@@ -321,6 +324,8 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
       </Tabs>
 
       <ModalDetalhe
+        navegacao={montarNavegacaoDetalhe(produtosFiltrados, detalhe, setDetalhe, (a, b) => a.id === b.id)}
+        aoEditar={detalhe ? () => { const alvo = detalhe; setDetalhe(null); abrirEdicao(alvo) } : undefined}
         aberto={!!detalhe}
         onOpenChange={(aberto) => !aberto && setDetalhe(null)}
         titulo={detalhe?.nome ?? ""}
