@@ -531,7 +531,17 @@ export async function gerarPdfDanfe(dados: DadosDanfe): Promise<Buffer> {
           {NOME_SISTEMA} — {FABRICANTE_SISTEMA}
         </Text>
 
-        {dados.protocolo ? null : (
+        {/* Duas situacoes diferentes levam ao mesmo aviso. A de homologacao e
+            a mais traicoeira: a nota FOI autorizada e tem protocolo, entao sem
+            este carimbo o papel sai identico ao de uma nota real e alguem
+            acaba mandando um teste junto com a mercadoria. */}
+        {dados.ambiente === "2" ? (
+          <View style={[s.quadro, { marginTop: 4 }]}>
+            <Text style={s.semValorFiscal}>
+              SEM VALOR FISCAL — NF-E EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO
+            </Text>
+          </View>
+        ) : dados.protocolo ? null : (
           <View style={[s.quadro, { marginTop: 4 }]}>
             <Text style={s.semValorFiscal}>
               SEM VALOR FISCAL — XML sem protocolo de autorização
