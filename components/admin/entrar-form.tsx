@@ -4,7 +4,23 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, Eye, EyeOff, Lock, Mail } from "lucide-react"
+import { ArrowLeft, Check, Eye, EyeOff } from "lucide-react"
+import { NOME_SISTEMA, FABRICANTE_SISTEMA } from "@/lib/constantes"
+
+// Tela de entrada em duas metades, no mesmo modelo do InMenteGestao: a
+// esquerda escura apresenta o SISTEMA (quem está entrando precisa saber em que
+// sistema está entrando, e não só em que loja), a direita clara tem o
+// formulário e nada mais.
+//
+// A metade escura some no celular: numa tela de 375px ela empurraria o
+// formulário pra baixo da dobra, e quem abre o login quer digitar a senha, não
+// ler propaganda. A marca do sistema continua aparecendo, em cima do card.
+const DESTAQUES = [
+  "Venda balcão, pedidos e orçamentos",
+  "Estoque e custo atualizados por nota",
+  "DANFE e XML de entrada e saída",
+  "Financeiro, relatórios e auditoria",
+]
 
 export function EntrarForm({
   logoUrl,
@@ -51,37 +67,78 @@ export function EntrarForm({
 
   return (
     <div
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-neutral-950 px-4"
+      className="flex min-h-screen bg-white"
       style={{ "--primary": corPrimaria } as React.CSSProperties}
     >
-      {/* Fundo com dois brilhos radiais (escuro -> cor primaria da loja) -
-          puramente decorativo, cada instancia/cliente herda a cor configurada
-          em Configuracoes > Aparencia via --primary. */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-32 top-1/3 h-[32rem] w-[32rem] rounded-full bg-black/40 blur-3xl" />
-        <div className="absolute -right-40 top-1/4 h-[36rem] w-[36rem] rounded-full bg-[var(--primary)] opacity-30 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 h-[24rem] w-[24rem] rounded-full bg-[var(--primary)] opacity-20 blur-3xl" />
+      {/* ---- Metade da apresentacao (só no desktop) ---- */}
+      <div className="relative hidden w-1/2 overflow-hidden bg-slate-950 lg:flex lg:flex-col lg:justify-center lg:px-14">
+        {/* Formas de fundo: circulos no topo e uma onda embaixo, na cor da
+            loja - a mesma --primary configurada em Configuracoes > Aparencia,
+            pra que cada instalacao tenha a cara do proprio cliente. */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-slate-800/60 blur-2xl" />
+          <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-[var(--primary)] opacity-20 blur-3xl" />
+          <div className="absolute -bottom-32 -left-16 h-[28rem] w-[140%] rotate-[-8deg] rounded-[50%] bg-gradient-to-r from-[var(--primary)] to-slate-800 opacity-70" />
+        </div>
+
+        <div className="relative">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/5">
+              <Image src={logoUrl || "/logo.webp"} alt="" width={40} height={40} className="rounded-lg" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold leading-tight tracking-tight text-white">{NOME_SISTEMA}</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{FABRICANTE_SISTEMA}</p>
+            </div>
+          </div>
+
+          <p className="mt-8 max-w-md text-xl leading-relaxed text-slate-200">
+            O sistema de gestão da <span className="font-semibold text-white">{nomeLoja}</span>: vendas,
+            estoque, compras e fiscal em um lugar só.
+          </p>
+
+          <ul className="mt-10 space-y-3">
+            {DESTAQUES.map((destaque) => (
+              <li key={destaque} className="flex items-center gap-3 text-slate-300">
+                <Check size={18} className="shrink-0 text-emerald-400" />
+                {destaque}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      <Link
-        href="/"
-        className="absolute left-6 top-6 z-10 flex items-center gap-1.5 text-sm font-medium text-white/80 transition hover:text-white"
-      >
-        <ArrowLeft size={16} />
-        Voltar ao site
-      </Link>
+      {/* ---- Metade do formulario ---- */}
+      <div className="relative flex w-full flex-col justify-center px-5 py-10 sm:px-10 lg:w-1/2 lg:px-20">
+        <Link
+          href="/"
+          className="absolute left-5 top-5 flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-slate-700 sm:left-8 sm:top-8"
+        >
+          <ArrowLeft size={16} />
+          Voltar ao site
+        </Link>
 
-      <div className="relative w-full max-w-md rounded-2xl bg-white/95 p-8 shadow-2xl backdrop-blur">
-        <h1 className="text-2xl font-bold text-neutral-900">Bem-vindo(a)</h1>
-        <p className="mt-1 text-sm text-neutral-500">Acesse sua conta para continuar</p>
+        {/* No celular a metade escura nao existe, entao a marca do sistema
+            precisa aparecer aqui - senao a pessoa entra sem saber onde está. */}
+        <div className="mb-8 flex items-center gap-3 lg:hidden">
+          <Image src={logoUrl || "/logo.webp"} alt="" width={36} height={36} className="rounded-lg" />
+          <div>
+            <p className="text-base font-bold leading-tight text-slate-900">{NOME_SISTEMA}</p>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">{FABRICANTE_SISTEMA}</p>
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="login" className="text-sm font-medium text-neutral-700">
-              E-mail
-            </label>
-            <div className="relative">
-              <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+        <div className="w-full max-w-md">
+          <h1 className="text-2xl font-bold text-slate-900">Bem-vindo</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Acesse o {NOME_SISTEMA} — {nomeLoja}
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <div className="space-y-1.5">
+              <label htmlFor="login" className="text-sm font-semibold text-slate-700">
+                Usuário
+              </label>
               <input
                 id="login"
                 type="text"
@@ -89,66 +146,68 @@ export function EntrarForm({
                 onChange={(e) => setLogin(e.target.value)}
                 required
                 autoFocus
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2.5 pl-10 pr-3 text-sm text-neutral-900 outline-none transition focus:border-[var(--primary)] focus:bg-white focus:ring-2 focus:ring-[var(--primary)]/20"
+                placeholder="seuemail@exemplo.com"
+                className="w-full rounded-lg border border-slate-200 px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
               />
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="senha" className="text-sm font-medium text-neutral-700">
-              Senha
-            </label>
-            <div className="relative">
-              <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input
-                id="senha"
-                type={senhaVisivel ? "text" : "password"}
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                required
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2.5 pl-10 pr-10 text-sm text-neutral-900 outline-none transition focus:border-[var(--primary)] focus:bg-white focus:ring-2 focus:ring-[var(--primary)]/20"
-              />
+            <div className="space-y-1.5">
+              <label htmlFor="senha" className="text-sm font-semibold text-slate-700">
+                Senha
+              </label>
+              <div className="relative">
+                <input
+                  id="senha"
+                  type={senhaVisivel ? "text" : "password"}
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  required
+                  placeholder="Sua senha"
+                  className="w-full rounded-lg border border-slate-200 px-3.5 py-3 pr-11 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSenhaVisivel((v) => !v)}
+                  className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                  aria-label={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {senhaVisivel ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {erro && (
+              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{erro}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={carregando}
+              className="w-full rounded-lg bg-slate-900 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+            >
+              {carregando ? "Entrando..." : "Entrar"}
+            </button>
+
+            <div className="text-center">
               <button
                 type="button"
-                onClick={() => setSenhaVisivel((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                aria-label={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
+                onClick={() => setMostrarAjudaSenha((v) => !v)}
+                className="text-sm font-medium text-slate-500 underline-offset-2 hover:text-slate-800 hover:underline"
               >
-                {senhaVisivel ? <EyeOff size={18} /> : <Eye size={18} />}
+                Esqueci minha senha
               </button>
+              {mostrarAjudaSenha && (
+                <p className="mt-2 text-xs text-slate-400">
+                  Fale com o administrador do sistema para redefinir sua senha.
+                </p>
+              )}
             </div>
-          </div>
+          </form>
+        </div>
 
-          {erro && <p className="text-sm text-red-500">{erro}</p>}
-
-          <button
-            type="submit"
-            disabled={carregando}
-            className="w-full rounded-lg bg-[var(--primary)] py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110 disabled:opacity-60"
-          >
-            {carregando ? "Entrando..." : "Entrar"}
-          </button>
-
-          <div className="text-right">
-            <button
-              type="button"
-              onClick={() => setMostrarAjudaSenha((v) => !v)}
-              className="text-sm font-medium text-neutral-500 underline-offset-2 hover:text-[var(--primary)] hover:underline"
-            >
-              Esqueci minha senha
-            </button>
-            {mostrarAjudaSenha && (
-              <p className="mt-2 text-left text-xs text-neutral-400">
-                Fale com o administrador do sistema para redefinir sua senha.
-              </p>
-            )}
-          </div>
-        </form>
-      </div>
-
-      <div className="pointer-events-none absolute bottom-6 right-6 flex items-center gap-2 opacity-70">
-        <Image src={logoUrl || "/logo.webp"} alt={nomeLoja} width={28} height={28} />
-        <span className="font-heading text-sm font-semibold text-white">{nomeLoja}</span>
+        <p className="mt-10 text-xs text-slate-400">
+          {NOME_SISTEMA} — {FABRICANTE_SISTEMA}
+        </p>
       </div>
     </div>
   )
