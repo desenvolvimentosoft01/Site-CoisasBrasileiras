@@ -68,7 +68,7 @@ const varianteCss: Record<string, string> = {
 // botoes de texto soltos.
 export function BarraFerramentas({ botoes, titulo, extra }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-slate-300 bg-slate-100 px-2 py-1.5 print:hidden">
+    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-3 py-2.5 print:hidden">
       {titulo && (
         <span className="mr-1 border-r border-slate-300 px-2 pr-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">
           {titulo}
@@ -85,7 +85,7 @@ export function BarraFerramentas({ botoes, titulo, extra }: Props) {
             disabled={btn.disabled}
             title={btn.title}
             className={cn(
-              "flex min-w-14 flex-col items-center gap-0.5 rounded border px-3 py-1.5 text-[11px] font-semibold transition-all",
+              "flex min-w-[68px] flex-col items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-medium transition-all",
               "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40",
               varianteCss[btn.variante ?? "default"]
             )}

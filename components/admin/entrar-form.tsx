@@ -15,12 +15,23 @@ import { NOME_SISTEMA, FABRICANTE_SISTEMA, CONTATO_FABRICANTE } from "@/lib/cons
 // A metade escura some no celular: numa tela de 375px ela empurraria o
 // formulário pra baixo da dobra, e quem abre o login quer digitar a senha, não
 // ler propaganda. A marca do sistema continua aparecendo, em cima do card.
+// O que o SISTEMA faz - e não o que esta instalação contratou. A tela de
+// entrada é a vitrine do produto: mostra a régua inteira, e o plano de cada
+// cliente decide o que ele enxerga depois de entrar.
+//
+// Seis linhas é o teto: passou disso, ninguém lê, e a lista com movimento
+// levaria tempo demais até parar.
 const DESTAQUES = [
-  "Venda balcão, pedidos e orçamentos",
-  "Estoque e custo atualizados por nota",
-  "DANFE e XML de entrada e saída",
+  "Pedido de Venda Balcão com carrinho",
+  "Pedidos, orçamentos e clientes",
+  "Estoque e custo atualizados pela nota de entrada",
+  "DANFE e XML de entrada e saída, prontos pro contador",
+  "Compras: cotação, pedido e fornecedores",
   "Financeiro, relatórios e auditoria",
 ]
+
+// Integrações que o sistema fala. Cada instalação libera as suas no plano.
+const INTEGRACOES = ["Bling (NF-e)", "Mercado Pago", "Frenet", "Mercado Livre", "Shopee", "iFood"]
 
 export function EntrarForm({
   corPrimaria,
@@ -108,6 +119,28 @@ export function EntrarForm({
               </li>
             ))}
           </ul>
+
+          {/* Entra depois da lista terminar de aparecer, pra nao competir com
+              ela. Sao as integracoes do SISTEMA - o que cada loja usa depende
+              do plano dela. */}
+          <div
+            className="animar-entrada-item mt-10 max-w-md"
+            style={{ animationDelay: `${DESTAQUES.length * 1.2 + 1.2}s` }}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Integrações
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {INTEGRACOES.map((integracao) => (
+                <span
+                  key={integracao}
+                  className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-slate-300"
+                >
+                  {integracao}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

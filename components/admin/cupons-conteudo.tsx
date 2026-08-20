@@ -205,7 +205,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[640px] text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-left text-slate-500">
+                      <tr className="border-b border-slate-700 bg-slate-800 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-200">
                         <th className="p-4 font-medium">Código</th>
                         <th className="p-4 font-medium">Desconto</th>
                         <th className="p-4 font-medium">Usos</th>
