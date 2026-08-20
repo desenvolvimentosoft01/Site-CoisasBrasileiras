@@ -34,8 +34,8 @@ function CardIndicador({
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm text-slate-500">{titulo}</CardTitle>
-        <div className={`flex h-9 w-9 items-center justify-center rounded-lg text-lg ${coresIndicador[cor]}`}>
-          {icone}
+        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${coresIndicador[cor]}`}>
+          <Icone nome={icone} tamanho={20} />
         </div>
       </CardHeader>
       <CardContent>{children}</CardContent>
