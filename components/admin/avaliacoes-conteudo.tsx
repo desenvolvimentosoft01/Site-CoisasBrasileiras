@@ -55,7 +55,7 @@ export function AvaliacoesConteudo({ avaliacoesIniciais }: { avaliacoesIniciais:
   }
 
   async function excluir(avaliacao: Avaliacao) {
-    if (!(await confirmar({ descricao: `Excluir a avaliação de "${avaliacao.cliente_nome}" pra "${avaliacao.produto_nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir a avaliação de "${avaliacao.cliente_nome}" pra "${avaliacao.produto_nome}"?`, destrutivo: true, consequencia: "A avaliação sai da página do produto na loja e deixa de contar na nota média. Não dá para recuperar o texto depois." }))) return
     await fetch(`/api/admin/avaliacoes/${avaliacao.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Avaliações",

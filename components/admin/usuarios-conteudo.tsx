@@ -147,7 +147,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
   }
 
   async function excluir(usuario: Usuario) {
-    if (!(await confirmar({ descricao: `Excluir o usuário "${usuario.nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o usuário "${usuario.nome}"?`, destrutivo: true, consequencia: "A pessoa perde o acesso ao painel na hora. O histórico dela na Auditoria continua guardado." }))) return
     const resposta = await fetch(`/api/admin/usuarios/${usuario.id}`, { method: "DELETE" })
     if (!resposta.ok) {
       const dados = await resposta.json()

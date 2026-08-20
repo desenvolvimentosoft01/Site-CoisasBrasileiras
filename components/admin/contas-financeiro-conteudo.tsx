@@ -154,7 +154,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
   }
 
   async function excluir(conta: Conta) {
-    if (!(await confirmar({ descricao: `Excluir a conta "${conta.descricao}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir a conta "${conta.descricao}"?`, destrutivo: true, consequencia: "O lançamento some do financeiro e deixa de aparecer nos relatórios do período." }))) return
     await fetch(`/api/admin/financeiro/contas/${conta.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Financeiro - Contas",

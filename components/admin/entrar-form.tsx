@@ -42,7 +42,10 @@ export function EntrarForm({
       return
     }
 
-    router.push("/admin/dashboard")
+    // Senha provisoria (cadastro novo ou reset pelo admin) vai direto pra
+    // troca, em vez de abrir a Visao Geral e ser redirecionada em seguida.
+    const dados = await resposta.json()
+    router.push(dados.senhaProvisoria ? "/admin/trocar-senha" : "/admin/dashboard")
     router.refresh()
   }
 

@@ -178,7 +178,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   }
 
   async function excluir(banner: Banner) {
-    if (!(await confirmar({ descricao: `Excluir o banner "${banner.titulo}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o banner "${banner.titulo}"?`, destrutivo: true, consequencia: "O banner sai do ar na loja assim que você confirmar. A imagem enviada também é descartada." }))) return
     await fetch(`/api/admin/banners/${banner.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Banners",

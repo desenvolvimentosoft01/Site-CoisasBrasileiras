@@ -146,7 +146,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
   }
 
   async function excluir(cupom: Cupom) {
-    if (!(await confirmar({ descricao: `Excluir o cupom "${cupom.codigo}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o cupom "${cupom.codigo}"?`, destrutivo: true, consequencia: "Quem já recebeu esse código não vai mais conseguir usar. Para suspender sem apagar o histórico, desative o cupom." }))) return
     await fetch(`/api/admin/cupons/${cupom.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Cupons",

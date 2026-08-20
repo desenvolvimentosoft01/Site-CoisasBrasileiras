@@ -170,7 +170,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
   }
 
   async function excluir(midia: SobreNosMidia) {
-    if (!(await confirmar({ descricao: `Excluir esse item da galeria "Sobre Nós"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir esse item da galeria "Sobre Nós"?`, destrutivo: true, consequencia: "A foto ou o vídeo sai da página Sobre Nós na loja." }))) return
     await fetch(`/api/admin/sobre-nos-midia/${midia.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Sobre Nós",

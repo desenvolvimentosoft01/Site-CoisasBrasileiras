@@ -178,7 +178,7 @@ export function FeedbacksConteudo({ feedbacksIniciais }: { feedbacksIniciais: Fe
   }
 
   async function excluir(feedback: Feedback) {
-    if (!(await confirmar({ descricao: `Excluir o depoimento de "${feedback.nome}"?`, destrutivo: true }))) return
+    if (!(await confirmar({ descricao: `Excluir o depoimento de "${feedback.nome}"?`, destrutivo: true, consequencia: "O depoimento sai da loja e o texto não pode ser recuperado." }))) return
     await fetch(`/api/admin/feedbacks/${feedback.id}`, { method: "DELETE" })
     registrarAuditoria({
       tela: "Feedbacks",

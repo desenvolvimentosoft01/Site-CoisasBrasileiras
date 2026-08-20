@@ -30,6 +30,16 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
+    // Senha provisoria bloqueia o painel inteiro ate ser trocada. Fica antes
+    // das checagens de papel de proposito: nao interessa o que a pessoa pode
+    // acessar enquanto o acesso ainda e uma senha que outra pessoa escolheu.
+    if (sessao.senhaProvisoria && !pathname.startsWith("/admin/trocar-senha")) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/admin/trocar-senha"
+      url.search = ""
+      return NextResponse.redirect(url)
+    }
+
     const somenteAdmin =
       pathname.startsWith("/admin/usuarios") ||
       pathname.startsWith("/admin/auditoria") ||

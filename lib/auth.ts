@@ -15,6 +15,10 @@ export type SessaoAdmin = {
   nome: string
   email: string
   papel: string
+  // Senha definida por outra pessoa (cadastro novo ou reset pelo admin). Vai
+  // no token pra que o middleware consiga barrar as telas sem precisar
+  // consultar o banco a cada navegacao.
+  senhaProvisoria?: boolean
 }
 
 export { EMAIL_DESENVOLVEDOR } from "@/lib/constantes"

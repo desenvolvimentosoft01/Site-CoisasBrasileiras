@@ -162,7 +162,7 @@ export function PedidosCompraConteudo({
   }
 
   async function cancelar(pedido: PedidoCompra) {
-    if (!(await confirmar({ descricao: `Cancelar o pedido de compra ${numeroFormatado(pedido.numero)}?`, destrutivo: true })))
+    if (!(await confirmar({ descricao: `Cancelar o pedido de compra ${numeroFormatado(pedido.numero)}?`, destrutivo: true, consequencia: "O pedido fica marcado como cancelado e não pode mais receber entrada de nota. O fornecedor não é avisado automaticamente." })))
       return
     const resposta = await fetch(`/api/admin/pedidos-compra/${pedido.id}`, {
       method: "PATCH",
@@ -178,7 +178,7 @@ export function PedidosCompraConteudo({
   }
 
   async function excluir(pedido: PedidoCompra) {
-    if (!(await confirmar({ descricao: `Excluir o pedido de compra ${numeroFormatado(pedido.numero)}?`, destrutivo: true })))
+    if (!(await confirmar({ descricao: `Excluir o pedido de compra ${numeroFormatado(pedido.numero)}?`, destrutivo: true, consequencia: "O pedido e os itens dele são apagados do sistema." })))
       return
     const resposta = await fetch(`/api/admin/pedidos-compra/${pedido.id}`, { method: "DELETE" })
     if (!resposta.ok) {

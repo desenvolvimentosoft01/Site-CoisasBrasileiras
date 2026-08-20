@@ -527,6 +527,15 @@ function AdminShellInterno({
           <div className={`flex-1 overflow-hidden ${menuExpandido ? "" : "lg:hidden"}`}>
             <div className="truncate text-sm font-medium text-white">{sessao.nome}</div>
             <div className="truncate text-xs capitalize text-slate-400">{sessao.papel}</div>
+            {/* Trocar a propria senha fica junto do nome, e nao em
+                Configuracoes: e uma acao sobre a pessoa, nao sobre a loja - e
+                o operador nem enxerga o menu de Configuracoes. */}
+            <Link
+              href="/admin/trocar-senha"
+              className="text-[11px] text-slate-500 transition-colors hover:text-slate-300"
+            >
+              Trocar minha senha
+            </Link>
           </div>
         </div>
       </aside>

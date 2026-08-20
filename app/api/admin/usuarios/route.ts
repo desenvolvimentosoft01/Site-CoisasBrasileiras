@@ -48,8 +48,10 @@ export async function POST(request: Request) {
   const senhaHash = await bcrypt.hash(senha, 10)
 
   const [novoUsuario] = await query(
-    `INSERT INTO TAB_USUARIO_ADMIN (nome, email, senha_hash, papel, usuario)
-     VALUES ($1, $2, $3, $4, $5)
+    // senha_provisoria = true: quem cadastrou escolheu a senha, entao ela vale
+    // so ate o dono do acesso entrar e criar a dele (migration 059).
+    `INSERT INTO TAB_USUARIO_ADMIN (nome, email, senha_hash, papel, usuario, senha_provisoria)
+     VALUES ($1, $2, $3, $4, $5, true)
      RETURNING id, nome, email, usuario, papel, ativo, criado_em, ultimo_login`,
     [nome.trim(), email.trim(), senhaHash, papel, usuarioLogin]
   )

@@ -967,6 +967,11 @@ function ConfiguracoesFormulario({
                     <div className="space-y-2">
                       <Label className="flex items-center gap-1.5">
                         Public key (produção)
+                        {segredosStatus.mercadopago_public_key && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-500">
+                            <Check size={12} /> configurado
+                          </span>
+                        )}
                         <CampoDica>
                           Painel do Mercado Pago &gt; sua aplicação &gt; Credenciais de produção &gt; &quot;Public
                           key&quot;. Diferente do token de acesso, essa chave não é secreta - ela é usada no
@@ -974,7 +979,12 @@ function ConfiguracoesFormulario({
                           checkout.
                         </CampoDica>
                       </Label>
-                      <Input
+                      {/* Tecnicamente a public key nao e segredo (ela vai pro
+                          navegador do cliente no checkout), mas fica escondida
+                          igual as outras: campo de credencial a mostra aberta,
+                          no meio de campos mascarados, parece descuido de quem
+                          fez - e alguem acaba "corrigindo" na hora errada. */}
+                      <InputSenha
                         value={mpPublicKey}
                         onChange={(e) => setMpPublicKey(e.target.value)}
                         placeholder="Colar public key"
