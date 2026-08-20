@@ -147,7 +147,7 @@ export function EntrarForm({
       </div>
 
       {/* ---- Metade do formulario ---- */}
-      <div className="relative flex w-full flex-col justify-center px-5 py-10 sm:px-10 lg:w-1/2 lg:px-20">
+      <div className="relative flex w-full flex-col justify-center px-5 pb-10 pt-20 sm:px-10 sm:pt-24 lg:w-1/2 lg:px-20 lg:py-10">
         <Link
           href="/"
           className="absolute left-5 top-5 flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-slate-700 sm:left-8 sm:top-8"
@@ -204,7 +204,7 @@ export function EntrarForm({
                 <button
                   type="button"
                   onClick={() => setSenhaVisivel((v) => !v)}
-                  className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                  className="absolute right-1.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 sm:right-2 sm:h-9 sm:w-9"
                   aria-label={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {senhaVisivel ? <EyeOff size={18} /> : <Eye size={18} />}
