@@ -4,6 +4,7 @@ import {
   Ban,
   BarChart3,
   CheckCircle2,
+  Copy,
   Download,
   Eraser,
   Eye,
@@ -47,6 +48,7 @@ export type NomeIcone =
   | "novo"
   | "ver"
   | "editar"
+  | "duplicar"
   | "excluir"
   | "salvar"
   | "limpar"
@@ -83,6 +85,7 @@ const DESENHO: Record<NomeIcone, LucideIcon> = {
   novo: FilePlus,
   ver: Eye,
   editar: Pencil,
+  duplicar: Copy,
   excluir: Trash2,
   salvar: Save,
   limpar: Eraser,
@@ -122,6 +125,7 @@ const COR: Partial<Record<NomeIcone, string>> = {
   novo: "text-blue-600",
   ver: "text-slate-500",
   editar: "text-blue-600",
+  duplicar: "text-slate-500",
   excluir: "text-red-500",
   salvar: "text-emerald-600",
   limpar: "text-amber-600",

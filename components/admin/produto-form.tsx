@@ -58,11 +58,15 @@ function valorClubeInicial(produto?: ProdutoExistente): string {
 
 export function ProdutoForm({
   produto,
+  duplicando,
   marcaPadrao,
   onSalvo,
   onCancelar,
 }: {
   produto?: ProdutoExistente
+  // Duplicacao: os campos vem de um produto existente, mas o registro e NOVO.
+  // Sem essa distincao o formulario mandaria PUT e sobrescreveria o original.
+  duplicando?: boolean
   marcaPadrao?: "colorido" | "branco"
   onSalvo: () => void
   onCancelar: () => void
@@ -243,8 +247,11 @@ export function ProdutoForm({
       imagensUrls,
     }
 
-    const url = produto ? `/api/admin/produtos/${produto.id}` : "/api/admin/produtos"
-    const method = produto ? "PUT" : "POST"
+    // Duplicando, os campos vieram de um produto existente mas o registro e
+    // novo - vai POST, senao sobrescreveria o original.
+    const editandoDeVerdade = produto && !duplicando
+    const url = editandoDeVerdade ? `/api/admin/produtos/${produto.id}` : "/api/admin/produtos"
+    const method = editandoDeVerdade ? "PUT" : "POST"
 
     const resposta = await fetch(url, {
       method,

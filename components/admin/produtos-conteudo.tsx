@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Pencil, Trash2, AlertTriangle, FilePlus } from "lucide-react"
+import { Pencil, Trash2, AlertTriangle, FilePlus, Copy } from "lucide-react"
 import { toast } from "sonner"
 import { ProdutoForm } from "@/components/admin/produto-form"
 import { registrarAuditoria } from "@/lib/auditoria"
@@ -71,6 +71,9 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [detalhe, setDetalhe] = useState<Produto | null>(null)
+  // Formulario aberto a partir de outro produto: os campos vem preenchidos,
+  // mas o que vai ser salvo e um cadastro novo.
+  const [duplicando, setDuplicando] = useState(false)
 
   const produtosFiltrados = produtos.filter((p) => {
     if (filtroStatus === "ativos" && !p.ativo) return false
@@ -85,12 +88,28 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
   }
 
   function abrirNovo() {
+    setDuplicando(false)
     setEditando(undefined)
     setLinhaSelecionada(null)
     setAba("formulario")
   }
 
+  // Duplicar: abre o formulario com os dados de um produto existente, mas como
+  // cadastro NOVO. SKU e codigo de barras ficam de fora - sao unicos por
+  // produto, e repetir faria o leitor do balcao trazer o produto errado.
+  async function abrirDuplicacao(produto: Produto) {
+    setLinhaSelecionada(produto.id)
+    setAba("formulario")
+    setCarregandoDetalhe(true)
+    const resposta = await fetch(`/api/admin/produtos/${produto.id}`)
+    const detalhado = await resposta.json()
+    setEditando({ ...detalhado, nome: `${detalhado.nome} (cópia)`, sku: null, codigo_barras: null })
+    setDuplicando(true)
+    setCarregandoDetalhe(false)
+  }
+
   async function abrirEdicao(produto: Produto) {
+    setDuplicando(false)
     setLinhaSelecionada(produto.id)
     setAba("formulario")
     setCarregandoDetalhe(true)
@@ -101,6 +120,7 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
 
   function handleSalvo() {
     setAba("lista")
+    setDuplicando(false)
     setEditando(undefined)
     recarregar()
   }
@@ -169,6 +189,13 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                   icon: Pencil,
                   onClick: () => produtoSelecionado && abrirEdicao(produtoSelecionado),
                   disabled: !produtoSelecionado,
+                },
+                {
+                  label: "Duplicar",
+                  icon: Copy,
+                  onClick: () => produtoSelecionado && abrirDuplicacao(produtoSelecionado),
+                  disabled: !produtoSelecionado,
+                  title: "Cadastrar um produto novo a partir deste (sem SKU e sem código de barras)",
                 },
                 {
                   label: "Excluir",
@@ -313,8 +340,9 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
             <p className="text-sm text-slate-500">Carregando...</p>
           ) : (
             <ProdutoForm
-              key={editando?.id ?? "novo"}
+              key={duplicando ? `copia-${editando?.id}` : (editando?.id ?? "novo")}
               produto={editando}
+              duplicando={duplicando}
               marcaPadrao={filtroMarca === "todas" ? "colorido" : filtroMarca}
               onSalvo={handleSalvo}
               onCancelar={() => setAba("lista")}
