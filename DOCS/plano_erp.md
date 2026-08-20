@@ -55,11 +55,11 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - Nada a fazer aqui. Se o cliente achar que falta algo, é ajuste de tamanho/posição, não funcionalidade.
 
 **3. Visual do InMenteGestao — continuação** *(decisão: opção B, adotar o visual de lá; feito: ícones de linha, grade escura, barra de ferramentas clara, login)*
-- [ ] `ModalDetalhe` com navegação anterior/próximo entre os registros da grade ("1 de 3") e botão Editar no rodapé.
-- [ ] Barra de status no rodapé da grade: "X de Y registro(s)" à esquerda e "Pronto" à direita.
-- [ ] Linha de filtros padronizada: campos + botão "Pesquisar" + "Limpar filtros" + selo "N registro(s) encontrado(s)".
+- [x] `ModalDetalhe` com navegação anterior/próximo entre os registros da grade ("1 de 3") e botão Editar no rodapé. *(feito 2026-08-20)*
+- [x] Barra de status no rodapé da grade. *(feito 2026-08-20 — em 8 telas)*
+- [x] Linha de filtros padronizada (`components/admin/linha-filtros.tsx`), aplicada em Notas Fiscais. *(falta levar às demais grades que têm filtro próprio)*
 - [ ] Subtítulo nas telas de cadastro: "Duplo clique na linha para editar · Selecione para habilitar ações na barra".
-- [ ] Botão "Duplicar" na barra das telas de cadastro (existe lá, não existe aqui).
+- [x] Botão "Duplicar" — feito em Produtos. *(falta avaliar se faz sentido em Clientes/Fornecedores; em cadastro sem campo repetitivo, duplicar não ajuda)*
 - [ ] Tela de Plano e Recursos no mesmo padrão das demais: barra com Gravar/Cancelar em vez de salvar a cada clique. Hoje cada marcação já grava sozinha (PUT em `/api/admin/recursos`), o que é seguro mas foge do padrão do sistema — o cliente pediu o CRUD explícito.
 
 **3.1. Tela de Cores do Sistema — separar site e sistema**
