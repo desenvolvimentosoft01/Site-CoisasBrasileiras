@@ -1,4 +1,5 @@
 import { Document, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer"
+import { NOME_SISTEMA, FABRICANTE_SISTEMA } from "@/lib/constantes"
 
 function numeroFormatado(n: number) {
   return `OR.${String(n).padStart(4, "0")}`
@@ -25,6 +26,7 @@ const s = StyleSheet.create({
   totais: { alignItems: "flex-end", marginTop: 8 },
   totalFinal: { fontSize: 13, fontWeight: 700, marginTop: 2, color: "#065f46" },
   condicoes: { marginTop: 16 },
+  assinaturaSistema: { marginTop: 20, fontSize: 7, textAlign: "right", color: "#777777" },
   condicoesTitulo: { fontWeight: 700, marginBottom: 4 },
 })
 
@@ -89,6 +91,12 @@ export async function gerarPdfOrcamento(params: {
             <Text>{params.condicoes}</Text>
           </View>
         )}
+
+        {/* Identificacao de quem gerou o documento - mesma assinatura do
+            DANFE, pra que qualquer papel que sai do sistema diga de onde veio. */}
+        <Text style={s.assinaturaSistema}>
+          {NOME_SISTEMA} — {FABRICANTE_SISTEMA}
+        </Text>
       </Page>
     </Document>
   )

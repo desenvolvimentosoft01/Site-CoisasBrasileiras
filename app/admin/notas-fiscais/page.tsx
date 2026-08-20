@@ -8,13 +8,20 @@ export default async function NotasFiscaisPage() {
   // que aquele fornecedor nao teve nota nenhuma (que e uma resposta valida).
   const [notas, fornecedores] = await Promise.all([
     listarNotasFiscais(),
-    query("SELECT id, razao_social FROM TAB_FORNECEDOR ORDER BY razao_social"),
+    query("SELECT id, codigo, razao_social, nome_fantasia, cnpj_cpf FROM TAB_FORNECEDOR ORDER BY codigo"),
   ])
 
   return (
     <NotasFiscaisConteudo
       notasIniciais={notas}
-      fornecedores={fornecedores.map((f) => ({ id: String(f.id), razaoSocial: f.razao_social }))}
+      fornecedores={fornecedores.map((f) => ({
+        id: String(f.id),
+        codigo: Number(f.codigo),
+        // Nome fantasia e como o operador conhece o fornecedor no dia a dia;
+        // a razao social entra so quando nao ha fantasia cadastrado.
+        nome: f.nome_fantasia || f.razao_social,
+        cnpjCpf: f.cnpj_cpf,
+      }))}
     />
   )
 }

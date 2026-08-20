@@ -14,7 +14,7 @@ export default async function ComprasPage({
     query(
       "SELECT id, razao_social, nome_fantasia, cnpj_cpf FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
     ),
-    query("SELECT id, nome, sku, codigo_barras, custo, estoque FROM TAB_PRODUTO WHERE ativo = true ORDER BY nome"),
+    query("SELECT id, codigo, nome, sku, codigo_barras, custo, estoque FROM TAB_PRODUTO WHERE ativo = true ORDER BY codigo"),
     pedidoCompraId
       ? query(
           `SELECT pc.id, pc.numero, pc.fornecedor_id

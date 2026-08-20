@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Printer, FileDown, RefreshCw } from "lucide-react"
-import { formatarMoeda } from "@/lib/mascaras"
+import { formatarMoeda, mascaraCpfCnpj } from "@/lib/mascaras"
 import { toast } from "sonner"
 import type { NotaFiscalListada } from "@/lib/notas-fiscais"
 import { Icone } from "@/components/admin/icone"
@@ -45,7 +45,7 @@ export function NotasFiscaisConteudo({
   fornecedores,
 }: {
   notasIniciais: NotaFiscalListada[]
-  fornecedores: { id: string; razaoSocial: string }[]
+  fornecedores: { id: string; codigo: number; nome: string; cnpjCpf: string | null }[]
 }) {
   const [notas, setNotas] = useState(notasIniciais)
   const [aba, setAba] = useState("todas")
@@ -100,6 +100,8 @@ export function NotasFiscaisConteudo({
     setDataInicial("")
     setDataFinal("")
     setSemXml(false)
+    setFornecedorId("")
+    setMarca("")
   }
 
   const temFiltro = Boolean(busca || dataInicial || dataFinal || semXml || fornecedorId || marca)
@@ -321,7 +323,8 @@ export function NotasFiscaisConteudo({
                     <option value="">Todos</option>
                     {fornecedores.map((fornecedor) => (
                       <option key={fornecedor.id} value={fornecedor.id}>
-                        {fornecedor.razaoSocial}
+                        {fornecedor.codigo} - {fornecedor.nome}
+                        {fornecedor.cnpjCpf ? ` - CNPJ: ${mascaraCpfCnpj(fornecedor.cnpjCpf)}` : ""}
                       </option>
                     ))}
                   </select>

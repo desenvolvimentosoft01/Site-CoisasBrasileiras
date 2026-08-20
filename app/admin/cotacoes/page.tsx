@@ -14,7 +14,7 @@ export default async function CotacoesPage() {
     query(
       "SELECT id, razao_social, nome_fantasia, cnpj_cpf, email FROM TAB_FORNECEDOR WHERE ativo = true ORDER BY razao_social"
     ),
-    query("SELECT id, nome, sku FROM TAB_PRODUTO WHERE ativo = true ORDER BY nome"),
+    query("SELECT id, codigo, nome, sku FROM TAB_PRODUTO WHERE ativo = true ORDER BY codigo"),
   ])
 
   return <CotacoesConteudo cotacoesIniciais={cotacoes} fornecedores={fornecedores} produtos={produtos} />
