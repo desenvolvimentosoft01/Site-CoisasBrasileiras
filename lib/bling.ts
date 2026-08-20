@@ -293,6 +293,34 @@ export async function cancelarNotaFiscalBling(blingNotaId: string, justificativa
   await limparErroBling()
 }
 
+// Chama os caminhos na ordem e devolve a resposta do primeiro que NAO for 404.
+// So o 404 faz seguir pro proximo: 401/403/500 sao problemas de verdade
+// (token, permissao, Bling fora do ar) e precisam chegar na tela como estao,
+// em vez de virarem "nenhum endpoint respondeu".
+async function chamarPrimeiroCaminhoQueExiste(caminhos: string[]) {
+  const naoEncontrados: string[] = []
+
+  for (const caminho of caminhos) {
+    try {
+      const resposta = await chamarBling(caminho)
+      // O 404 do caminho anterior ja foi gravado como pendencia fiscal pelo
+      // chamarBling - limpa, senao a tela de Configuracoes fica mostrando um
+      // erro de um caminho que a gente nem usa.
+      if (naoEncontrados.length > 0) await limparErroBling()
+      return resposta
+    } catch (erro) {
+      const mensagem = erro instanceof Error ? erro.message : String(erro)
+      if (!mensagem.startsWith("Bling respondeu 404")) throw erro
+      naoEncontrados.push(caminho)
+    }
+  }
+
+  throw new Error(
+    `O Bling respondeu "nao encontrado" em ${naoEncontrados.join(" e ")}. ` +
+      "Confira em developer.bling.com.br se o app tem permissao para o modulo de Notas Fiscais."
+  )
+}
+
 export type NotaEntradaBlingResumo = {
   id: string
   numero: string
@@ -317,7 +345,15 @@ export async function listarNotasEntradaBling(params: {
   if (params.dataEmissaoInicial) query.set("dataEmissaoInicial", `${params.dataEmissaoInicial} 00:00:00`)
   if (params.dataEmissaoFinal) query.set("dataEmissaoFinal", `${params.dataEmissaoFinal} 23:59:59`)
 
-  const resposta = await chamarBling(`/notas-fiscais?${query.toString()}`)
+  // A API do Bling expoe a listagem de nota em dois caminhos (/notas-fiscais e
+  // /nfe) e nem toda conta responde os dois - a do cliente devolve 404 no
+  // primeiro. Em vez de fixar um, tenta os dois na ordem e usa o que existir;
+  // se nenhum responder, a mensagem diz o que aconteceu em cada um, porque ai
+  // o problema nao e o endpoint e sim permissao do app no Bling.
+  const resposta = await chamarPrimeiroCaminhoQueExiste([
+    `/notas-fiscais?${query.toString()}`,
+    `/nfe?${query.toString()}`,
+  ])
   const lista = resposta?.data ?? []
 
   type NotaBlingBruta = {
