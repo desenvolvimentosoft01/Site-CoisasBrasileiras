@@ -69,6 +69,7 @@ cp .env.example .env.local
 | Variável | Descrição |
 |---|---|
 | `DATABASE_URL` | String de conexão do PostgreSQL |
+| `DB_POOL_MAX` | Opcional (padrão 3). Conexões que cada instância do app abre. O limite do pooler do Supabase é compartilhado por todas as instâncias — com o valor alto demais, elas se atropelam e as queries falham com `EMAXCONNSESSION` |
 | `NEXT_PUBLIC_SITE_URL` | URL pública do site (usada em callbacks do Mercado Pago) |
 | `DOMINIO_BRANCO` | Domínio que serve a marca Porcelanas Brancas — qualquer outro host cai na marca Coisas Brasileiras. Sem essa variável, o sistema só serve uma das lojas |
 | `AUTH_SECRET` | Valor aleatório para assinar o cookie de sessão do admin |

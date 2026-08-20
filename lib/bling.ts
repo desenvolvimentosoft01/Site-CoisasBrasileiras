@@ -46,9 +46,13 @@ async function salvarTokens(dados: { access_token: string; refresh_token: string
 
   const [existente] = await query("SELECT id FROM TAB_INTEGRACAO_BLING LIMIT 1")
   if (existente) {
+    // Zera a pendencia fiscal junto: reconectar e justamente a acao de
+    // consertar a integracao, e deixar o erro antigo na tela faz parecer que a
+    // conexao nova ja nasceu com problema.
     await query(
       `UPDATE TAB_INTEGRACAO_BLING
-       SET access_token = $1, refresh_token = $2, expira_em = $3, atualizado_em = NOW()
+       SET access_token = $1, refresh_token = $2, expira_em = $3, atualizado_em = NOW(),
+           ultimo_erro = NULL, ultimo_erro_em = NULL
        WHERE id = $4`,
       [dados.access_token, dados.refresh_token, expiraEm, existente.id]
     )
