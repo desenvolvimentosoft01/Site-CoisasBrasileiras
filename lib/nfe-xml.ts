@@ -12,7 +12,21 @@ export type ItemNfeXml = {
   descricao: string
   ncm: string | null
   quantidade: number
+  // vUnCom: o preco do produto na nota, sem os acrescimos que o fornecedor
+  // cobra junto.
   valorUnitario: number
+  // O que a loja paga ALEM do produto, por item. Sao esses valores que fazem o
+  // custo real ser maior que o preco negociado - principalmente o ICMS-ST, que
+  // e comum em ceramica/porcelana.
+  valorIcmsSt: number
+  valorIpi: number
+  valorFrete: number
+  valorSeguro: number
+  valorOutros: number
+  valorDesconto: number
+  // (produto x quantidade + acrescimos - desconto) / quantidade. E o custo que
+  // move o custo medio do produto no recebimento.
+  custoUnitarioReal: number
 }
 
 export type DadosNfeXml = {
@@ -81,15 +95,63 @@ export function parseNfeXml(xmlTexto: string): DadosNfeXml {
     // cEAN vem como "SEM GTIN" quando o produto nao tem codigo de barras -
     // nesse caso tratamos como ausente, nao como um codigo de verdade.
     const ean = String(prod.cEAN ?? "")
+
+    const quantidade = Number(prod.qCom) || 0
+    const valorUnitario = Number(prod.vUnCom) || 0
+
+    // O grupo de ICMS muda de nome conforme o regime e o CST (ICMS00, ICMS60,
+    // ICMSSN202...), entao pega o primeiro filho, qualquer que seja o nome -
+    // mesma tecnica usada no DANFE.
+    const grupoIcms = (Object.values(det.imposto?.ICMS ?? {})[0] ?? {}) as Record<string, unknown>
+
+    const valorIcmsSt = Number(grupoIcms.vICMSST) || 0
+    const valorIpi = Number(det.imposto?.IPI?.IPITrib?.vIPI) || 0
+    const valorFrete = Number(prod.vFrete) || 0
+    const valorSeguro = Number(prod.vSeg) || 0
+    const valorOutros = Number(prod.vOutro) || 0
+    const valorDesconto = Number(prod.vDesc) || 0
+
+    const totalItem =
+      valorUnitario * quantidade + valorIcmsSt + valorIpi + valorFrete + valorSeguro + valorOutros - valorDesconto
+
     return {
       codigoFornecedor: String(prod.cProd ?? ""),
       codigoBarras: ean && ean.toUpperCase() !== "SEM GTIN" ? ean : null,
       descricao: String(prod.xProd ?? ""),
       ncm: prod.NCM ? String(prod.NCM) : null,
-      quantidade: Number(prod.qCom) || 0,
-      valorUnitario: Number(prod.vUnCom) || 0,
+      quantidade,
+      valorUnitario,
+      valorIcmsSt,
+      valorIpi,
+      valorFrete,
+      valorSeguro,
+      valorOutros,
+      valorDesconto,
+      custoUnitarioReal: quantidade > 0 ? totalItem / quantidade : valorUnitario,
     }
   })
+
+  // Frete lancado so no total da nota (vFrete do ICMSTot, sem vFrete por item)
+  // e o caso mais comum: o fornecedor cobra um frete so pela carga inteira.
+  // Nesse caso o valor e rateado entre os itens na proporcao do valor de cada
+  // um - o item mais caro carrega a maior parte do frete, que e o criterio
+  // aceito pelo fisco e o que o contador espera ver.
+  const freteTotal = Number(total.vFrete) || 0
+  const freteJaNosItens = itens.reduce((soma, item) => soma + item.valorFrete, 0)
+  const freteARatear = freteTotal - freteJaNosItens
+
+  if (freteARatear > 0) {
+    const valorDosProdutos = itens.reduce((soma, item) => soma + item.valorUnitario * item.quantidade, 0)
+
+    if (valorDosProdutos > 0) {
+      for (const item of itens) {
+        const proporcao = (item.valorUnitario * item.quantidade) / valorDosProdutos
+        const freteDoItem = freteARatear * proporcao
+        item.valorFrete += freteDoItem
+        if (item.quantidade > 0) item.custoUnitarioReal += freteDoItem / item.quantidade
+      }
+    }
+  }
 
   return {
     chaveAcesso,

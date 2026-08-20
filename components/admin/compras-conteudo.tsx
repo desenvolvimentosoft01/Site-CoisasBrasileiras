@@ -111,6 +111,9 @@ type NotaEntradaBling = {
 
 const SITUACAO_BLING_LABEL = SITUACAO_NFE_BLING_LABEL
 
+// Copia do tipo de lib/nfe-xml.ts, de proposito: importar de la traria o
+// parser de XML (fast-xml-parser) pro bundle do navegador sem necessidade -
+// aqui a tela so recebe o resultado ja pronto da rota de importacao.
 type ItemNfeXml = {
   codigoFornecedor: string
   codigoBarras: string | null
@@ -118,6 +121,13 @@ type ItemNfeXml = {
   ncm: string | null
   quantidade: number
   valorUnitario: number
+  valorIcmsSt: number
+  valorIpi: number
+  valorFrete: number
+  valorSeguro: number
+  valorOutros: number
+  valorDesconto: number
+  custoUnitarioReal: number
 }
 
 type DadosNfeXml = {
@@ -170,7 +180,57 @@ export type Compra = {
   tem_xml: boolean
 }
 
-type ItemCarrinho = { produtoId: string; nome: string; quantidade: number; custoUnitario: string }
+// custoUnitario e o custo REAL do item (produto + ST + IPI + frete rateado -
+// desconto). A composicao so existe quando o item veio de XML - no lancamento
+// manual, o valor digitado ja e o custo real e nao ha o que decompor.
+type ComposicaoCusto = {
+  valorProduto: number
+  valorIcmsSt: number
+  valorIpi: number
+  valorFrete: number
+  valorSeguro: number
+  valorOutros: number
+  valorDesconto: number
+}
+
+type ItemCarrinho = {
+  produtoId: string
+  nome: string
+  quantidade: number
+  custoUnitario: string
+  composicao?: ComposicaoCusto
+}
+
+// Abre a conta do custo por item: o que o fornecedor cobrou alem do produto.
+// Sem isso o custo real seria um numero maior que o da nota sem explicacao, e
+// o operador nao teria como conferir se o sistema entendeu a nota direito.
+function AcrescimosDoItem({ item }: { item: ItemCarrinho }) {
+  if (!item.composicao) {
+    return <span className="text-xs text-slate-400">Lançamento manual</span>
+  }
+
+  const { valorIcmsSt, valorIpi, valorFrete, valorSeguro, valorOutros, valorDesconto } = item.composicao
+  const partes: string[] = []
+  if (valorIcmsSt) partes.push(`ST ${formatarMoeda(valorIcmsSt)}`)
+  if (valorIpi) partes.push(`IPI ${formatarMoeda(valorIpi)}`)
+  if (valorFrete) partes.push(`Frete ${formatarMoeda(valorFrete)}`)
+  if (valorSeguro) partes.push(`Seguro ${formatarMoeda(valorSeguro)}`)
+  if (valorOutros) partes.push(`Outros ${formatarMoeda(valorOutros)}`)
+  if (valorDesconto) partes.push(`Desc. -${formatarMoeda(valorDesconto)}`)
+
+  if (partes.length === 0) {
+    return <span className="text-xs text-slate-400">Sem acréscimo</span>
+  }
+
+  return (
+    <span className="text-xs leading-relaxed text-amber-700">
+      {partes.join(" · ")}
+      <span className="block text-[11px] text-slate-400">
+        rateado entre as {item.quantidade} unidades
+      </span>
+    </span>
+  )
+}
 
 const STATUS_ESTILO: Record<Compra["status"], string> = {
   pendente: "bg-amber-500/20 text-amber-500",
@@ -259,6 +319,9 @@ export function ComprasConteudo({
   const [valorFrete, setValorFrete] = useState("")
   const [observacao, setObservacao] = useState("")
   const [itens, setItens] = useState<ItemCarrinho[]>([])
+  // Frete da nota importada, ja embutido no custo dos itens. Guardado so pra
+  // avisar na tela por que o campo de frete ficou vazio.
+  const [freteRateadoNosItens, setFreteRateadoNosItens] = useState(0)
 
   const [produtoId, setProdutoId] = useState("")
   const [quantidade, setQuantidade] = useState("1")
@@ -611,9 +674,11 @@ export function ComprasConteudo({
 
     if (dados.numero) setNumeroNota(dados.numero)
     if (dados.dataEmissao) setDataCompra(dados.dataEmissao)
-    if (dados.valorFrete > 0) {
-      setValorFrete(mascaraMoeda(String(Math.round(dados.valorFrete * 100))))
-    }
+    // O frete da nota NAO vai mais pro campo de frete da compra: ele ja foi
+    // rateado entre os itens e entrou no custo de cada um. Preencher os dois
+    // faria o frete contar duas vezes no total da compra e na conta a pagar.
+    setFreteRateadoNosItens(dados.valorFrete > 0 ? dados.valorFrete : 0)
+    setValorFrete("")
 
     setItensXmlPendentes(dados.itens)
     // Pre-seleciona por codigo de barras (mais confiavel, o EAN e o mesmo
@@ -719,7 +784,18 @@ export function ComprasConteudo({
         produtoId: produto.id,
         nome: produto.nome,
         quantidade: itemXml.quantidade || 1,
-        custoUnitario: mascaraMoeda(String(Math.round(itemXml.valorUnitario * 100))),
+        // O custo que entra e o REAL, e nao o preco do produto: e ele que vira
+        // custo medio quando a compra for recebida.
+        custoUnitario: mascaraMoeda(String(Math.round(itemXml.custoUnitarioReal * 100))),
+        composicao: {
+          valorProduto: itemXml.valorUnitario,
+          valorIcmsSt: itemXml.valorIcmsSt,
+          valorIpi: itemXml.valorIpi,
+          valorFrete: itemXml.valorFrete,
+          valorSeguro: itemXml.valorSeguro,
+          valorOutros: itemXml.valorOutros,
+          valorDesconto: itemXml.valorDesconto,
+        },
       },
     ])
     setItensXmlPendentes((atual) => atual.filter((_, i) => i !== indice))
@@ -759,6 +835,9 @@ export function ComprasConteudo({
         produtoId: i.produtoId,
         quantidade: i.quantidade,
         custoUnitario: valorMoedaParaNumero(i.custoUnitario),
+        // Composicao vinda do XML. No lancamento manual ela nao existe, e o
+        // servidor trata o custo digitado como valor de produto sem acrescimo.
+        ...(i.composicao ?? {}),
       })),
       blingNotaId: blingNotaVinculada?.id || null,
       pedidoCompraId: pedidoCompraVinculado?.id || null,
@@ -1694,20 +1773,28 @@ export function ComprasConteudo({
                 <div className="overflow-x-auto rounded-lg border border-border">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-border text-left text-slate-500">
-                        <th className="p-3 font-medium">Produto</th>
-                        <th className="p-3 font-medium">Qtd</th>
-                        <th className="p-3 font-medium">Custo unit.</th>
-                        <th className="p-3 font-medium">Subtotal</th>
+                      <tr className="border-b border-slate-700 bg-slate-800 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-200">
+                        <th className="p-3">Produto</th>
+                        <th className="p-3">Qtd</th>
+                        <th className="p-3">Produto un.</th>
+                        <th className="p-3">Impostos e frete</th>
+                        <th className="p-3">Custo real un.</th>
+                        <th className="p-3">Subtotal</th>
                         <th className="p-3" />
                       </tr>
                     </thead>
                     <tbody>
                       {itens.map((item) => (
-                        <tr key={item.produtoId} className="border-b border-border last:border-0">
+                        <tr key={item.produtoId} className="border-b border-border last:border-0 align-top">
                           <td className="p-3">{item.nome}</td>
                           <td className="p-3">{item.quantidade}</td>
-                          <td className="p-3">{item.custoUnitario}</td>
+                          <td className="p-3 text-slate-500">
+                            {item.composicao ? formatarMoeda(item.composicao.valorProduto) : item.custoUnitario}
+                          </td>
+                          <td className="p-3">
+                            <AcrescimosDoItem item={item} />
+                          </td>
+                          <td className="p-3 font-medium">{item.custoUnitario}</td>
                           <td className="p-3">
                             {formatarMoeda(item.quantidade * valorMoedaParaNumero(item.custoUnitario))}
                           </td>
@@ -1721,6 +1808,14 @@ export function ComprasConteudo({
                     </tbody>
                   </table>
                 </div>
+              )}
+
+              {freteRateadoNosItens > 0 && (
+                <p className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                  O frete de {formatarMoeda(freteRateadoNosItens)} da nota já foi rateado entre os itens,
+                  na proporção do valor de cada um, e está dentro do custo real acima. Por isso o campo
+                  &quot;Valor do frete&quot; fica vazio — preenchê-lo cobraria o frete duas vezes.
+                </p>
               )}
 
               <div className="flex justify-end gap-6 border-t border-border pt-4 text-sm">

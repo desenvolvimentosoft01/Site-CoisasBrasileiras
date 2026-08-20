@@ -21,6 +21,10 @@ export async function receberCompra(compraId: string) {
     }
 
     const itens = await q(
+      // custo_unitario e o custo REAL do item desde a migration 061: ja inclui
+      // ICMS-ST, IPI e o frete rateado da nota. E por isso que o custo medio
+      // abaixo passou a refletir o que a loja paga de verdade - antes usava so
+      // o preco do produto e inflava a margem no Lucro/DRE.
       "SELECT produto_id, quantidade, custo_unitario FROM TAB_COMPRA_ITEM WHERE compra_id = $1",
       [compraId]
     )
