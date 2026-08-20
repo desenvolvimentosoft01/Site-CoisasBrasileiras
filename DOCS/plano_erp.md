@@ -79,7 +79,14 @@ Opções a discutir com o cliente antes de mexer:
 - **(b) Separar em duas listagens**: "Pedidos da loja" (site, WhatsApp, Instagram, balcão) e "Pedidos de marketplace" (Mercado Livre, Shopee, iFood). Faz sentido se a operação de marketplace for diferente — prazo de envio, etiqueta, regras próprias.
 - **(c) Renomear pra desfazer a ambiguidade**: a tela de listagem vira "Pedidos" e a de lançamento continua "Pedido de Venda Balcão".
 
-Recomendação: **(a) + (c)** — uma listagem só, com filtro de canal respeitando o plano, e o nome "Pedidos" na listagem. Separar só quando a operação de marketplace realmente existir aqui (hoje as três integrações estão desligadas).
+Dois fatos que pesam na decisão (levantados pelo cliente):
+- A tela de Venda Balcão **deixa escolher o canal** da venda (Balcão presencial, WhatsApp, Instagram — `CANAIS_VENDA_BALCAO`), ou seja, ela não é só "presencial": é o lançamento manual de qualquer venda que não veio do site.
+- Ela também tem uma **aba "Vendas" com histórico**, que mostra praticamente o mesmo que a listagem de Pedido de Venda, com filtros parecidos. É essa duplicação que incomoda.
+
+Recomendação revista: **uma listagem só**.
+- **Venda Balcão** fica sendo apenas o *lançamento* (PDV com carrinho e escolha de canal). A aba "Vendas" dela deixa de ser uma segunda listagem geral e passa a mostrar só **o que foi lançado ali recentemente** (as vendas do dia/da sessão), que é o uso real: conferir o que acabei de vender.
+- **Pedido de Venda** vira **"Pedidos"**: a listagem única de tudo, de qualquer canal, com o filtro de canal em evidência e respeitando o plano.
+- Assim cada tela responde uma pergunta diferente: "quero vender agora" e "quero achar um pedido". Hoje as duas respondem as duas, e por isso parecem iguais.
 
 **4. Carregamento e desempenho**
 - [ ] Indicador de carregamento ao abrir tela — no InMenteGestao é uma barra fina sobre as abas.
