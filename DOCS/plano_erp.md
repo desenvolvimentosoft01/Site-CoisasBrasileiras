@@ -68,9 +68,9 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - [ ] Lembrar que a cor é por marca desde a migration 055 (Coisas Brasileiras e Porcelanas Brancas têm valores próprios).
 
 **3.2. Ajustes vistos em tela (2026-08-20)**
-- [ ] **Canais de venda desligados no plano continuam aparecendo nos filtros** — o seletor de canal (Pedido de Venda, Venda Balcão, relatórios) mostra Mercado Livre e Shopee mesmo com a integração desligada. Filtrar a lista de canais pelos recursos ligados **em todas as telas**, do mesmo jeito que já foi feito nas Configurações.
-- [ ] **Campo "Ler código de barras" cortado** na tela de Venda Balcão: o placeholder não cabe na largura do campo.
-- [ ] **Botão "Importar do Mercado Livre / Shopee"** aparece no Pedido de Venda mesmo com as integrações desligadas — mesmo tratamento dos filtros de canal.
+- [x] ~~**Canais de venda desligados no plano continuam aparecendo nos filtros**~~ *(feito 2026-08-20: `canaisLiberados()` em `lib/canal-pedido.ts`, usado no filtro de Pedido de Venda)*. Texto original: — o seletor de canal (Pedido de Venda, Venda Balcão, relatórios) mostra Mercado Livre e Shopee mesmo com a integração desligada. Filtrar a lista de canais pelos recursos ligados **em todas as telas**, do mesmo jeito que já foi feito nas Configurações.
+- [x] Campo de código de barras cortado na Venda Balcão. *(feito 2026-08-20)*
+- [x] Botão "Importar do Mercado Livre / Shopee" só aparece com marketplace liberado. *(feito 2026-08-20)*
 
 **3.3. Separar o que cada tela responde: Pedido de Venda x Venda Balcão** *(APROVADO pelo cliente em 2026-08-20 — executar a recomendação abaixo)*
 
