@@ -138,8 +138,8 @@ async function importarUmPedido(blingPedidoId: string, canal: CanalPedido): Prom
       const [pedidoCriado] = await executar(
         `INSERT INTO TAB_PEDIDO
            (cliente_id, endereco_id, status, total, forma_pagamento, origem, canal, bling_pedido_id,
-            bling_nota_id, bling_link_danfe, bling_link_pdf)
-         VALUES ($1, $2, 'pago', $3, $4, 'site', $5, $6, $7, $8, $9)
+            bling_nota_id, bling_link_danfe, bling_link_pdf, pago_em)
+         VALUES ($1, $2, 'pago', $3, $4, 'site', $5, $6, $7, $8, $9, NOW())
          RETURNING id`,
         [
           clienteCriado.id,

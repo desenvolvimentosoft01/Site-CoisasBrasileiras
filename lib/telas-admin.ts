@@ -28,6 +28,8 @@ export type ChaveTela =
   | "fornecedores"
   | "notas_fiscais"
   | "financeiro"
+  | "financeiro_contas"
+  | "fluxo_caixa"
   | "cupons"
   | "banners"
   | "sobre_nos"
@@ -71,7 +73,9 @@ export const TELAS_ADMIN: TelaAdmin[] = [
   { chave: "fornecedores", rota: "/admin/fornecedores", label: "Fornecedores", grupo: "Compras", padraoOperador: false },
 
   { chave: "notas_fiscais", rota: "/admin/notas-fiscais", label: "Notas Fiscais", grupo: "Fiscal", padraoOperador: false },
-  { chave: "financeiro", rota: "/admin/financeiro", label: "Financeiro", grupo: "Financeiro", padraoOperador: false },
+  { chave: "financeiro", rota: "/admin/financeiro", label: "Financeiro (visão geral)", grupo: "Financeiro", padraoOperador: false },
+  { chave: "financeiro_contas", rota: "/admin/financeiro/contas", label: "Contas a pagar/receber", grupo: "Financeiro", padraoOperador: false },
+  { chave: "fluxo_caixa", rota: "/admin/financeiro/fluxo-caixa", label: "Fluxo de caixa", grupo: "Financeiro", padraoOperador: false },
 
   { chave: "cupons", rota: "/admin/cupons", label: "Cupons", grupo: "Marketing", padraoOperador: true },
   { chave: "banners", rota: "/admin/banners", label: "Banners", grupo: "Marketing", padraoOperador: true },

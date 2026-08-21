@@ -34,7 +34,7 @@ Reorganização do menu (feita):
 Ausências mapeadas, em ordem de importância (nenhuma feita ainda):
 - [ ] **Movimentação de estoque (kardex)** — hoje o estoque é um número que sobe e desce, sem histórico de por que mudou. Sem isso, divergência de inventário não tem como ser investigada. É a lacuna mais séria.
 - [ ] **Ajuste de estoque com motivo** (quebra, perda, contagem) — a tela de Estoque deixa editar a quantidade direto, sem registrar o porquê.
-- [ ] **Fluxo de caixa** — existe contas a pagar/receber, falta a projeção de saldo por período.
+- [x] **Fluxo de caixa** — `/admin/financeiro/fluxo-caixa`. Realizado (venda paga + conta quitada, pela data do pagamento) por dia ou movimento a movimento, com saldo anterior e acumulado, mais a aba **Previsão**: contas em aberto dos próximos 30 dias partindo do caixa real de hoje. Sem tabela nova — caixa é leitura. Migration 064 trouxe `TAB_PEDIDO.pago_em`, que é a data que o caixa usa.
 - [ ] **Transportadoras como cadastro** — hoje é texto livre no pedido.
 - [x] **Permissão por tela** — catálogo em `lib/telas-admin.ts`, exceções em `TAB_USUARIO_PERMISSAO` (063). O menu esconde o que a pessoa não pode abrir e o layout do admin bloqueia por URL (middleware manda o `x-pathname`), então digitar o endereço na mão não passa. Edição pelo botão **Permissões** na tela de Usuários.
 
@@ -114,7 +114,7 @@ Racional:
 **6. Módulos que faltam pra ser ERP** *(mapeados, não iniciados)*
 - [ ] Movimentação de estoque (kardex) — a lacuna mais séria.
 - [ ] Ajuste de estoque com motivo (quebra, perda, contagem).
-- [ ] Fluxo de caixa (projeção de saldo por período).
+- [x] Fluxo de caixa, com projeção de saldo.
 - [ ] Transportadoras como cadastro (hoje é texto livre no pedido).
 - [x] Permissão por tela.
 
