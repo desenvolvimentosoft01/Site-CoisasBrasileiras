@@ -23,7 +23,10 @@ export async function confirmarPedidoPago(
     // for cancelado depois de pago (ver app/api/admin/pedidos/[id]/route.ts).
     await q(
       "UPDATE TAB_PEDIDO SET status = 'pago', forma_pagamento = COALESCE($2, forma_pagamento), " +
-        "mercadopago_payment_id = COALESCE($3, mercadopago_payment_id), atualizado_em = NOW() WHERE id = $1",
+        "mercadopago_payment_id = COALESCE($3, mercadopago_payment_id), " +
+        // pago_em e a data que o fluxo de caixa usa - e agora, quando o
+        // pagamento confirmou, nao quando o pedido foi criado.
+        "pago_em = COALESCE(pago_em, NOW()), atualizado_em = NOW() WHERE id = $1",
       [pedidoId, formaPagamento ?? null, paymentId != null ? String(paymentId) : null]
     )
 

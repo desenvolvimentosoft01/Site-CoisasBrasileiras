@@ -66,8 +66,8 @@ export async function POST(request: Request) {
 
       const [pedidoCriado] = await executar(
         `INSERT INTO TAB_PEDIDO
-           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, tipo_entrega_id, canal, marca)
-         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6, $7, $8)
+           (cliente_id, endereco_id, status, total, forma_pagamento, origem, cliente_nome_avulso, cliente_telefone_avulso, tipo_entrega_id, canal, marca, pago_em)
+         VALUES ($1, NULL, 'pago', $2, $3, 'balcao', $4, $5, $6, $7, $8, NOW())
          RETURNING id, total, criado_em`,
         [
           clienteId || null,

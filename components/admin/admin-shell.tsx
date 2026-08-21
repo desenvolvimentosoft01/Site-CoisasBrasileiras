@@ -91,7 +91,16 @@ const menu: ItemMenu[] = [
   // Fica solto (e nao dentro de Compras) porque junta entrada E saida - e o
   // lugar de pegar DANFE/XML de qualquer nota sem abrir o Bling.
   { tipo: "link", href: "/admin/notas-fiscais", label: "Notas Fiscais", icone: "notas_fiscais" },
-  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: "financeiro" },
+  {
+    tipo: "grupo",
+    label: "Financeiro",
+    icone: "financeiro",
+    filhos: [
+      { href: "/admin/financeiro", label: "Visão geral" },
+      { href: "/admin/financeiro/contas", label: "Contas a pagar/receber" },
+      { href: "/admin/financeiro/fluxo-caixa", label: "Fluxo de caixa" },
+    ],
+  },
   {
     tipo: "grupo",
     label: "Marketing",
