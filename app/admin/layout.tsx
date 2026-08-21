@@ -1,10 +1,13 @@
 import type { Metadata } from "next"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
+import { redirect } from "next/navigation"
 import { lerTokenSessao } from "@/lib/auth"
 import { getConfiguracoes } from "@/lib/configuracoes"
 import { carregarRecursos } from "@/lib/recursos-servidor"
 import { rotuloPlanoParaCliente } from "@/lib/recursos"
 import { CHAVES_COR_SISTEMA } from "@/lib/cores"
+import { telasPermitidas } from "@/lib/permissoes-servidor"
+import { telaDaRota } from "@/lib/telas-admin"
 import { NOME_SISTEMA } from "@/lib/constantes"
 import { AdminShell } from "@/components/admin/admin-shell"
 
@@ -35,6 +38,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const configuracoes = await getConfiguracoes([...CHAVES_COR_SISTEMA, "logo_url", "nome_loja", "plano"])
   const recursos = await carregarRecursos()
 
+  // Permissao por tela (migration 063). Lida do banco a cada navegacao, e nao
+  // guardada no token de sessao: permissao tirada de alguem precisa valer na
+  // hora, e nao so no proximo login.
+  const permitidas = await telasPermitidas(sessao.id, sessao.papel)
+
+  // Bloqueio por URL: o menu ja esconde o que a pessoa nao pode abrir, mas
+  // esconder nao e proteger - sem isso, digitar o endereco abriria a tela.
+  // O pathname vem do cabecalho que o middleware coloca (ver middleware.ts).
+  const tela = telaDaRota((await headers()).get("x-pathname") ?? "")
+  if (tela && !permitidas.has(tela.chave)) {
+    redirect("/admin/dashboard")
+  }
+
   return (
     <AdminShell
       sessao={sessao}
@@ -42,6 +58,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       nomeLoja={configuracoes.nome_loja || undefined}
       dominioBranco={process.env.DOMINIO_BRANCO}
       plano={rotuloPlanoParaCliente(configuracoes.plano || "avancado", recursos)}
+      telasPermitidas={Array.from(permitidas)}
     >
       {children}
     </AdminShell>
