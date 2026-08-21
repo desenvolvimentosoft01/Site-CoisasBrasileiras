@@ -34,11 +34,17 @@ const METADATA_PADRAO = {
 export async function generateMetadata(): Promise<Metadata> {
   const marca = await resolverMarcaAtual();
   const padrao = METADATA_PADRAO[marca];
-  const config = await getConfiguracoesMarca(["nome_loja", "texto_sobre_nos"], marca);
+  const config = await getConfiguracoesMarca(["nome_loja", "texto_sobre_nos", "logo_url"], marca);
 
   return {
     title: config.nome_loja ? `${config.nome_loja} — Loja` : padrao.titulo,
     description: config.texto_sobre_nos || padrao.descricao,
+    // Icone da aba declarado aqui, e nao pelo arquivo app/icon.*: nesse
+    // esquema o Next so reconhece ico/png/jpg/svg, e o que existia era um
+    // .webp - por isso o navegador mostrava o globo generico. Declarado por
+    // metadata o formato deixa de importar, e de quebra cada loja usa a
+    // PROPRIA logo, que e configurada por marca.
+    icons: { icon: config.logo_url || "/logo.webp" },
   };
 }
 
