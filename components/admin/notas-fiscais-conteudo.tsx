@@ -54,10 +54,12 @@ export function NotasFiscaisConteudo({
   const [busca, setBusca] = useState("")
   const [dataInicial, setDataInicial] = useState("")
   const [dataFinal, setDataFinal] = useState("")
-  // "Só sem XML guardado" acha o que ainda nao foi baixado do Bling e o
+  // Arquivo XML: "falta" acha o que ainda nao foi baixado do Bling e o
   // lancamento antigo de entrada que entrou na mao, sem arquivo - que sao
   // justamente as notas que faltam pro lote do contador ficar completo.
-  const [semXml, setSemXml] = useState(false)
+  // Vale nos dois sentidos de proposito: "ja salvo" responde "o que da pra
+  // mandar agora?", que era impossivel de perguntar com o checkbox antigo.
+  const [filtroXml, setFiltroXml] = useState("")
   const [fornecedorId, setFornecedorId] = useState("")
   const [marca, setMarca] = useState("")
   const [exportando, setExportando] = useState(false)
@@ -69,7 +71,8 @@ export function NotasFiscaisConteudo({
     const termo = busca.trim().toLowerCase()
     return notas.filter((nota) => {
       if (aba !== "todas" && nota.tipo !== aba) return false
-      if (semXml && nota.temXml) return false
+      if (filtroXml === "falta" && nota.temXml) return false
+      if (filtroXml === "salvo" && !nota.temXml) return false
       if (fornecedorId && nota.fornecedorId !== fornecedorId) return false
       if (marca && nota.marca !== marca) return false
 
@@ -85,7 +88,7 @@ export function NotasFiscaisConteudo({
         (nota.chaveAcesso ?? "").includes(termo.replace(/\s/g, ""))
       )
     })
-  }, [notas, aba, busca, dataInicial, dataFinal, semXml, fornecedorId, marca])
+  }, [notas, aba, busca, dataInicial, dataFinal, filtroXml, fornecedorId, marca])
 
   // Atalho de competencia: e assim que o contador pensa o periodo ("agosto"),
   // e digitar duas datas so pra dizer "este mes" e trabalho a toa.
@@ -101,12 +104,12 @@ export function NotasFiscaisConteudo({
     setBusca("")
     setDataInicial("")
     setDataFinal("")
-    setSemXml(false)
+    setFiltroXml("")
     setFornecedorId("")
     setMarca("")
   }
 
-  const temFiltro = Boolean(busca || dataInicial || dataFinal || semXml || fornecedorId || marca)
+  const temFiltro = Boolean(busca || dataInicial || dataFinal || filtroXml || fornecedorId || marca)
 
   // A linha e identificada por tipo+id: entrada e saida vem de tabelas
   // diferentes e nada impede que um id se repita entre elas.
@@ -341,15 +344,18 @@ export function NotasFiscaisConteudo({
                 </CampoFiltro>
               )}
 
-              <label className="flex h-9 items-center gap-1.5 text-xs text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={semXml}
-                  onChange={(e) => setSemXml(e.target.checked)}
-                  className="h-4 w-4"
-                />
-                Só sem XML guardado
-              </label>
+              <CampoFiltro rotulo="Arquivo XML">
+                <select
+                  value={filtroXml}
+                  onChange={(e) => setFiltroXml(e.target.value)}
+                  title="O XML das notas de saída é baixado do Bling e fica salvo aqui. Este filtro mostra o que já está pronto para o contador e o que ainda falta."
+                  className="flex h-9 w-[190px] rounded-md border border-input bg-transparent px-2 text-sm"
+                >
+                  <option value="">Todas</option>
+                  <option value="salvo">Salvo — pronto para envio</option>
+                  <option value="falta">Falta baixar do Bling</option>
+                </select>
+              </CampoFiltro>
             </LinhaFiltros>
             <CardContent className="p-0">
               {notasFiltradas.length === 0 ? (
