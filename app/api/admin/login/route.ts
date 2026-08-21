@@ -1,5 +1,5 @@
 import { query } from "@/lib/db"
-import { criarTokenSessao, OPCOES_COOKIE_SESSAO_ADMIN } from "@/lib/auth"
+import { criarTokenSessao } from "@/lib/auth"
 import { limiteExcedido, limparTentativas } from "@/lib/rate-limit"
 import bcrypt from "bcryptjs"
 import { NextResponse } from "next/server"
@@ -64,7 +64,13 @@ export async function POST(request: Request) {
     senhaProvisoria: Boolean(usuario.senha_provisoria),
   })
 
-  response.cookies.set("admin_sessao", token, OPCOES_COOKIE_SESSAO_ADMIN)
+  response.cookies.set("admin_sessao", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+  })
 
   return response
 }

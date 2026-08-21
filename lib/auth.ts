@@ -19,9 +19,6 @@ export type SessaoAdmin = {
   // no token pra que o middleware consiga barrar as telas sem precisar
   // consultar o banco a cada navegacao.
   senhaProvisoria?: boolean
-  // Instante (epoch ms) em que a sessao deixa de valer. Quem carimba e o
-  // criarTokenSessao - nenhum chamador precisa informar.
-  expira?: number
 }
 
 export { EMAIL_DESENVOLVEDOR } from "@/lib/constantes"
@@ -70,50 +67,8 @@ async function lerToken<T>(token: string | undefined): Promise<T | null> {
   }
 }
 
-// Teto de vida da sessao, contado do login. Quem encerra a sessao no dia a dia
-// e o fechamento do navegador (o cookie nao tem maxAge - ver
-// OPCOES_COOKIE_SESSAO_ADMIN), mas computador de loja passa dias com a janela
-// aberta: sem prazo dentro do proprio token, quem entrou uma vez nunca mais
-// digitaria a senha.
-//
-// Sete dias e o MESMO prazo que o maxAge do cookie ja aplicava antes - a
-// mudanca foi no gatilho (fechar o navegador), nao na duracao, pra nao derrubar
-// no meio do expediente quem so queria voltar a cair na tela de entrada.
-const VALIDADE_SESSAO_ADMIN_MS = 7 * 24 * 60 * 60 * 1000
-
-export const criarTokenSessao = (sessao: SessaoAdmin) =>
-  criarToken<SessaoAdmin>({ ...sessao, expira: Date.now() + VALIDADE_SESSAO_ADMIN_MS })
-
-export async function lerTokenSessao(token: string | undefined): Promise<SessaoAdmin | null> {
-  const sessao = await lerToken<SessaoAdmin>(token)
-  if (!sessao) return null
-
-  // Token sem prazo foi emitido antes desta regra existir, quando quem
-  // controlava o vencimento era so o maxAge do cookie. Vale como vencido: e o
-  // que garante que nenhuma sessao gravada em disco sobreviva ao deploy - do
-  // contrario o primeiro objetivo da mudanca (abrir sempre no login) so
-  // valeria pra quem entrasse de novo.
-  if (!sessao.expira || sessao.expira <= Date.now()) return null
-
-  return sessao
-}
-
-// Opcoes do cookie do painel, num lugar so: a rota de login e a de troca de
-// senha emitem o mesmo cookie, e duas listas iguais escritas em dois arquivos
-// acabam discordando na primeira vez que uma delas muda.
-//
-// Sem `maxAge` de proposito - e isso que faz dele um cookie de SESSAO, apagado
-// pelo navegador ao fechar a janela. Antes eram 7 dias gravados em disco, e
-// reabrir o navegador (ou religar o computador) caia direto no painel; agora
-// cada abertura do sistema passa pela tela de entrada. Usuario e senha
-// continuam sendo lembrados pelo gerenciador do navegador, que e outra coisa e
-// nao depende deste cookie.
-export const OPCOES_COOKIE_SESSAO_ADMIN = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
-  path: "/",
-} as const
+export const criarTokenSessao = (sessao: SessaoAdmin) => criarToken(sessao)
+export const lerTokenSessao = (token: string | undefined) => lerToken<SessaoAdmin>(token)
 
 export const criarTokenSessaoCliente = (sessao: SessaoCliente) => criarToken(sessao)
 export const lerTokenSessaoCliente = (token: string | undefined) => lerToken<SessaoCliente>(token)
