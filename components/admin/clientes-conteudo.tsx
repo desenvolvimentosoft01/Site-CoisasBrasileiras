@@ -12,8 +12,10 @@ import { registrarAuditoria } from "@/lib/auditoria"
 import { mascaraTelefone, mascaraCpfCnpj, mascaraCEP } from "@/lib/mascaras"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
+import { LinhaFiltros, CampoFiltro } from "@/components/admin/linha-filtros"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { DicaGrade } from "@/components/admin/dica-grade"
 import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
 import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
@@ -299,6 +301,7 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Clientes</h1>
+      <DicaGrade />
 
       <Tabs value={aba} onValueChange={setAba}>
         <TabsList>
@@ -315,35 +318,6 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
         </TabsList>
 
         <TabsContent value="lista" className="mt-4 space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Input
-              placeholder="Buscar por nome, email ou telefone..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="max-w-sm"
-            />
-            {(busca || filtroStatus !== "ativos") && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setBusca("")
-                  setFiltroStatus("ativos")
-                }}
-              >
-                <X size={14} className="mr-1" />
-                Limpar filtros
-              </Button>
-            )}
-            <Tabs value={filtroStatus} onValueChange={(v) => setFiltroStatus(v as typeof filtroStatus)}>
-              <TabsList>
-                <TabsTrigger value="ativos">Ativos</TabsTrigger>
-                <TabsTrigger value="inativos">Inativos</TabsTrigger>
-                <TabsTrigger value="todos">Todos</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
           <Card className="overflow-hidden py-0">
             <BarraFerramentas
               botoes={[
@@ -369,6 +343,34 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                 },
               ]}
             />
+            <LinhaFiltros
+              aoLimpar={() => {
+                setBusca("")
+                setFiltroStatus("ativos")
+              }}
+              temFiltro={Boolean(busca) || filtroStatus !== "ativos"}
+              encontrados={clientesFiltrados.length}
+            >
+              <CampoFiltro rotulo="Buscar">
+                <Input
+                  placeholder="Nome, e-mail ou telefone"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  className="h-9 w-[260px]"
+                />
+              </CampoFiltro>
+              <CampoFiltro rotulo="Situação">
+                <select
+                  value={filtroStatus}
+                  onChange={(e) => setFiltroStatus(e.target.value as typeof filtroStatus)}
+                  className="flex h-9 w-[140px] rounded-md border border-input bg-transparent px-2 text-sm"
+                >
+                  <option value="ativos">Ativos</option>
+                  <option value="inativos">Inativos</option>
+                  <option value="todos">Todos</option>
+                </select>
+              </CampoFiltro>
+            </LinhaFiltros>
             <CardContent className="p-0">
               {clientesFiltrados.length === 0 ? (
                 <p className="p-6 text-sm text-slate-500">Nenhum cliente encontrado.</p>

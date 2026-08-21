@@ -14,6 +14,7 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { DicaGrade } from "@/components/admin/dica-grade"
 
 export type Banner = {
   id: string
@@ -199,6 +200,7 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Banners</h1>
+      <DicaGrade />
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>

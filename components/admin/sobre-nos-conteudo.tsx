@@ -13,6 +13,7 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { DicaGrade } from "@/components/admin/dica-grade"
 
 export type SobreNosMidia = {
   id: string
@@ -190,6 +191,7 @@ export function SobreNosConteudo({ midiasIniciais }: { midiasIniciais: SobreNosM
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Sobre Nós - fotos e vídeos</h1>
+      <DicaGrade />
       <p className="text-sm text-muted-foreground">
         Gerencia a galeria de fotos e vídeos mostrada na página /sobre do site. O texto da página
         continua em Configurações &gt; Páginas.

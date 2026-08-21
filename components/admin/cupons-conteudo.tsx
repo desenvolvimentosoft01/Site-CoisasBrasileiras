@@ -15,6 +15,7 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { DicaGrade } from "@/components/admin/dica-grade"
 import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
 import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
@@ -167,6 +168,7 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Cupons de desconto</h1>
+      <DicaGrade />
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>
         <TabsList>

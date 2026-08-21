@@ -22,6 +22,7 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { DicaGrade } from "@/components/admin/dica-grade"
 
 export type Conta = {
   id: string
@@ -203,6 +204,7 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
           <ArrowLeft size={18} />
         </Button>
         <h1 className="text-2xl font-semibold">Contas a pagar / receber</h1>
+        <DicaGrade />
       </div>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v as string)}>

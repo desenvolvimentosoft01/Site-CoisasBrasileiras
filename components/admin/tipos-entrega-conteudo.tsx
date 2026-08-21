@@ -12,6 +12,7 @@ import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
 import { Icone } from "@/components/admin/icone"
+import { DicaGrade } from "@/components/admin/dica-grade"
 import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
 import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
 
@@ -115,6 +116,7 @@ export function TiposEntregaConteudo({ tiposIniciais }: { tiposIniciais: TipoEnt
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">Tipos de entrega</h1>
+          <DicaGrade />
           <p className="text-sm text-muted-foreground">
             Usado na venda balcão quando a venda tem alguma forma de entrega (retirada, motoboy etc).
           </p>
