@@ -36,7 +36,7 @@ Ausências mapeadas, em ordem de importância (nenhuma feita ainda):
 - [ ] **Ajuste de estoque com motivo** (quebra, perda, contagem) — a tela de Estoque deixa editar a quantidade direto, sem registrar o porquê.
 - [ ] **Fluxo de caixa** — existe contas a pagar/receber, falta a projeção de saldo por período.
 - [ ] **Transportadoras como cadastro** — hoje é texto livre no pedido.
-- [ ] **Permissão por tela** — só existe admin e operador; o operador do balcão enxerga custo de compra.
+- [x] **Permissão por tela** — catálogo em `lib/telas-admin.ts`, exceções em `TAB_USUARIO_PERMISSAO` (063). O menu esconde o que a pessoa não pode abrir e o layout do admin bloqueia por URL (middleware manda o `x-pathname`), então digitar o endereço na mão não passa. Edição pelo botão **Permissões** na tela de Usuários.
 
 ## Checklist pra retomar (sessão de 2026-08-19/20 parou aqui)
 
@@ -116,7 +116,7 @@ Racional:
 - [ ] Ajuste de estoque com motivo (quebra, perda, contagem).
 - [ ] Fluxo de caixa (projeção de saldo por período).
 - [ ] Transportadoras como cadastro (hoje é texto livre no pedido).
-- [ ] Permissão por tela (hoje só admin/operador; operador enxerga custo de compra).
+- [x] Permissão por tela.
 
 **7. Fiscal — próximos passos**
 - [ ] CT-e / DACTE.
