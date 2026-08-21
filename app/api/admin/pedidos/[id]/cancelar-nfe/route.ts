@@ -1,4 +1,5 @@
 import { transacao } from "@/lib/db"
+import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { cancelarNotaFiscalBling } from "@/lib/bling"
 import { notificarClientesEstoqueVoltou } from "@/lib/notificar-estoque"
@@ -39,10 +40,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         [id]
       )
       for (const item of itens) {
-        await q("UPDATE TAB_PRODUTO SET estoque = estoque + $1 WHERE id = $2", [
-          item.quantidade,
-          item.produto_id,
-        ])
+        const [produtoAtualizado] = await q(
+          "UPDATE TAB_PRODUTO SET estoque = estoque + $1 WHERE id = $2 RETURNING estoque",
+          [item.quantidade, item.produto_id]
+        )
+        await registrarMovimentoEstoque(q, {
+          produtoId: item.produto_id,
+          quantidade: Number(item.quantidade),
+          tipo: "entrada",
+          motivo: "cancelamento_venda",
+          saldoApos: Number(produtoAtualizado?.estoque ?? 0),
+          origemTipo: "pedido",
+          origemId: id,
+          observacao: "Estorno por cancelamento da NF-e",
+        })
       }
 
       return { pedidoAtualizado: atualizado, produtosIds: itens.map((i) => i.produto_id) }

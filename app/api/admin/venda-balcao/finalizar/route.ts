@@ -1,4 +1,5 @@
 import { transacao } from "@/lib/db"
+import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
 
@@ -85,10 +86,22 @@ export async function POST(request: Request) {
           "INSERT INTO TAB_PEDIDO_ITEM (pedido_id, produto_id, quantidade, preco_unitario) VALUES ($1, $2, $3, $4)",
           [pedidoCriado.id, item.produtoId, item.quantidade, item.precoUnitario]
         )
-        await executar("UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2", [
-          item.quantidade,
-          item.produtoId,
-        ])
+        // RETURNING pra registrar no kardex o saldo DEPOIS do movimento, sem
+        // uma segunda leitura que poderia pegar valor de outra transacao.
+        const [produtoAtualizado] = await executar(
+          "UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2 RETURNING estoque",
+          [item.quantidade, item.produtoId]
+        )
+        await registrarMovimentoEstoque(executar, {
+          produtoId: item.produtoId,
+          quantidade: Number(item.quantidade),
+          tipo: "saida",
+          motivo: "venda",
+          saldoApos: Number(produtoAtualizado?.estoque ?? 0),
+          origemTipo: "pedido",
+          origemId: pedidoCriado.id,
+          observacao: "Venda balcão",
+        })
       }
 
       await executar(
