@@ -35,7 +35,7 @@ type ItemLink = {
   tipo: "link"
   href: string
   label: string
-  icone: NomeIcone
+  icone: NomeIcone
   somenteDesenvolvedor?: boolean
 }
 type ItemGrupo = {
@@ -62,6 +62,7 @@ const menu: ItemMenu[] = [
       { href: "/admin/pedidos", label: "Pedidos" },
       { href: "/admin/orcamentos", label: "Orçamentos" },
       { href: "/admin/clientes", label: "Clientes" },
+      { href: "/admin/transportadoras", label: "Transportadoras" },
     ],
   },
   {
@@ -96,7 +97,7 @@ const menu: ItemMenu[] = [
     label: "Financeiro",
     icone: "financeiro",
     filhos: [
-      { href: "/admin/financeiro", label: "Visão geral" },
+      { href: "/admin/financeiro", label: "Resumo financeiro" },
       { href: "/admin/financeiro/contas", label: "Contas a pagar/receber" },
       { href: "/admin/financeiro/fluxo-caixa", label: "Fluxo de caixa" },
     ],

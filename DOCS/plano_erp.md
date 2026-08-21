@@ -35,7 +35,7 @@ Ausências mapeadas, em ordem de importância (nenhuma feita ainda):
 - [ ] **Movimentação de estoque (kardex)** — hoje o estoque é um número que sobe e desce, sem histórico de por que mudou. Sem isso, divergência de inventário não tem como ser investigada. É a lacuna mais séria.
 - [ ] **Ajuste de estoque com motivo** (quebra, perda, contagem) — a tela de Estoque deixa editar a quantidade direto, sem registrar o porquê.
 - [x] **Fluxo de caixa** — `/admin/financeiro/fluxo-caixa`. Realizado (venda paga + conta quitada, pela data do pagamento) por dia ou movimento a movimento, com saldo anterior e acumulado, mais a aba **Previsão**: contas em aberto dos próximos 30 dias partindo do caixa real de hoje. Sem tabela nova — caixa é leitura. Migration 064 trouxe `TAB_PEDIDO.pago_em`, que é a data que o caixa usa.
-- [ ] **Transportadoras como cadastro** — hoje é texto livre no pedido.
+- [x] **Transportadoras como cadastro** — `/admin/transportadoras` (Vendas > Transportadoras), migration 065. O campo do pedido virou seleção do cadastro, que já traz o código de serviço da Frenet junto. O texto antigo continua sendo mostrado nos pedidos despachados antes disso.
 - [x] **Permissão por tela** — catálogo em `lib/telas-admin.ts`, exceções em `TAB_USUARIO_PERMISSAO` (063). O menu esconde o que a pessoa não pode abrir e o layout do admin bloqueia por URL (middleware manda o `x-pathname`), então digitar o endereço na mão não passa. Edição pelo botão **Permissões** na tela de Usuários.
 
 ## Checklist pra retomar (sessão de 2026-08-19/20 parou aqui)
@@ -115,7 +115,7 @@ Racional:
 - [ ] Movimentação de estoque (kardex) — a lacuna mais séria.
 - [ ] Ajuste de estoque com motivo (quebra, perda, contagem).
 - [x] Fluxo de caixa, com projeção de saldo.
-- [ ] Transportadoras como cadastro (hoje é texto livre no pedido).
+- [x] Transportadoras como cadastro.
 - [x] Permissão por tela.
 
 **7. Fiscal — próximos passos**
