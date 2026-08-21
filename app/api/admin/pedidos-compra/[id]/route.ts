@@ -1,5 +1,6 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 
 type ItemPedidoCompra = {
@@ -93,6 +94,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return atualizado
   })
 
+  await registrarAuditoriaServidor({
+    sessao: sessaoOuErro,
+    tela: "Pedidos de compra",
+    acao: "edicao",
+    tabela: "TAB_PEDIDO_COMPRA",
+    registroId: id,
+    depois: { numero: pedido.numero, valor_total: valorTotal, itens: itens.length },
+  })
+
   return NextResponse.json(pedido)
 }
 
@@ -121,6 +131,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     "UPDATE TAB_PEDIDO_COMPRA SET status = $1, atualizado_em = NOW() WHERE id = $2 RETURNING id, status",
     [status, id]
   )
+
+  await registrarAuditoriaServidor({
+    sessao: sessaoOuErro,
+    tela: "Pedidos de compra",
+    acao: "edicao",
+    tabela: "TAB_PEDIDO_COMPRA",
+    registroId: id,
+    antes: { status: atual.status },
+    depois: { status: pedido.status },
+  })
+
   return NextResponse.json(pedido)
 }
 
@@ -138,6 +159,21 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     )
   }
 
-  await query("DELETE FROM TAB_PEDIDO_COMPRA WHERE id = $1", [id])
+  // RETURNING guarda o que sumiu: depois do DELETE nao existe mais lugar
+  // nenhum pra consultar o que esse pedido tinha.
+  const [excluido] = await query(
+    "DELETE FROM TAB_PEDIDO_COMPRA WHERE id = $1 RETURNING numero, status, fornecedor_id, valor_total",
+    [id]
+  )
+
+  await registrarAuditoriaServidor({
+    sessao: sessaoOuErro,
+    tela: "Pedidos de compra",
+    acao: "exclusao",
+    tabela: "TAB_PEDIDO_COMPRA",
+    registroId: id,
+    antes: excluido ?? null,
+  })
+
   return NextResponse.json({ sucesso: true })
 }

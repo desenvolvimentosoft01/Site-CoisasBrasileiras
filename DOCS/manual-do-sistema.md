@@ -1339,7 +1339,7 @@ Central de documentos fiscais: reúne numa lista só as notas de **entrada** (as
 - **Buscar** — procura por número da nota, nome do fornecedor/cliente ou chave de acesso.
 - **Emissão de / até** — período de emissão da nota (é por emissão que o contador fecha o mês).
 - **Este mês / Mês passado** — atalhos que preenchem o período.
-- **Só sem XML guardado** — mostra as notas que ainda não têm o arquivo salvo. Serve pra saber o que falta antes de mandar o lote pro contador.
+- **Arquivo XML** — `Salvo — pronto para envio` mostra o que já pode ir pro contador agora; `Falta baixar do Bling` mostra o que ainda não tem o arquivo aqui. Serve pra conferir o lote antes de exportar.
 - **Limpar filtros** — volta a lista ao estado inicial. Ao lado, o sistema mostra quantas notas foram encontradas.
 
 ### Tabela

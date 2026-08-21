@@ -3,6 +3,7 @@ import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { cancelarNotaFiscalBling } from "@/lib/bling"
 import { notificarClientesEstoqueVoltou } from "@/lib/notificar-estoque"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -57,6 +58,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }
 
       return { pedidoAtualizado: atualizado, produtosIds: itens.map((i) => i.produto_id) }
+    })
+
+    // Cancelamento de NF-e e irreversivel e mexe em estoque - a justificativa
+    // entra na auditoria porque e ela que responde "por que cancelaram?" meses
+    // depois, quando ninguem mais lembra.
+    await registrarAuditoriaServidor({
+      sessao: sessaoOuErro,
+      tela: "Pedidos",
+      acao: "exclusao",
+      tabela: "TAB_PEDIDO",
+      registroId: id,
+      depois: {
+        evento: "NF-e cancelada",
+        justificativa: justificativa || null,
+        estoque_estornado: produtosIds.length,
+      },
     })
 
     // Fora da transacao, de proposito - envio de email nao deve travar nem

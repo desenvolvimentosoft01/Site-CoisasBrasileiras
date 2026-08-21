@@ -1,5 +1,6 @@
 import { transacao, query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 
 // So aceita cotacao "respondida" (com quantidade/preco preenchidos pelo
@@ -59,6 +60,23 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     )
 
     return criado
+  })
+
+  // Aceitar cotacao vira compromisso com o fornecedor pelo preco respondido -
+  // fica registrado quem aceitou e por quanto.
+  await registrarAuditoriaServidor({
+    sessao: sessaoOuErro,
+    tela: "Cotações",
+    acao: "edicao",
+    tabela: "TAB_COTACAO",
+    registroId: id,
+    antes: { status: cotacao.status },
+    depois: {
+      status: "aceita",
+      pedido_compra_id: pedidoCompra.id,
+      pedido_compra_numero: pedidoCompra.numero,
+      valor_total: valorTotal,
+    },
   })
 
   return NextResponse.json(pedidoCompra, { status: 201 })

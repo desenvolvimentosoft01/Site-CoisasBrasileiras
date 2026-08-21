@@ -1,6 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { getConfiguracoesMarca, salvarConfiguracoesMarca, type Marca } from "@/lib/configuracoes"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
@@ -53,6 +54,20 @@ export async function PUT(request: Request) {
   const marca: Marca = marcaParam === "branco" ? "branco" : "colorido"
 
   const configuracoes: Record<string, string> = await request.json()
+
+  // Estado anterior so das chaves que vieram no formulario - guardar a tabela
+  // inteira encheria a auditoria de campo que ninguem tocou.
+  const linhasAntes = await query("SELECT chave, valor FROM TAB_CONFIGURACAO")
+  const globaisAntes: Record<string, string> = {}
+  for (const linha of linhasAntes) {
+    if (linha.chave in configuracoes && !CHAVES_MARCA.includes(linha.chave)) {
+      globaisAntes[linha.chave] = linha.valor ?? ""
+    }
+  }
+  const marcaAntes = await getConfiguracoesMarca(
+    CHAVES_MARCA.filter((chave) => chave in configuracoes),
+    marca
+  )
   const configuracoesMarca = Object.fromEntries(
     Object.entries(configuracoes).filter(([chave]) => CHAVES_MARCA.includes(chave))
   )
@@ -75,6 +90,16 @@ export async function PUT(request: Request) {
   // no build por nao usar cookies/headers - sem isso, uma config salva aqui
   // (whatsapp, instagram, cor, textos) so apareceria no proximo deploy.
   revalidatePath("/", "layout")
+
+  await registrarAuditoriaServidor({
+    sessao: sessaoOuErro,
+    tela: "Configurações da loja",
+    acao: "edicao",
+    tabela: "TAB_CONFIGURACAO",
+    registroId: marca,
+    antes: { ...globaisAntes, ...marcaAntes },
+    depois: configuracoes,
+  })
 
   return NextResponse.json({ sucesso: true })
 }
