@@ -4,7 +4,7 @@ import { lerTokenSessao } from "@/lib/auth"
 import { getConfiguracoes } from "@/lib/configuracoes"
 import { carregarRecursos } from "@/lib/recursos-servidor"
 import { rotuloPlanoParaCliente } from "@/lib/recursos"
-import { CHAVES_COR_TEMA } from "@/lib/cores"
+import { CHAVES_COR_SISTEMA } from "@/lib/cores"
 import { AdminShell } from "@/components/admin/admin-shell"
 
 // Titulo proprio da aba do admin - sobrescreve o titulo do site (definido no
@@ -26,13 +26,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Mesma paleta configurada em Configuracoes > Aparencia / Cores do Sistema
   // (a que o site publico usa) - o admin usa as cores de verdade da loja em
   // vez de cores fixas proprias, pra nao destoar visualmente do site.
-  const configuracoes = await getConfiguracoes([...CHAVES_COR_TEMA, "logo_url", "nome_loja", "plano"])
+  const configuracoes = await getConfiguracoes([...CHAVES_COR_SISTEMA, "logo_url", "nome_loja", "plano"])
   const recursos = await carregarRecursos()
 
   return (
     <AdminShell
       sessao={sessao}
-      cores={configuracoes}
+      coresSistema={configuracoes}
       nomeLoja={configuracoes.nome_loja || undefined}
       dominioBranco={process.env.DOMINIO_BRANCO}
       plano={rotuloPlanoParaCliente(configuracoes.plano || "avancado", recursos)}

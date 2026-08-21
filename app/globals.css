@@ -235,3 +235,38 @@
     opacity: 0.6;
   }
 }
+
+/* Superficies do painel admin. Cada uma le a variavel definida em
+   lib/cores.ts (styleCoresSistema), aplicada no wrapper raiz do admin - assim
+   a tela de Cores muda o visual inteiro sem que nenhuma tela precise ser
+   editada.
+
+   Existem como CLASSE (e nao como utilitario do Tailwind repetido em cada
+   arquivo) porque sao superficies compartilhadas: o cabecalho de grade
+   aparece em 22 telas, e uma mudanca de cor nao pode virar 22 edicoes. */
+.cabecalho-grade {
+  background-color: var(--admin-grade-cabecalho);
+  color: var(--admin-grade-cabecalho-texto);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.linha-selecionada {
+  background-color: var(--admin-grade-selecao);
+}
+
+.barra-ferramentas-superficie {
+  background-color: var(--admin-barra-fundo);
+}
+
+.menu-lateral {
+  background-color: var(--admin-menu-fundo);
+  color: var(--admin-menu-texto);
+}
+
+.barra-abas {
+  background-color: var(--admin-abas-fundo);
+}

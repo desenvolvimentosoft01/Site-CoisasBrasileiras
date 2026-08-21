@@ -140,7 +140,7 @@ export function FreteFaixasConteudo({ faixasIniciais }: { faixasIniciais: Faixa[
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
-                  <tr className="border-b border-slate-700 bg-slate-800 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-200">
+                  <tr className="cabecalho-grade border-b border-slate-700">
                     <th className="p-4 font-medium">Peso (kg)</th>
                     <th className="p-4 font-medium">Valor (R$)</th>
                     <th className="p-4 font-medium">Prazo (dias)</th>

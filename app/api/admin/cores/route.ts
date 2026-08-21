@@ -1,7 +1,7 @@
 import { query } from "@/lib/db"
 import { exigirDesenvolvedor } from "@/lib/auth-servidor"
 import { getConfiguracoesMarca, salvarConfiguracoesMarca } from "@/lib/configuracoes"
-import { CHAVES_COR_TEMA } from "@/lib/cores"
+import { CHAVES_COR_TEMA, CHAVES_COR_SISTEMA } from "@/lib/cores"
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
@@ -22,7 +22,10 @@ export async function GET(request: Request) {
 
   const linhas = await query(
     "SELECT chave, valor FROM TAB_CONFIGURACAO WHERE chave = ANY($1)",
-    [CHAVES_COR_TEMA]
+    // "sistema" e a paleta do painel (chaves cor_sistema_*), separada da do
+    // site desde 2026-08-20: o painel e ferramenta de trabalho e e o mesmo
+    // pras duas lojas, entao nao herda mais a cara da vitrine.
+    [marca === "sistema" ? CHAVES_COR_SISTEMA : CHAVES_COR_TEMA]
   )
   const mapa: Record<string, string> = {}
   for (const linha of linhas) {
@@ -38,8 +41,11 @@ export async function PUT(request: Request) {
 
   const marca = new URL(request.url).searchParams.get("marca")
   const cores: Record<string, string> = await request.json()
+  // A lista de chaves aceitas muda com a paleta - sem isso, salvar o sistema
+  // descartaria tudo, porque nenhuma chave cor_sistema_* esta em CHAVES_COR_TEMA.
+  const chavesAceitas = marca === "sistema" ? CHAVES_COR_SISTEMA : CHAVES_COR_TEMA
   const coresValidas = Object.fromEntries(
-    Object.entries(cores).filter(([chave]) => CHAVES_COR_TEMA.includes(chave))
+    Object.entries(cores).filter(([chave]) => chavesAceitas.includes(chave))
   )
 
   if (marca === "branco") {
