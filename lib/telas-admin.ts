@@ -26,6 +26,7 @@ export type ChaveTela =
   | "pedidos_compra"
   | "compras"
   | "fornecedores"
+  | "transportadoras"
   | "notas_fiscais"
   | "financeiro"
   | "financeiro_contas"
@@ -71,9 +72,12 @@ export const TELAS_ADMIN: TelaAdmin[] = [
   { chave: "pedidos_compra", rota: "/admin/pedidos-compra", label: "Pedido de Compra", grupo: "Compras", padraoOperador: false },
   { chave: "compras", rota: "/admin/compras", label: "Entrada de NF", grupo: "Compras", padraoOperador: false },
   { chave: "fornecedores", rota: "/admin/fornecedores", label: "Fornecedores", grupo: "Compras", padraoOperador: false },
+  // Fica em Vendas, e nao em Compras: quem usa transportadora e quem despacha
+  // o pedido, nao quem compra do fornecedor.
+  { chave: "transportadoras", rota: "/admin/transportadoras", label: "Transportadoras", grupo: "Vendas", padraoOperador: true },
 
   { chave: "notas_fiscais", rota: "/admin/notas-fiscais", label: "Notas Fiscais", grupo: "Fiscal", padraoOperador: false },
-  { chave: "financeiro", rota: "/admin/financeiro", label: "Financeiro (visão geral)", grupo: "Financeiro", padraoOperador: false },
+  { chave: "financeiro", rota: "/admin/financeiro", label: "Resumo financeiro", grupo: "Financeiro", padraoOperador: false },
   { chave: "financeiro_contas", rota: "/admin/financeiro/contas", label: "Contas a pagar/receber", grupo: "Financeiro", padraoOperador: false },
   { chave: "fluxo_caixa", rota: "/admin/financeiro/fluxo-caixa", label: "Fluxo de caixa", grupo: "Financeiro", padraoOperador: false },
 

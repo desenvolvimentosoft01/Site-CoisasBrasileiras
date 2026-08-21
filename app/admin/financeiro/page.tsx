@@ -34,7 +34,7 @@ export default async function FinanceiroPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Financeiro</h1>
+        <h1 className="text-2xl font-semibold">Resumo financeiro</h1>
         <Link href="/admin/financeiro/contas" className="text-sm text-primary hover:underline">
           Ver todas as contas
         </Link>

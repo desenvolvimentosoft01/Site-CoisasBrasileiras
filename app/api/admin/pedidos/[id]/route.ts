@@ -26,7 +26,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     `
     SELECT
       p.id, p.status, p.total, p.forma_pagamento, p.nota_fiscal_url, p.criado_em, p.origem, p.canal,
-      p.codigo_rastreio, p.transportadora,
+      p.codigo_rastreio, p.transportadora, p.transportadora_id,
       p.bling_nota_id, p.bling_link_danfe, p.bling_link_pdf, p.bling_nota_cancelada_em, p.bling_pedido_id,
       p.bling_nota_email_enviada_em, p.nota_fiscal_whatsapp_enviada_em,
       p.bling_nota_situacao, p.bling_nota_situacao_atualizada_em,
@@ -62,12 +62,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (sessaoOuErro instanceof NextResponse) return sessaoOuErro
 
   const { id } = await params
-  const { status, codigoRastreio, transportadora } = await request.json()
+  const { status, codigoRastreio, transportadora, transportadoraId } = await request.json()
 
   // Lido ANTES do UPDATE - a auditoria de status so serve se disser de onde
   // pra onde o pedido foi, e depois de gravar o valor antigo nao existe mais.
   const [pedidoAntes] = await query(
-    "SELECT status, codigo_rastreio, transportadora FROM TAB_PEDIDO WHERE id = $1",
+    "SELECT status, codigo_rastreio, transportadora, transportadora_id FROM TAB_PEDIDO WHERE id = $1",
     [id]
   )
 
@@ -141,6 +141,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     valores.push(transportadora || null)
     campos.push(`transportadora = $${valores.length}`)
   }
+  // O texto continua sendo gravado junto com o id: e ele que aparece no email
+  // e no WhatsApp do cliente, e num pedido ja despachado o nome precisa
+  // continuar o mesmo mesmo que o cadastro seja renomeado depois.
+  if (transportadoraId !== undefined) {
+    valores.push(transportadoraId || null)
+    campos.push(`transportadora_id = $${valores.length}`)
+  }
 
   if (campos.length === 0) {
     return NextResponse.json({ erro: "Nenhum campo para atualizar" }, { status: 400 })
@@ -151,7 +158,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const [pedido] = await query(
     `UPDATE TAB_PEDIDO SET ${campos.join(", ")}, atualizado_em = NOW()
      WHERE id = $${valores.length}
-     RETURNING id, status, codigo_rastreio, transportadora`,
+     RETURNING id, status, codigo_rastreio, transportadora, transportadora_id`,
     valores
   )
 

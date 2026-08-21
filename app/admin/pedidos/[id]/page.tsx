@@ -23,6 +23,7 @@ type Pedido = {
   nota_fiscal_url: string | null
   codigo_rastreio: string | null
   transportadora: string | null
+  transportadora_id: string | null
   bling_nota_id: string | null
   bling_link_danfe: string | null
   bling_link_pdf: string | null
@@ -95,6 +96,10 @@ export default function DetalhePedidoPage() {
   const [erroStatus, setErroStatus] = useState("")
   const [codigoRastreio, setCodigoRastreio] = useState("")
   const [transportadora, setTransportadora] = useState("")
+  const [transportadoraId, setTransportadoraId] = useState("")
+  const [transportadoras, setTransportadoras] = useState<
+    { id: string; codigo: number; razao_social: string; codigo_servico_frenet: string | null; ativo: boolean }[]
+  >([])
   const [salvandoRastreio, setSalvandoRastreio] = useState(false)
   const [rastreioSalvo, setRastreioSalvo] = useState(false)
   const [codigoServicoFrenet, setCodigoServicoFrenet] = useState("")
@@ -121,6 +126,7 @@ export default function DetalhePedidoPage() {
       setPedido(dados)
       setCodigoRastreio(dados.codigo_rastreio ?? "")
       setTransportadora(dados.transportadora ?? "")
+      setTransportadoraId(dados.transportadora_id ?? "")
     }
   }, [params.id])
 
@@ -128,6 +134,22 @@ export default function DetalhePedidoPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- carrega os dados do pedido ao montar/trocar de id
     carregar()
   }, [carregar])
+
+  // Lista do cadastro pro campo de transportadora. So as ativas: uma que foi
+  // desativada nao deve mais ser escolhida em despacho novo, mas continua
+  // valendo nos pedidos antigos que ja apontam pra ela.
+  useEffect(() => {
+    let cancelado = false
+    fetch("/api/admin/transportadoras")
+      .then((resposta) => (resposta.ok ? resposta.json() : []))
+      .then((lista) => {
+        if (!cancelado) setTransportadoras(lista.filter((item: { ativo: boolean }) => item.ativo))
+      })
+      .catch(() => {})
+    return () => {
+      cancelado = true
+    }
+  }, [])
 
   async function alterarStatus(novoStatus: string) {
     if (!pedido) return
@@ -205,7 +227,7 @@ export default function DetalhePedidoPage() {
     await fetch(`/api/admin/pedidos/${pedido.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigoRastreio, transportadora }),
+      body: JSON.stringify({ codigoRastreio, transportadora, transportadoraId: transportadoraId || null }),
     })
     setSalvandoRastreio(false)
     setRastreioSalvo(true)
@@ -520,11 +542,43 @@ export default function DetalhePedidoPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Transportadora</Label>
-              <Input
-                value={transportadora}
-                onChange={(e) => setTransportadora(e.target.value)}
-                placeholder="Ex: Correios, Jadlog..."
-              />
+              <select
+                value={transportadoraId}
+                onChange={(e) => {
+                  const escolhida = transportadoras.find((t) => t.id === e.target.value)
+                  setTransportadoraId(e.target.value)
+                  // Grava tambem o nome: e ele que vai no e-mail e no WhatsApp
+                  // do cliente, e num pedido ja despachado precisa continuar o
+                  // mesmo mesmo que o cadastro seja renomeado depois.
+                  setTransportadora(escolhida?.razao_social ?? "")
+                  // Puxa o codigo da Frenet do cadastro - e o dado que faltava
+                  // pra validacao de rastreio funcionar sem redigitar sempre.
+                  if (escolhida?.codigo_servico_frenet) {
+                    setCodigoServicoFrenet(escolhida.codigo_servico_frenet)
+                  }
+                }}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+              >
+                <option value="">Selecione...</option>
+                {transportadoras.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.codigo} - {item.razao_social}
+                  </option>
+                ))}
+              </select>
+              {/* Pedido antigo, despachado antes do cadastro existir: mostra o
+                  nome que foi digitado na epoca em vez de parecer vazio. */}
+              {!transportadoraId && transportadora && (
+                <p className="text-xs text-slate-500">
+                  Anotado como &quot;{transportadora}&quot; antes do cadastro de transportadoras.
+                  Selecione acima para vincular.
+                </p>
+              )}
+              {transportadoras.length === 0 && (
+                <p className="text-xs text-slate-500">
+                  Nenhuma transportadora cadastrada ainda — cadastre em Vendas &gt; Transportadoras.
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Código de rastreio</Label>
