@@ -57,7 +57,7 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 **3. Visual do InMenteGestao — continuação** *(decisão: opção B, adotar o visual de lá; feito: ícones de linha, grade escura, barra de ferramentas clara, login)*
 - [x] `ModalDetalhe` com navegação anterior/próximo entre os registros da grade ("1 de 3") e botão Editar no rodapé. *(feito 2026-08-20)*
 - [x] Barra de status no rodapé da grade. *(feito 2026-08-20 — em 8 telas)*
-- [x] Linha de filtros padronizada (`components/admin/linha-filtros.tsx`), aplicada em Notas Fiscais. *(falta levar às demais grades que têm filtro próprio)*
+- [x] Linha de filtros padronizada (`components/admin/linha-filtros.tsx`): Notas Fiscais, Fluxo de Caixa, **Clientes** e **Pedidos**. Orçamentos não tem filtro de listagem. **Compras ficou de fora de propósito**: ela usa um cartão de filtros em grade, com textos de ajuda por campo (`CampoDica`) — espremer isso numa linha só perderia a ajuda e amontoaria os campos.
 - [x] Subtítulo nas telas de cadastro (`components/admin/dica-grade.tsx`, aplicado em 12 telas) — componente, e não texto repetido: se repetido na mão, uma tela acaba dizendo "clique duas vezes" e outra "duplo clique", e o operador acha que são coisas diferentes.
 - [x] Botão "Duplicar" — feito em Produtos. *(falta avaliar se faz sentido em Clientes/Fornecedores; em cadastro sem campo repetitivo, duplicar não ajuda)*
 - [x] Tela de Plano e Recursos com barra Gravar/Cancelar. Escolher um plano agora **pré-marca** os recursos do pacote na tela para conferência, sem gravar; cada recurso alterado aparece como "será ligado"/"será desligado"; desligar recurso pede confirmação **nomeando quais** — "5 recursos alterados" não ajuda ninguém a perceber que desmarcou o módulo errado.

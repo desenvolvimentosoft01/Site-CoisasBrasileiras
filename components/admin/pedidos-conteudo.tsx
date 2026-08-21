@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LinhaFiltros } from "@/components/admin/linha-filtros"
 import { LabelCanal } from "@/components/admin/label-canal"
 import { canaisLiberados, type CanalPedido } from "@/lib/canal-pedido"
 import type { Recursos } from "@/lib/recursos"
@@ -194,7 +195,23 @@ export function PedidosConteudo({
         </TabsList>
       </Tabs>
 
-      <div className="flex flex-wrap items-start gap-3">
+      <LinhaFiltros
+        aoLimpar={() => {
+          setAba("todos")
+          setFiltroCanal("todos")
+          setFiltroCliente("")
+          setFiltroDataInicio("")
+          setFiltroDataFim("")
+        }}
+        temFiltro={
+          aba !== "todos" ||
+          filtroCanal !== "todos" ||
+          Boolean(filtroCliente) ||
+          Boolean(filtroDataInicio) ||
+          Boolean(filtroDataFim)
+        }
+        encontrados={pedidosFiltrados.length}
+      >
         <fieldset className="flex gap-3 rounded-lg border border-slate-200 p-2 pt-1">
           <legend className="px-1 text-xs font-medium text-slate-500">Período</legend>
           <div className="space-y-1">
@@ -290,23 +307,7 @@ export function PedidosConteudo({
           </div>
         </div>
 
-        {(aba !== "todos" || filtroCanal !== "todos" || filtroCliente || filtroDataInicio || filtroDataFim) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setAba("todos")
-              setFiltroCanal("todos")
-              setFiltroCliente("")
-              setFiltroDataInicio("")
-              setFiltroDataFim("")
-            }}
-          >
-            <X size={14} />
-            Limpar filtros
-          </Button>
-        )}
-      </div>
+      </LinhaFiltros>
 
       <Tabs value={aba} onValueChange={(v) => setAba(v ?? "todos")}>
         <TabsList className="h-auto flex-wrap gap-1 p-1">
