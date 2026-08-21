@@ -56,6 +56,21 @@ export const CORES_SISTEMA = [
   { chave: "cor_sistema_grade_selecao", variavel: "--admin-grade-selecao", label: "Linha selecionada na grade", padrao: "#fffbeb" },
   { chave: "cor_sistema_barra_fundo", variavel: "--admin-barra-fundo", label: "Fundo da barra de ferramentas", padrao: "#ffffff" },
   { chave: "cor_sistema_fundo", variavel: "--admin-fundo", label: "Fundo das telas", padrao: "#f1f5f9" },
+
+  // Botoes da barra de ferramentas e selos de status. Uma cor BASE por
+  // significado, e nao tres (texto, fundo e borda): o fundo e a borda saem
+  // dela por color-mix no CSS. Pedir tres cores por variante daria 24 campos
+  // nessa tela e ainda deixaria o usuario montar combinacao ilegivel.
+  { chave: "cor_sistema_acao_primaria", variavel: "--admin-acao-primaria", label: "Ação primária (Novo)", padrao: "#1d4ed8" },
+  { chave: "cor_sistema_acao_sucesso", variavel: "--admin-acao-sucesso", label: "Ação de confirmar (Gravar)", padrao: "#047857" },
+  { chave: "cor_sistema_acao_alerta", variavel: "--admin-acao-alerta", label: "Ação de atenção (Limpar)", padrao: "#b45309" },
+  { chave: "cor_sistema_acao_perigo", variavel: "--admin-acao-perigo", label: "Ação destrutiva (Excluir)", padrao: "#b91c1c" },
+
+  { chave: "cor_sistema_selo_sucesso", variavel: "--admin-selo-sucesso", label: "Selo positivo (Ativo, Pago)", padrao: "#059669" },
+  { chave: "cor_sistema_selo_atencao", variavel: "--admin-selo-atencao", label: "Selo de atenção (Pendente)", padrao: "#d97706" },
+  { chave: "cor_sistema_selo_erro", variavel: "--admin-selo-erro", label: "Selo negativo (Cancelado)", padrao: "#dc2626" },
+  { chave: "cor_sistema_selo_info", variavel: "--admin-selo-info", label: "Selo informativo (Em andamento)", padrao: "#2563eb" },
+  { chave: "cor_sistema_selo_neutro", variavel: "--admin-selo-neutro", label: "Selo neutro (Inativo)", padrao: "#64748b" },
 ] as const
 
 export type ChaveCorSistema = (typeof CORES_SISTEMA)[number]["chave"]

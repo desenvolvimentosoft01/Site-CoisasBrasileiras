@@ -270,3 +270,113 @@
 .barra-abas {
   background-color: var(--admin-abas-fundo);
 }
+
+/* Selos de status da grade (Ativo, Pendente, Cancelado...).
+   Mesma razao das classes acima: o selo "Ativo" aparece em 18 telas, e a cor
+   dele nao pode virar 18 edicoes. Cada selo sai de UMA cor base - o fundo e a
+   borda vem por color-mix, entao a tela de Cores pede uma cor por significado
+   em vez de tres, e nao da pra montar combinacao ilegivel. */
+.selo {
+  display: inline-block;
+  border-radius: 9999px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+
+.selo-sucesso {
+  background-color: color-mix(in srgb, var(--admin-selo-sucesso) 15%, transparent);
+  color: var(--admin-selo-sucesso);
+}
+
+.selo-atencao {
+  background-color: color-mix(in srgb, var(--admin-selo-atencao) 15%, transparent);
+  color: var(--admin-selo-atencao);
+}
+
+.selo-erro {
+  background-color: color-mix(in srgb, var(--admin-selo-erro) 15%, transparent);
+  color: var(--admin-selo-erro);
+}
+
+.selo-info {
+  background-color: color-mix(in srgb, var(--admin-selo-info) 15%, transparent);
+  color: var(--admin-selo-info);
+}
+
+.selo-neutro {
+  background-color: color-mix(in srgb, var(--admin-selo-neutro) 18%, transparent);
+  color: var(--admin-selo-neutro);
+}
+
+/* Botoes da barra de ferramentas, por significado da acao. */
+.acao-primaria,
+.acao-sucesso,
+.acao-alerta,
+.acao-perigo {
+  border-width: 1px;
+}
+
+.acao-primaria {
+  color: var(--admin-acao-primaria);
+  background-color: color-mix(in srgb, var(--admin-acao-primaria) 8%, white);
+  border-color: color-mix(in srgb, var(--admin-acao-primaria) 25%, white);
+}
+.acao-primaria:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--admin-acao-primaria) 16%, white);
+}
+
+.acao-sucesso {
+  color: var(--admin-acao-sucesso);
+  background-color: color-mix(in srgb, var(--admin-acao-sucesso) 8%, white);
+  border-color: color-mix(in srgb, var(--admin-acao-sucesso) 25%, white);
+}
+.acao-sucesso:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--admin-acao-sucesso) 16%, white);
+}
+
+.acao-alerta {
+  color: var(--admin-acao-alerta);
+  background-color: color-mix(in srgb, var(--admin-acao-alerta) 8%, white);
+  border-color: color-mix(in srgb, var(--admin-acao-alerta) 25%, white);
+}
+.acao-alerta:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--admin-acao-alerta) 16%, white);
+}
+
+.acao-perigo {
+  color: var(--admin-acao-perigo);
+  background-color: color-mix(in srgb, var(--admin-acao-perigo) 8%, white);
+  border-color: color-mix(in srgb, var(--admin-acao-perigo) 25%, white);
+}
+.acao-perigo:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--admin-acao-perigo) 16%, white);
+}
+
+/* Padrao das variaveis do painel tambem no :root, e nao so no wrapper do
+   admin: modal e menu suspenso sao renderizados em portal, fora desse
+   wrapper, e la a variavel nao existiria - color-mix com variavel indefinida
+   nao devolve cor nenhuma, e o selo sairia invisivel. O wrapper continua
+   sobrescrevendo com o que a tela de Cores salvou. */
+:root {
+  --admin-primaria: #4f46e5;
+  --admin-menu-fundo: #0f172a;
+  --admin-menu-texto: #94a3b8;
+  --admin-menu-hover: #1e293b;
+  --admin-abas-fundo: #1e293b;
+  --admin-grade-cabecalho: #1e293b;
+  --admin-grade-cabecalho-texto: #e2e8f0;
+  --admin-grade-selecao: #fffbeb;
+  --admin-barra-fundo: #ffffff;
+  --admin-fundo: #f1f5f9;
+  --admin-acao-primaria: #1d4ed8;
+  --admin-acao-sucesso: #047857;
+  --admin-acao-alerta: #b45309;
+  --admin-acao-perigo: #b91c1c;
+  --admin-selo-sucesso: #059669;
+  --admin-selo-atencao: #d97706;
+  --admin-selo-erro: #dc2626;
+  --admin-selo-info: #2563eb;
+  --admin-selo-neutro: #64748b;
+}

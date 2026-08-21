@@ -54,9 +54,9 @@ const STATUS_ROTULO: Record<OrcamentoExistente["status"], string> = {
 
 const STATUS_COR: Record<OrcamentoExistente["status"], string> = {
   aberto: "bg-blue-600/10 text-blue-600",
-  aprovado: "bg-emerald-600/10 text-emerald-600",
-  recusado: "bg-red-600/10 text-red-600",
-  convertido: "bg-slate-500/10 text-slate-500",
+  aprovado: "selo-sucesso",
+  recusado: "selo-erro",
+  convertido: "selo-neutro",
 }
 
 export function OrcamentoForm({

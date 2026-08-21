@@ -43,10 +43,10 @@ const ABAS_STATUS = [
 ]
 
 const CORES_STATUS: Record<PedidoCompra["status"], string> = {
-  aberto: "bg-blue-600/20 text-blue-400",
-  enviado: "bg-amber-500/20 text-amber-500",
-  atendido: "bg-emerald-600/20 text-emerald-400",
-  cancelado: "bg-slate-200 text-slate-400",
+  aberto: "selo-info",
+  enviado: "selo-atencao",
+  atendido: "selo-sucesso",
+  cancelado: "selo-neutro",
 }
 
 const STATUS_LABEL: Record<PedidoCompra["status"], string> = {

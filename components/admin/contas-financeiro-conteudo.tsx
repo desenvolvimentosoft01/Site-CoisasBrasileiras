@@ -283,8 +283,8 @@ export function ContasFinanceiroConteudo({ contasIniciais }: { contasIniciais: C
                               <span
                                 className={`rounded-full px-2 py-1 text-xs ${
                                   conta.pago
-                                    ? "bg-emerald-600/20 text-emerald-400"
-                                    : "bg-amber-600/20 text-amber-400"
+                                    ? "selo-sucesso"
+                                    : "selo-atencao"
                                 }`}
                               >
                                 {conta.pago ? "Pago" : "Em aberto"}

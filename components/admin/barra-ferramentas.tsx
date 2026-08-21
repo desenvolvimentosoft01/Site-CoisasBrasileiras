@@ -57,12 +57,14 @@ interface Props {
   extra?: React.ReactNode
 }
 
+// Classes de app/globals.css, e nao utilitarios do Tailwind: assim a cor de
+// cada acao sai da tela de Cores em vez de estar fixa aqui.
 const varianteCss: Record<string, string> = {
   default: "text-slate-700 bg-white border-slate-300 hover:bg-slate-50 hover:text-slate-900",
-  primary: "text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100",
-  danger: "text-red-700 bg-red-50 border-red-200 hover:bg-red-100",
-  success: "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100",
-  warning: "text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100",
+  primary: "acao-primaria",
+  danger: "acao-perigo",
+  success: "acao-sucesso",
+  warning: "acao-alerta",
 }
 
 // Barra de acoes com icone em cima do rotulo, no mesmo padrao visual do

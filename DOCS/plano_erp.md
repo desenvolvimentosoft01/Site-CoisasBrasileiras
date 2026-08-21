@@ -63,9 +63,9 @@ Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é s�
 - [ ] Tela de Plano e Recursos no mesmo padrão das demais: barra com Gravar/Cancelar em vez de salvar a cada clique. Hoje cada marcação já grava sozinha (PUT em `/api/admin/recursos`), o que é seguro mas foge do padrão do sistema — o cliente pediu o CRUD explícito.
 
 **3.1. Tela de Cores do Sistema — separar site e sistema**
-- [ ] Hoje a tela de Cores altera um conjunto só, e o admin herda a cor da loja. O cliente quer **dois conjuntos separados**: cores do site público e cores do painel.
-- [ ] Abrir para alteração **tudo o que pode ser alterado** (fundo, cabeçalho da grade, barra de ferramentas, botões por variante, selos de status, menu lateral), e não só a cor primária.
-- [ ] Lembrar que a cor é por marca desde a migration 055 (Coisas Brasileiras e Porcelanas Brancas têm valores próprios).
+- [x] Dois conjuntos separados: abas **Coisas Brasileiras / Porcelanas Brancas** (site, por marca) e **Sistema** (painel, comum às duas lojas).
+- [x] Tudo o que pode ser alterado: menu lateral, abas, fundo, cabeçalho e linha selecionada da grade, barra de ferramentas, **botões por significado da ação** (Novo/Gravar/Limpar/Excluir) e **selos de status** (Ativo/Pendente/Cancelado/Em andamento/Inativo). Uma cor base por item — fundo e borda saem dela por `color-mix`, então não dá pra montar combinação ilegível. A aba Sistema tem prévia própria, mostrando grade, barra e selos de verdade.
+- [x] A cor do **site** continua por marca (migration 055); a do **painel** é única, porque o painel é ferramenta de trabalho e não muda ao trocar de loja.
 
 **3.2. Ajustes vistos em tela (2026-08-20)**
 - [x] ~~**Canais de venda desligados no plano continuam aparecendo nos filtros**~~ *(feito 2026-08-20: `canaisLiberados()` em `lib/canal-pedido.ts`, usado no filtro de Pedido de Venda)*. Texto original: — o seletor de canal (Pedido de Venda, Venda Balcão, relatórios) mostra Mercado Livre e Shopee mesmo com a integração desligada. Filtrar a lista de canais pelos recursos ligados **em todas as telas**, do mesmo jeito que já foi feito nas Configurações.

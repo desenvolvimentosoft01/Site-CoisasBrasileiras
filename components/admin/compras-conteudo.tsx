@@ -233,9 +233,9 @@ function AcrescimosDoItem({ item }: { item: ItemCarrinho }) {
 }
 
 const STATUS_ESTILO: Record<Compra["status"], string> = {
-  pendente: "bg-amber-500/20 text-amber-500",
-  recebida: "bg-emerald-600/20 text-emerald-400",
-  cancelada: "bg-slate-200 text-slate-500",
+  pendente: "selo-atencao",
+  recebida: "selo-sucesso",
+  cancelada: "selo-neutro",
 }
 
 const STATUS_LABEL: Record<Compra["status"], string> = {
@@ -1905,10 +1905,10 @@ export function ComprasConteudo({
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 nota.statusLocal === "lancada"
-                                  ? "bg-emerald-600/20 text-emerald-400"
+                                  ? "selo-sucesso"
                                   : nota.statusLocal === "cancelada"
-                                    ? "bg-slate-200 text-slate-500"
-                                    : "bg-amber-500/20 text-amber-500"
+                                    ? "selo-neutro"
+                                    : "selo-atencao"
                               }`}
                             >
                               {nota.statusLocal === "lancada"

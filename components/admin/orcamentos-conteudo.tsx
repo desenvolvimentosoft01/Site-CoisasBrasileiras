@@ -62,10 +62,10 @@ const ABAS_STATUS = [
 ]
 
 const CORES_STATUS: Record<Orcamento["status"], string> = {
-  aberto: "bg-blue-600/20 text-blue-400",
-  aprovado: "bg-emerald-600/20 text-emerald-400",
-  recusado: "bg-red-600/20 text-red-400",
-  convertido: "bg-slate-200 text-slate-400",
+  aberto: "selo-info",
+  aprovado: "selo-sucesso",
+  recusado: "selo-erro",
+  convertido: "selo-neutro",
 }
 
 const FORMAS_PAGAMENTO = [
