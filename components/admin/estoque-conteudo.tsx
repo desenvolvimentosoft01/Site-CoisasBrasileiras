@@ -9,6 +9,9 @@ import { Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { Icone } from "@/components/admin/icone"
+import { ModalAjusteEstoque } from "@/components/admin/modal-ajuste-estoque"
+import { ModalMovimentacaoEstoque } from "@/components/admin/modal-movimentacao-estoque"
+import type { MotivoMovimento } from "@/lib/estoque-movimento"
 
 export type ProdutoEstoque = {
   id: string
@@ -26,20 +29,38 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
   // Valores em edicao por linha (id -> texto do input), pra so gravar no "Salvar".
   const [edicoes, setEdicoes] = useState<Record<string, string>>({})
   const [salvandoId, setSalvandoId] = useState<string | null>(null)
+  const [ajustando, setAjustando] = useState<{ id: string; nome: string; estoque: number; novoEstoque: number } | null>(null)
+  const [vendoMovimentacao, setVendoMovimentacao] = useState<{ id: string; nome: string } | null>(null)
 
   const emBaixa = produtos.filter((p) => p.estoque <= p.estoque_minimo).length
 
-  async function salvar(produto: ProdutoEstoque) {
+  // Salvar nao grava direto: abre o modal que pergunta o motivo. Ajuste sem
+  // motivo e justamente o buraco que o kardex existe pra fechar.
+  function pedirMotivo(produto: ProdutoEstoque) {
     const novo = edicoes[produto.id]
     if (novo === undefined || novo === String(produto.estoque)) return
+    setAjustando({
+      id: produto.id,
+      nome: produto.nome,
+      estoque: produto.estoque,
+      novoEstoque: Number(novo),
+    })
+  }
+
+  async function confirmarAjuste(motivo: MotivoMovimento, observacao: string) {
+    if (!ajustando) return
+    const produto = produtos.find((p) => p.id === ajustando.id)
+    if (!produto) return
+    const novo = String(ajustando.novoEstoque)
 
     setSalvandoId(produto.id)
     const resposta = await fetch(`/api/admin/estoque/${produto.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ estoque: Number(novo) }),
+      body: JSON.stringify({ estoque: Number(novo), motivo, observacao }),
     })
     setSalvandoId(null)
+    setAjustando(null)
 
     if (!resposta.ok) {
       const dados = await resposta.json()
@@ -173,9 +194,17 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
                               size="sm"
                               variant="outline"
                               disabled={!alterado || salvandoId === produto.id}
-                              onClick={() => salvar(produto)}
+                              onClick={() => pedirMotivo(produto)}
                             >
                               {salvandoId === produto.id ? "..." : "Salvar"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="Ver a movimentação de estoque deste produto"
+                              onClick={() => setVendoMovimentacao({ id: produto.id, nome: produto.nome })}
+                            >
+                              Movimentação
                             </Button>
                           </div>
                         </td>
@@ -188,6 +217,21 @@ export function EstoqueConteudo({ produtosIniciais }: { produtosIniciais: Produt
           )}
         </CardContent>
       </Card>
+
+      <ModalAjusteEstoque
+        produto={ajustando}
+        onFechar={() => setAjustando(null)}
+        onConfirmar={confirmarAjuste}
+        salvando={salvandoId !== null}
+      />
+
+      {/* key pelo produto: o modal remonta a cada produto aberto, ja no estado
+          "carregando", sem precisar zerar a lista dentro do efeito. */}
+      <ModalMovimentacaoEstoque
+        key={vendoMovimentacao?.id ?? "nenhum"}
+        produto={vendoMovimentacao}
+        onFechar={() => setVendoMovimentacao(null)}
+      />
     </div>
   )
 }

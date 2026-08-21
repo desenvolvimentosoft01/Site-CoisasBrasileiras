@@ -1,4 +1,5 @@
 import { transacao, query } from "@/lib/db"
+import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 import { notificarClientesEstoqueVoltou } from "@/lib/notificar-estoque"
 
 // Marca uma compra como recebida: da alta no estoque de cada item, recalcula
@@ -56,6 +57,18 @@ export async function receberCompra(compraId: string) {
         novoCusto,
         item.produto_id,
       ])
+
+      // Kardex, na mesma transacao do saldo (ver lib/estoque-movimento.ts).
+      await registrarMovimentoEstoque(q, {
+        produtoId: item.produto_id,
+        quantidade,
+        tipo: "entrada",
+        motivo: "compra",
+        saldoApos: novoEstoque,
+        origemTipo: "compra",
+        origemId: compraId,
+        observacao: compra.numero_nota ? `Nota ${compra.numero_nota}` : null,
+      })
 
       valorItens += quantidade * custoUnitario
     }

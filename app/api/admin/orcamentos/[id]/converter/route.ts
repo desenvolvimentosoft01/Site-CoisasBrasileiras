@@ -1,4 +1,5 @@
 import { transacao, query } from "@/lib/db"
+import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { NextResponse } from "next/server"
 
@@ -78,10 +79,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           "INSERT INTO TAB_PEDIDO_ITEM (pedido_id, produto_id, quantidade, preco_unitario) VALUES ($1, $2, $3, $4)",
           [pedidoCriado.id, item.produto_id, item.quantidade, item.valor_unitario]
         )
-        await executar("UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2", [
-          item.quantidade,
-          item.produto_id,
-        ])
+        const [produtoAtualizado] = await executar(
+          "UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2 RETURNING estoque",
+          [item.quantidade, item.produto_id]
+        )
+        await registrarMovimentoEstoque(executar, {
+          produtoId: item.produto_id,
+          quantidade: Number(item.quantidade),
+          tipo: "saida",
+          motivo: "venda",
+          saldoApos: Number(produtoAtualizado?.estoque ?? 0),
+          origemTipo: "pedido",
+          origemId: pedidoCriado.id,
+          observacao: "Orçamento convertido em pedido",
+        })
       }
 
       await executar(

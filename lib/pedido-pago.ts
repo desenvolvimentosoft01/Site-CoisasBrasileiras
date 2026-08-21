@@ -1,4 +1,5 @@
 import { transacao, query } from "@/lib/db"
+import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 import { enviarEmail, templatePedidoPago, templateNovoPedidoAdmin } from "@/lib/email"
 import { getSegredo } from "@/lib/segredos"
 
@@ -28,7 +29,22 @@ export async function confirmarPedidoPago(
 
     const itens = await q("SELECT produto_id, quantidade FROM TAB_PEDIDO_ITEM WHERE pedido_id = $1", [pedidoId])
     for (const item of itens) {
-      await q("UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2", [item.quantidade, item.produto_id])
+      // RETURNING traz o saldo ja atualizado: o kardex guarda o saldo DEPOIS
+      // do movimento, e reler o produto numa segunda consulta abriria brecha
+      // pra pegar um valor ja mexido por outra transacao.
+      const [produto] = await q(
+        "UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2 RETURNING estoque",
+        [item.quantidade, item.produto_id]
+      )
+      await registrarMovimentoEstoque(q, {
+        produtoId: item.produto_id,
+        quantidade: Number(item.quantidade),
+        tipo: "saida",
+        motivo: "venda",
+        saldoApos: Number(produto?.estoque ?? 0),
+        origemTipo: "pedido",
+        origemId: pedidoId,
+      })
     }
 
     return true

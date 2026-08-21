@@ -2,6 +2,7 @@ import { query, transacao } from "@/lib/db"
 import { getConfiguracoes } from "@/lib/configuracoes"
 import { listarPedidosVendaMarketplace, obterPedidoVendaBling } from "@/lib/bling"
 import type { CanalPedido } from "@/lib/canal-pedido"
+import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 
 // Importa pedidos de Mercado Livre e Shopee que chegam no Bling como
 // TAB_PEDIDO de verdade aqui - com cliente, endereco, itens e baixa de
@@ -158,10 +159,22 @@ async function importarUmPedido(blingPedidoId: string, canal: CanalPedido): Prom
           "INSERT INTO TAB_PEDIDO_ITEM (pedido_id, produto_id, quantidade, preco_unitario) VALUES ($1, $2, $3, $4)",
           [pedidoCriado.id, item.produtoId, item.quantidade, item.precoUnitario]
         )
-        await executar("UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2", [
-          item.quantidade,
-          item.produtoId,
-        ])
+        const [produtoAtualizado] = await executar(
+          "UPDATE TAB_PRODUTO SET estoque = estoque - $1 WHERE id = $2 RETURNING estoque",
+          [item.quantidade, item.produtoId]
+        )
+        // Sem usuarioId: quem baixou foi a importacao automatica, e nao uma
+        // pessoa - e essa diferenca importa na hora de investigar.
+        await registrarMovimentoEstoque(executar, {
+          produtoId: item.produtoId,
+          quantidade: Number(item.quantidade),
+          tipo: "saida",
+          motivo: "venda",
+          saldoApos: Number(produtoAtualizado?.estoque ?? 0),
+          origemTipo: "pedido",
+          origemId: pedidoCriado.id,
+          observacao: "Pedido importado do marketplace",
+        })
       }
 
       await executar(
