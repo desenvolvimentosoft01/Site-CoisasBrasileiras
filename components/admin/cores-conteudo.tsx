@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CORES_TEMA, styleCoresTema } from "@/lib/cores"
+import { CORES_TEMA, CORES_SISTEMA, styleCoresTema } from "@/lib/cores"
 import { useCoresTema } from "@/lib/contexto-cores"
 import { registrarAuditoria } from "@/lib/auditoria"
 import { RotateCcw } from "lucide-react"
@@ -30,20 +30,21 @@ const PADRAO_VISUAL: Record<string, string> = {
   cor_borda: "#e2e8e5",
 }
 
-// Paleta de um dos dois sites, editada independente da outra - so a
-// "colorido" (Coisas Brasileiras) tambem pinta o proprio painel admin em
-// tempo real (via contexto compartilhado com o AdminShell); a "branco"
-// (Porcelanas Brancas) fica isolada nessa tela, sem repintar o admin
-// enquanto voce edita.
+// Painel de uma paleta. Serve pros dois sites e pro painel administrativo -
+// o arranjo da tela e o mesmo, muda a lista de cores e a previa.
 function PainelCores({
   marca,
+  paleta = "site",
   cores,
   onAlterar,
   onSalvar,
   salvando,
   salvo,
 }: {
-  marca: "colorido" | "branco"
+  marca: "colorido" | "branco" | "sistema"
+  // "site" edita as cores da vitrine (CORES_TEMA); "sistema", as do painel
+  // (CORES_SISTEMA).
+  paleta?: "site" | "sistema"
   cores: Record<string, string>
   onAlterar: (chave: string, valor: string) => void
   onSalvar: () => void
@@ -90,7 +91,7 @@ function PainelCores({
           <CardTitle className="text-sm text-slate-500">Paleta</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-5 sm:grid-cols-2">
-          {CORES_TEMA.map(({ chave, label }) => (
+          {(paleta === "sistema" ? CORES_SISTEMA : CORES_TEMA).map(({ chave, label }) => (
             <div key={chave} className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>{label}</Label>
@@ -131,23 +132,56 @@ function PainelCores({
 export function CoresConteudo({
   coresColoridoIniciais,
   coresBrancoIniciais,
+  coresSistemaIniciais,
 }: {
   coresColoridoIniciais: Record<string, string>
   coresBrancoIniciais: Record<string, string>
+  coresSistemaIniciais: Record<string, string>
 }) {
-  const [aba, setAba] = useState<"colorido" | "branco">("colorido")
+  const [aba, setAba] = useState<"colorido" | "branco" | "sistema">("colorido")
 
-  // "Colorido" vive no contexto compartilhado com o AdminShell (repinta a
-  // sidebar/botoes em tempo real, comportamento de sempre). "Branco" e
-  // estado local, isolado - editar o Porcelanas Brancas nao deve mudar a
-  // cara do proprio painel admin enquanto voce mexe nele.
-  const { cores: coresColorido, setCores: setCoresColorido } = useCoresTema()
+  // As duas paletas de SITE sao estado local: elas pintam a vitrine, e nao o
+  // painel - mexer nelas nao deve mudar a cara da tela onde voce esta mexendo.
+  //
+  // A paleta do SISTEMA e que vive no contexto compartilhado com o AdminShell,
+  // e por isso repinta o painel em tempo real enquanto voce escolhe a cor -
+  // aqui isso e util, porque o resultado e exatamente o que voce esta vendo.
+  const [coresColorido, setCoresColorido] = useState(coresColoridoIniciais)
   const [coresBranco, setCoresBranco] = useState(coresBrancoIniciais)
+  const { cores: coresSistema, setCores: setCoresSistema } = useCoresTema()
 
   useEffect(() => {
-    setCoresColorido(coresColoridoIniciais)
+    setCoresSistema(coresSistemaIniciais)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- so na montagem, pra nao sobrescrever edicoes em andamento
   }, [])
+
+  const coresAntesSistemaRef = useRef(coresSistemaIniciais)
+  const [salvandoSistema, setSalvandoSistema] = useState(false)
+  const [salvoSistema, setSalvoSistema] = useState(false)
+
+  async function salvarSistema() {
+    setSalvandoSistema(true)
+    setSalvoSistema(false)
+
+    await fetch("/api/admin/cores?marca=sistema", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(coresSistema),
+    })
+
+    registrarAuditoria({
+      tela: "Cores do Sistema",
+      acao: "edicao",
+      tabela: "TAB_CONFIGURACAO",
+      antes: coresAntesSistemaRef.current,
+      depois: coresSistema,
+    })
+    coresAntesSistemaRef.current = coresSistema
+
+    setSalvandoSistema(false)
+    setSalvoSistema(true)
+    setTimeout(() => setSalvoSistema(false), 2000)
+  }
 
   const coresAntesColoridoRef = useRef(coresColoridoIniciais)
   const coresAntesBrancoRef = useRef(coresBrancoIniciais)
@@ -219,6 +253,7 @@ export function CoresConteudo({
           <TabsList>
             <TabsTrigger value="colorido">🎨 Coisas Brasileiras</TabsTrigger>
             <TabsTrigger value="branco">⚪ Porcelanas Brancas</TabsTrigger>
+            <TabsTrigger value="sistema">Painel do sistema</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -232,7 +267,7 @@ export function CoresConteudo({
           salvando={salvandoColorido}
           salvo={salvoColorido}
         />
-      ) : (
+      ) : aba === "branco" ? (
         <PainelCores
           marca="branco"
           cores={coresBranco}
@@ -240,6 +275,16 @@ export function CoresConteudo({
           onSalvar={salvarBranco}
           salvando={salvandoBranco}
           salvo={salvoBranco}
+        />
+      ) : (
+        <PainelCores
+          marca="sistema"
+          paleta="sistema"
+          cores={coresSistema}
+          onAlterar={(chave, valor) => setCoresSistema({ ...coresSistema, [chave]: valor })}
+          onSalvar={salvarSistema}
+          salvando={salvandoSistema}
+          salvo={salvoSistema}
         />
       )}
     </div>

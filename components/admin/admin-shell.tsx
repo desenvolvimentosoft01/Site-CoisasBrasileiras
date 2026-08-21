@@ -24,7 +24,7 @@ import { Icone, type NomeIcone } from "@/components/admin/icone"
 import type { SessaoAdmin } from "@/lib/auth"
 import { EMAIL_DESENVOLVEDOR, NOME_SISTEMA, FABRICANTE_SISTEMA } from "@/lib/constantes"
 import { rotaAtiva } from "@/lib/rota-ativa"
-import { styleCoresTema } from "@/lib/cores"
+import { styleCoresSistema } from "@/lib/cores"
 import { ProvedorCores, useCoresTema } from "@/lib/contexto-cores"
 
 // Cada modulo tem o seu icone proprio (public/icones - ver icone.tsx). Com o
@@ -154,14 +154,15 @@ function itensVisiveis(papel: string, email: string): { href: string; label: str
 
 export function AdminShell({
   sessao,
-  cores,
+  coresSistema,
   nomeLoja,
   dominioBranco,
   plano,
   children,
 }: {
   sessao: SessaoAdmin
-  cores: Record<string, string>
+  // Paleta do painel, separada da paleta do site (ver lib/cores.ts).
+  coresSistema: Record<string, string>
   nomeLoja?: string
   dominioBranco?: string
   // Rotulo do plano contratado, so pra exibicao no cabecalho.
@@ -169,7 +170,7 @@ export function AdminShell({
   children: React.ReactNode
 }) {
   return (
-    <ProvedorCores coresIniciais={cores}>
+    <ProvedorCores coresIniciais={coresSistema}>
       {/* Fora do AdminShellInterno de proposito: e ele que chama
           useIniciarCarregamento(), e um componente nao enxerga o provedor que
           ele mesmo renderiza. */}
@@ -201,7 +202,7 @@ function AdminShellInterno({
   plano?: string
   children: React.ReactNode
 }) {
-  const { cores } = useCoresTema()
+  const { cores: coresSistema } = useCoresTema()
   const iniciarCarregamento = useIniciarCarregamento()
   const router = useRouter()
   const pathname = usePathname()
@@ -364,7 +365,7 @@ function AdminShellInterno({
     <ConfirmProvider>
     <div
       className="flex h-screen overflow-hidden bg-slate-100"
-      style={styleCoresTema(cores)}
+      style={styleCoresSistema(coresSistema)}
       onTouchStart={aoTocarInicio}
       onTouchMove={aoTocarMover}
       onTouchEnd={aoTocarFim}
@@ -390,7 +391,7 @@ function AdminShellInterno({
       <aside
         onMouseEnter={() => setMouseSobreMenu(true)}
         onMouseLeave={() => setMouseSobreMenu(false)}
-        className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col bg-slate-900 transition-all duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col menu-lateral transition-all duration-200 ease-in-out lg:translate-x-0 ${
           sidebarAberta ? "translate-x-0" : "-translate-x-full"
         } ${menuExpandido ? "w-56" : "w-56 lg:w-14"} ${
           menuRecolhido && mouseSobreMenu ? "lg:shadow-2xl lg:shadow-black/40" : ""
