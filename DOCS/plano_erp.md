@@ -86,9 +86,9 @@ Dois fatos que pesam na decisão (levantados pelo cliente):
 - Ela também tem uma **aba "Vendas" com histórico**, que mostra praticamente o mesmo que a listagem de Pedido de Venda, com filtros parecidos. É essa duplicação que incomoda.
 
 Decisão: **uma listagem só** — executar assim:
-- [ ] Renomear a tela de listagem para **"Pedidos"** (menu, título, aba e trilha de navegação).
-- [ ] Deixar o filtro de canal em evidência nela, escondendo os canais que o plano não libera.
-- [ ] Reduzir a aba "Vendas" da Venda Balcão às vendas lançadas ali recentemente (dia/sessão), em vez de repetir a listagem geral — e deixar um link para "Pedidos" para quem quiser a busca completa.
+- [x] Renomear a tela de listagem para **"Pedidos"**. *(feito 2026-08-20)*
+- [x] Filtro de canal escondendo o que o plano não libera. *(feito 2026-08-20)*
+- [x] Aba "Vendas" da Venda Balcão reduzida ao que foi lançado ali nos últimos 7 dias, com link para Pedidos. *(feito 2026-08-20)*
 - [ ] Conferir se algum lugar do sistema aponta para a listagem esperando o nome antigo.
 
 Racional:

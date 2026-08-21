@@ -173,7 +173,6 @@ export function VendaBalcaoConteudo({
   }
 
   const [vendas, setVendas] = useState<Venda[]>(vendasIniciais)
-  const [filtroOrigem, setFiltroOrigem] = useState<"todas" | "site" | "balcao">("todas")
   const [filtroMarcaVendas, setFiltroMarcaVendas] = useState<"todas" | "colorido" | "branco">("todas")
   const [filtroCanalVendas, setFiltroCanalVendas] = useState<"todos" | CanalPedido>("todos")
   const [vendaPreview, setVendaPreview] = useState<PedidoDetalhe | null>(null)
@@ -216,12 +215,12 @@ export function VendaBalcaoConteudo({
       )
     : []
 
+  // Sem filtro de origem: a aba so mostra o que foi lancado aqui no balcao.
   const vendasFiltradas = vendas.filter((v) => {
-    const bateOrigem = filtroOrigem === "todas" || v.origem === filtroOrigem
     const bateMarca = filtroMarcaVendas === "todas" || v.marca === filtroMarcaVendas
-    const canalVenda = v.canal ?? (v.origem === "balcao" ? "balcao" : "site")
+    const canalVenda = v.canal ?? "balcao"
     const bateCanal = filtroCanalVendas === "todos" || canalVenda === filtroCanalVendas
-    return bateOrigem && bateMarca && bateCanal
+    return bateMarca && bateCanal
   })
 
   function adicionarAoCarrinho(produto: Produto) {
@@ -427,19 +426,20 @@ export function VendaBalcaoConteudo({
       {aba === "vendas" ? (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <Tabs value={filtroOrigem} onValueChange={(v) => setFiltroOrigem(v as typeof filtroOrigem)}>
-              <TabsList>
-                <TabsTrigger value="todas">Todas</TabsTrigger>
-                <TabsTrigger value="site">Site</TabsTrigger>
-                <TabsTrigger value="balcao">Balcão</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <p className="text-sm text-slate-500">
+              Vendas lançadas aqui nos últimos 7 dias. Para procurar qualquer pedido, de qualquer
+              canal e período, use{" "}
+              <Link href="/admin/pedidos" className="font-medium text-primary hover:underline">
+                Pedidos
+              </Link>
+              .
+            </p>
 
             <Select
               value={filtroMarcaVendas}
               onValueChange={(v) => setFiltroMarcaVendas((v || "todas") as typeof filtroMarcaVendas)}
             >
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="ml-auto w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -449,6 +449,8 @@ export function VendaBalcaoConteudo({
               </SelectContent>
             </Select>
 
+            {/* So os canais que a Venda Balcao usa - site e marketplace nao
+                aparecem aqui porque nao sao lancados nesta tela. */}
             <Select
               value={filtroCanalVendas}
               onValueChange={(v) => setFiltroCanalVendas((v || "todos") as typeof filtroCanalVendas)}
@@ -458,24 +460,11 @@ export function VendaBalcaoConteudo({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos os canais</SelectItem>
-                <SelectItem value="site">
-                  <LabelCanal canal="site" />
-                </SelectItem>
-                <SelectItem value="whatsapp">
-                  <LabelCanal canal="whatsapp" />
-                </SelectItem>
-                <SelectItem value="instagram">
-                  <LabelCanal canal="instagram" />
-                </SelectItem>
-                <SelectItem value="balcao">
-                  <LabelCanal canal="balcao" />
-                </SelectItem>
-                <SelectItem value="mercadolivre">
-                  <LabelCanal canal="mercadolivre" />
-                </SelectItem>
-                <SelectItem value="shopee">
-                  <LabelCanal canal="shopee" />
-                </SelectItem>
+                {CANAIS_VENDA_BALCAO.map((canal) => (
+                  <SelectItem key={canal.valor} value={canal.valor}>
+                    <LabelCanal canal={canal.valor} />
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

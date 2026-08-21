@@ -59,7 +59,7 @@ const menu: ItemMenu[] = [
     label: "Vendas",
     icone: "pedido_venda",
     filhos: [
-      { href: "/admin/pedidos", label: "Pedido de Venda" },
+      { href: "/admin/pedidos", label: "Pedidos" },
       { href: "/admin/orcamentos", label: "Orçamentos" },
       { href: "/admin/clientes", label: "Clientes" },
     ],
