@@ -86,7 +86,7 @@ export function EntrarForm({
           <div className="animar-flutuar absolute -left-24 -top-24 h-80 w-80 rounded-full bg-slate-800/60 blur-2xl" />
           <div className="animar-flutuar-inverso absolute right-0 top-0 h-96 w-96 rounded-full bg-[var(--primary)] opacity-20 blur-3xl" />
           <div className="animar-onda absolute -bottom-32 -left-16 h-[28rem] w-[140%] rotate-[-8deg] rounded-[50%] bg-gradient-to-r from-[var(--primary)] to-slate-800 opacity-70" />
-          <div className="animar-flutuar absolute bottom-1/3 right-10 h-56 w-56 rounded-full bg-slate-700/50 blur-2xl [animation-duration:26s]" />
+          <div className="animar-flutuar absolute bottom-1/3 right-10 h-56 w-56 rounded-full bg-slate-700/50 blur-2xl [animation-duration:16s]" />
           <div className="animar-brilho absolute -top-1/4 left-0 h-[150%] w-40 bg-gradient-to-r from-transparent via-white/10 to-transparent blur-2xl" />
         </div>
 
@@ -110,11 +110,11 @@ export function EntrarForm({
               <li
                 key={destaque}
                 className="animar-entrada-item flex items-center gap-3 text-slate-300"
-                // Um item a cada 1,2s: tempo de ler a linha antes de a proxima
-                // aparecer. O ultimo entra por volta dos 5s e a lista fica
-                // parada dali em diante - animacao que repete numa tela de
-                // login vira distracao pra quem so quer digitar a senha.
-                style={{ animationDelay: `${indice * 1.2 + 0.6}s` }}
+                // Um item a cada 0,12s: a lista inteira se monta em menos de
+                // um segundo. O escalonamento e so pelo efeito de cascata -
+                // nao pra dar tempo de ler uma linha por vez, ja que quem quer
+                // ler le com a lista parada.
+                style={{ animationDelay: `${indice * 0.12 + 0.15}s` }}
               >
                 <Check size={18} className="shrink-0 text-emerald-400" />
                 {destaque}
@@ -127,7 +127,7 @@ export function EntrarForm({
               do plano dela. */}
           <div
             className="animar-entrada-item mt-10 max-w-md"
-            style={{ animationDelay: `${DESTAQUES.length * 1.2 + 1.2}s` }}
+            style={{ animationDelay: `${DESTAQUES.length * 0.12 + 0.3}s` }}
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Integrações

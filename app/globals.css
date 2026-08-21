@@ -166,9 +166,9 @@
   100% { transform: rotate(-8deg) translateX(0) translateY(0); }
 }
 
-/* Brilho que atravessa a metade escura de ponta a ponta, bem devagar - e o que
-   da a sensacao de que a tela esta "viva" mesmo quando as formas estao no meio
-   do ciclo delas. */
+/* Brilho que atravessa a metade escura de ponta a ponta - e o que da a
+   sensacao de que a tela esta "viva" mesmo quando as formas estao no meio do
+   ciclo delas. */
 @keyframes brilho-atravessa {
   0%   { transform: translateX(-60%) rotate(12deg); opacity: 0; }
   15%  { opacity: 0.5; }
@@ -181,27 +181,31 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Os ciclos sao curtos de proposito: com 20s+ o fundo parecia parado pra quem
+   fica poucos segundos na tela, que e o caso de quase todo mundo que entra.
+   Duracoes diferentes entre as formas evitam que elas voltem ao mesmo ponto
+   juntas e o movimento vire um "pulso" repetitivo. */
 .animar-flutuar {
-  animation: flutuar 22s ease-in-out infinite;
+  animation: flutuar 10s ease-in-out infinite;
 }
 
 .animar-flutuar-inverso {
-  animation: flutuar 30s ease-in-out infinite reverse;
+  animation: flutuar 13s ease-in-out infinite reverse;
 }
 
 .animar-onda {
-  animation: onda 18s ease-in-out infinite;
+  animation: onda 8s ease-in-out infinite;
 }
 
 .animar-brilho {
-  animation: brilho-atravessa 26s linear infinite;
+  animation: brilho-atravessa 9s linear infinite;
 }
 
 .animar-entrada-item {
   /* "both" mantem o item invisivel ate a vez dele e o deixa parado no final -
      sem isso ele apareceria antes da hora e sumiria depois. */
   opacity: 0;
-  animation: entrada-item 700ms ease-out both;
+  animation: entrada-item 400ms ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
