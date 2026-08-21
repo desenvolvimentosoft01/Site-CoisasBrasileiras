@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { LabelCanal } from "@/components/admin/label-canal"
-import { CANAL_LABEL, type CanalPedido } from "@/lib/canal-pedido"
+import { canaisLiberados, type CanalPedido } from "@/lib/canal-pedido"
+import type { Recursos } from "@/lib/recursos"
 import { statusExibicao } from "@/lib/status-pedido"
 import { rotuloFormaPagamento } from "@/lib/formas-pagamento"
 import { RefreshCw, X, ChevronDown } from "lucide-react"
@@ -50,7 +51,17 @@ const ABAS_STATUS = [
   { valor: "cancelado", rotulo: "Cancelado", rotuloCurto: "Cancelado" },
 ]
 
-export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[] }) {
+export function PedidosConteudo({
+  pedidosIniciais,
+  recursos,
+}: {
+  pedidosIniciais: Pedido[]
+  recursos: Recursos
+}) {
+  // Canal de integracao desligada nao entra no filtro: oferecer "Mercado
+  // Livre" pra quem nao tem Mercado Livre so gera busca que nunca acha nada.
+  const canais = canaisLiberados(recursos)
+  const temMarketplace = recursos.integracao_mercado_livre || recursos.integracao_shopee
   const router = useRouter()
   const [aba, setAba] = useState("todos")
   const [filtroSite, setFiltroSite] = useState<"todos" | "colorido" | "branco">("todos")
@@ -133,10 +144,14 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Pedido de Venda</h1>
-        <Button variant="outline" size="sm" onClick={importarDoMarketplace} disabled={importando}>
-          <RefreshCw size={14} className={importando ? "animate-spin" : undefined} />
-          {importando ? "Importando..." : "Importar do Mercado Livre / Shopee"}
-        </Button>
+        {/* Sem marketplace liberado no plano nao ha o que importar - o botao
+            so daria erro ou lista vazia. */}
+        {temMarketplace && (
+          <Button variant="outline" size="sm" onClick={importarDoMarketplace} disabled={importando}>
+            <RefreshCw size={14} className={importando ? "animate-spin" : undefined} />
+            {importando ? "Importando..." : "Importar do Mercado Livre / Shopee"}
+          </Button>
+        )}
       </div>
 
       {pendentes.length > 0 && (
@@ -206,9 +221,9 @@ export function PedidosConteudo({ pedidosIniciais }: { pedidosIniciais: Pedido[]
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos os canais</SelectItem>
-              {Object.keys(CANAL_LABEL).map((valor) => (
+              {canais.map((valor) => (
                 <SelectItem key={valor} value={valor}>
-                  <LabelCanal canal={valor as CanalPedido} />
+                  <LabelCanal canal={valor} />
                 </SelectItem>
               ))}
             </SelectContent>

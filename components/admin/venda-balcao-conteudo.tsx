@@ -553,10 +553,12 @@ export function VendaBalcaoConteudo({
                   className="pl-9"
                 />
               </div>
-              <div className="relative min-w-[160px] max-w-56 flex-1">
+              {/* 160px de largura com 36px de recuo pro icone nao cabiam o
+                  texto - o placeholder saia cortado no meio. */}
+              <div className="relative min-w-[210px] max-w-xs flex-1">
                 <Barcode size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <Input
-                  placeholder="Ler código de barras..."
+                  placeholder="Código de barras"
                   value={codigoBarrasLido}
                   onChange={(e) => {
                     setCodigoBarrasLido(e.target.value)

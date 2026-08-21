@@ -1,4 +1,5 @@
 import { query } from "@/lib/db"
+import { carregarRecursos } from "@/lib/recursos-servidor"
 import { PedidosConteudo } from "@/components/admin/pedidos-conteudo"
 
 export default async function PedidosPage() {
@@ -13,5 +14,5 @@ export default async function PedidosPage() {
     ORDER BY p.criado_em DESC
   `)
 
-  return <PedidosConteudo pedidosIniciais={pedidos} />
+  return <PedidosConteudo pedidosIniciais={pedidos} recursos={await carregarRecursos()} />
 }
