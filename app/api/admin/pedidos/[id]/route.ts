@@ -2,6 +2,7 @@ import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { enviarEmail, templateStatusAtualizado } from "@/lib/email"
 import { getPaymentRefundMP, mensagemErroMercadoPago } from "@/lib/mercadopago"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 
 const STATUS_VALIDOS = [
@@ -62,6 +63,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const { id } = await params
   const { status, codigoRastreio, transportadora } = await request.json()
+
+  // Lido ANTES do UPDATE - a auditoria de status so serve se disser de onde
+  // pra onde o pedido foi, e depois de gravar o valor antigo nao existe mais.
+  const [pedidoAntes] = await query(
+    "SELECT status, codigo_rastreio, transportadora FROM TAB_PEDIDO WHERE id = $1",
+    [id]
+  )
 
   if (status !== undefined && !STATUS_VALIDOS.includes(status)) {
     return NextResponse.json({ erro: "Status inválido" }, { status: 400 })
@@ -150,6 +158,24 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!pedido) {
     return NextResponse.json({ erro: "Pedido não encontrado" }, { status: 404 })
   }
+
+  await registrarAuditoriaServidor({
+    sessao: sessaoOuErro,
+    tela: "Pedidos",
+    acao: "edicao",
+    tabela: "TAB_PEDIDO",
+    registroId: id,
+    antes: pedidoAntes ?? null,
+    depois: {
+      status: pedido.status,
+      codigo_rastreio: pedido.codigo_rastreio,
+      transportadora: pedido.transportadora,
+      // Estorno mexe em dinheiro do cliente - precisa ficar registrado junto
+      // com o cancelamento que o disparou, nao so no painel do Mercado Pago.
+      estorno_automatico: estornoAutomatico || undefined,
+      estorno_manual_pendente: avisoEstornoManual || undefined,
+    },
+  })
 
   // Notifica o cliente por email sempre que o status muda manualmente pelo
   // admin (exceto "pago", que ja tem email proprio disparado pelo webhook do

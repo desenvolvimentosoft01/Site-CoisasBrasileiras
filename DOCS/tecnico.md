@@ -117,8 +117,11 @@ Frenet, Mercado Pago e Email deixaram de depender só de variável de ambiente �
 
 - **`lib/auth.ts`** — sessão via cookie assinado com HMAC-SHA256 (Web Crypto, compatível com Edge Runtime do middleware). Segredo: `AUTH_SECRET` (obrigatório). Duas sessões independentes: admin (`admin_sessao`) e cliente (`cliente_sessao`).
 - **`lib/auth-servidor.ts`** — helpers pra rotas de API: `exigirSessao()` (401 sem sessão admin), `exigirAdmin()` (403 se papel != admin), `exigirSessaoCliente()` (401 sem sessão cliente).
-- **`middleware.ts`** — protege `/admin/*` (exceto `/admin/entrar`); redireciona pra login sem sessão. Rotas `/admin/usuarios`, `/admin/auditoria`, `/admin/financeiro` exigem papel "admin" — "operador" é redirecionado pro dashboard.
-- **admin vs operador**: coluna CHECK em `TAB_USUARIO_ADMIN`. "admin" tem acesso irrestrito; "operador" é bloqueado tanto no middleware (nível de rota) quanto via `exigirAdmin()` (nível de API) e em partes condicionais da UI.
+- **`middleware.ts`** — protege `/admin/*` (exceto `/admin/entrar`); redireciona pra login sem sessão. Não tem mais lista própria de rotas restritas (duplicava a regra): só repassa o `x-pathname` pro layout decidir.
+- **`lib/telas-admin.ts`** — catálogo das telas do admin (rota, label, grupo, `padraoOperador`) + `telaDaRota()` e `podeAbrir()`. Fonte única: tela nova entra aqui, sem migration.
+- **`lib/permissoes-servidor.ts`** — lê/grava as exceções em `TAB_USUARIO_PERMISSAO`. `app/admin/layout.tsx` bloqueia por URL usando isso, e o menu esconde o que a pessoa não pode abrir — digitar o endereço na mão não passa.
+- **admin vs operador**: coluna CHECK em `TAB_USUARIO_ADMIN`. "admin" tem acesso irrestrito (ignora `TAB_USUARIO_PERMISSAO`); "operador" segue o padrão do catálogo mais as exceções definidas na tela de Usuários, botão **Permissões**.
+- **`lib/auditoria-servidor.ts`** — `registrarAuditoriaServidor()`, chamada **dentro da rota de API**, não pela tela. A auditoria de `lib/auditoria.ts` é disparada pela interface e por isso não pega chamada direta na API. As ações sensíveis passam por aqui: credenciais de integração (grava só **quais chaves** mudaram, nunca o valor), plano/recursos, permissões, emissão e cancelamento de NF-e, status de pedido (com o estorno do Mercado Pago junto), configurações da loja, aceite de cotação, conversão de orçamento, pedidos de compra, tipos de entrega e faixas de frete. Falha ao auditar nunca desfaz a ação — vai pro log do servidor.
 
 ## Sistema de abas MDI do admin
 

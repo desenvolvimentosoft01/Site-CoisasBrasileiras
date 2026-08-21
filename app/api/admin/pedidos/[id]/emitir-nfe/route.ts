@@ -2,6 +2,7 @@ import { query, transacao } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
 import { emitirNotaFiscalBling } from "@/lib/bling"
 import { enviarEmail, templateNotaFiscalEmitida } from "@/lib/email"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 
 // Gatilho manual (botao na tela do pedido) - nunca automatico. Erro do Bling
@@ -84,6 +85,23 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         [resultado.blingNotaId, resultado.linkDanfe, resultado.linkPdf, id]
       )
       return { atualizado, clienteNome: pedido.cliente_nome, clienteEmail: pedido.cliente_email }
+    })
+
+    // Depois da transacao: a nota ja existe na Sefaz e nao da mais pra
+    // desfazer. Auditar aqui registra o fato consumado, que e o que importa -
+    // auditar dentro da transacao correria o risco de gravar uma emissao que
+    // acabou revertida.
+    await registrarAuditoriaServidor({
+      sessao: sessaoOuErro,
+      tela: "Pedidos",
+      acao: "cadastro",
+      tabela: "TAB_PEDIDO",
+      registroId: id,
+      depois: {
+        evento: "NF-e emitida",
+        bling_nota_id: pedidoAtualizado.atualizado.bling_nota_id,
+        cliente: pedidoAtualizado.clienteNome,
+      },
     })
 
     // Fora da transacao, de proposito - falha no envio de email nunca deve

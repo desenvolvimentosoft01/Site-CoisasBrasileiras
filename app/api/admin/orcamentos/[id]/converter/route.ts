@@ -1,6 +1,7 @@
 import { transacao, query } from "@/lib/db"
 import { registrarMovimentoEstoque } from "@/lib/estoque-movimento"
 import { exigirSessao } from "@/lib/auth-servidor"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 
 // Converte um orcamento aprovado numa venda de verdade (TAB_PEDIDO, origem
@@ -100,13 +101,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         [pedidoCriado.id, id]
       )
 
-      await executar(
-        `INSERT INTO TAB_AUDITORIA (usuario_id, usuario_nome, tela, acao, tabela, registro_id, dados_depois)
-         VALUES ($1, $2, 'Orcamentos', 'edicao', 'TAB_ORCAMENTO', $3, $4)`,
-        [sessaoOuErro.id, sessaoOuErro.nome, id, { status: "convertido", pedido_id: pedidoCriado.id }]
-      )
-
       return pedidoCriado
+    })
+
+    await registrarAuditoriaServidor({
+      sessao: sessaoOuErro,
+      tela: "Orçamentos",
+      acao: "edicao",
+      tabela: "TAB_ORCAMENTO",
+      registroId: id,
+      antes: { status: orcamento.status },
+      depois: {
+        status: "convertido",
+        pedido_id: pedido.id,
+        total: Number(orcamento.total),
+        forma_pagamento: formaPagamento,
+      },
     })
 
     return NextResponse.json(pedido, { status: 201 })
