@@ -21,6 +21,7 @@ import { toast } from "sonner"
 import { useConfirmar } from "@/components/admin/confirm-provider"
 import { BarraFerramentas } from "@/components/admin/barra-ferramentas"
 import { ModalDetalhe } from "@/components/admin/modal-detalhe"
+import { ModalPermissoes } from "@/components/admin/modal-permissoes"
 import { Icone } from "@/components/admin/icone"
 import { montarNavegacaoDetalhe } from "@/lib/navegacao-detalhe"
 import { BarraStatusGrade } from "@/components/admin/barra-status-grade"
@@ -43,6 +44,7 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null)
   const [linhaSelecionada, setLinhaSelecionada] = useState<string | null>(null)
   const [detalhe, setDetalhe] = useState<Usuario | null>(null)
+  const [editandoPermissoes, setEditandoPermissoes] = useState<Usuario | null>(null)
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
   const [usuarioLogin, setUsuarioLogin] = useState("")
@@ -258,6 +260,17 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                           <td className="p-4 text-right">
                             <Button
                               variant="ghost"
+                              size="sm"
+                              title="Definir quais telas este usuário pode abrir"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setEditandoPermissoes(usuario)
+                              }}
+                            >
+                              Permissões
+                            </Button>
+                            <Button
+                              variant="ghost"
                               size="icon-lg"
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -374,6 +387,8 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ModalPermissoes usuario={editandoPermissoes} onFechar={() => setEditandoPermissoes(null)} />
 
       <ModalDetalhe
         navegacao={montarNavegacaoDetalhe(usuarios, detalhe, setDetalhe, (a, b) => a.id === b.id)}

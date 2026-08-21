@@ -40,20 +40,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    const somenteAdmin =
-      pathname.startsWith("/admin/usuarios") ||
-      pathname.startsWith("/admin/auditoria") ||
-      pathname.startsWith("/admin/financeiro") ||
-      pathname.startsWith("/admin/relatorios/lucro") ||
-      pathname.startsWith("/admin/compras") ||
-      pathname.startsWith("/admin/fornecedores") ||
-      pathname.startsWith("/admin/notas-fiscais") ||
-      pathname.startsWith("/admin/clube")
-    if (somenteAdmin && sessao.papel !== "admin") {
-      const url = request.nextUrl.clone()
-      url.pathname = "/admin/dashboard"
-      return NextResponse.redirect(url)
-    }
+    // A lista de telas restritas ficava escrita aqui, duplicando as flags do
+    // menu - duas listas que precisam concordar sempre acabam discordando (foi
+    // o que aconteceu com Notas Fiscais, escondida no menu e aberta pela URL).
+    //
+    // Agora quem decide e a permissao por tela, checada no layout do admin,
+    // que alcanca o banco. O middleware roda no edge e nao alcanca - por isso
+    // so cuida do que da pra decidir com o token: sessao e desenvolvedor.
 
     // Plano e Cores sao telas de quem mantem o sistema, nao do cliente: quem
     // define o que a instalacao enxerga nao pode ser quem usa a instalacao.
@@ -67,7 +60,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  // O layout do admin precisa saber QUAL tela esta sendo aberta pra checar a
+  // permissao no banco (migration 063), e layout do App Router nao recebe o
+  // pathname. O middleware repassa por cabecalho.
+  //
+  // A checagem fina fica no layout, e nao aqui, porque o middleware roda no
+  // edge e nao alcanca o banco - e permissao guardada no token ficaria velha
+  // ate o proximo login.
+  const cabecalhos = new Headers(request.headers)
+  cabecalhos.set("x-pathname", pathname)
+  return NextResponse.next({ request: { headers: cabecalhos } })
 }
 
 export const config = {

@@ -24,6 +24,7 @@ import { Icone, type NomeIcone } from "@/components/admin/icone"
 import type { SessaoAdmin } from "@/lib/auth"
 import { EMAIL_DESENVOLVEDOR, NOME_SISTEMA, FABRICANTE_SISTEMA } from "@/lib/constantes"
 import { rotaAtiva } from "@/lib/rota-ativa"
+import { telaDaRota } from "@/lib/telas-admin"
 import { styleCoresSistema } from "@/lib/cores"
 import { ProvedorCores, useCoresTema } from "@/lib/contexto-cores"
 
@@ -34,15 +35,14 @@ type ItemLink = {
   tipo: "link"
   href: string
   label: string
-  icone: NomeIcone
-  somenteAdmin?: boolean
+  icone: NomeIcone
   somenteDesenvolvedor?: boolean
 }
 type ItemGrupo = {
   tipo: "grupo"
   label: string
   icone: NomeIcone
-  filhos: { href: string; label: string; somenteAdmin?: boolean }[]
+  filhos: { href: string; label: string }[]
 }
 type ItemMenu = ItemLink | ItemGrupo
 
@@ -72,7 +72,7 @@ const menu: ItemMenu[] = [
       { href: "/admin/produtos", label: "Cadastro de Produtos" },
       { href: "/admin/categorias", label: "Categorias" },
       { href: "/admin/estoque", label: "Estoque" },
-      { href: "/admin/precos", label: "Reajuste de Preços", somenteAdmin: true },
+      { href: "/admin/precos", label: "Reajuste de Preços" },
     ],
   },
   // Compras espelha Vendas: cada lado da operacao com os seus documentos e o
@@ -82,16 +82,16 @@ const menu: ItemMenu[] = [
     label: "Compras",
     icone: "compras",
     filhos: [
-      { href: "/admin/cotacoes", label: "Cotação", somenteAdmin: true },
-      { href: "/admin/pedidos-compra", label: "Pedido de Compra", somenteAdmin: true },
-      { href: "/admin/compras", label: "Entrada de NF", somenteAdmin: true },
-      { href: "/admin/fornecedores", label: "Fornecedores", somenteAdmin: true },
+      { href: "/admin/cotacoes", label: "Cotação" },
+      { href: "/admin/pedidos-compra", label: "Pedido de Compra" },
+      { href: "/admin/compras", label: "Entrada de NF" },
+      { href: "/admin/fornecedores", label: "Fornecedores" },
     ],
   },
   // Fica solto (e nao dentro de Compras) porque junta entrada E saida - e o
   // lugar de pegar DANFE/XML de qualquer nota sem abrir o Bling.
-  { tipo: "link", href: "/admin/notas-fiscais", label: "Notas Fiscais", icone: "notas_fiscais", somenteAdmin: true },
-  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: "financeiro", somenteAdmin: true },
+  { tipo: "link", href: "/admin/notas-fiscais", label: "Notas Fiscais", icone: "notas_fiscais" },
+  { tipo: "link", href: "/admin/financeiro", label: "Financeiro", icone: "financeiro" },
   {
     tipo: "grupo",
     label: "Marketing",
@@ -102,7 +102,7 @@ const menu: ItemMenu[] = [
       { href: "/admin/sobre-nos", label: "Sobre Nós" },
       { href: "/admin/feedbacks", label: "Feedbacks" },
       { href: "/admin/avaliacoes", label: "Avaliações" },
-      { href: "/admin/clube", label: "Clube", somenteAdmin: true },
+      { href: "/admin/clube", label: "Clube" },
     ],
   },
   {
@@ -111,7 +111,7 @@ const menu: ItemMenu[] = [
     icone: "relatorios",
     filhos: [
       { href: "/admin/relatorios", label: "Vendas" },
-      { href: "/admin/relatorios/lucro", label: "Lucro / DRE", somenteAdmin: true },
+      { href: "/admin/relatorios/lucro", label: "Lucro / DRE" },
       { href: "/admin/relatorios/estoque", label: "Estoque" },
     ],
   },
@@ -122,28 +122,36 @@ const menu: ItemMenu[] = [
     label: "Configurações",
     icone: "configuracoes",
     filhos: [
-      { href: "/admin/usuarios", label: "Usuários", somenteAdmin: true },
+      { href: "/admin/usuarios", label: "Usuários" },
       { href: "/admin/configuracoes", label: "Configurações da Loja" },
       { href: "/admin/configuracoes/pastas-nf", label: "Pastas das Notas Fiscais" },
-      { href: "/admin/auditoria", label: "Auditoria", somenteAdmin: true },
+      { href: "/admin/auditoria", label: "Auditoria" },
     ],
   },
   { tipo: "link", href: "/admin/cores", label: "Cores do Sistema", icone: "cores", somenteDesenvolvedor: true },
   { tipo: "link", href: "/admin/plano", label: "Plano e Recursos", icone: "configuracoes", somenteDesenvolvedor: true },
 ]
 
-// Achata o menu (so os itens visiveis pro papel/email da sessao) pra
-// alimentar a TabBar e o breadcrumb, que trabalham com uma lista simples de
-// {href, label}.
-function itensVisiveis(papel: string, email: string): { href: string; label: string; icone: NomeIcone }[] {
+// Achata o menu (so os itens que a pessoa pode abrir) pra alimentar a TabBar
+// e o breadcrumb, que trabalham com uma lista simples de {href, label}.
+//
+// Quem decide o que aparece e a permissao por tela (lib/telas-admin.ts +
+// migration 063), e nao mais uma flag no proprio item: as telas de
+// desenvolvedor continuam pelo e-mail, porque nao sao do cliente.
+function itensVisiveis(
+  email: string,
+  permitidas: Set<string>
+): { href: string; label: string; icone: NomeIcone }[] {
   const resultado: { href: string; label: string; icone: NomeIcone }[] = []
   for (const item of menu) {
     if (item.tipo === "link") {
       if (item.somenteDesenvolvedor && email !== EMAIL_DESENVOLVEDOR) continue
-      if (!item.somenteAdmin || papel === "admin") resultado.push({ href: item.href, label: item.label, icone: item.icone })
+      if (podeVer(item.href, permitidas)) {
+        resultado.push({ href: item.href, label: item.label, icone: item.icone })
+      }
     } else {
       for (const filho of item.filhos) {
-        if (!filho.somenteAdmin || papel === "admin") {
+        if (podeVer(filho.href, permitidas)) {
           resultado.push({ href: filho.href, label: filho.label, icone: item.icone })
         }
       }
@@ -152,12 +160,20 @@ function itensVisiveis(papel: string, email: string): { href: string; label: str
   return resultado
 }
 
+// Rota fora do catalogo (as telas de desenvolvedor, por exemplo) nao e
+// bloqueada aqui - quem cuida delas e a checagem por e-mail.
+function podeVer(href: string, permitidas: Set<string>): boolean {
+  const tela = telaDaRota(href)
+  return !tela || permitidas.has(tela.chave)
+}
+
 export function AdminShell({
   sessao,
   coresSistema,
   nomeLoja,
   dominioBranco,
   plano,
+  telasPermitidas,
   children,
 }: {
   sessao: SessaoAdmin
@@ -167,6 +183,10 @@ export function AdminShell({
   dominioBranco?: string
   // Rotulo do plano contratado, so pra exibicao no cabecalho.
   plano?: string
+  // Chaves das telas que este usuario pode abrir (lib/telas-admin.ts). O menu
+  // monta so com elas - a mesma lista que o layout usa pra barrar acesso por
+  // URL, pra que esconder e bloquear nunca discordem.
+  telasPermitidas: string[]
   children: React.ReactNode
 }) {
   return (
@@ -180,6 +200,7 @@ export function AdminShell({
           nomeLoja={nomeLoja}
           dominioBranco={dominioBranco}
           plano={plano}
+          telasPermitidas={telasPermitidas}
         >
           {children}
         </AdminShellInterno>
@@ -193,6 +214,7 @@ function AdminShellInterno({
   nomeLoja,
   dominioBranco,
   plano,
+  telasPermitidas,
   children,
 }: {
   sessao: SessaoAdmin
@@ -200,6 +222,10 @@ function AdminShellInterno({
   dominioBranco?: string
   // Rotulo do plano contratado, so pra exibicao no cabecalho.
   plano?: string
+  // Chaves das telas que este usuario pode abrir (lib/telas-admin.ts). O menu
+  // monta so com elas - a mesma lista que o layout usa pra barrar acesso por
+  // URL, pra que esconder e bloquear nunca discordem.
+  telasPermitidas: string[]
   children: React.ReactNode
 }) {
   const { cores: coresSistema } = useCoresTema()
@@ -263,7 +289,10 @@ function AdminShellInterno({
       .catch(() => {})
   }, [sessao.papel])
 
-  const planoDeMenu = itensVisiveis(sessao.papel, sessao.email)
+  // Set aqui (e nao array) porque a checagem roda pra cada item do menu a
+  // cada render - busca em array seria varredura a cada item.
+  const permitidas = new Set(telasPermitidas)
+  const planoDeMenu = itensVisiveis(sessao.email, permitidas)
 
   // Abre automaticamente o grupo que contem a pagina atual, pra nao esconder
   // onde o usuario esta logo na primeira renderizacao.
@@ -418,7 +447,7 @@ function AdminShellInterno({
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {menu.map((item) => {
             if (item.tipo === "link") {
-              if (item.somenteAdmin && sessao.papel !== "admin") return null
+              if (!podeVer(item.href, permitidas)) return null
               if (item.somenteDesenvolvedor && sessao.email !== EMAIL_DESENVOLVEDOR) return null
               const ativo = rotaAtiva(pathname, item.href)
               return (
@@ -445,7 +474,7 @@ function AdminShellInterno({
               )
             }
 
-            const filhosVisiveis = item.filhos.filter((f) => !f.somenteAdmin || sessao.papel === "admin")
+            const filhosVisiveis = item.filhos.filter((f) => podeVer(f.href, permitidas))
             if (filhosVisiveis.length === 0) return null
 
             const aberto = gruposAbertos.includes(item.label)
