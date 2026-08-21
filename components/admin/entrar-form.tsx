@@ -185,8 +185,7 @@ export function EntrarForm({
               {/* `name` + `autoComplete` sao o que faz o gerenciador de senhas do
                   navegador oferecer pra salvar e depois preencher sozinho. Sem
                   eles o navegador so acerta por heuristica, e erra em parte dos
-                  casos - e como a sessao agora acaba ao fechar o navegador, o
-                  preenchimento automatico e o que mantem o login rapido. */}
+                  casos - quem entra todo dia acaba digitando na mao a toa. */}
               <input
                 id="login"
                 name="login"
