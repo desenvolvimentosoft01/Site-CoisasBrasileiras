@@ -3,3 +3,10 @@
 -- Antes nada ligava TAB_PEDIDO ao pagamento real, entao um cancelamento so
 -- mudava o status no nosso banco sem devolver o dinheiro no Mercado Pago.
 ALTER TABLE TAB_PEDIDO ADD COLUMN IF NOT EXISTS mercadopago_payment_id TEXT;
+
+INSERT INTO _migracoes_aplicadas (versao) VALUES ('053')
+ON CONFLICT (versao) DO NOTHING;
+
+-- ============================================================
+-- FIM DO SCRIPT
+-- ============================================================

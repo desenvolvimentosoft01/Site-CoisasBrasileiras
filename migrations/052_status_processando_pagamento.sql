@@ -15,3 +15,10 @@ ALTER TABLE TAB_PEDIDO ADD CONSTRAINT tab_pedido_status_check
     'entregue',
     'cancelado'
   ));
+
+INSERT INTO _migracoes_aplicadas (versao) VALUES ('052')
+ON CONFLICT (versao) DO NOTHING;
+
+-- ============================================================
+-- FIM DO SCRIPT
+-- ============================================================
