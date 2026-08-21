@@ -143,7 +143,12 @@ export function PedidosConteudo({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Pedido de Venda</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">Pedidos</h1>
+          <p className="text-sm text-slate-500">
+            Todos os pedidos, de qualquer canal — site, WhatsApp, Instagram e balcão.
+          </p>
+        </div>
         {/* Sem marketplace liberado no plano nao ha o que importar - o botao
             so daria erro ou lista vazia. */}
         {temMarketplace && (

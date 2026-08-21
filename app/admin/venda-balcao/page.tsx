@@ -20,14 +20,16 @@ export default async function VendaBalcaoPage() {
     `),
     query("SELECT id, nome, email, telefone FROM TAB_CLIENTE ORDER BY nome"),
     query("SELECT id, nome FROM TAB_TIPO_ENTREGA WHERE ativo = true ORDER BY nome"),
-    // Grade de vendas (igual ao InMenteGestao): mostra pedidos do site E do
-    // balcao juntos, com a origem marcada, pra quem esta no balcao ver tudo
-    // que esta vendendo sem trocar de tela.
+    // Conferencia do que foi lancado AQUI nos ultimos dias - e nao a listagem
+    // geral de pedidos, que vive na tela Pedidos. Esta aba responde "o que eu
+    // vendi hoje?", e nao "onde esta aquele pedido do mes passado?"; antes ela
+    // repetia a listagem inteira e as duas telas pareciam a mesma coisa.
     query(`
       SELECT p.id, p.origem, p.canal, p.marca, p.status, p.total, p.forma_pagamento, p.criado_em,
         COALESCE(c.nome, p.cliente_nome_avulso, 'Cliente avulso') AS cliente_nome
       FROM TAB_PEDIDO p
       LEFT JOIN TAB_CLIENTE c ON c.id = p.cliente_id
+      WHERE p.origem = 'balcao' AND p.criado_em >= NOW() - INTERVAL '7 days'
       ORDER BY p.criado_em DESC
       LIMIT 100
     `),

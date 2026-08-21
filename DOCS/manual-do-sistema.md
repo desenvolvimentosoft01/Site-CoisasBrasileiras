@@ -8,7 +8,7 @@ Este manual explica, em linguagem simples, como funciona o site da loja (o que o
 Cabeçalho e rodapé · Home · Catálogo · Página de produto · Carrinho · Checkout · Criar conta e login · Minha conta · Favoritos · Confirmação do pedido · Sobre nós · Contato · Aprovação de orçamento por link
 
 **Parte 2 — Painel administrativo**
-Visão Geral · Venda Balcão · Grupo Vendas (Pedido de Venda, Orçamentos, Clientes) · Grupo Produtos (Cadastro de Produtos, Categorias, Estoque, Reajuste de Preços) · Grupo Compras (Cotação, Pedido de Compra, Entrada de NF, Fornecedores) · Notas Fiscais · Financeiro · Grupo Marketing (Cupons, Banners, Sobre Nós, Feedbacks, Avaliações, Clube) · Grupo Relatórios (Vendas, Lucro/DRE, Estoque) · Grupo Configurações (Usuários, Configurações da Loja, Pastas das Notas Fiscais, Auditoria) · Trocar minha senha
+Visão Geral · Pedido de Venda Balcão · Grupo Vendas (Pedidos, Orçamentos, Clientes) · Grupo Produtos (Cadastro de Produtos, Categorias, Estoque, Reajuste de Preços) · Grupo Compras (Cotação, Pedido de Compra, Entrada de NF, Fornecedores) · Notas Fiscais · Financeiro · Grupo Marketing (Cupons, Banners, Sobre Nós, Feedbacks, Avaliações, Clube) · Grupo Relatórios (Vendas, Lucro/DRE, Estoque) · Grupo Configurações (Usuários, Configurações da Loja, Pastas das Notas Fiscais, Auditoria) · Trocar minha senha
 
 **Parte 3 — Perguntas frequentes e avisos gerais**
 
@@ -341,7 +341,7 @@ Tela inicial ao entrar no painel. Mostra um resumo rápido do negócio: quantida
 
 Tela usada pra registrar uma venda feita presencialmente na loja (no balcão), sem passar pelo carrinho do site. Também mostra o histórico de vendas já feitas (tanto pelo balcão quanto pelo site).
 
-A tela tem duas abas: **Produtos** (onde se monta a venda) e **Vendas** (histórico).
+A tela tem duas abas: **Produtos** (onde se monta a venda) e **Vendas**, que mostra o que foi lançado aqui nos últimos 7 dias — serve para conferir o que você acabou de vender. Para procurar qualquer pedido, de qualquer canal e período, use a tela **Pedidos**.
 
 #### Aba "Produtos" (montar a venda)
 
