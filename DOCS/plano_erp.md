@@ -32,8 +32,8 @@ Reorganização do menu (feita):
 - [x] **Notas Fiscais** e **Financeiro** ficam soltos, entre Compras e Marketing.
 
 Ausências mapeadas, em ordem de importância (nenhuma feita ainda):
-- [ ] **Movimentação de estoque (kardex)** — hoje o estoque é um número que sobe e desce, sem histórico de por que mudou. Sem isso, divergência de inventário não tem como ser investigada. É a lacuna mais séria.
-- [ ] **Ajuste de estoque com motivo** (quebra, perda, contagem) — a tela de Estoque deixa editar a quantidade direto, sem registrar o porquê.
+- [x] **Movimentação de estoque (kardex)** — `TAB_ESTOQUE_MOVIMENTO` (migration 062) + `lib/estoque-movimento.ts`. Toda alteração grava na MESMA transação que mexeu no saldo, com motivo, origem, quem fez e o saldo depois do movimento.
+- [x] **Ajuste de estoque com motivo** — `components/admin/modal-ajuste-estoque.tsx`, motivo obrigatório validado também no servidor (`app/api/admin/estoque/[id]/route.ts`).
 - [x] **Fluxo de caixa** — `/admin/financeiro/fluxo-caixa`. Realizado (venda paga + conta quitada, pela data do pagamento) por dia ou movimento a movimento, com saldo anterior e acumulado, mais a aba **Previsão**: contas em aberto dos próximos 30 dias partindo do caixa real de hoje. Sem tabela nova — caixa é leitura. Migration 064 trouxe `TAB_PEDIDO.pago_em`, que é a data que o caixa usa.
 - [x] **Transportadoras como cadastro** — `/admin/transportadoras` (Vendas > Transportadoras), migration 065. O campo do pedido virou seleção do cadastro, que já traz o código de serviço da Frenet junto. O texto antigo continua sendo mostrado nos pedidos despachados antes disso.
 - [x] **Permissão por tela** — catálogo em `lib/telas-admin.ts`, exceções em `TAB_USUARIO_PERMISSAO` (063). O menu esconde o que a pessoa não pode abrir e o layout do admin bloqueia por URL (middleware manda o `x-pathname`), então digitar o endereço na mão não passa. Edição pelo botão **Permissões** na tela de Usuários.
@@ -43,10 +43,10 @@ Ausências mapeadas, em ordem de importância (nenhuma feita ainda):
 Na ordem combinada com o cliente. Os três primeiros já estão aprovados, é só executar.
 
 **1. Custo real na entrada de NF** *(aprovado, é o próximo)*
-- [ ] Ler ICMS-ST, IPI, desconto e frete por item do XML (`lib/nfe-xml.ts` já lê o resto).
-- [ ] Compor o custo: valor unitário + ST + IPI + frete rateado, e usar esse custo no recebimento (`lib/compras.ts`, custo médio ponderado).
-- [ ] Guardar a composição por item (migration nova em `TAB_COMPRA_ITEM`), pra auditoria: hoje só existe `custo_unitario`.
-- [ ] Exibir o detalhamento na tela de lançamento — o cliente quer ver imposto na hora de lançar, tanto na entrada manual quanto na importação por XML.
+- [x] Ler ICMS-ST, IPI, desconto e frete por item do XML.
+- [x] Compor o custo: valor unitário + ST + IPI + frete rateado, usado no custo médio do recebimento.
+- [x] Composição guardada por item (migration 061).
+- [x] Detalhamento exibido na tela de lançamento, na entrada manual e na importação por XML.
 - **Por que importa:** hoje o custo ignora ST e IPI, e o Lucro/DRE mostra margem melhor que a real.
 
 **2. Foto do produto** *(JÁ EXISTIA — conferido em 2026-08-20)*
@@ -109,11 +109,11 @@ Racional:
 - [ ] Descartar também: consultas sem índice nas grades e o `staleTimes.dynamic` do router.
 
 **5. Favicon**
-- [ ] A aba do navegador mostra o ícone genérico de globo no sistema e no site; deveria mostrar a logo da loja. Existe `app/icon.webp` — verificar por que não está sendo usado (formato/rota).
+- [x] Ícone da aba: declarado em `icons` no `generateMetadata` do layout, apontando pra logo da loja. O `app/icon.webp` não funcionava porque o Next não converte WebP nessa convenção de arquivo.
 
 **6. Módulos que faltam pra ser ERP** *(mapeados, não iniciados)*
-- [ ] Movimentação de estoque (kardex) — a lacuna mais séria.
-- [ ] Ajuste de estoque com motivo (quebra, perda, contagem).
+- [x] Movimentação de estoque (kardex).
+- [x] Ajuste de estoque com motivo.
 - [x] Fluxo de caixa, com projeção de saldo.
 - [x] Transportadoras como cadastro.
 - [x] Permissão por tela.
@@ -123,7 +123,7 @@ Racional:
 - [ ] Consulta direta à Sefaz (`NFeDistribuicaoDFe`) pra puxar nota de entrada sem depender do Bling — exige certificado A1 no servidor, SOAP com assinatura e manifestação do destinatário. Mesma infraestrutura do CT-e; fazer os dois juntos.
 
 **Pendências operacionais**
-- [ ] Aplicar em produção as migrations **059** (senha provisória) e **060** (plano e recursos). A 057 e a 058 já foram aplicadas.
+- [ ] **Aplicar em produção as migrations 059 a 065.** A 057 e a 058 já foram aplicadas. Enquanto a 064 não rodar, a tela de Fluxo de Caixa quebra (falta `TAB_PEDIDO.pago_em`); sem a 065, Transportadoras quebra igual.
 - [ ] Validar se o 404 do Bling sumiu com o fallback `/notas-fiscais` → `/nfe`; se aparecer a mensagem nova, é permissão do app em developer.bling.com.br.
 - [ ] Conferir no GitHub se o repositório está **privado** (não deu pra checar do ambiente de desenvolvimento).
 - [ ] Testar a emissão de NF-e em homologação pelo Bling, ponta a ponta.
@@ -441,7 +441,7 @@ Lista de melhorias sugeridas numa conversa exploratória ("o que mais pode ter d
 - [ ] Previsão de reposição de estoque (velocidade de venda x estoque atual, "vai faltar em X dias")
 - [ ] Metas de vendas no dashboard (meta do mês x realizado)
 - [ ] Segmentação de clientes (quem compra mais, quem não compra há X meses) pra campanha de reativação
-- [ ] Multiusuário com permissão mais granular (hoje só admin/operador)
+- [x] Multiusuário com permissão por tela (migration 063)
 
 ### Fase 10.1 — Avaliações de produto (2026-07-27)
 Status: ✅ implementada
