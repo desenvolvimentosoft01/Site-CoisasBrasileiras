@@ -138,6 +138,47 @@ disponível nesse momento, o que quebra se o build rodar numa máquina sem
 acesso direto ao Postgres de produção (ex: pipeline de deploy separado do
 servidor final).
 
+### Conexão com o banco (pooler do Supabase)
+
+Em produção o `DATABASE_URL` aponta para o **session pooler**, não para a
+conexão direta:
+
+```
+postgresql://postgres.<ref-do-projeto>:<senha>@aws-0-<regiao>.pooler.supabase.com:5432/postgres
+```
+
+O `<ref-do-projeto>` viaja **dentro do nome do usuário** — é assim que o
+pooler sabe para qual projeto rotear. Copie a string pronta em
+Connect > Session pooler no dashboard do Supabase em vez de montá-la à mão:
+ref ou região errados derrubam toda requisição com
+`error: (ENOTFOUND) tenant/user postgres.<ref> not found`, e a loja responde
+"This page couldn't load" — o erro real só aparece no log do servidor, porque
+o Next omite a mensagem em build de produção.
+
+A porta importa: `5432` no host do pooler é **session mode**, que é o modo
+para o qual o `max` do pool em `lib/db.ts` está calibrado.
+
+### Variáveis de ambiente no painel da Hostinger
+
+As variáveis definidas no painel **vencem sobre o arquivo `.env`** — o Next
+não sobrescreve o que já existe em `process.env`. Duas consequências:
+
+- alterar o `.env` do servidor não muda nada se a variável também estiver no
+  painel; corrija no painel;
+- salvar no painel também não basta — variável de ambiente só troca com
+  **restart** da aplicação.
+
+Nenhuma dessas variáveis é `NEXT_PUBLIC_`, então são lidas em runtime e não
+exigem rebuild, apenas restart.
+
+### Um deploy, dois domínios
+
+As duas lojas rodam na **mesma aplicação e no mesmo banco** — o domínio de
+acesso decide a marca (`lib/marca.ts`) e as queries filtram por `marca = $1`.
+Não existe banco separado para Porcelanas Brancas. Os dois domínios devem
+apontar para a mesma aplicação Node; um segundo deploy só para o subdomínio
+dobra o trabalho de release e desincroniza as variáveis de ambiente.
+
 As tarefas agendadas (`/api/cron/*`) são disparadas pelo **crontab da própria
 VPS**, via `scripts/cron-vps.sh` — ver `DOCS/cron-vps.md` para a configuração.
 
