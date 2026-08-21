@@ -1,5 +1,6 @@
 import { exigirAdmin } from "@/lib/auth-servidor"
 import { getSegredo, setSegredo } from "@/lib/segredos"
+import { registrarAuditoriaServidor } from "@/lib/auditoria-servidor"
 import { NextResponse } from "next/server"
 
 const CHAVES = [
@@ -44,13 +45,26 @@ export async function PUT(request: Request) {
 
   const dados: Record<string, string> = await request.json()
 
+  const chavesAlteradas: string[] = []
+
   for (const chave of CHAVES) {
     // So sobrescreve se veio algo novo - campo vazio no formulario significa
     // "nao mexer", nunca apaga um segredo ja configurado por engano.
     if (dados[chave] !== undefined && dados[chave].trim() !== "") {
       await setSegredo(chave, dados[chave].trim())
+      chavesAlteradas.push(chave)
     }
   }
+
+  await registrarAuditoriaServidor({
+    sessao: sessaoOuErro,
+    tela: "Configurações > Integrações",
+    acao: "edicao",
+    tabela: "TAB_INTEGRACAO_SEGREDO",
+    // O VALOR do segredo nunca entra na auditoria - so quais chaves foram
+    // trocadas. Log que guarda credencial vira o proximo vazamento.
+    depois: { chaves_alteradas: chavesAlteradas },
+  })
 
   return NextResponse.json({ sucesso: true })
 }
