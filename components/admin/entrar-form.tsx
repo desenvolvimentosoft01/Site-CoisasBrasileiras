@@ -15,19 +15,26 @@ import { NOME_SISTEMA, FABRICANTE_SISTEMA, CONTATO_FABRICANTE } from "@/lib/cons
 // A metade escura some no celular: numa tela de 375px ela empurraria o
 // formulário pra baixo da dobra, e quem abre o login quer digitar a senha, não
 // ler propaganda. A marca do sistema continua aparecendo, em cima do card.
-// O que o SISTEMA faz - e não o que esta instalação contratou. A tela de
-// entrada é a vitrine do produto: mostra a régua inteira, e o plano de cada
-// cliente decide o que ele enxerga depois de entrar.
 //
-// Seis linhas é o teto: passou disso, ninguém lê, e a lista com movimento
-// levaria tempo demais até parar.
+// A lista abaixo e o que o SISTEMA faz - e não o que esta instalação
+// contratou. A tela de entrada é a vitrine do produto: mostra a régua
+// inteira, e o plano de cada cliente decide o que ele enxerga depois de
+// entrar.
+//
+// Uma linha por frente de trabalho, na ordem em que o dinheiro entra: vende
+// (loja e balcao), controla o que vendeu (pedidos e estoque), presta conta
+// (fiscal), repoe (compras), divulga (marketing) e fecha o mes (financeiro).
+// Oito linhas e o teto - passou disso vira lista de recurso, e ninguem le
+// lista de recurso na tela de login.
 const DESTAQUES = [
+  "Loja virtual com carrinho, checkout e área do cliente",
   "Pedido de Venda Balcão com carrinho",
   "Pedidos, orçamentos e clientes",
   "Estoque e custo atualizados pela nota de entrada",
   "DANFE e XML de entrada e saída, prontos pro contador",
-  "Compras: cotação, pedido e fornecedores",
-  "Financeiro, relatórios e auditoria",
+  "Compras: cotação, pedido de compra e fornecedores",
+  "Marketing: cupons, banners, clube e avaliações",
+  "Financeiro, relatórios, auditoria e permissão por tela",
 ]
 
 // Integrações que o sistema fala. Cada instalação libera as suas no plano.
@@ -78,7 +85,7 @@ export function EntrarForm({
       style={{ "--primary": corPrimaria } as React.CSSProperties}
     >
       {/* ---- Metade da apresentacao (só no desktop) ---- */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-slate-950 lg:flex lg:flex-col lg:justify-center lg:px-14">
+      <div className="relative hidden w-1/2 overflow-hidden bg-slate-950 lg:flex lg:flex-col lg:justify-center lg:px-10 xl:px-14">
         {/* Formas de fundo: circulos no topo e uma onda embaixo, na cor da
             loja - a mesma --primary configurada em Configuracoes > Aparencia,
             pra que cada instalacao tenha a cara do proprio cliente. */}
@@ -90,7 +97,7 @@ export function EntrarForm({
           <div className="animar-brilho absolute -top-1/4 left-0 h-[150%] w-40 bg-gradient-to-r from-transparent via-white/10 to-transparent blur-2xl" />
         </div>
 
-        <div className="relative">
+        <div className="relative max-h-full min-h-0 overflow-y-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/5">
               <Image src="/logo-sistema.svg" alt="" width={44} height={44} />
@@ -105,7 +112,7 @@ export function EntrarForm({
             Vendas, estoque, compras e fiscal em um lugar só.
           </p>
 
-          <ul className="mt-10 space-y-3">
+          <ul className="mt-8 space-y-2.5">
             {DESTAQUES.map((destaque, indice) => (
               <li
                 key={destaque}
@@ -126,7 +133,7 @@ export function EntrarForm({
               ela. Sao as integracoes do SISTEMA - o que cada loja usa depende
               do plano dela. */}
           <div
-            className="animar-entrada-item mt-10 max-w-md"
+            className="animar-entrada-item mt-8 max-w-md"
             style={{ animationDelay: `${DESTAQUES.length * 0.12 + 0.3}s` }}
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
