@@ -54,3 +54,9 @@ DOCS/*.png
 # anotacoes soltas (ex: codigos de recuperacao) - nunca deveriam ir pro git
 DOCS/*.txt
 
+
+# dumps do banco e a saida do converter-dump-para-inserts.js - tem dado real
+# de cliente (nome, CPF, endereco), nunca pode ir pro git
+*-inserts.sql
+dump*.sql
+backup*.sql

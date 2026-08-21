@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs"
 import { query } from "@/lib/db"
 import { exigirSessao } from "@/lib/auth-servidor"
-import { criarTokenSessao } from "@/lib/auth"
+import { criarTokenSessao, OPCOES_COOKIE_SESSAO_ADMIN } from "@/lib/auth"
 import { enviarEmail } from "@/lib/email"
 import { NextResponse } from "next/server"
 
@@ -80,12 +80,6 @@ export async function POST(request: Request) {
   })
 
   const resposta = NextResponse.json({ sucesso: true })
-  resposta.cookies.set("admin_sessao", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-    path: "/",
-  })
+  resposta.cookies.set("admin_sessao", token, OPCOES_COOKIE_SESSAO_ADMIN)
   return resposta
 }
