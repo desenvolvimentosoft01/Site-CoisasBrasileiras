@@ -285,8 +285,8 @@ export function ProdutosConteudo({ produtosIniciais }: { produtosIniciais: Produ
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 produto.ativo
-                                  ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-slate-200 text-slate-500"
+                                  ? "selo-sucesso"
+                                  : "selo-neutro"
                               }`}
                             >
                               {produto.ativo ? "Ativo" : "Inativo"}

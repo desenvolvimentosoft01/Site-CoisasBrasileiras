@@ -283,8 +283,8 @@ export function FornecedoresConteudo({ fornecedoresIniciais }: { fornecedoresIni
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 fornecedor.ativo
-                                  ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-slate-200 text-slate-500"
+                                  ? "selo-sucesso"
+                                  : "selo-neutro"
                               }`}
                             >
                               {fornecedor.ativo ? "Ativo" : "Inativo"}

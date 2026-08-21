@@ -38,12 +38,12 @@ const ABAS_STATUS = [
 ]
 
 const CORES_STATUS: Record<Cotacao["status"], string> = {
-  aberto: "bg-blue-600/20 text-blue-400",
-  enviado: "bg-amber-500/20 text-amber-500",
+  aberto: "selo-info",
+  enviado: "selo-atencao",
   respondida: "bg-purple-500/20 text-purple-500",
-  aceita: "bg-emerald-600/20 text-emerald-400",
-  recusada: "bg-red-600/20 text-red-400",
-  cancelada: "bg-slate-200 text-slate-400",
+  aceita: "selo-sucesso",
+  recusada: "selo-erro",
+  cancelada: "selo-neutro",
 }
 
 const STATUS_LABEL: Record<Cotacao["status"], string> = {

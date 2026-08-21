@@ -12,10 +12,10 @@ type Assinatura = {
 }
 
 const STATUS_ESTILO: Record<Assinatura["status"], string> = {
-  pendente: "bg-amber-500/20 text-amber-500",
-  autorizada: "bg-emerald-600/20 text-emerald-400",
-  pausada: "bg-slate-200 text-slate-500",
-  cancelada: "bg-red-500/10 text-red-400",
+  pendente: "selo-atencao",
+  autorizada: "selo-sucesso",
+  pausada: "selo-neutro",
+  cancelada: "selo-erro",
 }
 
 const STATUS_LABEL: Record<Assinatura["status"], string> = {

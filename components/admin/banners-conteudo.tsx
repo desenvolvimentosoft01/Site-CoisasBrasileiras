@@ -279,8 +279,8 @@ export function BannersConteudo({ bannersIniciais }: { bannersIniciais: Banner[]
                       <span
                         className={`rounded-full px-2 py-1 text-xs ${
                           banner.ativo
-                            ? "bg-emerald-600/20 text-emerald-400"
-                            : "bg-slate-200 text-slate-500"
+                            ? "selo-sucesso"
+                            : "selo-neutro"
                         }`}
                       >
                         {banner.ativo ? "Ativo" : "Inativo"}

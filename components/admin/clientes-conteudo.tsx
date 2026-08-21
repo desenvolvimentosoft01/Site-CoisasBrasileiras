@@ -405,8 +405,8 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 cliente.veio_do_site
-                                  ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-amber-600/20 text-amber-400"
+                                  ? "selo-sucesso"
+                                  : "selo-atencao"
                               }`}
                             >
                               {cliente.veio_do_site ? "Site" : "Balcão"}
@@ -419,8 +419,8 @@ export function ClientesConteudo({ clientesIniciais }: { clientesIniciais: Clien
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 cliente.ativo
-                                  ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-slate-200 text-slate-500"
+                                  ? "selo-sucesso"
+                                  : "selo-neutro"
                               }`}
                             >
                               {cliente.ativo ? "Ativo" : "Inativo"}

@@ -30,6 +30,14 @@ const PADRAO_VISUAL: Record<string, string> = {
   cor_borda: "#e2e8e5",
 }
 
+// Cor mostrada no seletor quando ainda nao existe valor salvo. As do sistema
+// declaram o proprio padrao no catalogo; as do site vivem em globals.css e
+// so tem representacao visual aqui.
+function padraoDe(chave: string): string {
+  const doSistema = CORES_SISTEMA.find((cor) => cor.chave === chave)
+  return doSistema?.padrao ?? PADRAO_VISUAL[chave] ?? "#000000"
+}
+
 // Painel de uma paleta. Serve pros dois sites e pro painel administrativo -
 // o arranjo da tela e o mesmo, muda a lista de cores e a previa.
 function PainelCores({
@@ -60,6 +68,56 @@ function PainelCores({
         {salvo && <span className="text-sm text-emerald-500">Salvo!</span>}
       </div>
 
+      {paleta === "sistema" ? (
+        // Previa do PAINEL: as superficies que a paleta do sistema pinta. Nao
+        // usa a previa do site de proposito - mostrar botao de vitrine aqui
+        // faria escolher cor olhando pra uma coisa e aplicando em outra.
+        <div className="space-y-3 rounded-xl border border-border p-4">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">
+            Pré-visualização — painel
+          </p>
+          <div className="overflow-hidden rounded-lg border border-slate-200">
+            <div className="barra-ferramentas-superficie flex flex-wrap gap-2 border-b border-slate-200 p-2">
+              <span className="acao-primaria rounded-md border px-3 py-1.5 text-xs">Novo</span>
+              <span className="acao-sucesso rounded-md border px-3 py-1.5 text-xs">Gravar</span>
+              <span className="acao-alerta rounded-md border px-3 py-1.5 text-xs">Limpar</span>
+              <span className="acao-perigo rounded-md border px-3 py-1.5 text-xs">Excluir</span>
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="cabecalho-grade">
+                  <th className="p-2">Cód.</th>
+                  <th className="p-2">Descrição</th>
+                  <th className="p-2">Situação</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="linha-selecionada border-b border-slate-100">
+                  <td className="p-2 font-mono text-slate-500">1</td>
+                  <td className="p-2">Linha selecionada</td>
+                  <td className="p-2">
+                    <span className="selo selo-sucesso">Ativo</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-slate-100">
+                  <td className="p-2 font-mono text-slate-500">2</td>
+                  <td className="p-2">Linha comum</td>
+                  <td className="p-2">
+                    <span className="selo selo-neutro">Inativo</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="selo selo-sucesso">Pago</span>
+            <span className="selo selo-atencao">Pendente</span>
+            <span className="selo selo-info">Em andamento</span>
+            <span className="selo selo-erro">Cancelado</span>
+            <span className="selo selo-neutro">Inativo</span>
+          </div>
+        </div>
+      ) : (
       <div
         className="rounded-xl border border-border bg-background p-6 text-foreground"
         style={styleCoresTema(cores)}
@@ -85,6 +143,7 @@ function PainelCores({
           </span>
         </div>
       </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -110,7 +169,7 @@ function PainelCores({
               <div className="flex items-center gap-3">
                 <input
                   type="color"
-                  value={cores[chave] || PADRAO_VISUAL[chave] || "#000000"}
+                  value={cores[chave] || padraoDe(chave)}
                   onChange={(e) => onAlterar(chave, e.target.value)}
                   className="h-9 w-14 cursor-pointer rounded-md border border-slate-300 bg-transparent"
                 />

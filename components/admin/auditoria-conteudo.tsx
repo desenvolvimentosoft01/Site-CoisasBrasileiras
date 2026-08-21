@@ -28,11 +28,11 @@ export type RegistroAuditoria = {
 }
 
 const corAcao: Record<RegistroAuditoria["acao"], string> = {
-  cadastro: "bg-emerald-600/20 text-emerald-400",
-  edicao: "bg-blue-600/20 text-blue-400",
-  exclusao: "bg-red-600/20 text-red-400",
-  inativacao: "bg-slate-200 text-slate-500",
-  ativacao: "bg-emerald-600/20 text-emerald-400",
+  cadastro: "selo-sucesso",
+  edicao: "selo-info",
+  exclusao: "selo-erro",
+  inativacao: "selo-neutro",
+  ativacao: "selo-sucesso",
 }
 
 const ROTULOS_ACAO: Record<RegistroAuditoria["acao"], string> = {

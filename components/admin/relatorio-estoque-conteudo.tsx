@@ -226,8 +226,8 @@ export function RelatorioEstoqueConteudo({
                           <span
                             className={`rounded-full px-2 py-1 text-xs ${
                               emBaixa
-                                ? "bg-amber-600/20 text-amber-400"
-                                : "bg-emerald-600/20 text-emerald-400"
+                                ? "selo-atencao"
+                                : "selo-sucesso"
                             }`}
                           >
                             {emBaixa ? "Baixo" : "OK"}

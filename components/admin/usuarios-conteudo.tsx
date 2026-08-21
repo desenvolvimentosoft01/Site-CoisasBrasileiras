@@ -245,8 +245,8 @@ export function UsuariosConteudo({ usuariosIniciais }: { usuariosIniciais: Usuar
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 usuario.ativo
-                                  ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-slate-200 text-slate-500"
+                                  ? "selo-sucesso"
+                                  : "selo-neutro"
                               }`}
                             >
                               {usuario.ativo ? "Ativo" : "Inativo"}

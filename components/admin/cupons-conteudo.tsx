@@ -246,8 +246,8 @@ export function CuponsConteudo({ cuponsIniciais }: { cuponsIniciais: Cupom[] }) 
                             <span
                               className={`rounded-full px-2 py-1 text-xs ${
                                 cupom.ativo
-                                  ? "bg-emerald-600/20 text-emerald-400"
-                                  : "bg-slate-200 text-slate-500"
+                                  ? "selo-sucesso"
+                                  : "selo-neutro"
                               }`}
                             >
                               {cupom.ativo ? "Ativo" : "Inativo"}
