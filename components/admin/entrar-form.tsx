@@ -182,9 +182,16 @@ export function EntrarForm({
               <label htmlFor="login" className="text-sm font-semibold text-slate-700">
                 Usuário
               </label>
+              {/* `name` + `autoComplete` sao o que faz o gerenciador de senhas do
+                  navegador oferecer pra salvar e depois preencher sozinho. Sem
+                  eles o navegador so acerta por heuristica, e erra em parte dos
+                  casos - e como a sessao agora acaba ao fechar o navegador, o
+                  preenchimento automatico e o que mantem o login rapido. */}
               <input
                 id="login"
+                name="login"
                 type="text"
+                autoComplete="username"
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
                 required
@@ -201,7 +208,9 @@ export function EntrarForm({
               <div className="relative">
                 <input
                   id="senha"
+                  name="senha"
                   type={senhaVisivel ? "text" : "password"}
+                  autoComplete="current-password"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   required
